@@ -1,0 +1,288 @@
+// Prisma schema file,
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model User {
+  userId            String  @id @default(uuid())
+  username          String?
+  email             String  @unique
+  password          String
+  roleId            Int
+  hospitalId        Int
+  profilePictureURL String?
+
+  sessions Session[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  role     Role     @relation(fields: [roleId], references: [roleId])
+  hospital Hospital @relation(fields: [hospitalId], references: [hospitalId])
+  doctor   Doctor?
+}
+
+model Role {
+  roleId      Int    @id @default(autoincrement())
+  roleName    String @unique
+  description String
+
+  users User[] // One-to-Many relation with User model
+}
+
+model Doctor {
+  doctorId           Int              @id @default(autoincrement())
+  userId             String           @unique
+  email              String           @unique
+  hospitalId         Int              @unique
+  departmentId       Int
+  serviceId          Int
+  name               String
+  specialization     String
+  status             String
+  contactInformation String
+  workingHours       String
+  averageRating      Float
+  appointments       Appointment[]
+  referrals          DoctorReferral[]
+  docEarnings        DoctorEarning[]
+
+  user       User       @relation(fields: [userId], references: [userId])
+  hospital   Hospital   @relation(fields: [hospitalId], references: [hospitalId])
+  department Department @relation(fields: [departmentId], references: [departmentId]) // New relation to Department model
+  service    Service?   @relation(fields: [serviceId], references: [serviceId])
+}
+
+model Patient {
+  patientId         Int       @id @default(autoincrement())
+  hospitalId        Int
+  name              String
+  phoneNo           String    @unique
+  email             String    @unique
+  age               Int
+  gender            String
+  appointmentReason String
+  admissionDate     DateTime?
+  dischargeDate     DateTime?
+  status            String // e.g., Inpatient, Outpatient
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  appointments        Appointment[]
+  serviceUsages       ServiceUsage[]
+  payments            Payment[]
+  referrals           Referral[]
+  appointmentServices AppointmentService[]
+
+  hospital   Hospital @relation(fields: [hospitalId], references: [hospitalId])
+  currentBed Bed?
+}
+
+model Appointment {
+  appointmentId      String   @id @default(uuid()) // Use Prisma's built-in UUID generation
+  doctorId           Int // Foreign key to Doctor model
+  patientId          Int // Foreign key to Patient model
+  hospitalId         Int
+  availabilitySlotId String? // Optional field
+  appointmentDate    DateTime
+
+  status          String? // Optional field (Pending, Confirmed, Completed, Cancelled)
+  consultationFee Float? // Optional field
+  isPaid          Boolean // Use boolean instead of string
+
+  paymentId            String? // Optional field
+  completed            Boolean // Use boolean instead of string
+  isVideoStarted       Boolean // Use boolean instead of string
+  commissionPercentage Float? // Optional field
+  appointmentEndedAt   DateTime? // Optional field
+
+  appointmentReminderSent    Int? // Optional field
+  appointmentReminderSentLTF DateTime? // Optional field
+
+  doctorAppointmentNotes  String? // Optional field
+  patientAppointmentNotes String? // Optional field
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  services AppointmentService[]
+  payments Payment[]
+
+  patient  Patient  @relation(fields: [patientId], references: [patientId]) // One-to-Many relation with Patient model
+  doctor   Doctor   @relation(fields: [doctorId], references: [doctorId]) // One-to-Many relation with Doctor model
+  hospital Hospital @relation(fields: [hospitalId], references: [hospitalId])
+}
+
+model DoctorEarning {
+  earningsId  String   @id @default(uuid())
+  doctorId    Int      @unique // Foreign key to Doctor model
+  date        DateTime
+  amount      Float
+  description String
+
+  doctor Doctor @relation(fields: [doctorId], references: [doctorId]) // One-to-Many relation with Doctor model
+}
+
+model Bed {
+  bedId        Int    @id @default(autoincrement())
+  hospitalId   Int    @unique
+  patientId    Int?   @unique
+  type         String // e.g., ICU, General
+  ward         String
+  availability String // e.g., Occupied, Available
+
+  hospital Hospital @relation(fields: [hospitalId], references: [hospitalId])
+  patient  Patient? @relation(fields: [patientId], references: [patientId])
+}
+
+model Service {
+  serviceId     Int                  @id @default(autoincrement())
+  hospitalId    Int
+  serviceName   String
+  doctors       Doctor[]
+  appointments  AppointmentService[]
+  serviceUsages ServiceUsage[]
+  payments      Payment[]
+  departments   DepartmentService[]
+
+  hospital Hospital @relation(fields: [hospitalId], references: [hospitalId])
+}
+
+model Department {
+  departmentId Int                  @id @default(autoincrement())
+  name         String               @unique
+  description  String
+  services     DepartmentService[]
+  hospitals    HospitalDepartment[]
+  doctors      Doctor[]
+}
+
+model DepartmentService {
+  departmentId Int
+  serviceId    Int
+  price        Float
+
+  department Department @relation(fields: [departmentId], references: [departmentId])
+  service    Service    @relation(fields: [serviceId], references: [serviceId])
+
+  @@id([departmentId, serviceId])
+}
+
+model Payment {
+  paymentId     String @id @default(uuid())
+  patientId     Int    @unique
+  serviceId     Int    @unique
+  hospitalId    Int    @unique
+  appointmentId String @unique
+  amount        Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  hospital    Hospital    @relation(fields: [hospitalId], references: [hospitalId])
+  service     Service     @relation(fields: [serviceId], references: [serviceId])
+  patient     Patient     @relation(fields: [patientId], references: [patientId])
+  appointment Appointment @relation(fields: [appointmentId], references: [appointmentId])
+}
+
+model AppointmentService {
+  appointmentId String
+  serviceId     Int
+  patientId     Int
+
+  appointment Appointment @relation(fields: [appointmentId], references: [appointmentId])
+  service     Service     @relation(fields: [serviceId], references: [serviceId])
+  patient     Patient     @relation(fields: [patientId], references: [patientId])
+
+  @@id([appointmentId, serviceId])
+}
+
+model ServiceUsage {
+  usageId   String   @id @default(uuid())
+  serviceId Int      @unique // Foreign key to Service model
+  patientId Int      @unique // Foreign key to Patient model
+  date      DateTime
+
+  service Service @relation(fields: [serviceId], references: [serviceId]) // One-to-Many relation with Service model
+  patient Patient @relation(fields: [patientId], references: [patientId]) // One-to-Many relation with Patient model
+}
+
+model Referral {
+  referralId Int              @id @default(autoincrement())
+  patientId  Int              @unique // Foreign key to Patient model
+  hospitalId Int
+  date       DateTime
+  type       String // e.g., Internal, External
+  doctors    DoctorReferral[]
+
+  hospital Hospital @relation(fields: [hospitalId], references: [hospitalId])
+  patient  Patient  @relation(fields: [patientId], references: [patientId])
+}
+
+model DoctorReferral {
+  doctorId   Int @unique
+  referralId Int @unique
+  patientId  Int @unique
+
+  doctor   Doctor   @relation(fields: [doctorId], references: [doctorId])
+  referral Referral @relation(fields: [referralId], references: [referralId])
+
+  @@id([doctorId, referralId, patientId])
+}
+
+model Hospital {
+  hospitalId   Int     @id @default(autoincrement())
+  name         String
+  phone        String  @unique
+  email        String  @unique // Validate email format
+  country      String
+  city         String
+  referralCode String?
+
+  users        User[]
+  doctors      Doctor[]
+  patients     Patient[]
+  appointments Appointment[]
+  beds         Bed[]
+  services     Service[]
+  payments     Payment[]
+  departments  HospitalDepartment[]
+  referrals    Referral[]
+}
+
+model HospitalDepartment {
+  hospitalId   Int
+  departmentId Int
+
+  hospital   Hospital   @relation(fields: [hospitalId], references: [hospitalId])
+  department Department @relation(fields: [departmentId], references: [departmentId])
+
+  @@id([hospitalId, departmentId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
