@@ -18,8 +18,9 @@ model User {
   password          String
   roleId            Int
   hospitalId        Int
-  profilePictureURL String?
-
+  isActive          Boolean  @default(true)
+  lastLogin         DateTime?
+  
   sessions Session[]
 
   createdAt DateTime @default(now())
@@ -27,6 +28,7 @@ model User {
 
   role     Role     @relation(fields: [roleId], references: [roleId])
   hospital Hospital @relation(fields: [hospitalId], references: [hospitalId])
+  profile   Profile?
   doctor   Doctor?
 }
 
@@ -35,7 +37,24 @@ model Role {
   roleName    String @unique
   description String
 
-  users User[] // One-to-Many relation with User model
+  users User[]
+}
+
+model Profile {
+  profileId  String  @id @default(uuid())
+  userId     String  @unique
+  firstName  String
+  lastName   String
+  gender     String?
+  phone       String?
+  address    String?
+  dateOfBirth DateTime?
+  imageUrl   String?
+  nextOfKin   String?
+  nextOfKinPhoneNo  String?
+  emergencyContact String?
+
+  user        User       @relation(fields: [userId], references: [userId])
 }
 
 model Doctor {
@@ -88,28 +107,29 @@ model Patient {
 }
 
 model Appointment {
-  appointmentId      String   @id @default(uuid()) // Use Prisma's built-in UUID generation
-  doctorId           Int // Foreign key to Doctor model
-  patientId          Int // Foreign key to Patient model
+  appointmentId      String   @id @default(uuid())
+  doctorId           Int
+  patientId          Int
   hospitalId         Int
-  availabilitySlotId String? // Optional field
+  availabilitySlotId String?
   appointmentDate    DateTime
 
-  status          String? // Optional field (Pending, Confirmed, Completed, Cancelled)
-  consultationFee Float? // Optional field
-  isPaid          Boolean // Use boolean instead of string
+  status          String? // (Pending, Confirmed, Completed, Cancelled)
+  consultationFee Float?
+  isPaid          Boolean
 
-  paymentId            String? // Optional field
-  completed            Boolean // Use boolean instead of string
-  isVideoStarted       Boolean // Use boolean instead of string
-  commissionPercentage Float? // Optional field
-  appointmentEndedAt   DateTime? // Optional field
+  paymentId            String?
+  completed            Boolean
+  isVideoStarted       Boolean
+  commissionPercentage Float?
+  appointmentEndedAt   DateTime?
 
-  appointmentReminderSent    Int? // Optional field
-  appointmentReminderSentLTF DateTime? // Optional field
+  appointmentReminderSent    Int?
+  appointmentReminderSentLTF DateTime?
 
-  doctorAppointmentNotes  String? // Optional field
-  patientAppointmentNotes String? // Optional field
+  doctorAppointmentNotes  String?
+  patientAppointmentNotes String?
+  reasonForVisit     String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -117,19 +137,19 @@ model Appointment {
   services AppointmentService[]
   payments Payment[]
 
-  patient  Patient  @relation(fields: [patientId], references: [patientId]) // One-to-Many relation with Patient model
-  doctor   Doctor   @relation(fields: [doctorId], references: [doctorId]) // One-to-Many relation with Doctor model
+  patient  Patient  @relation(fields: [patientId], references: [patientId])
+  doctor   Doctor   @relation(fields: [doctorId], references: [doctorId])
   hospital Hospital @relation(fields: [hospitalId], references: [hospitalId])
 }
 
 model DoctorEarning {
   earningsId  String   @id @default(uuid())
-  doctorId    Int      @unique // Foreign key to Doctor model
+  doctorId    Int      @unique
   date        DateTime
   amount      Float
   description String
 
-  doctor Doctor @relation(fields: [doctorId], references: [doctorId]) // One-to-Many relation with Doctor model
+  doctor Doctor @relation(fields: [doctorId], references: [doctorId])
 }
 
 model Bed {
@@ -208,17 +228,17 @@ model AppointmentService {
 
 model ServiceUsage {
   usageId   String   @id @default(uuid())
-  serviceId Int      @unique // Foreign key to Service model
-  patientId Int      @unique // Foreign key to Patient model
+  serviceId Int      @unique
+  patientId Int      @unique
   date      DateTime
 
-  service Service @relation(fields: [serviceId], references: [serviceId]) // One-to-Many relation with Service model
-  patient Patient @relation(fields: [patientId], references: [patientId]) // One-to-Many relation with Patient model
+  service Service @relation(fields: [serviceId], references: [serviceId])
+  patient Patient @relation(fields: [patientId], references: [patientId])
 }
 
 model Referral {
   referralId Int              @id @default(autoincrement())
-  patientId  Int              @unique // Foreign key to Patient model
+  patientId  Int              @unique
   hospitalId Int
   date       DateTime
   type       String // e.g., Internal, External
@@ -247,6 +267,8 @@ model Hospital {
   country      String
   city         String
   referralCode String?
+  website     String?
+  logoUrl     String
 
   users        User[]
   doctors      Doctor[]
