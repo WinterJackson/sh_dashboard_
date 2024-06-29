@@ -87,6 +87,8 @@ export interface Appointment {
     hospitalId: number;
     availabilitySlotId?: string;
     appointmentDate: Date;
+    type: string;
+    action?: string;
     status?: string;
     consultationFee?: number;
     isPaid: boolean;

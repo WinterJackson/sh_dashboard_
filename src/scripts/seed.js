@@ -185,6 +185,8 @@ async function seedAppointments() {
                 patientId: appointment.patientId,
                 hospitalId: appointment.hospitalId,
                 appointmentDate: appointment.appointmentDate,
+                type: appointment.type,
+                action: appointment.action,
                 status: appointment.status, // (Pending, Confirmed, Completed, Cancelled)
                 consultationFee: appointment.consultationFee,
                 isPaid: appointment.isPaid,

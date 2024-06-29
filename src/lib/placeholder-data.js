@@ -359,8 +359,9 @@ const appointments = [
         patientId: 12875, // Thomas Patey
         hospitalId: 1, // Hospital 1
         appointmentDate: new Date("2024-05-22T10:00:00"), // Replace with desired date
+        type: "Virtual",
         status: "Completed", // (Pending, Confirmed, Completed, Cancelled)
-        consultationFee: 100.0,
+        consultationFee: 100.00,
         isPaid: true,
         paymentId: "123e4567-e89b-12d3-a456-426614174021", //Reference to payment record
         completed: true,
@@ -379,8 +380,9 @@ const appointments = [
         patientId: 12875, // Thomas Patey
         hospitalId: 2, // Hospital 2
         appointmentDate: new Date("2024-05-23T10:00:00"), // Replace with desired date
+        type: "Walk In",
         status: "Completed", // (Pending, Confirmed, Completed, Cancelled)
-        consultationFee: 100.0,
+        consultationFee: 100.00,
         isPaid: true,
         paymentId: "123e4567-e89b-12d3-a456-426614174313", //Reference to payment record
         completed: true,
@@ -400,8 +402,9 @@ const appointments = [
         patientId: 12329, // Alicia Keys
         hospitalId: 2, // Hospital 2
         appointmentDate: new Date("2024-05-24T10:30:00"), // Replace with desired date
+        type: "Walk In",
         status: "Cancelled", // (Pending, Confirmed, Completed, Cancelled)
-        consultationFee: 100.0,
+        consultationFee: 100.00,
         isPaid: false,
         paymentId: null, //Reference to payment record
         completed: false,
@@ -420,8 +423,9 @@ const appointments = [
         patientId: 12982, // Alice Johnson
         hospitalId: 1, // Hospital 1
         appointmentDate: new Date("2024-05-24T12:30:00"), // Replace with desired date
+        type: "Virtual",
         status: "Cancelled", // (Pending, Confirmed, Completed, Cancelled)
-        consultationFee: 100.0,
+        consultationFee: 100.00,
         isPaid: false,
         paymentId: null, //Reference to payment record
         completed: false,
@@ -440,8 +444,9 @@ const appointments = [
         patientId: 12982, // Alice Johnson
         hospitalId: 1, // Hospital 1
         appointmentDate: new Date("2024-05-25T10:00:00"), // Replace with desired date
+        type: "Walk In",
         status: "Completed", // (Pending, Confirmed, Completed, Cancelled)
-        consultationFee: 100.0,
+        consultationFee: 100.00,
         isPaid: true,
         paymentId: "123e4567-e89b-12d3-a456-426614174293", //Reference to payment record
         completed: true,
@@ -460,8 +465,9 @@ const appointments = [
         patientId: 12332, // Kyle Walker
         hospitalId: 2, // Hospital 2
         appointmentDate: new Date("2024-05-27T10:00:00"), // Replace with desired date
+        type: "Walk In",
         status: "Pending", // (Pending, Confirmed, Completed, Cancelled)
-        consultationFee: 100.0,
+        consultationFee: 100.00,
         isPaid: true,
         paymentId: "123e4567-e89b-12d3-a456-426614174342", //Reference to payment record
         completed: false,

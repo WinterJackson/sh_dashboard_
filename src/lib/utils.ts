@@ -3,6 +3,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { isEmail } from "validator";
+const prisma = require("@/lib/prisma")
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -44,3 +45,18 @@ export function validatePassword(password: string): boolean {
 export const getFirstName = (fullName: string) => {
     return fullName.split(" ")[0];
 };
+
+export async function fetchAppointments() {
+    try {
+        const appointments = await prisma.appointment.findMany({
+            include: {
+                patient: true,
+                doctor: true,
+            },
+        });
+        return appointments;
+    } catch (error) {
+        console.error('Error fetching appointments:', error);
+        return [];
+    }
+}

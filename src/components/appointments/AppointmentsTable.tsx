@@ -1,0 +1,503 @@
+// File: src/components/appointments/AppointmentsTable.tsx
+
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { Appointment } from "@/lib/definitions";
+import { Skeleton } from "@/components/ui/skeleton";
+import { DatePicker } from "@/components/appointments/DatePicker";
+import { DateRangePicker } from "@/components/appointments/DateRangePicker";
+import { DateRange } from "react-day-picker";
+import { SymbolIcon } from "@radix-ui/react-icons";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useSearch } from "@/app/context/SearchContext";
+import { useAppointmentsStore } from "@/components/ui/store";
+import dynamic from "next/dynamic";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import VideoCameraFrontIcon from '@mui/icons-material/VideoCameraFront';
+import PlaceIcon from '@mui/icons-material/Place';
+
+// Dynamic imports for dialogs
+const RescheduleDialog = dynamic(() => import("@/components/appointments/RescheduleDialog"));
+const CancelDialog = dynamic(() => import("@/components/appointments/CancelDialog"));
+const ActionDialog = dynamic(() => import("@/components/appointments/ActionDialog"));
+
+// Pagination component
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
+
+const filterOptions = [
+    { value: "", label: "Filter By" },
+    { value: "Patient Name", label: "Patient Name" },
+    { value: "Age", label: "Age" },
+    { value: "Id", label: "Id" },
+    { value: "Date", label: "Date" },
+    { value: "Doctor", label: "Doctor" },
+    { value: "Type", label: "Type" },
+];
+
+interface AppointmentsTableProps {
+    appointments: Appointment[];
+    totalAppointments: number;
+    currentPage: number;
+}
+
+const ITEMS_PER_PAGE = 5;
+
+const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
+    appointments,
+    totalAppointments,
+    currentPage,
+}) => {
+    const [isLoading, setIsLoading] = useState(true);
+    const [filterType, setFilterType] = useState<string>(filterOptions[0].value);
+    const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+    const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
+    const [dateRangeFilter, setDateRangeFilter] = useState<DateRange | undefined>(undefined);
+    const [appointmentTypeFilter, setAppointmentTypeFilter] = useState<string | undefined>(undefined);
+    const { searchTerm, clearSearchTerm } = useSearch();
+    const { fetchAppointments, updateAppointment } = useAppointmentsStore();
+    const [actionText, setActionText] = useState<{ [key: string]: string }>({});
+    const searchParams = useSearchParams();
+    const router = useRouter();
+
+    const handleFilterTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setFilterType(e.target.value);
+        setStatusFilter(undefined);
+        setDateFilter(undefined);
+        setDateRangeFilter(undefined);
+        setAppointmentTypeFilter(undefined);
+    };
+
+    const handleStatusFilter = (status: string) => {
+        setStatusFilter(status);
+    };
+
+    const handleRefresh = () => {
+        setFilterType(filterOptions[0].value);
+        setStatusFilter(undefined);
+        setDateFilter(undefined);
+        setDateRangeFilter(undefined);
+        setAppointmentTypeFilter(undefined);
+        clearSearchTerm();
+    };
+
+    useEffect(() => {
+        fetchAppointments().then(() => setIsLoading(false));
+    }, [fetchAppointments]);
+
+    useEffect(() => {
+        setDateFilter(undefined);
+        setDateRangeFilter(undefined);
+        setAppointmentTypeFilter(undefined);
+    }, [filterType]);
+
+    const handleActionChange = (appointmentId: string, action: string) => {
+        setActionText((prevState) => ({
+            ...prevState,
+            [appointmentId]: action,
+        }));
+    };
+
+    const handleDialogOpen = (type: string, appointmentId: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("dialog", type);
+        params.set("appointmentId", appointmentId);
+        router.push(`?${params.toString()}`);
+    };
+
+    const handleDialogClose = () => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete("dialog");
+        params.delete("appointmentId");
+        router.push(`?${params.toString()}`);
+    };
+
+    const handleRescheduleSave = async (appointmentId: string, date: Date, reason: string) => {
+        await updateAppointment(appointmentId, {
+            status: "Rescheduled",
+            rescheduledDate: date,
+            reason,
+        });
+        handleActionChange(appointmentId, "Rescheduled");
+    };
+
+    const handleCancelSave = async (appointmentId: string, reason: string) => {
+        await updateAppointment(appointmentId, { status: "Cancelled", reason });
+        handleActionChange(appointmentId, "Cancelled");
+    };
+
+    const handlePendingSave = async (appointmentId: string, reason: string) => {
+        await updateAppointment(appointmentId, { status: "Pending", reason });
+        handleActionChange(appointmentId, "Pending");
+    };
+
+    const dialogType = searchParams.get("dialog");
+    const dialogAppointmentId = searchParams.get("appointmentId");
+
+    const filteredAppointments = appointments.filter((appointment) => {
+        const searchTextLower = searchTerm.toLowerCase();
+        let filterMatch = true;
+
+        if (searchTerm) {
+            switch (filterType) {
+                case "Patient Name":
+                    filterMatch = appointment.patient.name.toLowerCase().includes(searchTextLower);
+                    break;
+                case "Age":
+                    filterMatch = appointment.patient.age.toString().includes(searchTextLower);
+                    break;
+                case "Id":
+                    filterMatch = appointment.patient.patientId.toString().includes(searchTextLower);
+                    break;
+                case "Doctor":
+                    filterMatch = appointment.doctor.name.toLowerCase().includes(searchTextLower);
+                    break;
+                case "Type":
+                    if (appointmentTypeFilter) {
+                        filterMatch = appointment.type === appointmentTypeFilter;
+                    }
+                    break;
+                default:
+                    filterMatch =
+                        appointment.patient.name.toLowerCase().includes(searchTextLower) ||
+                        appointment.patient.age.toString().includes(searchTextLower) ||
+                        appointment.patient.patientId.toString().includes(searchTextLower) ||
+                        new Date(appointment.appointmentDate).toLocaleDateString().includes(searchTextLower) ||
+                        appointment.doctor.name.toLowerCase().includes(searchTextLower) ||
+                        appointment.type.toLowerCase().includes(searchTextLower);
+                    break;
+            }
+        }
+
+        if (statusFilter) {
+            filterMatch =
+                filterMatch && (statusFilter === "Confirmed" || statusFilter === "Completed") ===
+                    (appointment.status === "Confirmed" || appointment.status === "Completed");
+        }
+
+        if (dateFilter) {
+            const appointmentDate = new Date(appointment.appointmentDate);
+            filterMatch = filterMatch && appointmentDate.toLocaleDateString() === dateFilter.toLocaleDateString();
+        } else if (dateRangeFilter?.from && dateRangeFilter?.to) {
+            const appointmentDate = new Date(appointment.appointmentDate);
+            filterMatch = filterMatch &&
+                appointmentDate >= dateRangeFilter.from &&
+                appointmentDate <= dateRangeFilter.to;
+        }
+
+        if (appointmentTypeFilter) {
+            filterMatch = filterMatch && appointment.type === appointmentTypeFilter;
+        }
+
+        return filterMatch;
+    });
+
+    const totalPages = Math.ceil(totalAppointments / ITEMS_PER_PAGE);
+
+    const handlePageChange = (page: number) => {
+        router.push(`?page=${page}`);
+    };
+
+    return (
+        <div className="flex flex-col min-w-full">
+            <button
+                onClick={handleRefresh}
+                title="Refresh Appointments List"
+                className="p-1 ml-1 mb-2 border border-white rounded-full h-[25px] w-[25px] justify-start font-semibold text-white shadow-sm bg-primary hover:text-black hover:shadow-none hover:bg-bluelight flex items-center"
+            >
+                <SymbolIcon className="h-5 w-5" />
+            </button>
+
+            <div className="flex flex-row justify-between items-center mb-3">
+                <div className="flex flex-row items-center gap-4">
+                    <select
+                        className="flex-grow p-2 px-2 py-2 border-gray-300 rounded h-10 w-auto max-w-[120px] bg-gray-100 text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary"
+                        value={filterType}
+                        onChange={handleFilterTypeChange}
+                    >
+                        {filterOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                    <button
+                        className={`flex-grow px-4 py-2 border-primary rounded h-10 text-nowrap w-auto font-semibold text-black shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none ${
+                            statusFilter === "Confirmed" || statusFilter === "Completed"
+                                ? "bg-primary text-white"
+                                : ""
+                        }`}
+                        onClick={() => handleStatusFilter("Confirmed")}
+                    >
+                        Approved Appointments
+                    </button>
+                    <button
+                        className={`flex-grow px-4 py-2 border-primary rounded h-10 text-nowrap w-auto font-semibold text-black shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none ${
+                            statusFilter === "Unconfirmed" ? "bg-primary text-white" : ""
+                        }`}
+                        onClick={() => handleStatusFilter("Unconfirmed")}
+                    >
+                        Other Appointments
+                    </button>
+                    {filterType === "Type" && (
+                        <>
+                            <button
+                                className={`flex-grow px-4 py-2 border-primary rounded h-10 text-nowrap w-auto font-semibold text-black shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none ${
+                                    appointmentTypeFilter === "Walk In" ? "bg-primary text-white" : ""
+                                }`}
+                                onClick={() => setAppointmentTypeFilter("Walk In")}
+                            >
+                                Walk In
+                            </button>
+                            <button
+                                className={`flex-grow px-4 py-2 border-primary rounded h-10 text-nowrap w-auto font-semibold text-black shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none ${
+                                    appointmentTypeFilter === "Virtual" ? "bg-primary text-white" : ""
+                                }`}
+                                onClick={() => setAppointmentTypeFilter("Virtual")}
+                            >
+                                Virtual
+                            </button>
+                        </>
+                    )}
+                    {filterType === "Date" && (
+                        <div className="flex flex-grow flex-row items-center gap-2">
+                            <DatePicker onDateChange={setDateFilter} />
+                            <DateRangePicker onDateRangeChange={setDateRangeFilter} />
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <table className="min-w-full sm:w-full border-collapse divide-y divide-gray-200 mt-2">
+                <thead className="bg-bluelight">
+                    <tr>
+                        <th scope="col" className="px-4 py-5 text-nowrap text-left text-sm font-bold text-black uppercase tracking-wider white-space: nowrap">
+                            Patient Name
+                        </th>
+                        <th scope="col" className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap">
+                            Age
+                        </th>
+                        <th scope="col" className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap">
+                            Id
+                        </th>
+                        <th scope="col" className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap">
+                            Time
+                        </th>
+                        <th scope="col" className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap">
+                            Date
+                        </th>
+                        <th scope="col" className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap">
+                            Doctor's Name
+                        </th>
+                        <th scope="col" className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap">
+                            Type
+                        </th>
+                        <th scope="col" className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap">
+                            Action
+                        </th>
+                    </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                    {isLoading
+                        ? Array.from({ length: 10 }).map((_, index) => (
+                              <tr key={index}>
+                                  <td colSpan={8}>
+                                      <Skeleton className={`h-[45px] w-full p-4 rounded-sm py-4`} />
+                                  </td>
+                              </tr>
+                          ))
+                        : filteredAppointments.map((appointment) => {
+                              const appointmentDate = new Date(appointment.appointmentDate);
+                              const formattedDate = appointmentDate.toLocaleDateString();
+                              const formattedTime = appointmentDate.toLocaleTimeString();
+
+                              return (
+                                  <tr
+                                      key={appointment.appointmentId}
+                                      className="text-center"
+                                  >
+                                      <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-left">
+                                          {appointment.patient.name}
+                                      </td>
+                                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                          {appointment.patient.age}
+                                      </td>
+                                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                          {appointment.patient.patientId}
+                                      </td>
+                                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                          {formattedTime}
+                                      </td>
+                                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                          {formattedDate}
+                                      </td>
+                                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                          {appointment.doctor.name}
+                                      </td>
+                                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                          {appointment.type === "Virtual" ? (
+                                              <>
+                                                  <VideoCameraFrontIcon className="text-primary" />
+                                                  <span className="text-primary ml-2">
+                                                      {appointment.type}
+                                                  </span>
+                                              </>
+                                          ) : (
+                                              <>
+                                                  <PlaceIcon className="text-black/70" />
+                                                  {appointment.type}
+                                              </>
+                                          )}
+                                      </td>
+                                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                          <div className="flex justify-center">
+                                              <DropdownMenu>
+                                                  <DropdownMenuTrigger className="flex w-auto justify-center p-1 border-gray-300 rounded max-w-[120px] bg-gray-100 text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary">
+                                                      <span className="flex gap-1">
+                                                          <span className="pl-2">
+                                                              {actionText[
+                                                                  appointment
+                                                                      .appointmentId
+                                                              ] ||
+                                                                  appointment.status ||
+                                                                  "Action"}
+                                                          </span>
+                                                          <ArrowDropDownIcon />
+                                                      </span>
+                                                  </DropdownMenuTrigger>
+                                                  <DropdownMenuContent>
+                                                      <DropdownMenuItem
+                                                          onSelect={() => {
+                                                              handleDialogOpen(
+                                                                  "Reschedule",
+                                                                  appointment.appointmentId
+                                                              );
+                                                          }}
+                                                      >
+                                                          Reschedule
+                                                      </DropdownMenuItem>
+                                                      <DropdownMenuItem
+                                                          onSelect={() => {
+                                                              handleDialogOpen(
+                                                                  "Cancel",
+                                                                  appointment.appointmentId
+                                                              );
+                                                          }}
+                                                      >
+                                                          Cancel
+                                                      </DropdownMenuItem>
+                                                      <DropdownMenuItem
+                                                          onSelect={() => {
+                                                              handleDialogOpen(
+                                                                  "Pending",
+                                                                  appointment.appointmentId
+                                                              );
+                                                          }}
+                                                      >
+                                                          Pending
+                                                      </DropdownMenuItem>
+                                                      <DropdownMenuItem
+                                                          onSelect={() => {
+                                                              updateAppointment(
+                                                                  appointment.appointmentId,
+                                                                  {
+                                                                      status: "Confirmed",
+                                                                  }
+                                                              ).then(() =>
+                                                                  handleActionChange(
+                                                                      appointment.appointmentId,
+                                                                      "Confirmed"
+                                                                  )
+                                                              );
+                                                          }}
+                                                      >
+                                                          Confirm
+                                                      </DropdownMenuItem>
+                                                      <DropdownMenuItem
+                                                          onSelect={() => {
+                                                              updateAppointment(
+                                                                  appointment.appointmentId,
+                                                                  {
+                                                                      status: "Completed",
+                                                                  }
+                                                              ).then(() =>
+                                                                  handleActionChange(
+                                                                      appointment.appointmentId,
+                                                                      "Completed"
+                                                                  )
+                                                              );
+                                                          }}
+                                                      >
+                                                          Completed
+                                                      </DropdownMenuItem>
+                                                  </DropdownMenuContent>
+                                              </DropdownMenu>
+                                          </div>
+                                      </td>
+                                  </tr>
+                              );
+                          })}
+                </tbody>
+            </table>
+            <Pagination className="mt-4">
+                <PaginationContent>
+                    <PaginationPrevious
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                    />
+                    {Array.from({ length: totalPages }).map((_, index) => (
+                        <PaginationItem key={index}>
+                            <PaginationLink
+                                isActive={currentPage === index + 1}
+                                onClick={() => handlePageChange(index + 1)}
+                            >
+                                {index + 1}
+                            </PaginationLink>
+                        </PaginationItem>
+                    ))}
+                    <PaginationNext
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                    />
+                </PaginationContent>
+            </Pagination>
+            {dialogType === "Reschedule" && dialogAppointmentId && (
+                <RescheduleDialog
+                    appointmentId={dialogAppointmentId}
+                    onSave={(date, reason) => handleRescheduleSave(dialogAppointmentId, date, reason)}
+                    onClose={handleDialogClose}
+                />
+            )}
+            {dialogType === "Cancel" && dialogAppointmentId && (
+                <CancelDialog
+                    appointmentId={dialogAppointmentId}
+                    onSave={(reason) => handleCancelSave(dialogAppointmentId, reason)}
+                    onClose={handleDialogClose}
+                />
+            )}
+            {dialogType === "Pending" && dialogAppointmentId && (
+                <ActionDialog
+                    appointmentId={dialogAppointmentId}
+                    action="Pending"
+                    onSave={(reason) => handlePendingSave(dialogAppointmentId, reason)}
+                    onClose={handleDialogClose}
+                />
+            )}
+        </div>
+    );
+};
+
+export default AppointmentsTable;

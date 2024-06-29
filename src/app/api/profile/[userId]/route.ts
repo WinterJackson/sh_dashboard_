@@ -4,7 +4,6 @@ import { authOptions } from "@/lib/authOptions";
 import { NextRequest, NextResponse } from 'next/server';
 const prisma = require("@/lib/prisma")
 
-
 export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession({ req, ...authOptions });
@@ -33,8 +32,6 @@ export async function GET(req: NextRequest) {
                 emergencyContact: true,
             },
         });
-
-        console.log(profile)
 
         if (!profile) {
             return NextResponse.json({ message: "Profile not found" });

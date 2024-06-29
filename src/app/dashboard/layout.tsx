@@ -2,7 +2,7 @@
 
 import React from "react";
 import Sidebar from "@/components/Sidebar";
-import Header from "@/components/Header";
+import Header from "@/components/header/Header";
 
 export default function DashboardLayout({
     children,
@@ -10,11 +10,11 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex relative w-full flex-col min-h-screen">
             <Header />
-            <div className="flex flex-row h-full">
+            <div className="flex relative w-full flex-row h-full">
                 <Sidebar />
-                <main className="flex-grow p-4">
+                <main className="w-3/4 flex-grow p-4">
                     {children}
                 </main>
             </div>

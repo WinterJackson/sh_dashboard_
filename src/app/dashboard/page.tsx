@@ -3,9 +3,11 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
+import { getFirstName } from "@/lib/utils";
 
 export default async function DashboardPage() {
     const session = await getServerSession(authOptions);
+    const firstName = session?.user ? getFirstName(session.user.username) : "";
 
     if (!session) {
         redirect("/sign-in");
@@ -13,9 +15,10 @@ export default async function DashboardPage() {
     }
 
     return (
-        <div>
-            <h1>Welcome to the Dashboard</h1>
-            {/* Include your header, sidebar, and other components here */}
+        <div className="h-full">
+            <div className="text-xl font-semibold p-4 bg-white ml-0">
+                Welcome, {firstName}
+            </div>
         </div>
     );
 }

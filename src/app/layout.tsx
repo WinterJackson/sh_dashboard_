@@ -6,6 +6,7 @@ import { inter } from '@/components/ui/fonts';
 import SessionWrapper from "@/components/SessionWrapper";
 import { UserProvider } from "@/app/context/UserContext";
 import { LoadingProvider } from "@/app/context/LoadingContext";
+import { SearchProvider } from "@/app/context/SearchContext";
 
 export const metadata: Metadata = {
     title: "Hospital Dashboard",
@@ -21,13 +22,15 @@ export default function RootLayout({
         <SessionWrapper>
             <UserProvider>
                 <LoadingProvider>
-                    <html lang="en">
+                    <SearchProvider>
+                        <html lang="en">
                         <body className={`${inter.className} antialiased`}>
-                            <main>
-                                {children}
-                            </main>
-                        </body>
-                    </html>
+                                <main>
+                                    {children}
+                                </main>
+                            </body>
+                        </html>
+                    </SearchProvider>
                 </LoadingProvider>
             </UserProvider>
         </SessionWrapper>
