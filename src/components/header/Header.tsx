@@ -11,11 +11,9 @@ import { useSession } from "next-auth/react";
 import { getFirstName } from "@/lib/utils";
 import Skeleton from "@mui/material/Skeleton";
 import { useUser } from "@/app/context/UserContext";
-// import Search from "@/components/ui/search";
+import Search from "@/components/ui/search";
 import { useSearchParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-
-const Search = dynamic(() => import("@/components/ui/search"));
 
 // Dynamic import for AddAppointmentDialog
 const AddAppointmentDialog = dynamic(() => import("@/components/appointments/AddAppointmentDialog"));
