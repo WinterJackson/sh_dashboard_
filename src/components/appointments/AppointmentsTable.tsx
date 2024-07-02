@@ -1,4 +1,4 @@
-// File: src/components/appointments/AppointmentsTable.tsx
+// src/components/appointments/AppointmentsTable.tsx
 
 "use client";
 
@@ -115,23 +115,14 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         const params = new URLSearchParams(searchParams.toString());
         params.set("dialog", type);
         params.set("appointmentId", appointmentId);
-        router.push(`?${params.toString()}`);
+        router.replace(`?${params.toString()}`);
     };
 
     const handleDialogClose = () => {
         const params = new URLSearchParams(searchParams.toString());
         params.delete("dialog");
         params.delete("appointmentId");
-        router.push(`?${params.toString()}`);
-    };
-
-    const handleRescheduleSave = async (appointmentId: string, date: Date, reason: string) => {
-        await updateAppointment(appointmentId, {
-            status: "Rescheduled",
-            rescheduledDate: date,
-            reason,
-        });
-        handleActionChange(appointmentId, "Rescheduled");
+        router.replace(`?${params.toString()}`);
     };
 
     const handleCancelSave = async (appointmentId: string, reason: string) => {
@@ -142,6 +133,28 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
     const handlePendingSave = async (appointmentId: string, reason: string) => {
         await updateAppointment(appointmentId, { status: "Pending", reason });
         handleActionChange(appointmentId, "Pending");
+    };
+
+    const handleUpdateStatus = async (appointmentId: string, status: string) => {
+        try {
+            const response = await fetch(`/api/appointments/${appointmentId}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ status }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error updating appointment: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log(`Appointment ${appointmentId} updated to status ${status}`);
+            handleActionChange(appointmentId, status);
+        } catch (error) {
+            console.error('Failed to update appointment status:', error);
+        }
     };
 
     const dialogType = searchParams.get("dialog");
@@ -300,7 +313,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                             Date
                         </th>
                         <th scope="col" className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap">
-                            Doctor's Name
+                            Doctor&apos;s Name
                         </th>
                         <th scope="col" className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap">
                             Type
@@ -411,16 +424,9 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                                                       </DropdownMenuItem>
                                                       <DropdownMenuItem
                                                           onSelect={() => {
-                                                              updateAppointment(
+                                                              handleUpdateStatus(
                                                                   appointment.appointmentId,
-                                                                  {
-                                                                      status: "Confirmed",
-                                                                  }
-                                                              ).then(() =>
-                                                                  handleActionChange(
-                                                                      appointment.appointmentId,
-                                                                      "Confirmed"
-                                                                  )
+                                                                  "Confirmed"
                                                               );
                                                           }}
                                                       >
@@ -428,16 +434,9 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                                                       </DropdownMenuItem>
                                                       <DropdownMenuItem
                                                           onSelect={() => {
-                                                              updateAppointment(
+                                                              handleUpdateStatus(
                                                                   appointment.appointmentId,
-                                                                  {
-                                                                      status: "Completed",
-                                                                  }
-                                                              ).then(() =>
-                                                                  handleActionChange(
-                                                                      appointment.appointmentId,
-                                                                      "Completed"
-                                                                  )
+                                                                  "Completed"
                                                               );
                                                           }}
                                                       >
@@ -477,8 +476,8 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
             {dialogType === "Reschedule" && dialogAppointmentId && (
                 <RescheduleDialog
                     appointmentId={dialogAppointmentId}
-                    onSave={(date, reason) => handleRescheduleSave(dialogAppointmentId, date, reason)}
                     onClose={handleDialogClose}
+                    handleActionChange={handleActionChange}
                 />
             )}
             {dialogType === "Cancel" && dialogAppointmentId && (

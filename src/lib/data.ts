@@ -1,182 +1,65 @@
-import { sql } from "@vercel/postgres";
-// import { formatCurrency } from "./utils";
-import {
-    Doctor,
-    Bed,
-    Appointment,
-    Patient,
-    Referral,
-    Service,
-    Hospital,
-} from "./definitions";
+// src/lib/data.ts
 
 // Fetch available doctors
-export async function fetchAvailableDoctors() {
+export async function fetchOnlineDoctors() {
     try {
-        const data =
-            await sql<Doctor>`SELECT * FROM doctors WHERE status = 'Online'`;
-        return data.rows;
+        const response = await fetch("/api/doctors?status=Online");
+        const data = await response.json();
+        return data;
     } catch (error) {
-        console.error("Database Error:", error);
-        throw new Error("Failed to fetch available doctors.");
+        console.error("Failed to fetch doctors:", error);
+        return [];
+    }
+}
+
+// Fetch all doctors
+export async function fetchAllDoctors() {
+    try {
+        const response = await fetch("/api/doctors");
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch doctors:", error);
+        return [];
+    }
+}
+
+// Fetch all hospitals
+export async function fetchAllHospitals() {
+    try {
+        const response = await fetch("/api/hospitals");
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch hospitals:", error);
+        return [];
+    }
+}
+
+// Fetch patient details by name
+export async function fetchPatientDetails(name: string) {
+    try {
+        const response = await fetch(`/api/patients/${name}`);
+        if (!response.ok) {
+            throw new Error("Patient not found");
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch patient details:", error);
+        return null;
     }
 }
 
 // Fetch available beds
 export async function fetchAvailableBeds() {
     try {
-        const data =
-            await sql<Bed>`SELECT * FROM beds WHERE availability = 'Available'`;
-        return data.rows;
+        const response = await fetch("/api/beds");
+        const data = await response.json();
+        const availableBeds = data.filter((bed: any) => bed.availability === "Available");
+        return availableBeds;
     } catch (error) {
-        console.error("Database Error:", error);
-        throw new Error("Failed to fetch available beds.");
-    }
-}
-
-// Fetch appointments today
-export async function fetchAppointmentsToday() {
-    try {
-        const today = new Date().toISOString().split("T")[0];
-        const data = await sql<Appointment>`
-        SELECT * FROM appointments WHERE DATE(created_at) = ${today} OR DATE(updated_at) = ${today}
-      `;
-        return data.rows;
-    } catch (error) {
-        console.error("Database Error:", error);
-        throw new Error("Failed to fetch appointments today.");
-    }
-}
-
-// Fetch patients today
-export async function fetchPatientsToday() {
-    try {
-        const today = new Date().toISOString().split("T")[0];
-        const data = await sql<Patient>`
-        SELECT * FROM patients WHERE DATE(created_at) = ${today} OR DATE(updated_at) = ${today}
-      `;
-        return data.rows;
-    } catch (error) {
-        console.error("Database Error:", error);
-        throw new Error("Failed to fetch patients today.");
-    }
-}
-
-// Fetch outward referrals
-export async function fetchOutwardReferrals() {
-    try {
-        const data =
-            await sql<Referral>`SELECT * FROM referrals WHERE type = 'External'`;
-        return data.rows;
-    } catch (error) {
-        console.error("Database Error:", error);
-        throw new Error("Failed to fetch outward referrals.");
-    }
-}
-
-// Fetch inward referrals
-export async function fetchInwardReferrals() {
-    try {
-        const data =
-            await sql<Referral>`SELECT * FROM referrals WHERE type = 'Internal'`;
-        return data.rows;
-    } catch (error) {
-        console.error("Database Error:", error);
-        throw new Error("Failed to fetch inward referrals.");
-    }
-}
-
-// Fetch total number of patients (monthly data)
-export async function fetchTotalNumberOfPatients(month: string) {
-    try {
-        const data = await sql`
-        SELECT COUNT(*) AS count FROM patients 
-        WHERE DATE_TRUNC('month', created_at) = ${month}
-      `;
-        return Number(data.rows[0].count ?? "0");
-    } catch (error) {
-        console.error("Database Error:", error);
-        throw new Error("Failed to fetch total number of patients.");
-    }
-}
-
-// Fetch hospital services distribution
-export async function fetchHospitalServices() {
-    try {
-        const data = await sql<Service & Hospital>`
-        SELECT services.*, hospitals.name AS hospital_name 
-        FROM services
-        JOIN hospitals ON services.hospital_id = hospitals.hospital_id
-      `;
-        return data.rows;
-    } catch (error) {
-        console.error("Database Error:", error);
-        throw new Error("Failed to fetch hospital services.");
-    }
-}
-
-// Fetch appointments details
-export async function fetchAppointmentsDetails() {
-    try {
-        const data = await sql<Appointment>`
-        SELECT appointments.*, patients.name AS patient_name, doctors.name AS doctor_name 
-        FROM appointments 
-        JOIN patients ON appointments.patient_id = patients.patient_id 
-        JOIN doctors ON appointments.doctor_id = doctors.doctor_id
-      `;
-        return data.rows;
-    } catch (error) {
-        console.error("Database Error:", error);
-        throw new Error("Failed to fetch appointments details.");
-    }
-}
-
-// Fetch top doctors
-export async function fetchTopDoctors() {
-    try {
-        const data = await sql<Doctor>`
-        SELECT * FROM doctors ORDER BY average_rating DESC LIMIT 5
-      `;
-        return data.rows;
-    } catch (error) {
-        console.error("Database Error:", error);
-        throw new Error("Failed to fetch top doctors.");
-    }
-}
-
-// Fetch approved appointments
-export async function fetchApprovedAppointments() {
-    try {
-        const data = await sql<Appointment>`
-        SELECT * FROM appointments WHERE status IN ('Confirmed', 'Completed')
-      `;
-        return data.rows;
-    } catch (error) {
-        console.error("Database Error:", error);
-        throw new Error("Failed to fetch approved appointments.");
-    }
-}
-
-// Fetch other appointments
-export async function fetchOtherAppointments() {
-    try {
-        const data = await sql<Appointment>`
-        SELECT * FROM appointments WHERE status NOT IN ('Confirmed', 'Completed')
-      `;
-        return data.rows;
-    } catch (error) {
-        console.error("Database Error:", error);
-        throw new Error("Failed to fetch other appointments.");
-    }
-}
-
-// Fetch list of doctors
-export async function fetchDoctorsList() {
-    try {
-        const data = await sql<Doctor>`SELECT * FROM doctors ORDER BY name ASC`;
-        return data.rows;
-    } catch (error) {
-        console.error("Database Error:", error);
-        throw new Error("Failed to fetch doctors list.");
+        console.error("Failed to fetch beds:", error);
+        return [];
     }
 }

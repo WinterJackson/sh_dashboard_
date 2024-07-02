@@ -96,7 +96,7 @@ export interface Appointment {
     completed: boolean;
     isVideoStarted: boolean;
     commissionPercentage?: number;
-    appointmentEndedAt?: Date;
+    appointmentEndAt?: Date;
     appointmentReminderSent?: number;
     appointmentReminderSentLTF?: Date;
     doctorAppointmentNotes?: string;

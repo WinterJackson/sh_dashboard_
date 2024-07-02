@@ -30,13 +30,13 @@ const Header = () => {
     const handleAddAppointment = () => {
         const params = new URLSearchParams(searchParams.toString());
         params.set("dialog", "addAppointment");
-        router.push(`?${params.toString()}`);
+        router.replace(`?${params.toString()}`);
     };
 
     const handleDialogClose = () => {
         const params = new URLSearchParams(searchParams.toString());
         params.delete("dialog");
-        router.push(`?${params.toString()}`);
+        router.replace(`?${params.toString()}`);
     };
 
     const dialogType = searchParams.get("dialog");

@@ -367,7 +367,7 @@ const appointments = [
         completed: true,
         isVideoStarted: true,
         commissionPercentage: 5, // Optional: Commission for doctor (percentage)
-        appointmentEndedAt: new Date("2024-05-22T10:30:00"), // Optional: Appointment end time
+        appointmentEndAt: new Date("2024-05-22T10:30:00"), // Optional: Appointment end time
         appointmentReminderSent: 0, // Number of reminders sent
         appointmentReminderSentLTF: null, // Optional: Last time reminder was sent
         doctorAppointmentNotes: "Referred to Dr. Phil Foden", // Doctor's notes for the appointment
@@ -388,7 +388,7 @@ const appointments = [
         completed: true,
         isVideoStarted: true,
         commissionPercentage: 40, // Optional: Commission for doctor (percentage)
-        appointmentEndedAt: new Date("2024-05-23T10:30:00"), // Optional: Appointment end time
+        appointmentEndAt: new Date("2024-05-23T10:30:00"), // Optional: Appointment end time
         appointmentReminderSent: 0, // Number of reminders sent
         appointmentReminderSentLTF: null, // Optional: Last time reminder was sent
         doctorAppointmentNotes: "Blood test", // Doctor's notes for the appointment
@@ -410,7 +410,7 @@ const appointments = [
         completed: false,
         isVideoStarted: false,
         commissionPercentage: 40, // Optional: Commission for doctor (percentage)
-        appointmentEndedAt: null, // Optional: Appointment end time
+        appointmentEndAt: null, // Optional: Appointment end time
         appointmentReminderSent: 0, // Number of reminders sent
         appointmentReminderSentLTF: null, // Optional: Last time reminder was sent
         doctorAppointmentNotes: "", // Doctor's notes for the appointment
@@ -431,7 +431,7 @@ const appointments = [
         completed: false,
         isVideoStarted: false,
         commissionPercentage: 40, // Optional: Commission for doctor (percentage)
-        appointmentEndedAt: null, // Optional: Appointment end time
+        appointmentEndAt: null, // Optional: Appointment end time
         appointmentReminderSent: 0, // Number of reminders sent
         appointmentReminderSentLTF: null, // Optional: Last time reminder was sent
         doctorAppointmentNotes: "", // Doctor's notes for the appointment
@@ -452,7 +452,7 @@ const appointments = [
         completed: true,
         isVideoStarted: true,
         commissionPercentage: 40, // Optional: Commission for doctor (percentage)
-        appointmentEndedAt: new Date("2024-05-25T10:25:00"), // Optional: Appointment end time
+        appointmentEndAt: new Date("2024-05-25T10:25:00"), // Optional: Appointment end time
         appointmentReminderSent: 0, // Number of reminders sent
         appointmentReminderSentLTF: null, // Optional: Last time reminder was sent
         doctorAppointmentNotes: "Referred to Dr. Mikel Arteta", // Doctor's notes for the appointment
@@ -473,7 +473,7 @@ const appointments = [
         completed: false,
         isVideoStarted: false,
         commissionPercentage: 40, // Optional: Commission for doctor (percentage)
-        appointmentEndedAt: null, // Optional: Appointment end time
+        appointmentEndAt: null, // Optional: Appointment end time
         appointmentReminderSent: 0, // Number of reminders sent
         appointmentReminderSentLTF: null, // Optional: Last time reminder was sent
         doctorAppointmentNotes: "", // Doctor's notes for the appointment

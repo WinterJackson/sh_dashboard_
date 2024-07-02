@@ -1,8 +1,8 @@
 // app/scripts/seed.js file
 
-import prisma from "../lib/prisma";
+// import prisma from "../lib/prisma";
 
-// const prisma = require("../lib/prisma")
+const prisma = require("../lib/prisma")
 const bcrypt = require("bcrypt");
 const {
     roles,

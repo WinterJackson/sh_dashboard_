@@ -2,25 +2,64 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
+import {
+    Dialog,
+    DialogTrigger,
+    DialogContent,
+    DialogTitle,
+    DialogDescription,
+    DialogClose
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { useSearchParams, useRouter } from "next/navigation";
-import { DatePicker } from "@/components/appointments/DatePicker";
+import { IconButton } from "@mui/material";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import { fetchOnlineDoctors, fetchAllHospitals, fetchPatientDetails } from "@/lib/data";
 
 interface AddAppointmentDialogProps {
     onClose: () => void;
 }
 
 const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) => {
-    const { register, handleSubmit, control } = useForm();
+    const { register, handleSubmit, control, setValue } = useForm();
     const [saved, setSaved] = useState<boolean>(false);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+    const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+    const [doctors, setDoctors] = useState([]);
+    const [hospitals, setHospitals] = useState([]);
+    const [patientDetails, setPatientDetails] = useState<any | null>(null);
     const router = useRouter();
     const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const fetchedDoctors = await fetchOnlineDoctors();
+            setDoctors(fetchedDoctors);
+
+            const fetchedHospitals = await fetchAllHospitals();
+            setHospitals(fetchedHospitals);
+        };
+
+        fetchData();
+    }, []);
+
+    const fetchAndSetPatientDetails = async (name: string) => {
+        const details = await fetchPatientDetails(name);
+        if (details) {
+            setValue("age", details.age);
+            setValue("patientId", details.patientId);
+            setPatientDetails(details);
+        } else {
+            setValue("age", "");
+            setValue("patientId", "");
+            setPatientDetails(null);
+        }
+    };
 
     const onSubmit = async (data: any) => {
         try {
@@ -29,14 +68,19 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(data),
+                body: JSON.stringify({ ...data, date: selectedDate?.toISOString() }),
             });
 
             if (!response.ok) {
                 throw new Error("Failed to add appointment");
             }
 
+            const result = await response.json();
             setSaved(true);
+
+            // Redirect to the updated appointments page
+            router.replace('/dashboard/appointments');
+
         } catch (error) {
             console.error(error);
         }
@@ -45,12 +89,13 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
     const handleClose = () => {
         const params = new URLSearchParams(searchParams.toString());
         params.delete("dialog");
-        router.push(`?${params.toString()}`);
+        router.replace(`?${params.toString()}`);
         onClose();
     };
 
     const handleDateChange = (date: Date | undefined) => {
         setSelectedDate(date);
+        setIsCalendarOpen(false);
     };
 
     return (
@@ -66,10 +111,13 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div className="grid gap-4">
                         <div>
-                            <Label htmlFor="patientName">Patient's Name</Label>
+                            <Label htmlFor="patientName">Patient Name</Label>
                             <Input
                                 id="patientName"
-                                {...register("patientName", { required: true })}
+                                {...register("patientName", {
+                                    required: true,
+                                    onBlur: (e) => fetchAndSetPatientDetails(e.target.value)
+                                })}
                             />
                         </div>
                         <div>
@@ -78,6 +126,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
                                 id="age"
                                 type="number"
                                 {...register("age", { required: true })}
+                                readOnly={!!patientDetails}
                             />
                         </div>
                         <div>
@@ -85,6 +134,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
                             <Input
                                 id="patientId"
                                 {...register("patientId", { required: true })}
+                                readOnly={!!patientDetails}
                             />
                         </div>
                         <div className="flex gap-2">
@@ -119,53 +169,92 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
                         </div>
                         <div>
                             <Label htmlFor="date">Date</Label>
-                            <Controller
-                                control={control}
-                                name="date"
-                                render={({ field }) => (
-                                    <DatePicker
-                                        onDateChange={(date) => {
-                                            field.onChange(date);
-                                            handleDateChange(date);
-                                        }}
-                                    />
-                                )}
-                            />
-                        </div>
-                        {selectedDate && (
-                            <div className="text-sm text-gray-600">
-                                Selected Date: <span className="font-bold">{selectedDate.toLocaleDateString()}</span>
+                            <div className="flex items-center">
+                                <Input
+                                    id="date"
+                                    value={
+                                        selectedDate
+                                            ? selectedDate.toLocaleDateString()
+                                            : ""
+                                    }
+                                    readOnly
+                                />
+                                <IconButton
+                                    onClick={() =>
+                                        setIsCalendarOpen(!isCalendarOpen)
+                                    }
+                                >
+                                    <CalendarTodayIcon />
+                                </IconButton>
                             </div>
-                        )}
+                            {isCalendarOpen && (
+                                <div className="fixed z-50 bg-slate-200 mt-1">
+                                    <Calendar
+                                        mode="single"
+                                        selected={selectedDate}
+                                        onSelect={handleDateChange}
+                                    />
+                                </div>
+                            )}
+                        </div>
                         <div>
-                            <Label htmlFor="doctorName">Doctor's Name</Label>
-                            <Input
+                            <Label htmlFor="doctorName">Doctor</Label>
+                            <select
                                 id="doctorName"
                                 {...register("doctorName", { required: true })}
-                            />
+                                className="flex h-10 w-full rounded-md text-gray-500 border px-3 py-2 text-sm"
+                            >
+                                <option value="">Select a doctor</option>
+                                {doctors.map((doctor: any) => (
+                                    <option
+                                        key={doctor.doctorId}
+                                        value={doctor.name}
+                                    >
+                                        {doctor.name} - {doctor.specialization}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <Label htmlFor="hospitalName">Hospital</Label>
+                            <select
+                                id="hospitalName"
+                                {...register("hospitalName", {
+                                    required: true,
+                                })}
+                                className="flex h-10 w-full rounded-md text-gray-500 border px-3 py-2 text-sm"
+                            >
+                                <option value="">Select a hospital</option>
+                                {hospitals.map((hospital: any) => (
+                                    <option
+                                        key={hospital.hospitalId}
+                                        value={hospital.name}
+                                    >
+                                        {hospital.name}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                         <div>
                             <Label htmlFor="type">Type</Label>
-                            <Input
+                            <select
                                 id="type"
                                 {...register("type", { required: true })}
-                            />
+                                className="flex h-10 w-full text-gray-500 rounded-md border px-3 py-2 text-sm"
+                            >
+                                <option value="">Select appointment type</option>
+                                <option value="Virtual">Virtual</option>
+                                <option value="Walk In">Walk In</option>
+                            </select>
                         </div>
                     </div>
-                    <div className="mt-4 flex justify-end gap-4">
-                        <Button type="button" onClick={handleClose}>
-                            Cancel
+                    <div className="mt-4 flex justify-end">
+                        <Button type="submit" disabled={saved}>
+                            Save
                         </Button>
-                        <Button type="submit">Add New</Button>
                     </div>
-                    {saved && <p className="text-green-500 mt-2">Saved</p>}
                 </form>
-                <DialogClose asChild>
-                    <button
-                        className="absolute top-0 right-0 m-2"
-                        onClick={handleClose}
-                    ></button>
-                </DialogClose>
+                <DialogClose onClick={handleClose} />
             </DialogContent>
         </Dialog>
     );

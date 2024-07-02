@@ -66,7 +66,7 @@ model Doctor {
   serviceId          Int
   name               String
   specialization     String
-  status             String
+  status             String           // Online or Offline
   contactInformation String
   workingHours       String
   averageRating      Float
@@ -83,7 +83,7 @@ model Doctor {
 model Patient {
   patientId         Int       @id @default(autoincrement())
   hospitalId        Int
-  name              String
+  name              String    @unique
   phoneNo           String    @unique
   email             String    @unique
   age               Int
@@ -123,7 +123,7 @@ model Appointment {
   completed            Boolean
   isVideoStarted       Boolean
   commissionPercentage Float?
-  appointmentEndedAt   DateTime?
+  appointmentEndAt   DateTime?
   
   rescheduledDate      DateTime?
   cancellationReason   String?
