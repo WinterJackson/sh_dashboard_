@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { IconButton } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { fetchOnlineDoctors, fetchAllHospitals, fetchPatientDetails } from "@/lib/data";
@@ -34,7 +34,6 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
     const [hospitals, setHospitals] = useState([]);
     const [patientDetails, setPatientDetails] = useState<any | null>(null);
     const router = useRouter();
-    const searchParams = useSearchParams();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -87,9 +86,6 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
     };
 
     const handleClose = () => {
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete("dialog");
-        router.replace(`?${params.toString()}`);
         onClose();
     };
 

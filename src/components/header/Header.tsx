@@ -2,7 +2,7 @@
 
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import logo from "../../../public/images/logo.png";
 import { FaUserCircle } from "react-icons/fa";
@@ -12,7 +12,6 @@ import { getFirstName } from "@/lib/utils";
 import Skeleton from "@mui/material/Skeleton";
 import { useUser } from "@/app/context/UserContext";
 import Search from "@/components/ui/search";
-import { useSearchParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 
 // Dynamic import for AddAppointmentDialog
@@ -24,22 +23,16 @@ const Header = () => {
     const firstName = session?.user ? getFirstName(session.user.username) : "";
     const nameWidth = firstName ? firstName.length * 10 : 100;
     const profileImageUrl = user?.imageUrl;
-    const searchParams = useSearchParams();
-    const router = useRouter();
+    const [openDialog, setOpenDialog] = useState(false);
+
 
     const handleAddAppointment = () => {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("dialog", "addAppointment");
-        router.replace(`?${params.toString()}`);
+        setOpenDialog(true);
     };
 
     const handleDialogClose = () => {
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete("dialog");
-        router.replace(`?${params.toString()}`);
+        setOpenDialog(false);
     };
-
-    const dialogType = searchParams.get("dialog");
 
     return (
         <header className="flex w-auto items-center justify-between p-4 m-2 bg-white shadow-lg shadow-gray-300 rounded-2xl">
@@ -117,7 +110,7 @@ const Header = () => {
                 </div>
             </div>
 
-            {dialogType === "addAppointment" && (
+            {openDialog && (
                 <AddAppointmentDialog onClose={handleDialogClose} />
             )}
         </header>

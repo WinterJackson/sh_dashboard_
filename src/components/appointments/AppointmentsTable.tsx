@@ -10,7 +10,7 @@ import { DateRangePicker } from "@/components/appointments/DateRangePicker";
 import { DateRange } from "react-day-picker";
 import { SymbolIcon } from "@radix-ui/react-icons";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useSearch } from "@/app/context/SearchContext";
 import { useAppointmentsStore } from "@/components/ui/store";
 import dynamic from "next/dynamic";
@@ -20,13 +20,19 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import VideoCameraFrontIcon from '@mui/icons-material/VideoCameraFront';
-import PlaceIcon from '@mui/icons-material/Place';
+import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
+import PlaceIcon from "@mui/icons-material/Place";
 
 // Dynamic imports for dialogs
-const RescheduleDialog = dynamic(() => import("@/components/appointments/RescheduleDialog"));
-const CancelDialog = dynamic(() => import("@/components/appointments/CancelDialog"));
-const ActionDialog = dynamic(() => import("@/components/appointments/ActionDialog"));
+const RescheduleDialog = dynamic(
+    () => import("@/components/appointments/RescheduleDialog")
+);
+const CancelDialog = dynamic(
+    () => import("@/components/appointments/CancelDialog")
+);
+const ActionDialog = dynamic(
+    () => import("@/components/appointments/ActionDialog")
+);
 
 // Pagination component
 import {
@@ -62,18 +68,32 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
     currentPage,
 }) => {
     const [isLoading, setIsLoading] = useState(true);
-    const [filterType, setFilterType] = useState<string>(filterOptions[0].value);
-    const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+    const [filterType, setFilterType] = useState<string>(
+        filterOptions[0].value
+    );
+    const [statusFilter, setStatusFilter] = useState<string | undefined>(
+        undefined
+    );
     const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
-    const [dateRangeFilter, setDateRangeFilter] = useState<DateRange | undefined>(undefined);
-    const [appointmentTypeFilter, setAppointmentTypeFilter] = useState<string | undefined>(undefined);
+    const [dateRangeFilter, setDateRangeFilter] = useState<
+        DateRange | undefined
+    >(undefined);
+    const [appointmentTypeFilter, setAppointmentTypeFilter] = useState<
+        string | undefined
+    >(undefined);
     const { searchTerm, clearSearchTerm } = useSearch();
     const { fetchAppointments, updateAppointment } = useAppointmentsStore();
     const [actionText, setActionText] = useState<{ [key: string]: string }>({});
-    const searchParams = useSearchParams();
+    const [openDialog, setOpenDialog] = useState(false);
+    const [dialogType, setDialogType] = useState<string | undefined>(undefined);
+    const [dialogAppointmentId, setDialogAppointmentId] = useState<
+        string | undefined
+    >(undefined);
     const router = useRouter();
 
-    const handleFilterTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleFilterTypeChange = (
+        e: React.ChangeEvent<HTMLSelectElement>
+    ) => {
         setFilterType(e.target.value);
         setStatusFilter(undefined);
         setDateFilter(undefined);
@@ -112,17 +132,15 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
     };
 
     const handleDialogOpen = (type: string, appointmentId: string) => {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("dialog", type);
-        params.set("appointmentId", appointmentId);
-        router.replace(`?${params.toString()}`);
+        setDialogType(type);
+        setDialogAppointmentId(appointmentId);
+        setOpenDialog(true);
     };
 
     const handleDialogClose = () => {
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete("dialog");
-        params.delete("appointmentId");
-        router.replace(`?${params.toString()}`);
+        setDialogType(undefined);
+        setDialogAppointmentId(undefined);
+        setOpenDialog(false);
     };
 
     const handleCancelSave = async (appointmentId: string, reason: string) => {
@@ -135,7 +153,10 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         handleActionChange(appointmentId, "Pending");
     };
 
-    const handleUpdateStatus = async (appointmentId: string, status: string) => {
+    const handleUpdateStatus = async (
+        appointmentId: string,
+        status: string
+    ) => {
         try {
             const response = await fetch(`/api/appointments/${appointmentId}`, {
                 method: "PATCH",
@@ -146,19 +167,20 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
             });
 
             if (!response.ok) {
-                throw new Error(`Error updating appointment: ${response.statusText}`);
+                throw new Error(
+                    `Error updating appointment: ${response.statusText}`
+                );
             }
 
             const data = await response.json();
-            console.log(`Appointment ${appointmentId} updated to status ${status}`);
+            console.log(
+                `Appointment ${appointmentId} updated to status ${status}`
+            );
             handleActionChange(appointmentId, status);
         } catch (error) {
-            console.error('Failed to update appointment status:', error);
+            console.error("Failed to update appointment status:", error);
         }
     };
-
-    const dialogType = searchParams.get("dialog");
-    const dialogAppointmentId = searchParams.get("appointmentId");
 
     const filteredAppointments = appointments.filter((appointment) => {
         const searchTextLower = searchTerm.toLowerCase();
@@ -167,52 +189,81 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         if (searchTerm) {
             switch (filterType) {
                 case "Patient Name":
-                    filterMatch = appointment.patient.name.toLowerCase().includes(searchTextLower);
+                    filterMatch = appointment.patient.name
+                        .toLowerCase()
+                        .includes(searchTextLower);
                     break;
                 case "Age":
-                    filterMatch = appointment.patient.age.toString().includes(searchTextLower);
+                    filterMatch = appointment.patient.age
+                        .toString()
+                        .includes(searchTextLower);
                     break;
                 case "Id":
-                    filterMatch = appointment.patient.patientId.toString().includes(searchTextLower);
+                    filterMatch = appointment.patient.patientId
+                        .toString()
+                        .includes(searchTextLower);
                     break;
                 case "Doctor":
-                    filterMatch = appointment.doctor.name.toLowerCase().includes(searchTextLower);
+                    filterMatch = appointment.doctor.name
+                        .toLowerCase()
+                        .includes(searchTextLower);
                     break;
                 case "Type":
                     if (appointmentTypeFilter) {
-                        filterMatch = appointment.type === appointmentTypeFilter;
+                        filterMatch =
+                            appointment.type === appointmentTypeFilter;
                     }
                     break;
                 default:
                     filterMatch =
-                        appointment.patient.name.toLowerCase().includes(searchTextLower) ||
-                        appointment.patient.age.toString().includes(searchTextLower) ||
-                        appointment.patient.patientId.toString().includes(searchTextLower) ||
-                        new Date(appointment.appointmentDate).toLocaleDateString().includes(searchTextLower) ||
-                        appointment.doctor.name.toLowerCase().includes(searchTextLower) ||
-                        appointment.type.toLowerCase().includes(searchTextLower);
+                        appointment.patient.name
+                            .toLowerCase()
+                            .includes(searchTextLower) ||
+                        appointment.patient.age
+                            .toString()
+                            .includes(searchTextLower) ||
+                        appointment.patient.patientId
+                            .toString()
+                            .includes(searchTextLower) ||
+                        new Date(appointment.appointmentDate)
+                            .toLocaleDateString()
+                            .includes(searchTextLower) ||
+                        appointment.doctor.name
+                            .toLowerCase()
+                            .includes(searchTextLower) ||
+                        appointment.type
+                            .toLowerCase()
+                            .includes(searchTextLower);
                     break;
             }
         }
 
         if (statusFilter) {
             filterMatch =
-                filterMatch && (statusFilter === "Confirmed" || statusFilter === "Completed") ===
-                    (appointment.status === "Confirmed" || appointment.status === "Completed");
+                filterMatch &&
+                (statusFilter === "Confirmed" ||
+                    statusFilter === "Completed") ===
+                    (appointment.status === "Confirmed" ||
+                        appointment.status === "Completed");
         }
 
         if (dateFilter) {
             const appointmentDate = new Date(appointment.appointmentDate);
-            filterMatch = filterMatch && appointmentDate.toLocaleDateString() === dateFilter.toLocaleDateString();
+            filterMatch =
+                filterMatch &&
+                appointmentDate.toLocaleDateString() ===
+                    dateFilter.toLocaleDateString();
         } else if (dateRangeFilter?.from && dateRangeFilter?.to) {
             const appointmentDate = new Date(appointment.appointmentDate);
-            filterMatch = filterMatch &&
+            filterMatch =
+                filterMatch &&
                 appointmentDate >= dateRangeFilter.from &&
                 appointmentDate <= dateRangeFilter.to;
         }
 
         if (appointmentTypeFilter) {
-            filterMatch = filterMatch && appointment.type === appointmentTypeFilter;
+            filterMatch =
+                filterMatch && appointment.type === appointmentTypeFilter;
         }
 
         return filterMatch;
@@ -249,7 +300,8 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                     </select>
                     <button
                         className={`flex-grow px-4 py-2 border-primary rounded h-10 text-nowrap w-auto font-semibold text-black shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none ${
-                            statusFilter === "Confirmed" || statusFilter === "Completed"
+                            statusFilter === "Confirmed" ||
+                            statusFilter === "Completed"
                                 ? "bg-primary text-white"
                                 : ""
                         }`}
@@ -259,7 +311,9 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                     </button>
                     <button
                         className={`flex-grow px-4 py-2 border-primary rounded h-10 text-nowrap w-auto font-semibold text-black shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none ${
-                            statusFilter === "Unconfirmed" ? "bg-primary text-white" : ""
+                            statusFilter === "Unconfirmed"
+                                ? "bg-primary text-white"
+                                : ""
                         }`}
                         onClick={() => handleStatusFilter("Unconfirmed")}
                     >
@@ -269,17 +323,25 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                         <>
                             <button
                                 className={`flex-grow px-4 py-2 border-primary rounded h-10 text-nowrap w-auto font-semibold text-black shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none ${
-                                    appointmentTypeFilter === "Walk In" ? "bg-primary text-white" : ""
+                                    appointmentTypeFilter === "Walk In"
+                                        ? "bg-primary text-white"
+                                        : ""
                                 }`}
-                                onClick={() => setAppointmentTypeFilter("Walk In")}
+                                onClick={() =>
+                                    setAppointmentTypeFilter("Walk In")
+                                }
                             >
                                 Walk In
                             </button>
                             <button
                                 className={`flex-grow px-4 py-2 border-primary rounded h-10 text-nowrap w-auto font-semibold text-black shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none ${
-                                    appointmentTypeFilter === "Virtual" ? "bg-primary text-white" : ""
+                                    appointmentTypeFilter === "Virtual"
+                                        ? "bg-primary text-white"
+                                        : ""
                                 }`}
-                                onClick={() => setAppointmentTypeFilter("Virtual")}
+                                onClick={() =>
+                                    setAppointmentTypeFilter("Virtual")
+                                }
                             >
                                 Virtual
                             </button>
@@ -288,7 +350,9 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                     {filterType === "Date" && (
                         <div className="flex flex-grow flex-row items-center gap-2">
                             <DatePicker onDateChange={setDateFilter} />
-                            <DateRangePicker onDateRangeChange={setDateRangeFilter} />
+                            <DateRangePicker
+                                onDateRangeChange={setDateRangeFilter}
+                            />
                         </div>
                     )}
                 </div>
@@ -297,28 +361,52 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
             <table className="min-w-full sm:w-full border-collapse divide-y divide-gray-200 mt-2">
                 <thead className="bg-bluelight">
                     <tr>
-                        <th scope="col" className="px-4 py-5 text-nowrap text-left text-sm font-bold text-black uppercase tracking-wider white-space: nowrap">
+                        <th
+                            scope="col"
+                            className="px-4 py-5 text-nowrap text-left text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
+                        >
                             Patient Name
                         </th>
-                        <th scope="col" className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap">
+                        <th
+                            scope="col"
+                            className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
+                        >
                             Age
                         </th>
-                        <th scope="col" className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap">
+                        <th
+                            scope="col"
+                            className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
+                        >
                             Id
                         </th>
-                        <th scope="col" className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap">
+                        <th
+                            scope="col"
+                            className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
+                        >
                             Time
                         </th>
-                        <th scope="col" className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap">
+                        <th
+                            scope="col"
+                            className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
+                        >
                             Date
                         </th>
-                        <th scope="col" className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap">
+                        <th
+                            scope="col"
+                            className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
+                        >
                             Doctor&apos;s Name
                         </th>
-                        <th scope="col" className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap">
+                        <th
+                            scope="col"
+                            className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
+                        >
                             Type
                         </th>
-                        <th scope="col" className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap">
+                        <th
+                            scope="col"
+                            className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
+                        >
                             Action
                         </th>
                     </tr>
@@ -328,14 +416,20 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                         ? Array.from({ length: 10 }).map((_, index) => (
                               <tr key={index}>
                                   <td colSpan={8}>
-                                      <Skeleton className={`h-[45px] w-full p-4 rounded-sm py-4`} />
+                                      <Skeleton
+                                          className={`h-[45px] w-full p-4 rounded-sm py-4`}
+                                      />
                                   </td>
                               </tr>
                           ))
                         : filteredAppointments.map((appointment) => {
-                              const appointmentDate = new Date(appointment.appointmentDate);
-                              const formattedDate = appointmentDate.toLocaleDateString();
-                              const formattedTime = appointmentDate.toLocaleTimeString();
+                              const appointmentDate = new Date(
+                                  appointment.appointmentDate
+                              );
+                              const formattedDate =
+                                  appointmentDate.toLocaleDateString();
+                              const formattedTime =
+                                  appointmentDate.toLocaleTimeString();
 
                               return (
                                   <tr
@@ -473,27 +567,35 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                     />
                 </PaginationContent>
             </Pagination>
-            {dialogType === "Reschedule" && dialogAppointmentId && (
-                <RescheduleDialog
-                    appointmentId={dialogAppointmentId}
-                    onClose={handleDialogClose}
-                    handleActionChange={handleActionChange}
-                />
-            )}
-            {dialogType === "Cancel" && dialogAppointmentId && (
-                <CancelDialog
-                    appointmentId={dialogAppointmentId}
-                    onSave={(reason) => handleCancelSave(dialogAppointmentId, reason)}
-                    onClose={handleDialogClose}
-                />
-            )}
-            {dialogType === "Pending" && dialogAppointmentId && (
-                <ActionDialog
-                    appointmentId={dialogAppointmentId}
-                    action="Pending"
-                    onSave={(reason) => handlePendingSave(dialogAppointmentId, reason)}
-                    onClose={handleDialogClose}
-                />
+            {openDialog && dialogType && dialogAppointmentId && (
+                <>
+                    {dialogType === "Reschedule" && dialogAppointmentId && (
+                        <RescheduleDialog
+                            appointmentId={dialogAppointmentId}
+                            onClose={handleDialogClose}
+                            handleActionChange={handleActionChange}
+                        />
+                    )}
+                    {dialogType === "Cancel" && dialogAppointmentId && (
+                        <CancelDialog
+                            appointmentId={dialogAppointmentId}
+                            onSave={(reason) =>
+                                handleCancelSave(dialogAppointmentId, reason)
+                            }
+                            onClose={handleDialogClose}
+                        />
+                    )}
+                    {dialogType === "Pending" && dialogAppointmentId && (
+                        <ActionDialog
+                            appointmentId={dialogAppointmentId}
+                            action="Pending"
+                            onSave={(reason) =>
+                                handlePendingSave(dialogAppointmentId, reason)
+                            }
+                            onClose={handleDialogClose}
+                        />
+                    )}
+                </>
             )}
         </div>
     );
