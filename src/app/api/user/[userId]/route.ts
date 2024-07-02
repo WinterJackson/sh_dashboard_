@@ -1,23 +1,21 @@
 // src/app/api/user/[userId]/route.ts
 
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextRequest, NextResponse } from "next/server";
 const prisma = require("@/lib/prisma")
 
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    const userId = req.query.userId as string;
+export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
+    const { userId } = params;
 
-    // Assuming your user model includes username and role
-    const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { username: true, role: true },
-    });
-
-    if (user) {
-        res.status(200).json(user);
-    } else {
-        res.status(404).json({ message: "User not found" });
+    try {
+        const user = await prisma.user.findUnique({
+            where: { userId },
+        });
+        if (!user) {
+            return NextResponse.json({ error: "User not found" }, { status: 404 });
+        }
+        return NextResponse.json(user, { status: 200 });
+    } catch (error) {
+        console.error("Failed to fetch patient details:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
