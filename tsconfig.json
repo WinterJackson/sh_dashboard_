@@ -27,6 +27,6 @@
         "**/*.tsx",
         ".next/types/**/*.ts",
         "src/lib/prisma.js"
-, "src/components/appointments/DateRangePicker.tsx"    ],
+, "src/components/appointments/DateRangePicker.tsx", "src/scripts/seed.js"    ],
     "exclude": ["node_modules"]
 }

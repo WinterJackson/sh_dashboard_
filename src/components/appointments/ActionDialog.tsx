@@ -53,7 +53,7 @@ const ActionDialog: React.FC<ActionDialogProps> = ({ appointmentId, action, onSa
                 <div className="flex justify-end gap-2 mt-4">
                     <Button
                         onClick={handleSave}
-                        className="text-white rounded-sm"
+                        className="text-white rounded-[10px]"
                     >
                         Save
                     </Button>

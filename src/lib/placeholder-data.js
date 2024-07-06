@@ -242,7 +242,7 @@ const doctors = [
     {
         doctorId: 1,
         userId: "b78d23c4-1234-5678-90ab-fec4b6a6442b", // Reference user for login
-        email: "js@snarkhealth.com",
+        email: "jsmith@snarkhealth.com",
         hospitalId: 1, // Hospital 1
         departmentId: 1, // Cardiology
         serviceId: 10, // Cardiac MRI
@@ -256,7 +256,7 @@ const doctors = [
     {
         doctorId: 2,
         userId: "b78d23c4-0921-5678-90ab-fec4b6a6442b", // Reference user for login
-        email: "foden@snarkhealth.com",
+        email: "pfoden@snarkhealth.com",
         hospitalId: 2, // Hospital 2
         departmentId: 2, // Neurology
         serviceId: 9, // Epilepsy treatment

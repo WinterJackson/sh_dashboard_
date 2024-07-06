@@ -1,6 +1,7 @@
+// src/context/LoadingContext.tsx
+
 "use client"
 
-// src/context/LoadingContext.tsx
 import React, { createContext, useState, useContext, ReactNode } from "react";
 
 interface LoadingContextType {

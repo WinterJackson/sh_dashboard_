@@ -1,24 +1,26 @@
-// File: src/components/Sidebar.tsx
+// src/components/sidebars/UserSidebar.tsx
+
 "use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import {
-    DashboardIcon,
     CalendarIcon,
+    DashboardIcon,
     PersonIcon,
     ChevronRightIcon,
     ChatBubbleIcon,
+    GearIcon,
     ExitIcon,
-    GearIcon
 } from "@radix-ui/react-icons";
 import { getFirstName } from "@/lib/utils";
-import LoadingSpinner from "./ui/loading";
 import Skeleton from "@mui/material/Skeleton";
+import LoadingSpinner from "../ui/loading";
+import { useSession } from "next-auth/react";
 
-const Sidebar = () => {
+const UserSidebar = () => {
     const router = useRouter();
     const { data: session } = useSession();
     const pathname = usePathname();
@@ -145,7 +147,7 @@ const Sidebar = () => {
                     <div className="flex items-center gap-2">
                         <ExitIcon className="mr-auto text-xl text-primary" />
                         <button
-                            className="py-2 px-4 text-primary hover:bg-primary hover:text-white rounded-md"
+                            className="py-2 px-4 text-primary hover:bg-primary hover:text-white rounded-[10px]"
                             onClick={handleLogout}
                         >
                             Log Out
@@ -157,4 +159,5 @@ const Sidebar = () => {
     );
 };
 
-export default Sidebar;
+export default UserSidebar;
+

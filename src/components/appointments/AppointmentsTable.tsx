@@ -430,11 +430,19 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                                   appointmentDate.toLocaleDateString();
                               const formattedTime =
                                   appointmentDate.toLocaleTimeString();
+                              const isCancelled =
+                                  actionText[appointment.appointmentId] ===
+                                      "Cancelled" ||
+                                  appointment.status === "Cancelled";
 
                               return (
                                   <tr
                                       key={appointment.appointmentId}
-                                      className="text-center"
+                                      className={`text-center ${
+                                          isCancelled
+                                              ? "bg-red-100"
+                                              : ""
+                                      }`}
                                   >
                                       <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-left">
                                           {appointment.patient.name}

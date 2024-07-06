@@ -63,3 +63,55 @@ export async function fetchAvailableBeds() {
         return [];
     }
 }
+
+
+// Fetch today's appointments count
+export async function fetchTodayAppointments() {
+    try {
+        const response = await fetch("/api/appointments/today");
+        const data = await response.json();
+        return data.count;
+    } catch (error) {
+        console.error("Failed to fetch today's appointments:", error);
+        return 0;
+    }
+}
+
+// Fetch appointments for the last 14 days
+export async function fetchAppointmentsForLast14Days() {
+    try {
+        const response = await fetch("/api/appointments/lastfortnight");
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch appointments for the last 14 days:", error);
+        return [];
+    }
+}
+
+// Fetch today's patients count
+export async function fetchPatientsToday() {
+    try {
+        const response = await fetch("/api/patients/today");
+        const data = await response.json();
+        return data.count;
+    } catch (error) {
+        console.error("Failed to fetch today's patients:", error);
+        return 0;
+    }
+}
+
+// Fetch patients for the last 14 days
+export async function fetchPatientsForLast14Days() {
+    try {
+        const response = await fetch("/api/patients/lastfortnight");
+        if (!response.ok) {
+            throw new Error("Failed to fetch patients for the last 14 days");
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Error fetching patients for the last 14 days:", error);
+        return [];
+    }
+}

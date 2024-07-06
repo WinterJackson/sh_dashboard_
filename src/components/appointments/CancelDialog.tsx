@@ -48,7 +48,7 @@ const CancelDialog: React.FC<CancelDialogProps> = ({ appointmentId, onSave, onCl
                     onChange={(e) => setReason(e.target.value)}
                 />
                 <div className="flex justify-end gap-2 mt-4">
-                    <Button onClick={handleSave} className="text-white rounded-sm">Save</Button>
+                    <Button onClick={handleSave} className="text-white rounded-[10px]">Save</Button>
                 </div>
                 <DialogClose asChild>
                     <button className="absolute hidden top-0 right-0 m-2" onClick={onClose}></button>

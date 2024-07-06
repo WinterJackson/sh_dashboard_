@@ -87,14 +87,14 @@ const SignUpForm = () => {
             }),
         });
 
+        setIsLoading(false);
+
         if (response.ok) {
             router.push('/sign-in');
         } else {
             console.error('Registration failed');
         }
     };
-
-    setIsLoading(false);
 
     return (
         <div className="relative">

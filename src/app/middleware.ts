@@ -1,6 +1,5 @@
 // src/app/middleware.ts
 
-import { NextApiRequest, NextApiResponse } from 'next';
 import { withAuth } from "next-auth/middleware";
 
 export default withAuth({
@@ -10,9 +9,9 @@ export default withAuth({
 });
 
 export const config = {
+    matcher: ["/dashboard/:path*", "/api/:path*"],
     api: {
         bodyParser: false,
     },
 };
 
-export type NextApiHandler = (req: NextApiRequest, res: NextApiResponse) => void;

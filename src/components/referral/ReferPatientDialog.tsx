@@ -1,4 +1,4 @@
-// src/components/appointments/AddAppointmentDialog.tsx
+// src/components/referral/ReferPatientDialog.tsx
 
 "use client";
 
@@ -19,27 +19,23 @@ import { Calendar } from "@/components/ui/calendar";
 import { useRouter } from "next/navigation";
 import { IconButton } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import { fetchOnlineDoctors, fetchAllHospitals, fetchPatientDetails } from "@/lib/data";
+import { fetchAllHospitals, fetchPatientDetails } from "@/lib/data";
 
-interface AddAppointmentDialogProps {
+interface ReferPatientDialogProps {
     onClose: () => void;
 }
 
-const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) => {
+const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
     const { register, handleSubmit, control, setValue } = useForm();
     const [saved, setSaved] = useState<boolean>(false);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-    const [doctors, setDoctors] = useState([]);
     const [hospitals, setHospitals] = useState([]);
     const [patientDetails, setPatientDetails] = useState<any | null>(null);
     const router = useRouter();
 
     useEffect(() => {
         const fetchData = async () => {
-            const fetchedDoctors = await fetchOnlineDoctors();
-            setDoctors(fetchedDoctors);
-
             const fetchedHospitals = await fetchAllHospitals();
             setHospitals(fetchedHospitals);
         };
@@ -50,11 +46,9 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
     const fetchAndSetPatientDetails = async (name: string) => {
         const details = await fetchPatientDetails(name);
         if (details) {
-            setValue("age", details.age);
             setValue("patientId", details.patientId);
             setPatientDetails(details);
         } else {
-            setValue("age", "");
             setValue("patientId", "");
             setPatientDetails(null);
         }
@@ -62,7 +56,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
 
     const onSubmit = async (data: any) => {
         try {
-            const response = await fetch("/api/appointments", {
+            const response = await fetch("/api/referrals", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -71,14 +65,14 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
             });
 
             if (!response.ok) {
-                throw new Error("Failed to add appointment");
+                throw new Error("Failed to refer patient");
             }
 
             const result = await response.json();
             setSaved(true);
 
-            // Redirect to the updated appointments page
-            router.replace('/dashboard/appointments');
+            // Redirect to the updated referrals page
+            router.replace('/dashboard/referrals');
 
         } catch (error) {
             console.error(error);
@@ -100,9 +94,9 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
                 <button className="hidden"></button>
             </DialogTrigger>
             <DialogContent>
-                <DialogTitle>Add Appointment</DialogTitle>
+                <DialogTitle>Patient Referral Form</DialogTitle>
                 <DialogDescription>
-                    Fill out the form below to add a new appointment.
+                    Fill out the form below to refer a patient.
                 </DialogDescription>
                 <form className="p-1" onSubmit={handleSubmit(onSubmit)}>
                     <div className="grid gap-4">
@@ -117,15 +111,6 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
                             />
                         </div>
                         <div>
-                            <Label htmlFor="age">Age</Label>
-                            <Input
-                                id="age"
-                                type="number"
-                                {...register("age", { required: true })}
-                                readOnly={!!patientDetails}
-                            />
-                        </div>
-                        <div>
                             <Label htmlFor="patientId">Patient ID</Label>
                             <Input
                                 id="patientId"
@@ -133,35 +118,25 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
                                 readOnly={!!patientDetails}
                             />
                         </div>
-                        <div className="flex gap-2">
-                            <div>
-                                <Label htmlFor="timeFrom">From</Label>
-                                <Controller
-                                    control={control}
-                                    name="timeFrom"
-                                    render={({ field }) => (
-                                        <input
-                                            type="time"
-                                            {...field}
-                                            className="flex h-10 w-full rounded-md border px-3 py-2 text-sm"
-                                        />
-                                    )}
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="timeTo">To</Label>
-                                <Controller
-                                    control={control}
-                                    name="timeTo"
-                                    render={({ field }) => (
-                                        <input
-                                            type="time"
-                                            {...field}
-                                            className="flex h-10 w-full rounded-md border px-3 py-2 text-sm"
-                                        />
-                                    )}
-                                />
-                            </div>
+                        <div>
+                            <Label htmlFor="hospitalName">Recommended Hospital</Label>
+                            <select
+                                id="hospitalName"
+                                {...register("hospitalName", {
+                                    required: true,
+                                })}
+                                className="flex h-10 w-full rounded-md text-gray-500 border px-3 py-2 text-sm"
+                            >
+                                <option value="">Select a hospital</option>
+                                {hospitals.map((hospital: any) => (
+                                    <option
+                                        key={hospital.hospitalId}
+                                        value={hospital.name}
+                                    >
+                                        {hospital.name}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                         <div>
                             <Label htmlFor="date">Date</Label>
@@ -194,53 +169,15 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
                             )}
                         </div>
                         <div>
-                            <Label htmlFor="doctorName">Doctor</Label>
-                            <select
-                                id="doctorName"
-                                {...register("doctorName", { required: true })}
-                                className="flex h-10 w-full rounded-md text-gray-500 border px-3 py-2 text-sm"
-                            >
-                                <option value="">Select a doctor</option>
-                                {doctors.map((doctor: any) => (
-                                    <option
-                                        key={doctor.doctorId}
-                                        value={doctor.name}
-                                    >
-                                        {doctor.name} - {doctor.specialization}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div>
-                            <Label htmlFor="hospitalName">Hospital</Label>
-                            <select
-                                id="hospitalName"
-                                {...register("hospitalName", {
-                                    required: true,
-                                })}
-                                className="flex h-10 w-full rounded-md text-gray-500 border px-3 py-2 text-sm"
-                            >
-                                <option value="">Select a hospital</option>
-                                {hospitals.map((hospital: any) => (
-                                    <option
-                                        key={hospital.hospitalId}
-                                        value={hospital.name}
-                                    >
-                                        {hospital.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div>
                             <Label htmlFor="type">Type</Label>
                             <select
                                 id="type"
                                 {...register("type", { required: true })}
                                 className="flex h-10 w-full text-gray-500 rounded-md border px-3 py-2 text-sm"
                             >
-                                <option value="">Select appointment type</option>
-                                <option value="Virtual">Virtual</option>
-                                <option value="Walk In">Walk In</option>
+                                <option value="">Select referral type</option>
+                                <option value="Internal">Internal</option>
+                                <option value="External">External</option>
                             </select>
                         </div>
                     </div>
@@ -256,4 +193,4 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
     );
 };
 
-export default AddAppointmentDialog;
+export default ReferPatientDialog;

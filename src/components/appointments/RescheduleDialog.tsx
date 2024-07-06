@@ -96,10 +96,10 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({ appointmentId, onCl
             <DialogContent>
                 <DialogTitle>Reschedule Appointment</DialogTitle>
                 <DialogDescription>
-                    Select a new date and time for the appointment and provide
+                    Select a new date and time for the appointment and
                     other necessary details.
                 </DialogDescription>
-                <form onSubmit={handleSubmit(onSubmit)}>
+                <form className="p-1" onSubmit={handleSubmit(onSubmit)}>
                     <div className="grid gap-4">
                         <div>
                             <Label htmlFor="date">Date</Label>
@@ -245,7 +245,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({ appointmentId, onCl
                         </div>
                     </div>
                     <div className="mt-4 flex justify-end">
-                        <Button type="submit" disabled={saved}>
+                        <Button type="submit" disabled={saved} className="rounded-[10px]">
                             Save
                         </Button>
                     </div>

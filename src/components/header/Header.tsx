@@ -14,8 +14,9 @@ import { useUser } from "@/app/context/UserContext";
 import Search from "@/components/ui/search";
 import dynamic from "next/dynamic";
 
-// Dynamic import for AddAppointmentDialog
+// Dynamic imports for dialogs
 const AddAppointmentDialog = dynamic(() => import("@/components/appointments/AddAppointmentDialog"));
+const ReferPatientDialog = dynamic(() => import("@/components/referral/ReferPatientDialog"));
 
 const Header = () => {
     const { data: session } = useSession();
@@ -23,15 +24,20 @@ const Header = () => {
     const firstName = session?.user ? getFirstName(session.user.username) : "";
     const nameWidth = firstName ? firstName.length * 10 : 100;
     const profileImageUrl = user?.imageUrl;
-    const [openDialog, setOpenDialog] = useState(false);
-
+    const [openAppointmentDialog, setOpenAppointmentDialog] = useState(false);
+    const [openReferDialog, setOpenReferDialog] = useState(false);
 
     const handleAddAppointment = () => {
-        setOpenDialog(true);
+        setOpenAppointmentDialog(true);
+    };
+
+    const handleReferPatient = () => {
+        setOpenReferDialog(true);
     };
 
     const handleDialogClose = () => {
-        setOpenDialog(false);
+        setOpenAppointmentDialog(false);
+        setOpenReferDialog(false);
     };
 
     return (
@@ -40,7 +46,7 @@ const Header = () => {
             <div className="flex items-center w-1/4">
                 <Image
                     src={logo}
-                    alt="Snark Health Logo"
+                    alt="Hospital Logo"
                     width={120}
                     height={40}
                 />
@@ -54,6 +60,7 @@ const Header = () => {
 
                     <button
                         className="w-1/2 px-2 py-2 border-4 border-gray-600 text-black text-xs font-semibold rounded-2xl hover:bg-primary hover:border-primary hover:text-white"
+                        onClick={handleReferPatient}
                     >
                         Refer Patient +
                     </button>
@@ -110,8 +117,11 @@ const Header = () => {
                 </div>
             </div>
 
-            {openDialog && (
+            {openAppointmentDialog && (
                 <AddAppointmentDialog onClose={handleDialogClose} />
+            )}
+            {openReferDialog && (
+                <ReferPatientDialog onClose={handleDialogClose} />
             )}
         </header>
     );
