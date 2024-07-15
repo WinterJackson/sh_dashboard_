@@ -116,9 +116,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
             </DialogTrigger>
             <DialogContent >
                 <DialogTitle>Schedule Appointment</DialogTitle>
-                <DialogDescription className="bg-[#EFEFEF] p-2">
-                    Fill out the form below to add a new appointment.
-                </DialogDescription>
+                <DialogDescription className="bg-[#EFEFEF] p-2">Fill out the form below to add a new appointment.</DialogDescription>
                 <details
                     className="text-primary cursor-pointer pl-1 text-sm bg-primary/10 py-1 rounded-[5px]"
                     title="Click to expand and read instructions."
@@ -128,14 +126,14 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                         You are required to provide the following:
                     </p>
                     <ol className="list-disc ml-10 text-gray-500 text-[13px]">
-                        <li>the patient's full name.</li>
+                        <li>the patient&apos;s full name.</li>
                         <li>
                             the age will be automatically provided if the
-                            patient's information is in the database.
+                            patient&apos;s information is in the database.
                         </li>
                         <li>
-                            the patient's ID will also be automatically provided
-                            if the patient's information is in the database.
+                            the patient&apos;s ID will also be automatically provided
+                            if the patient&apos;s information is in the database.
                         </li>
                         <li>
                             the time when the appointment should begin - from.

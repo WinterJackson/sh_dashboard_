@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
 import PlaceIcon from "@mui/icons-material/Place";
+import { differenceInYears } from "date-fns";
 
 // Dynamic imports for dialogs
 const RescheduleDialog = dynamic(
@@ -194,9 +195,13 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                         .includes(searchTextLower);
                     break;
                 case "Age":
-                    filterMatch = appointment.patient.age
-                        .toString()
-                        .includes(searchTextLower);
+                    if (appointment.patient.dateOfBirth) {
+                        const age = differenceInYears(
+                            new Date(),
+                            new Date(appointment.patient.dateOfBirth)
+                        ).toString();
+                        filterMatch = age.includes(searchTextLower);
+                    }
                     break;
                 case "Id":
                     filterMatch = appointment.patient.patientId
@@ -219,9 +224,13 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                         appointment.patient.name
                             .toLowerCase()
                             .includes(searchTextLower) ||
-                        appointment.patient.age
-                            .toString()
-                            .includes(searchTextLower) ||
+                        (appointment.patient.dateOfBirth &&
+                            differenceInYears(
+                                new Date(),
+                                new Date(appointment.patient.dateOfBirth)
+                            )
+                                .toString()
+                                .includes(searchTextLower)) ||
                         appointment.patient.patientId
                             .toString()
                             .includes(searchTextLower) ||
@@ -447,9 +456,17 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                                       <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-left">
                                           {appointment.patient.name}
                                       </td>
-                                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                                          {appointment.patient.age}
-                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {appointment.patient.dateOfBirth
+                                            ? differenceInYears(
+                                                  new Date(),
+                                                  new Date(
+                                                      appointment.patient
+                                                          .dateOfBirth
+                                                  )
+                                              )
+                                            : "N/A"}
+                                    </td>
                                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                                           {appointment.patient.patientId}
                                       </td>

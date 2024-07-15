@@ -3,7 +3,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { isEmail } from "validator";
-const prisma = require("@/lib/prisma")
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));

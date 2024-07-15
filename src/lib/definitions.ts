@@ -60,6 +60,7 @@ export interface Doctor {
 }
 
 export interface Patient {
+    dateOfBirth: any;
     patientId: number;
     hospitalId: number;
     name: string;

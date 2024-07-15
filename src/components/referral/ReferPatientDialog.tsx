@@ -95,7 +95,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                 title="Click to expand and read instructions."
             >
                 <summary className="font-semibold items-center">
-                    Help - Patient's Information.
+                    Help - Patient&apos;s Information.
                 </summary>
                 <p className="ml-5 text-gray-500">You are required to provide the following:</p>
                 <ol className="list-disc ml-10 text-gray-500 text-[13px]">
@@ -111,7 +111,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                     <li>state where the patient resides.</li>
                 </ol>
                 <p className="ml-5 mt-2 font-semibold text-gray-500 text-[13px]">
-                    NOTE: When you provide the patient's name, if the patients
+                    NOTE: When you provide the patient&apos;s name, if the patients
                     details are in the database, the fields will automatically
                     be filled.
                 </p>

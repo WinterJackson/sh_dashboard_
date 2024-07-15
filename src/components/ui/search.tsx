@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { usePathname, useRouter } from 'next/navigation';
 import { useDebouncedCallback } from 'use-debounce';
 import { useSearch } from "@/app/context/SearchContext";
@@ -19,11 +19,15 @@ export default function Search({ placeholder = "Search" }: { placeholder: string
             params.set("query", term);
         }
         replace(`${pathname}?${params.toString()}`);
-    }, 300);
+    }, 10);
+
+    const memoizedHandleSearch = useCallback(() => {
+        handleSearch(searchTerm);
+    }, [searchTerm, handleSearch]);
 
     useEffect(() => {
-        handleSearch(searchTerm);
-    }, [searchTerm]);
+        memoizedHandleSearch();
+    }, [memoizedHandleSearch]);
 
     return (
         <div className="w-1/2 ml-4 flex items-center bg-gray-100 p-2 rounded-2xl">
