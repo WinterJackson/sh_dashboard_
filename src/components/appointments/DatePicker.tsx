@@ -63,7 +63,7 @@ export function DatePicker({
                 <Button
                     variant={"outline"}
                     className={cn(
-                        "w-[90px] justify-start text-left font-normal rounded shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none",
+                        "w-[90px] justify-start text-left font-normal rounded-[10px] shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none",
                         !date && "text-muted-foreground"
                     )}
                 >
@@ -84,12 +84,12 @@ export function DatePicker({
                     </SelectContent>
                 </Select>
                 {selectedDate && (
-                    <div className="mb-2 mt-2 m-auto justify-center border p-2 rounded bg-bluelight">
+                    <div className="mb-2 mt-2 m-auto justify-center border p-2 rounded-[10px] bg-bluelight">
                         Selected Date:
                         <span className="font-bold"> {selectedDate}</span>
                     </div>
                 )}
-                <div className="rounded-md">
+                <div className="rounded-[10px]">
                     <Calendar
                         mode="single"
                         selected={date}

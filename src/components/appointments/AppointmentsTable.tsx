@@ -288,16 +288,17 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         <div className="flex flex-col min-w-full">
             <button
                 onClick={handleRefresh}
-                title="Refresh Appointments List"
-                className="p-1 ml-1 mb-2 border border-white rounded-full h-[25px] w-[25px] justify-start font-semibold text-white shadow-sm bg-primary hover:text-black hover:shadow-none hover:bg-bluelight flex items-center"
+                title="Refresh List"
+                className="p-1 mb-2 rounded-[10px] h-[25px] w-[80px] gap-2 font-semibold text-white shadow-xl bg-primary hover:text-black hover:shadow-none hover:bg-bluelight flex items-center justify-between"
             >
-                <SymbolIcon className="h-5 w-5" />
+                <SymbolIcon className="h-4 w-4" />
+                <span className="text-xs pr-1">Refresh</span>
             </button>
 
             <div className="flex flex-row justify-between items-center mb-3">
                 <div className="flex flex-row items-center gap-4">
                     <select
-                        className="flex-grow p-2 px-2 py-2 border-gray-300 rounded h-10 w-auto max-w-[120px] bg-gray-100 text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="flex-grow p-2 px-2 py-2 border-gray-300 rounded-[10px] h-10 w-auto max-w-[120px] bg-gray-100 text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary"
                         value={filterType}
                         onChange={handleFilterTypeChange}
                     >
@@ -308,7 +309,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                         ))}
                     </select>
                     <button
-                        className={`flex-grow px-4 py-2 border-primary rounded h-10 text-nowrap w-auto font-semibold text-black shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none ${
+                        className={`flex-grow px-4 py-2 border-primary rounded-[10px] h-10 text-nowrap w-auto font-semibold text-black shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none ${
                             statusFilter === "Confirmed" ||
                             statusFilter === "Completed"
                                 ? "bg-primary text-white"
@@ -319,7 +320,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                         Approved Appointments
                     </button>
                     <button
-                        className={`flex-grow px-4 py-2 border-primary rounded h-10 text-nowrap w-auto font-semibold text-black shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none ${
+                        className={`flex-grow px-4 py-2 border-primary rounded-[10px] h-10 text-nowrap w-auto font-semibold text-black shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none ${
                             statusFilter === "Unconfirmed"
                                 ? "bg-primary text-white"
                                 : ""
@@ -331,7 +332,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                     {filterType === "Type" && (
                         <>
                             <button
-                                className={`flex-grow px-4 py-2 border-primary rounded h-10 text-nowrap w-auto font-semibold text-black shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none ${
+                                className={`flex-grow px-4 py-2 border-primary rounded-[10px] h-10 text-nowrap w-auto font-semibold text-black shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none ${
                                     appointmentTypeFilter === "Walk In"
                                         ? "bg-primary text-white"
                                         : ""
@@ -343,7 +344,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                                 Walk In
                             </button>
                             <button
-                                className={`flex-grow px-4 py-2 border-primary rounded h-10 text-nowrap w-auto font-semibold text-black shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none ${
+                                className={`flex-grow px-4 py-2 border-primary rounded-[10px] h-10 text-nowrap w-auto font-semibold text-black shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none ${
                                     appointmentTypeFilter === "Virtual"
                                         ? "bg-primary text-white"
                                         : ""

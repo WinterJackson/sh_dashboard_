@@ -44,7 +44,7 @@ export function DateRangePicker({
                     id="date"
                     variant={"outline"}
                     className={cn(
-                        "w-[95px] justify-start text-left font-normal rounded shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none",
+                        "w-[95px] justify-start text-left font-normal rounded-[10px] shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none",
                         !dateRange && "text-muted-foreground"
                     )}
                 >
@@ -53,7 +53,7 @@ export function DateRangePicker({
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="grid w-auto p-2 shadow-sm shadow-primary" align="end">
-                <div className="mb-2 mt-2 m-auto justify-center border p-2 rounded bg-bluelight">
+                <div className="mb-2 mt-2 m-auto justify-center border p-2 rounded-[10px] bg-bluelight">
                     Selected Range:{" "}
                     <span className="font-bold">{formattedDateRange}</span>
                 </div>
