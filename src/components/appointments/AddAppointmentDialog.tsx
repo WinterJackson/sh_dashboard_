@@ -114,43 +114,58 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
             <DialogTrigger asChild>
                 <button className="hidden"></button>
             </DialogTrigger>
-            <DialogContent >
+            <DialogContent>
                 <DialogTitle>Schedule Appointment</DialogTitle>
-                <DialogDescription className="bg-[#EFEFEF] p-2">Fill out the form below to add a new appointment.</DialogDescription>
+                <DialogDescription className="bg-[#EFEFEF] p-2">
+                    Fill out the form below to add a new appointment.
+                </DialogDescription>
                 <details
                     className="text-primary cursor-pointer pl-1 text-sm bg-primary/10 py-1 rounded-[5px]"
                     title="Click to expand and read instructions."
                 >
-                    <summary className="font-semibold ">Help - Appointment Form</summary>
-                    <p className="ml-5 text-gray-500">
-                        You are required to provide the following:
-                    </p>
-                    <ol className="list-disc ml-10 text-gray-500 text-[13px]">
-                        <li>the patient&apos;s full name.</li>
-                        <li>
-                            the age will be automatically provided if the
-                            patient&apos;s information is in the database.
-                        </li>
-                        <li>
-                            the patient&apos;s ID will also be automatically provided
-                            if the patient&apos;s information is in the database.
-                        </li>
-                        <li>
-                            the time when the appointment should begin - from.
-                        </li>
-                        <li>the time when the appointment should end - to.</li>
-                        <li>
-                            the date when the appointment is expected to happen.
-                        </li>
-                        <li>
-                            the doctor who will be associated with the
-                            appointment.
-                        </li>
-                        <li>the hospital associated with the appointment.</li>
-                        <li>
-                            the type of appointment weather Virtual or Walk In.
-                        </li>
-                    </ol>
+                    <summary className="font-semibold ">
+                        Help - Appointment Form
+                    </summary>
+                    <div className="absolute bg-[#E5F0FB] outline outline-1 outline-secondary/50 z-10 rounded-[10px] mt-3 mr-7 pt-4 pb-4 pr-2">
+                        <p className="ml-5 text-gray-500">
+                            You are required to provide the following:
+                        </p>
+                        <ol className="list-disc ml-10 text-gray-500 text-[13px]">
+                            <li>the patient&apos;s full name.</li>
+                            <li>
+                                the age will be <strong>automatically</strong>{" "}
+                                provided if the patient&apos;s information is in
+                                the database.
+                            </li>
+                            <li>
+                                the patient&apos;s ID will also be{" "}
+                                <strong>automatically</strong>{" "}
+                                provided if the patient&apos;s information is in
+                                the database.
+                            </li>
+                            <li>
+                                the time when the appointment should begin -
+                                <strong>from</strong>.
+                            </li>
+                            <li>
+                                the time when the appointment should end - <strong>to</strong>.
+                            </li>
+                            <li>
+                                the date when the appointment is expected to
+                                happen.
+                            </li>
+                            <li>
+                                the doctor who will be associated with the
+                                appointment.
+                            </li>
+                            <li>
+                                the hospital associated with the appointment.
+                            </li>
+                            <li>
+                                the type of appointment weather <strong>Virtual</strong>{" "} or <strong>Walk In</strong>.
+                            </li>
+                        </ol>
+                    </div>
                 </details>
                 <form className="p-1" onSubmit={handleSubmit(onSubmit)}>
                     <div className="grid gap-4">

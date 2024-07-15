@@ -30,8 +30,8 @@ const FormSchema = z
             .min(1, "Password is required")
             .min(8, "Password must have more than 8 characters"),
         confirmPassword: z.string().min(1, "Password confirmation is required"),
-        roleId: z.number(),
-        hospitalId: z.number(),
+        roleId: z.number().nonnegative("Role is required"),
+        hospitalId: z.number().nonnegative("Hospital is required"),
     })
     .refine((data) => data.password === data.confirmPassword, {
         path: ["confirmPassword"],
@@ -109,7 +109,7 @@ const SignUpForm = () => {
                                 <FormItem>
                                     <FormLabel className="text-white">Username</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="johndoe" {...field} />
+                                        <Input placeholder="John Doe" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -123,7 +123,7 @@ const SignUpForm = () => {
                                     <FormLabel className="text-white">Email</FormLabel>
                                     <FormControl>
                                         <Input
-                                            placeholder="mail@example.com"
+                                            placeholder="john.doe@example.com"
                                             {...field}
                                         />
                                     </FormControl>
@@ -172,8 +172,10 @@ const SignUpForm = () => {
                                 <FormItem className="flex flex-col w-full ">
                                     <FormLabel className="text-white">Role</FormLabel>
                                     <FormControl className="h-10 rounded-[5px] text-sm">
-                                        <select {...field} onChange={(e) => field.onChange(Number(e.target.value))}>
-                                            <option value="" className="text-sm">Select a role</option>
+                                        <select {...field} onChange={(e) => field.onChange(Number(e.target.value))}
+                                            className="focus:outline outline-2 outline-primary "
+                                        >
+                                            <option value="" className="text-sm text-gray-400">Select a role</option>
                                             {roles.map((role: any) => (
                                                 <option className="text-sm" key={role.roleId} value={role.roleId}>
                                                     {role.roleName}
@@ -192,8 +194,10 @@ const SignUpForm = () => {
                                 <FormItem className="flex flex-col w-full">
                                     <FormLabel className="text-white">Hospital</FormLabel>
                                     <FormControl className="h-10 rounded-[5px] text-sm">
-                                        <select {...field} onChange={(e) => field.onChange(Number(e.target.value))}>
-                                            <option value="" className="text-sm">Select a hospital</option>
+                                        <select {...field} onChange={(e) => field.onChange(Number(e.target.value))}
+                                            className="focus:outline outline-2 outline-primary "
+                                        >
+                                            <option value="" className="text-sm text-gray-400">Select a hospital</option>
                                             {hospitals.map((hospital: any) => (
                                                 <option className="text-sm" key={hospital.hospitalId} value={hospital.hospitalId}>
                                                     {hospital.name}

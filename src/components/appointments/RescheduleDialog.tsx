@@ -109,6 +109,29 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                     Select a new date and time for the appointment and other
                     necessary details.
                 </DialogDescription>
+
+                <details
+                    className="text-primary cursor-pointer pl-1 text-sm bg-primary/10 py-1 rounded-[5px]"
+                    title="Click to expand and read instructions."
+                >
+                    <summary className="font-semibold items-center">
+                        Help - Reschedule Appointment.
+                    </summary>
+                    <div className="absolute bg-[#E5F0FB] outline outline-1 outline-secondary/50 z-10 rounded-[10px] mt-3 mr-7 pt-4 pb-4 pr-2">
+                        <p className="ml-5 text-gray-500">
+                            You are required to provide the following:
+                        </p>
+                        <ol className="list-disc ml-10 text-gray-500 text-[13px]">
+                            <li>the <strong>new date</strong> of the appointment.</li>
+                            <li>the time when the appointment should start.</li>
+                            <li>the time when the appointment should end.</li>
+                            <li>the doctor associated with the appointment.</li>
+                            <li>the hospital where the appointment should take place if physical or that which is associated with the appointment if virtual.</li>
+                            <li>the type of the appointment <strong>Virtual</strong> or <strong>Walk In</strong>.</li>
+                        </ol>
+                    </div>
+                </details>
+
                 <form className="p-1" onSubmit={handleSubmit(onSubmit)}>
                     <div className="grid gap-4">
                         <div>

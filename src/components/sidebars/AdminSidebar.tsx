@@ -49,7 +49,7 @@ const AdminSidebar = () => {
                         className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center ${
                             isActive("/dashboard")
                                 ? "bg-primary text-white"
-                                : "hover:bg-primary hover:text-white"
+                                : "hover:bg-bluelight hover:text-black"
                         }`}
                     >
                         <DashboardIcon className="mr-2 text-xl" />
@@ -61,7 +61,7 @@ const AdminSidebar = () => {
                         className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center ${
                             isActive("/dashboard/appointments")
                                 ? "bg-primary text-white"
-                                : "hover:bg-primary hover:text-white"
+                                : "hover:bg-bluelight hover:text-black"
                         }`}
                     >
                         <CalendarIcon className="mr-2 text-xl" />
@@ -74,7 +74,7 @@ const AdminSidebar = () => {
                         className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center ${
                             isActive("/dashboard/doctors")
                                 ? "bg-primary text-white"
-                                : "hover:bg-primary hover:text-white"
+                                : "hover:bg-bluelight hover:text-black"
                         }`}
                     >
                         <PersonIcon className="mr-2 text-xl" />
@@ -87,7 +87,7 @@ const AdminSidebar = () => {
                         className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center ${
                             isActive("/dashboard/patients")
                                 ? "bg-primary text-white"
-                                : "hover:bg-primary hover:text-white"
+                                : "hover:bg-bluelight hover:text-black"
                         }`}
                     >
                         <PersonIcon className="mr-2 text-xl" />
@@ -100,7 +100,7 @@ const AdminSidebar = () => {
                         className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center ${
                             isActive("/dashboard/settings")
                                 ? "bg-primary text-white"
-                                : "hover:bg-primary hover:text-white"
+                                : "hover:bg-bluelight hover:text-black"
                         }`}
                     >
                         <GearIcon className="mr-2 text-xl" />

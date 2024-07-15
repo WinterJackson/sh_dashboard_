@@ -89,7 +89,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
     };
 
     const renderSection1 = () => (
-        <div className="h-auto overflow-y-auto grid gap-3">
+        <div className="relative h-auto grid gap-3">
             <details
                 className="text-primary cursor-pointer pl-1 text-sm bg-primary/10 py-1 rounded-[5px]"
                 title="Click to expand and read instructions."
@@ -97,24 +97,28 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                 <summary className="font-semibold items-center">
                     Help - Patient&apos;s Information.
                 </summary>
-                <p className="ml-5 text-gray-500">You are required to provide the following:</p>
-                <ol className="list-disc ml-10 text-gray-500 text-[13px]">
-                    <li>
-                        full name of the patient being referred.
-                    </li>
-                    <li>gender of the patient.</li>
-                    <li>date of birth of the patient.</li>
-                    <li>phone number of the patient.</li>
-                    <li>email of the patient.</li>
-                    <li>status of the patient (Inpatient or Outpatient).</li>
-                    <li>home address of the patient.</li>
-                    <li>state where the patient resides.</li>
-                </ol>
-                <p className="ml-5 mt-2 font-semibold text-gray-500 text-[13px]">
-                    NOTE: When you provide the patient&apos;s name, if the patients
-                    details are in the database, the fields will automatically
-                    be filled.
-                </p>
+                <div className="absolute bg-[#E5F0FB] outline outline-1 outline-secondary/50 z-10 rounded-[10px] mt-3 mr-2 pt-4 pb-4 pr-2">
+                    <p className="ml-5 text-gray-500">
+                        You are required to provide the following:
+                    </p>
+                    <ol className="list-disc ml-10 text-gray-500 text-[13px]">
+                        <li>full name of the patient being referred.</li>
+                        <li>gender of the patient.</li>
+                        <li>date of birth of the patient.</li>
+                        <li>phone number of the patient.</li>
+                        <li>email of the patient.</li>
+                        <li>
+                            status of the patient (Inpatient or Outpatient).
+                        </li>
+                        <li>home address of the patient.</li>
+                        <li>state where the patient resides.</li>
+                    </ol>
+                    <p className="ml-5 mt-2 font-semibold text-gray-500 text-[13px]">
+                        NOTE: When you provide the patient&apos;s name, if the
+                        patients details are in the database, the fields will
+                        automatically be filled.
+                    </p>
+                </div>
             </details>
 
             <div>
@@ -136,10 +140,18 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                     {...register("gender", { required: true })}
                     className="flex bg-[#EFEFEF] h-10 w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    <option value="" className="bg-[#EFEFEF] text-gray-500">Select Gender</option>
-                    <option value="Male" className="bg-white">Male</option>
-                    <option value="Female" className="bg-white">Female</option>
-                    <option value="Other" className="bg-white">Other</option>
+                    <option value="" className="bg-[#EFEFEF] text-gray-500">
+                        Select Gender
+                    </option>
+                    <option value="Male" className="bg-white">
+                        Male
+                    </option>
+                    <option value="Female" className="bg-white">
+                        Female
+                    </option>
+                    <option value="Other" className="bg-white">
+                        Other
+                    </option>
                 </select>
             </div>
             <div className="flex justify-between items-center my-2">
@@ -178,9 +190,15 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                     {...register("status", { required: true })}
                     className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    <option value="" className="bg-[#EFEFEF] text-gray-500">Select Status</option>
-                    <option value="Inpatient" className="bg-white">Inpatient</option>
-                    <option value="Outpatient" className="bg-white">Outpatient</option>
+                    <option value="" className="bg-[#EFEFEF] text-gray-500">
+                        Select Status
+                    </option>
+                    <option value="Inpatient" className="bg-white">
+                        Inpatient
+                    </option>
+                    <option value="Outpatient" className="bg-white">
+                        Outpatient
+                    </option>
                 </select>
             </div>
             <div>
@@ -198,10 +216,18 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                     {...register("state", { required: true })}
                     className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    <option value="" className="bg-[#EFEFEF] text-gray-500">Select State</option>
-                    <option value="State 1" className="bg-white">State 1</option>
-                    <option value="State 2" className="bg-white">State 2</option>
-                    <option value="State 3" className="bg-white">State 3</option>
+                    <option value="" className="bg-[#EFEFEF] text-gray-500">
+                        Select State
+                    </option>
+                    <option value="State 1" className="bg-white">
+                        State 1
+                    </option>
+                    <option value="State 2" className="bg-white">
+                        State 2
+                    </option>
+                    <option value="State 3" className="bg-white">
+                        State 3
+                    </option>
                 </select>
             </div>
             <div className="mt-4 flex justify-between">
@@ -216,29 +242,29 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
     );
 
     const renderSection2 = () => (
-        <div className="h-auto overflow-y-auto grid gap-3">
+        <div className="relative h-auto grid gap-3">
             <details
                 className="text-primary cursor-pointer pl-1 text-sm bg-primary/10 py-1 rounded-[5px]"
                 title="Click to expand and read instructions."
             >
-                <summary className="font-semibold ">
+                <summary className="font-semibold items-center">
                     Help - Referring Physician.
                 </summary>
-                <p className="ml-5 text-gray-500">You are required to provide the following:</p>
-                <ol className="list-disc ml-10 text-gray-500 text-[13px]">
-                    <li>
-                        full name of the referring physician (Doctor
-                        or Staff).
-                    </li>
-                    <li>department of the referring physician.</li>
-                    <li>
-                        specialization of the referring physician.
-                    </li>
-                    <li>email of the referring physician.</li>
-                    <li>
-                        phone number of the referring physician.
-                    </li>
-                </ol>
+                <div className="absolute bg-[#E5F0FB] outline outline-1 outline-secondary/50 z-10 rounded-[10px] mt-3 mr-2 pt-4 pb-4 pr-2">
+                    <p className="ml-5 text-gray-500">
+                        You are required to provide the following:
+                    </p>
+                    <ol className="list-disc ml-10 text-gray-500 text-[13px]">
+                        <li>
+                            full name of the referring physician (Doctor or
+                            Staff).
+                        </li>
+                        <li>department of the referring physician.</li>
+                        <li>specialization of the referring physician.</li>
+                        <li>email of the referring physician.</li>
+                        <li>phone number of the referring physician.</li>
+                    </ol>
+                </div>
             </details>
 
             <div>
@@ -283,11 +309,21 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                     {...register("physicianSpecialty", { required: true })}
                     className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    <option value="" className="bg-[#EFEFEF] text-gray-500">Select Specialty</option>
-                    <option value="Cardiologist" className="bg-white">Cardiologist</option>
-                    <option value="Neurosurgeon" className="bg-white">Neurosurgeon</option>
-                    <option value="Urologist" className="bg-white">Urologist</option>
-                    <option value="Orthopedist" className="bg-white">Orthopedist</option>
+                    <option value="" className="bg-[#EFEFEF] text-gray-500">
+                        Select Specialty
+                    </option>
+                    <option value="Cardiologist" className="bg-white">
+                        Cardiologist
+                    </option>
+                    <option value="Neurosurgeon" className="bg-white">
+                        Neurosurgeon
+                    </option>
+                    <option value="Urologist" className="bg-white">
+                        Urologist
+                    </option>
+                    <option value="Orthopedist" className="bg-white">
+                        Orthopedist
+                    </option>
                 </select>
             </div>
             <div>
@@ -324,29 +360,33 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
     );
 
     const renderSection3 = () => (
-        <div className="h-auto overflow-y-auto grid gap-3">
+        <div className="relative h-auto grid gap-3">
             <details
                 className="text-primary cursor-pointer pl-1 text-sm bg-primary/10 py-1 rounded-[5px]"
                 title="Click to expand and read instructions."
             >
-                <summary className="font-semibold ">
+                <summary className="font-semibold items-center">
                     Help - Referring Indication.
                 </summary>
-                <p className="ml-5 text-gray-500">You are required to provide the following:</p>
-                <ol className="list-disc ml-10 text-gray-500 text-[13px]">
-                    <li>type of referral (Internal or External).</li>
-                    <li>primary care provider for the patient.</li>
-                    <li>
-                        address of the patient or that of the
-                        primary care provider.
-                    </li>
-                    <li>
-                        phone number of the patient or that of the
-                        primary care provider.
-                    </li>
-                    <li>reason why patient needs consultation.</li>
-                    <li>diagnosis of the patient.</li>
-                </ol>
+                <div className="absolute bg-[#E5F0FB] outline outline-1 outline-secondary/50 z-10 rounded-[10px] mt-3 mr-2 pt-4 pb-4 pr-2">
+                    <p className="ml-5 text-gray-500">
+                        You are required to provide the following:
+                    </p>
+                    <ol className="list-disc ml-10 text-gray-500 text-[13px]">
+                        <li>type of referral (Internal or External).</li>
+                        <li>primary care provider for the patient - can be a private/public hospital, doctor, nurse or relative.</li>
+                        <li>
+                            address of the patient or that of the primary care
+                            provider.
+                        </li>
+                        <li>
+                            phone number of the patient or that of the primary
+                            care provider.
+                        </li>
+                        <li>reason why patient needs consultation.</li>
+                        <li>diagnosis of the patient.</li>
+                    </ol>
+                </div>
             </details>
 
             <div>
@@ -356,9 +396,15 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                     {...register("type", { required: true })}
                     className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    <option value="" className="bg-[#EFEFEF] text-gray-500">Select Type</option>
-                    <option value="Internal" className="bg-white">Internal</option>
-                    <option value="External" className="bg-white">External</option>
+                    <option value="" className="bg-[#EFEFEF] text-gray-500">
+                        Select Type
+                    </option>
+                    <option value="Internal" className="bg-white">
+                        Internal
+                    </option>
+                    <option value="External" className="bg-white">
+                        External
+                    </option>
                 </select>
             </div>
             <div>
