@@ -10,7 +10,7 @@ import {
     DialogContent,
     DialogTitle,
     DialogDescription,
-    DialogClose
+    DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { IconButton } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { fetchOnlineDoctors, fetchAllHospitals } from "@/lib/data";
-import { revalidatePath } from 'next/cache'; 
+import { revalidatePath } from "next/cache";
 
 interface RescheduleDialogProps {
     appointmentId: string;
@@ -27,12 +27,23 @@ interface RescheduleDialogProps {
     handleActionChange: (appointmentId: string, action: string) => void; // New prop
 }
 
-const RescheduleDialog: React.FC<RescheduleDialogProps> = ({ appointmentId, onClose, handleActionChange }) => {
-    const { register, handleSubmit, control, formState: { errors } } = useForm({
+const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
+    appointmentId,
+    onClose,
+    handleActionChange,
+}) => {
+    const {
+        register,
+        handleSubmit,
+        control,
+        formState: { errors },
+    } = useForm({
         mode: "onBlur", // Validate on blur to provide feedback as user types
     });
     const [saved, setSaved] = useState<boolean>(false);
-    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+        undefined
+    );
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [doctors, setDoctors] = useState([]);
     const [hospitals, setHospitals] = useState([]);
@@ -50,7 +61,6 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({ appointmentId, onCl
     }, []);
 
     const onSubmit = async (data: any) => {
-
         handleActionChange(appointmentId, "Rescheduled");
 
         try {
@@ -95,17 +105,18 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({ appointmentId, onCl
             </DialogTrigger>
             <DialogContent>
                 <DialogTitle>Reschedule Appointment</DialogTitle>
-                <DialogDescription>
-                    Select a new date and time for the appointment and
-                    other necessary details.
+                <DialogDescription className="bg-[#EFEFEF] p-2">
+                    Select a new date and time for the appointment and other
+                    necessary details.
                 </DialogDescription>
                 <form className="p-1" onSubmit={handleSubmit(onSubmit)}>
                     <div className="grid gap-4">
                         <div>
                             <Label htmlFor="date">Date</Label>
-                            <div className="flex items-center">
+                            <div className="flex items-center rounded-[5px] bg-[#EFEFEF]">
                                 <Input
                                     id="date"
+                                    className="rounded-[5px] bg-white/90"
                                     value={
                                         selectedDate
                                             ? selectedDate.toLocaleDateString()
@@ -150,7 +161,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({ appointmentId, onCl
                                         <Input
                                             type="time"
                                             {...field}
-                                            className="flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                                            className="flex bg-[#EFEFEF] h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                         />
                                     )}
                                 />
@@ -168,7 +179,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({ appointmentId, onCl
                                         <Input
                                             type="time"
                                             {...field}
-                                            className="flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                                            className="flex bg-[#EFEFEF] h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                         />
                                     )}
                                 />
@@ -181,20 +192,26 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({ appointmentId, onCl
                                 {...register("doctor", {
                                     required: "Doctor is required.",
                                 })}
-                                className="flex h-10 w-full rounded-md text-gray-500 border px-3 py-2 text-sm"
+                                className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                <option value="">Select a doctor</option>
+                                <option
+                                    value=""
+                                    className="bg-[#EFEFEF] text-gray-500"
+                                >
+                                    Select a doctor
+                                </option>
                                 {doctors.map((doctor: any) => (
                                     <option
                                         key={doctor.doctorId}
                                         value={doctor.name}
+                                        className="bg-white"
                                     >
                                         {doctor.name} - {doctor.specialization}
                                     </option>
                                 ))}
                             </select>
                             {errors.doctor && (
-                                <p className="text-sm text-destructive">
+                                <p className="text-sm p-2 text-destructive">
                                     Doctor is required.
                                 </p>
                             )}
@@ -206,20 +223,26 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({ appointmentId, onCl
                                 {...register("hospital", {
                                     required: "Hospital is required.",
                                 })}
-                                className="flex h-10 w-full rounded-md text-gray-500 border px-3 py-2 text-sm"
+                                className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                <option value="">Select a hospital</option>
+                                <option
+                                    value=""
+                                    className="bg-[#EFEFEF] text-gray-500"
+                                >
+                                    Select a hospital
+                                </option>
                                 {hospitals.map((hospital: any) => (
                                     <option
                                         key={hospital.hospitalId}
                                         value={hospital.name}
+                                        className="bg-white"
                                     >
                                         {hospital.name}
                                     </option>
                                 ))}
                             </select>
                             {errors.hospital && (
-                                <p className="text-sm text-destructive">
+                                <p className="text-sm p-2 text-destructive">
                                     Hospital is required.
                                 </p>
                             )}
@@ -231,21 +254,34 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({ appointmentId, onCl
                                 {...register("type", {
                                     required: "Type is required.",
                                 })}
-                                className="flex h-10 w-full rounded-md text-gray-500 border px-3 py-2 text-sm"
+                                className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                <option value="">Select appointment type</option>
-                                <option value="Virtual">Virtual</option>
-                                <option value="Walk In">Walk In</option>
+                                <option
+                                    value=""
+                                    className="bg-[#EFEFEF] text-gray-500"
+                                >
+                                    Select appointment type
+                                </option>
+                                <option value="Virtual" className="bg-white">
+                                    Virtual
+                                </option>
+                                <option value="Walk In" className="bg-white">
+                                    Walk In
+                                </option>
                             </select>
                             {errors.type && (
-                                <p className="text-sm text-destructive">
+                                <p className="text-sm p-2 text-destructive">
                                     Type is required.
                                 </p>
                             )}
                         </div>
                     </div>
                     <div className="mt-4 flex justify-end">
-                        <Button type="submit" disabled={saved} className="rounded-[10px]">
+                        <Button
+                            type="submit"
+                            disabled={saved}
+                            className="rounded-[10px]"
+                        >
                             Save
                         </Button>
                     </div>

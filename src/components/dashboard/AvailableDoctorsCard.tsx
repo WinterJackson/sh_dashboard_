@@ -29,8 +29,42 @@ const AvailableDoctorsCard = () => {
     };
 
     return (
-        <div className="flex justify-center rounded-2xl xl:pb-5 bg-slate-100 shadow-lg shadow-gray-300">
-            <div className="flex justify-between flex-col w-3/5 card p-4 ">
+        <div className="grid p-4 rounded-2xl xl:pb-5 bg-slate-100 shadow-lg shadow-gray-300">
+            <div className="flex">
+                <h3 className="text-sm pl-1 xl:text-base text-nowrap font-semibold mb-6">
+                    Available Doctors
+                </h3>
+            </div>
+
+            <div className="flex items-center justify-between gap-6">
+                <div className="">
+                    <span
+                        className={`font-bold p-1 rounded-[10px] bg-slate-200 ${getFontSizeClass(
+                            availableDoctors.toString().length
+                        )}`}
+                    >
+                        {availableDoctors}
+                    </span>
+                </div>
+                <div className="flex w-full items-center justify-end h-3/4 relative">
+                    <Image
+                        src={icon}
+                        alt="doctor icon"
+                        className=" p-2 rounded-full bg-primary/40"
+                        width={100}
+                        height={100}
+                    />
+                </div>
+            </div>
+
+            <div className="flex bg-red mt-5 items-center justify-between">
+                <p className="text-sm xl:text-sm pl-1">Online</p>
+                <p className="p-1 rounded-[5px] text-sm xl:text-sm h-auto text-primary hover:bg-primary hover:text-white">
+                    View all
+                </p>
+            </div>
+
+            {/* <div className="flex justify-between flex-col w-3/5 card p-4 ">
                 <h3 className="text-xs pl-1 xl:text-base text-nowrap font-semibold mb-6">
                     Available Doctors
                 </h3>
@@ -58,7 +92,7 @@ const AvailableDoctorsCard = () => {
                 <p className="flex p-1 rounded-[5px] items-end text-xs xl:text-sm h-auto text-primary hover:bg-primary hover:text-white">
                     View all
                 </p>
-            </div>
+            </div> */}
         </div>
     );
 };

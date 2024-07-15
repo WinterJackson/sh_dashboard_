@@ -1,4 +1,4 @@
-// src/app/dashboard/page.tsx file
+// src/app/(auth)/dashboard/page.tsx file
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
@@ -30,7 +30,7 @@ export default async function DashboardPage() {
                         <AvailableDoctorsCard />
                         <AvailableBedsCard />
                     </div>
-                    <div className="grid grid-cols-2 gap-4 p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                         <AppointmentsTodayCard />
                         <PatientsTodayCard />
                     </div>

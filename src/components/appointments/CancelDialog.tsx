@@ -40,10 +40,12 @@ const CancelDialog: React.FC<CancelDialogProps> = ({ appointmentId, onSave, onCl
             </DialogTrigger>
             <DialogContent>
                 <DialogTitle>Cancel Appointment</DialogTitle>
-                <DialogDescription>Provide a reason for cancellation.</DialogDescription>
+                <DialogDescription className="bg-[#EFEFEF] p-2">
+                    Provide a reason for cancellation of the appointment.
+                </DialogDescription>
                 <textarea
-                    className="w-full mt-2 p-2 border rounded"
-                    placeholder="Reason for cancellation"
+                    className="w-full p-2 text-sm bg-[#EFEFEF] rounded-[5px] border h-auto ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder="Type here..."
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
                 />

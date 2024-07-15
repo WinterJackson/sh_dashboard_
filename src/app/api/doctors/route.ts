@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
             name,
             specialization,
             status,
-            contactInformation,
+            phoneNumber,
             workingHours
         } = await req.json();
 
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
                 name,
                 specialization,
                 status,
-                contactInformation,
+                phoneNumber,
                 workingHours
             },
         });

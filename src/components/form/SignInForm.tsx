@@ -50,6 +50,8 @@ const SignInForm = () => {
             redirect: false,
         });
 
+        setIsLoading(false);
+
         if (!response?.error) {
             router.push("/dashboard");
 
@@ -57,7 +59,6 @@ const SignInForm = () => {
             console.error("Login failed:", response.error);
         }
 
-        setIsLoading(false);
     };
 
     return (

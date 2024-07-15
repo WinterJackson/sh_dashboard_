@@ -5,7 +5,9 @@ export async function fetchOnlineDoctors() {
     try {
         const response = await fetch("/api/doctors?status=Online");
         const data = await response.json();
+
         return data;
+
     } catch (error) {
         console.error("Failed to fetch doctors:", error);
         return [];

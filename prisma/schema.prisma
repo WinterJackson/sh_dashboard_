@@ -62,7 +62,7 @@ model Doctor {
   name               String
   specialization     String
   status             String
-  contactInformation String
+  phoneNumber        String
   workingHours       String
   averageRating      Float
   appointments       Appointment[]
@@ -80,20 +80,22 @@ model Patient {
   name                String               @unique
   phoneNo             String               @unique
   email               String               @unique
-  age                 Int
+  dateOfBirth         DateTime
   gender              String
-  appointmentReason   String
+  homeAddress         String?
+  state               String?
+  reasonForConsultation   String
   admissionDate       DateTime?
   dischargeDate       DateTime?
-  status              String
+  status              String               // Inpatient or Outpatient
   createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
+  updatedAt           DateTime             @default(now()) @updatedAt
   appointments        Appointment[]
   appointmentServices AppointmentService[]
   currentBed          Bed?
   hospital            Hospital             @relation(fields: [hospitalId], references: [hospitalId])
   payments            Payment?
-  referrals           Referral?
+  referrals           Referral[]
   serviceUsages       ServiceUsage?
 }
 
@@ -103,7 +105,7 @@ model Appointment {
   patientId                  Int
   hospitalId                 Int
   appointmentDate            DateTime
-  type                       String
+  type                       String               // Virtual or Walk In
   action                     String?
   status                     String?
   consultationFee            Float?
@@ -216,14 +218,27 @@ model ServiceUsage {
 }
 
 model Referral {
-  referralId Int             @id @default(autoincrement())
-  patientId  Int             @unique
-  hospitalId Int
-  date       DateTime
-  type       String
+  referralId            Int      @id @default(autoincrement())
+  patientId             Int      @unique
+  hospitalId            Int
+  date                  DateTime
+  type                  String   // External or Internal
+  primaryCareProvider   String   // Primary care provider for the patient
+  referralAddress       String   // Address of the patient or the primary care provider
+  referralPhone         String   // Phone number of the patient or the primary care provider
+  reasonForConsultation String   // Reason why patient needs consultation
+  diagnosis             String   // Diagnosis of the patient
+  physicianName         String   // Name of the referring physician
+  physicianDepartment   String   // Department of the referring physician
+  physicianSpecialty    String   // Specialty of the referring physician
+  physicianEmail        String   // Email of the referring physician
+  physicianPhoneNumber  String   // Phone number of the referring physician
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
   doctors    DoctorReferral?
   hospital   Hospital?        @relation(fields: [hospitalId], references: [hospitalId])
-  patient    Patient         @relation(fields: [patientId], references: [patientId])
+  patient    Patient          @relation(fields: [patientId], references: [patientId])
 }
 
 model DoctorReferral {

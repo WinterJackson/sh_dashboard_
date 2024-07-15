@@ -1,3 +1,5 @@
+// src/app/(auth)/layout.tsx
+
 import { FC, ReactNode } from "react";
 
 interface AuthLayoutProps {

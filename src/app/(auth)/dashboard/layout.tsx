@@ -1,4 +1,4 @@
-// src/app/dashboard/layout.tsx file
+// src/app/(auth)/dashboard/layout.tsx file
 
 import Header from "@/components/header/Header";
 import Sidebar from "@/components/sidebars/Sidebar";

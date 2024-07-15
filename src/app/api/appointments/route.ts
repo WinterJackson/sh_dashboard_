@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
+
 const prisma = require("@/lib/prisma");
 
 export async function GET(req: NextRequest) {
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
             hospitalName,
         } = await req.json();
 
-        if (!patientName || !age || !patientId || !timeFrom || !timeTo || !date || !doctorName || !type || !hospitalName) {
+        if (!patientName || !patientId) {
             return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
         }
 

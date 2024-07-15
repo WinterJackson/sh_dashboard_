@@ -10,7 +10,7 @@ import {
     DialogContent,
     DialogTitle,
     DialogDescription,
-    DialogClose
+    DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,16 +19,25 @@ import { Calendar } from "@/components/ui/calendar";
 import { useRouter } from "next/navigation";
 import { IconButton } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import { fetchOnlineDoctors, fetchAllHospitals, fetchPatientDetails } from "@/lib/data";
+import {
+    fetchOnlineDoctors,
+    fetchAllHospitals,
+    fetchPatientDetails,
+} from "@/lib/data";
+import { differenceInYears } from "date-fns";
 
 interface AddAppointmentDialogProps {
     onClose: () => void;
 }
 
-const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) => {
+const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
+    onClose,
+}) => {
     const { register, handleSubmit, control, setValue } = useForm();
     const [saved, setSaved] = useState<boolean>(false);
-    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+        undefined
+    );
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [doctors, setDoctors] = useState([]);
     const [hospitals, setHospitals] = useState([]);
@@ -50,7 +59,11 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
     const fetchAndSetPatientDetails = async (name: string) => {
         const details = await fetchPatientDetails(name);
         if (details) {
-            setValue("age", details.age);
+            const age = differenceInYears(
+                new Date(),
+                new Date(details.dateOfBirth)
+            ); // Calculate age from date of birth
+            setValue("age", age);
             setValue("patientId", details.patientId);
             setPatientDetails(details);
         } else {
@@ -67,7 +80,10 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ ...data, date: selectedDate?.toISOString() }),
+                body: JSON.stringify({
+                    ...data,
+                    date: selectedDate?.toISOString(),
+                }),
             });
 
             if (!response.ok) {
@@ -78,8 +94,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
             setSaved(true);
 
             // Redirect to the updated appointments page
-            router.replace('/dashboard/appointments');
-
+            router.replace("/dashboard/appointments");
         } catch (error) {
             console.error(error);
         }
@@ -99,20 +114,59 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
             <DialogTrigger asChild>
                 <button className="hidden"></button>
             </DialogTrigger>
-            <DialogContent>
-                <DialogTitle>Add Appointment</DialogTitle>
-                <DialogDescription>
+            <DialogContent >
+                <DialogTitle>Schedule Appointment</DialogTitle>
+                <DialogDescription className="bg-[#EFEFEF] p-2">
                     Fill out the form below to add a new appointment.
                 </DialogDescription>
+                <details
+                    className="text-primary cursor-pointer pl-1 text-sm bg-primary/10 py-1 rounded-[5px]"
+                    title="Click to expand and read instructions."
+                >
+                    <summary className="font-semibold ">Help - Appointment Form</summary>
+                    <p className="ml-5 text-gray-500">
+                        You are required to provide the following:
+                    </p>
+                    <ol className="list-disc ml-10 text-gray-500 text-[13px]">
+                        <li>the patient's full name.</li>
+                        <li>
+                            the age will be automatically provided if the
+                            patient's information is in the database.
+                        </li>
+                        <li>
+                            the patient's ID will also be automatically provided
+                            if the patient's information is in the database.
+                        </li>
+                        <li>
+                            the time when the appointment should begin - from.
+                        </li>
+                        <li>the time when the appointment should end - to.</li>
+                        <li>
+                            the date when the appointment is expected to happen.
+                        </li>
+                        <li>
+                            the doctor who will be associated with the
+                            appointment.
+                        </li>
+                        <li>the hospital associated with the appointment.</li>
+                        <li>
+                            the type of appointment weather Virtual or Walk In.
+                        </li>
+                    </ol>
+                </details>
                 <form className="p-1" onSubmit={handleSubmit(onSubmit)}>
                     <div className="grid gap-4">
                         <div>
                             <Label htmlFor="patientName">Patient Name</Label>
                             <Input
                                 id="patientName"
+                                className="bg-[#EFEFEF]"
                                 {...register("patientName", {
                                     required: true,
-                                    onBlur: (e) => fetchAndSetPatientDetails(e.target.value)
+                                    onBlur: (e) =>
+                                        fetchAndSetPatientDetails(
+                                            e.target.value
+                                        ),
                                 })}
                             />
                         </div>
@@ -121,6 +175,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
                             <Input
                                 id="age"
                                 type="number"
+                                className="bg-[#EFEFEF]"
                                 {...register("age", { required: true })}
                                 readOnly={!!patientDetails}
                             />
@@ -129,6 +184,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
                             <Label htmlFor="patientId">Patient ID</Label>
                             <Input
                                 id="patientId"
+                                className="bg-[#EFEFEF]"
                                 {...register("patientId", { required: true })}
                                 readOnly={!!patientDetails}
                             />
@@ -143,7 +199,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
                                         <input
                                             type="time"
                                             {...field}
-                                            className="flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                                            className="flex bg-[#EFEFEF] h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                         />
                                     )}
                                 />
@@ -157,7 +213,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
                                         <input
                                             type="time"
                                             {...field}
-                                            className="flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                                            className="flex bg-[#EFEFEF] h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                         />
                                     )}
                                 />
@@ -165,9 +221,10 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
                         </div>
                         <div>
                             <Label htmlFor="date">Date</Label>
-                            <div className="flex items-center">
+                            <div className="flex items-center rounded-[5px] bg-[#EFEFEF]">
                                 <Input
                                     id="date"
+                                    className="rounded-[5px] bg-white/90"
                                     value={
                                         selectedDate
                                             ? selectedDate.toLocaleDateString()
@@ -198,13 +255,19 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
                             <select
                                 id="doctorName"
                                 {...register("doctorName", { required: true })}
-                                className="flex h-10 w-full rounded-md text-gray-500 border px-3 py-2 text-sm"
+                                className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                <option value="">Select a doctor</option>
+                                <option
+                                    value=""
+                                    className="bg-[#EFEFEF] text-gray-500"
+                                >
+                                    Select a doctor
+                                </option>
                                 {doctors.map((doctor: any) => (
                                     <option
                                         key={doctor.doctorId}
                                         value={doctor.name}
+                                        className="bg-white"
                                     >
                                         {doctor.name} - {doctor.specialization}
                                     </option>
@@ -218,39 +281,58 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({ onClose }) 
                                 {...register("hospitalName", {
                                     required: true,
                                 })}
-                                className="flex h-10 w-full rounded-md text-gray-500 border px-3 py-2 text-sm"
+                                className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                <option value="">Select a hospital</option>
+                                <option
+                                    value=""
+                                    className="bg-[#EFEFEF] text-gray-500"
+                                >
+                                    Select a hospital
+                                </option>
                                 {hospitals.map((hospital: any) => (
                                     <option
                                         key={hospital.hospitalId}
                                         value={hospital.name}
+                                        className="bg-white"
                                     >
                                         {hospital.name}
                                     </option>
                                 ))}
                             </select>
                         </div>
+
                         <div>
-                            <Label htmlFor="type">Type</Label>
+                            <Label htmlFor="type">Appointment Type</Label>
                             <select
                                 id="type"
                                 {...register("type", { required: true })}
-                                className="flex h-10 w-full text-gray-500 rounded-md border px-3 py-2 text-sm"
+                                className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                <option value="">Select appointment type</option>
-                                <option value="Virtual">Virtual</option>
-                                <option value="Walk In">Walk In</option>
+                                <option
+                                    value=""
+                                    className="bg-[#EFEFEF] text-gray-500"
+                                >
+                                    Select type
+                                </option>
+                                <option value="Virtual" className="bg-white">
+                                    Virtual
+                                </option>
+                                <option value="Walk In" className="bg-white">
+                                    Walk In
+                                </option>
                             </select>
                         </div>
-                    </div>
-                    <div className="mt-4 flex justify-end">
-                        <Button type="submit" disabled={saved} className="rounded-[10px]">
-                            Save
-                        </Button>
+
+                        <div className="mt-4 flex justify-end">
+                            <Button type="submit">Save</Button>
+                        </div>
                     </div>
                 </form>
-                <DialogClose onClick={handleClose} />
+                {saved && (
+                    <div className="absolute bottom-7 bg-bluelight ml-7 p-2 rounded-[10px]">
+                        <p className=" text-black">Saved Successfully!</p>
+                    </div>
+                )}
             </DialogContent>
         </Dialog>
     );

@@ -169,13 +169,13 @@ const SignUpForm = () => {
                             control={form.control}
                             name="roleId"
                             render={({ field }) => (
-                                <FormItem className="flex flex-col w-full gap-1 pb-2 pt-2">
+                                <FormItem className="flex flex-col w-full ">
                                     <FormLabel className="text-white">Role</FormLabel>
-                                    <FormControl className="h-10 rounded-md">
+                                    <FormControl className="h-10 rounded-[5px] text-sm">
                                         <select {...field} onChange={(e) => field.onChange(Number(e.target.value))}>
-                                            <option value="">Select a role</option>
+                                            <option value="" className="text-sm">Select a role</option>
                                             {roles.map((role: any) => (
-                                                <option key={role.roleId} value={role.roleId}>
+                                                <option className="text-sm" key={role.roleId} value={role.roleId}>
                                                     {role.roleName}
                                                 </option>
                                             ))}
@@ -189,13 +189,13 @@ const SignUpForm = () => {
                             control={form.control}
                             name="hospitalId"
                             render={({ field }) => (
-                                <FormItem className="flex flex-col w-full gap-1">
+                                <FormItem className="flex flex-col w-full">
                                     <FormLabel className="text-white">Hospital</FormLabel>
-                                    <FormControl className="h-10 rounded-md">
+                                    <FormControl className="h-10 rounded-[5px] text-sm">
                                         <select {...field} onChange={(e) => field.onChange(Number(e.target.value))}>
-                                            <option value="">Select a hospital</option>
+                                            <option value="" className="text-sm">Select a hospital</option>
                                             {hospitals.map((hospital: any) => (
-                                                <option key={hospital.hospitalId} value={hospital.hospitalId}>
+                                                <option className="text-sm" key={hospital.hospitalId} value={hospital.hospitalId}>
                                                     {hospital.name}
                                                 </option>
                                             ))}
