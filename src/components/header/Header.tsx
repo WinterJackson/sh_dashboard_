@@ -82,7 +82,7 @@ const Header = () => {
                                 {firstName}
                             </p>
                             {session?.user ? (
-                                <p className="text-sm text-nowrap text-gray-400">
+                                <p className="text-xs text-nowrap text-gray-400">
                                     {session.user.role}
                                 </p>
                             ) : (

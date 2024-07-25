@@ -106,6 +106,7 @@ const AdminSidebar = () => {
                         <GearIcon className="mr-2 text-xl" />
                         Settings
                     </Link>
+                    <p>ADMIN</p>
                 </nav>
             </div>
             <div className="p-4">
@@ -113,7 +114,7 @@ const AdminSidebar = () => {
                     <div className="flex-grow">
                         <p className="font-semibold text-nowrap">{firstName}</p>
                         {session?.user ? (
-                            <p className="text-sm text-nowrap text-gray-400">
+                            <p className="text-xs text-nowrap text-gray-400">
                                 {session.user.role}
                             </p>
                         ) : (

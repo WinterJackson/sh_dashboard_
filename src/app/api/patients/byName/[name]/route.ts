@@ -1,4 +1,4 @@
-// src/pages/api/patients/[name]/route.ts
+// src/app/api/patients/[name]/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 

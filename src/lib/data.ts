@@ -41,7 +41,7 @@ export async function fetchAllHospitals() {
 // Fetch patient details by name
 export async function fetchPatientDetails(name: string) {
     try {
-        const response = await fetch(`/api/patients/${name}`);
+        const response = await fetch(`/api/patients/byName/${name}`);
         if (!response.ok) {
             throw new Error("Patient not found");
         }

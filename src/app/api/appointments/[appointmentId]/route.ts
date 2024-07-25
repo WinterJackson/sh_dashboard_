@@ -1,11 +1,18 @@
 // src/app/api/appointments/[appointmentId]/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { revalidatePath } from 'next/cache';
+import { Role } from "@/lib/definitions";
 const prisma = require("@/lib/prisma");
 
 export async function PATCH(req: NextRequest, { params }: { params: { appointmentId: string } }) {
     const { appointmentId } = params;
+    const token = await getToken({ req });
+
+    if (!token || ![Role.SUPER_ADMIN, Role.ADMIN, Role.DOCTOR, Role.NURSE].includes(token.role as Role)) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     try {
         const requestBody = await req.json();
@@ -73,7 +80,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { appointmen
         console.log('Updating appointment with data:', updateData);
 
         const updatedAppointment = await prisma.appointment.update({
-            where: { appointmentId },
+            where: { appointmentId: parseInt(appointmentId) },
             data: updateData,
         });
 

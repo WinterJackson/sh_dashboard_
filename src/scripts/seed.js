@@ -6,7 +6,6 @@ const prisma = require("../lib/prisma")
 
 const bcrypt = require("bcrypt");
 const {
-    roles,
     hospitals,
     users,
     departments,
@@ -28,22 +27,6 @@ const {
     profiles,
 } = require("../lib/placeholder-data");
 
-async function seedRoles() {
-    try {
-        await prisma.role.createMany({
-            data: roles.map((role) => ({
-                roleId: role.roleId,
-                roleName: role.roleName,
-                description: role.description,
-            })),
-            skipDuplicates: true,
-        });
-        console.log(`Seeded roles`);
-    } catch (error) {
-        console.error("Error seeding roles:", error);
-        throw error;
-    }
-}
 
 async function seedHospitals() {
     try {
@@ -77,7 +60,7 @@ async function seedUsers() {
                     username: user.username,
                     email: user.email,
                     password: await bcrypt.hash(user.password, 10),
-                    roleId: user.roleId,
+                    role: user.role,
                     hospitalId: user.hospitalId,
                     isActive: user.isActive,
                     lastLogin: user.lastLogin,
@@ -454,7 +437,6 @@ async function seedProfiles() {
 
 async function main() {
     // Seed database
-    await seedRoles();
     await seedHospitals();
     await seedUsers();
     await seedDepartments();

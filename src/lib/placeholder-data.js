@@ -1,22 +1,22 @@
 // src/lib/placeholder-data.js file
 
-const roles = [
-    {
-        roleId: 1,
-        roleName: "Admin",
-        description: "Manages hospital operations",
-    },
-    {
-        roleId: 2,
-        roleName: "Doctor",
-        description: "Provides medical care to patients",
-    },
-    {
-        roleId: 3,
-        roleName: "Staff",
-        description: "Addresses patients",
-    },
-];
+// const roles = [
+//     {
+//         roleId: 1,
+//         roleName: "Admin",
+//         description: "Manages hospital operations",
+//     },
+//     {
+//         roleId: 2,
+//         roleName: "Doctor",
+//         description: "Provides medical care to patients",
+//     },
+//     {
+//         roleId: 3,
+//         roleName: "Staff",
+//         description: "Addresses patients",
+//     },
+// ];
 
 const hospitals = [
     {
@@ -60,7 +60,7 @@ const users = [
         username: "Edwin",
         email: "edwin@snarkhealth.com",
         password: "adminpassword",
-        roleId: 1, // Admin role
+        role: "ADMIN", // Admin role
         hospitalId: 1, // Hospital 1
         isActive: true,
         lastLogin: null,
@@ -70,7 +70,7 @@ const users = [
         username: "John Smith",
         email: "js@snarkhealth.com",
         password: "docpassword",
-        roleId: 2, // Doctor role
+        role: "DOCTOR", // Doctor role
         hospitalId: 1, // Hospital 1
         isActive: true,
         lastLogin: null,
@@ -80,7 +80,7 @@ const users = [
         username: "staff1",
         email: "s1@snarkhealth.com",
         password: "staffpassword",
-        roleId: 3, // Staff role
+        role: "STAFF", // Staff role
         hospitalId: 1, // Hospital 1
         isActive: true,
         lastLogin: null,
@@ -90,7 +90,7 @@ const users = [
         username: "Jack",
         email: "jack@snarkhealth.com",
         password: "adminpassword",
-        roleId: 1, // Admin role
+        role: "ADMIN", // Admin role
         hospitalId: 2, // Hospital 2
         isActive: true,
         lastLogin: null,
@@ -100,7 +100,7 @@ const users = [
         username: "Phil Foden",
         email: "foden@snarkhealth.com",
         password: "docpassword",
-        roleId: 2, // Doctor role
+        role: "DOCTOR", // Doctor role
         hospitalId: 2, // Hospital 2
         isActive: true,
         lastLogin: null,
@@ -110,7 +110,7 @@ const users = [
         username: "staff2",
         email: "s2@snarkhealth.com",
         password: "staffpassword",
-        roleId: 3, // Staff role
+        role: "STAFF", // Staff role
         hospitalId: 2, // Hospital 2
         isActive: true,
         lastLogin: null,
@@ -120,7 +120,7 @@ const users = [
         username: "Mikel Arteta",
         email: "arteta@snarkhealth.com",
         password: "docpassword",
-        roleId: 2, // Doctor role
+        role: "DOCTOR", // Doctor role
         hospitalId: 1, // Hospital 2
         isActive: true,
         lastLogin: null,
@@ -130,7 +130,7 @@ const users = [
         username: "Xabi Alonso",
         email: "xabi@snarkhealth.com",
         password: "docpassword",
-        roleId: 2, // Doctor role
+        role: "DOCTOR", // Doctor role
         hospitalId: 2, // Hospital 2
         isActive: true,
         lastLogin: null,
@@ -1037,7 +1037,6 @@ const profiles = [
 ];
 
 module.exports = {
-    roles,
     hospitals,
     users,
     departments,

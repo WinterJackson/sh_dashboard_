@@ -4,44 +4,31 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import { getFirstName } from "@/lib/utils";
-import AvailableDoctorsCard from "@/components/dashboard/AvailableDoctorsCard";
-import AvailableBedsCard from "@/components/dashboard/AvailableBedsCard";
-import AppointmentsTodayCard from "@/components/dashboard/AppointmentsTodayCard";
-import PatientsTodayCard from "@/components/dashboard/PatientsTodayCard";
+import SuperAdminDashboard from "@/components/dashboard/SuperAdminDashboard";
+import AdminDashboard from "@/components/dashboard/AdminDashboard";
+import NormalDashboard from "@/components/dashboard/NormalDashboard";
 
 
 export default async function DashboardPage() {
     const session = await getServerSession(authOptions);
-    const firstName = session?.user ? getFirstName(session.user.username) : "";
 
     if (!session) {
         redirect("/sign-in");
         return null;
     }
 
+    const isSuperAdmin = session.user?.role === "SUPER_ADMIN";
+    const isAdmin = session.user?.role === "ADMIN";
+
     return (
         <div className="h-full">
-            <div className="text-xl font-semibold p-4">
-                Welcome, {firstName}
-            </div>
-            <div className="flex">
-                <div className="grid w-full">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-                        <AvailableDoctorsCard />
-                        <AvailableBedsCard />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-                        <AppointmentsTodayCard />
-                        <PatientsTodayCard />
-                    </div>
-                </div>
-                <div className="grid w-full">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-                        <AvailableDoctorsCard />
-                        <AvailableBedsCard />
-                    </div>
-                </div>
-            </div>
+            {isSuperAdmin ? (
+                <SuperAdminDashboard />
+            ) : isAdmin ? (
+                <AdminDashboard />
+            ) : (
+                <NormalDashboard />
+            )}
         </div>
     );
 }

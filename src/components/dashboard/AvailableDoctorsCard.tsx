@@ -63,36 +63,6 @@ const AvailableDoctorsCard = () => {
                     View all
                 </p>
             </div>
-
-            {/* <div className="flex justify-between flex-col w-3/5 card p-4 ">
-                <h3 className="text-xs pl-1 xl:text-base text-nowrap font-semibold mb-6">
-                    Available Doctors
-                </h3>
-                <div className="mb-8">
-                    <span
-                        className={`font-bold p-1 rounded-[10px] bg-slate-200 ${getFontSizeClass(
-                            availableDoctors.toString().length
-                        )}`}
-                    >
-                        {availableDoctors}
-                    </span>
-                </div>
-                <p className="text-xs xl:text-sm pl-1">Online</p>
-            </div>
-            <div className="flex flex-col items-center justify-center w-2/5 card mr-5">
-                <div className="flex w-full items-center justify-center h-3/4 relative">
-                    <Image
-                        src={icon}
-                        alt="doctor icon"
-                        className=" p-2 rounded-full bg-primary/40"
-                        width={100}
-                        height={100}
-                    />
-                </div>
-                <p className="flex p-1 rounded-[5px] items-end text-xs xl:text-sm h-auto text-primary hover:bg-primary hover:text-white">
-                    View all
-                </p>
-            </div> */}
         </div>
     );
 };

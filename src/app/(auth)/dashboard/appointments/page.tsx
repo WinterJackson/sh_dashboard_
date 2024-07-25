@@ -49,7 +49,7 @@ export default async function AppointmentsPage({ searchParams }: AppointmentsPag
     ]);
 
     return (
-        <div className="flex flex-col h-full min-w-full">
+        <div className="flex flex-col h-full min-w-full p-4">
             <h1 className="text-xl min-w-full font-semibold mb-1">Appointments</h1>
             <div className="flex flex-row justify-between items-center mb-5">
                 <AppointmentsTable appointments={appointments} totalAppointments={totalAppointments} currentPage={page} />

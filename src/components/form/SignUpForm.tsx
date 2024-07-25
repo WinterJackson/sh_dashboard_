@@ -20,6 +20,7 @@ import Link from "next/link";
 // import GoogleSignInButton from "../GoogleSignInButton";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/ui/loading";
+import { Role } from "@/lib/definitions";
 
 const FormSchema = z
     .object({
@@ -30,7 +31,7 @@ const FormSchema = z
             .min(1, "Password is required")
             .min(8, "Password must have more than 8 characters"),
         confirmPassword: z.string().min(1, "Password confirmation is required"),
-        roleId: z.number().nonnegative("Role is required"),
+        role: z.nativeEnum(Role),
         hospitalId: z.number().nonnegative("Hospital is required"),
     })
     .refine((data) => data.password === data.confirmPassword, {
@@ -39,7 +40,6 @@ const FormSchema = z
     });
 
 const SignUpForm = () => {
-    const [roles, setRoles] = useState([]);
     const [hospitals, setHospitals] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
@@ -51,18 +51,15 @@ const SignUpForm = () => {
             email: "",
             password: "",
             confirmPassword: "",
-            roleId: -1,
+            role: Role.STAFF,
             hospitalId: -1,
         },
     });
 
     useEffect(() => {
         const fetchData = async () => {
-            const rolesResponse = await fetch('/api/roles');
             const hospitalsResponse = await fetch('/api/hospitals');
-            const rolesData = await rolesResponse.json();
             const hospitalsData = await hospitalsResponse.json();
-            setRoles(rolesData);
             setHospitals(hospitalsData);
         };
 
@@ -82,7 +79,7 @@ const SignUpForm = () => {
                 email: values.email,
                 password: values.password,
                 confirmPassword: values.confirmPassword,
-                roleId: Number(values.roleId),
+                role: values.role,
                 hospitalId: Number(values.hospitalId),
             }),
         });
@@ -107,9 +104,14 @@ const SignUpForm = () => {
                             name="username"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="text-white">Username</FormLabel>
+                                    <FormLabel className="text-white">
+                                        Username
+                                    </FormLabel>
                                     <FormControl>
-                                        <Input placeholder="John Doe" {...field} />
+                                        <Input
+                                            placeholder="John Doe"
+                                            {...field}
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -120,7 +122,9 @@ const SignUpForm = () => {
                             name="email"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="text-white">Email</FormLabel>
+                                    <FormLabel className="text-white">
+                                        Email
+                                    </FormLabel>
                                     <FormControl>
                                         <Input
                                             placeholder="john.doe@example.com"
@@ -136,7 +140,9 @@ const SignUpForm = () => {
                             name="password"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="text-white">Password</FormLabel>
+                                    <FormLabel className="text-white">
+                                        Password
+                                    </FormLabel>
                                     <FormControl>
                                         <Input
                                             type="password"
@@ -153,7 +159,9 @@ const SignUpForm = () => {
                             name="confirmPassword"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="text-white">Confirm Password</FormLabel>
+                                    <FormLabel className="text-white">
+                                        Confirm Password
+                                    </FormLabel>
                                     <FormControl>
                                         <Input
                                             type="password"
@@ -167,20 +175,36 @@ const SignUpForm = () => {
                         />
                         <FormField
                             control={form.control}
-                            name="roleId"
+                            name="role"
                             render={({ field }) => (
-                                <FormItem className="flex flex-col w-full ">
-                                    <FormLabel className="text-white">Role</FormLabel>
+                                <FormItem className="flex flex-col w-full">
+                                    <FormLabel className="text-white">
+                                        Role
+                                    </FormLabel>
                                     <FormControl className="h-10 rounded-[5px] text-sm">
-                                        <select {...field} onChange={(e) => field.onChange(Number(e.target.value))}
+                                        <select
+                                            {...field}
                                             className="focus:outline outline-2 outline-primary "
                                         >
-                                            <option value="" className="text-sm text-gray-400">Select a role</option>
-                                            {roles.map((role: any) => (
-                                                <option className="text-sm" key={role.roleId} value={role.roleId}>
-                                                    {role.roleName}
-                                                </option>
-                                            ))}
+                                            {Object.values(Role)
+                                                .filter(
+                                                    (role) =>
+                                                        role !==
+                                                        Role.SUPER_ADMIN
+                                                )
+                                                .map((role) => (
+                                                    <option
+                                                        key={role}
+                                                        value={role}
+                                                    >
+                                                        {role
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            role
+                                                                .slice(1)
+                                                                .toLowerCase()}
+                                                    </option>
+                                                ))}
                                         </select>
                                     </FormControl>
                                     <FormMessage />
@@ -192,14 +216,31 @@ const SignUpForm = () => {
                             name="hospitalId"
                             render={({ field }) => (
                                 <FormItem className="flex flex-col w-full">
-                                    <FormLabel className="text-white">Hospital</FormLabel>
+                                    <FormLabel className="text-white">
+                                        Hospital
+                                    </FormLabel>
                                     <FormControl className="h-10 rounded-[5px] text-sm">
-                                        <select {...field} onChange={(e) => field.onChange(Number(e.target.value))}
+                                        <select
+                                            {...field}
+                                            onChange={(e) =>
+                                                field.onChange(
+                                                    Number(e.target.value)
+                                                )
+                                            }
                                             className="focus:outline outline-2 outline-primary "
                                         >
-                                            <option value="" className="text-sm text-gray-400">Select a hospital</option>
+                                            <option
+                                                value=""
+                                                className="text-sm text-gray-400"
+                                            >
+                                                Select a hospital
+                                            </option>
                                             {hospitals.map((hospital: any) => (
-                                                <option className="text-sm" key={hospital.hospitalId} value={hospital.hospitalId}>
+                                                <option
+                                                    className="text-sm"
+                                                    key={hospital.hospitalId}
+                                                    value={hospital.hospitalId}
+                                                >
                                                     {hospital.name}
                                                 </option>
                                             ))}
@@ -220,7 +261,10 @@ const SignUpForm = () => {
                 {/* <GoogleSignInButton>Sign up with Google</GoogleSignInButton> */}
                 <p className="text-center text-sm text-white mt-2">
                     If you already have an account, please&nbsp;
-                    <Link className="text-primary hover:underline" href="/sign-in">
+                    <Link
+                        className="text-primary hover:underline"
+                        href="/sign-in"
+                    >
                         Sign in
                     </Link>
                 </p>

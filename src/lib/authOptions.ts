@@ -5,6 +5,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import { Role } from "@/lib/definitions";
 
 const prisma = require("@/lib/prisma");
 
@@ -34,7 +35,7 @@ export const authOptions: NextAuthOptions = {
                 // Fetch the user from the database
                 const user = await prisma.user.findUnique({
                     where: { email: credentials.email },
-                    include: { role: true, hospital: true },
+                    include: { hospital: true },
                 });
 
                 // If no user was found or passwords do not match
@@ -50,7 +51,7 @@ export const authOptions: NextAuthOptions = {
                     id: user.userId,
                     username: user.username,
                     email: user.email,
-                    role: user.role?.roleName,
+                    role: user.role as Role,
                     hospital: user.hospital?.name,
                 };
             },
@@ -69,7 +70,7 @@ export const authOptions: NextAuthOptions = {
             if (session.user) {
                 session.user.id = token.id as string;
                 session.user.username = token.username as string;
-                session.user.role = token.role as string;
+                session.user.role = token.role as Role;
                 session.user.hospital = token.hospital as string;
             }
 
@@ -79,7 +80,7 @@ export const authOptions: NextAuthOptions = {
             if (user) {
                 token.id = user.id;
                 token.username = user.username;
-                token.role = user.role;
+                token.role = user.role as Role;
                 token.hospital = user.hospital;
                 token.sessionToken = crypto.randomUUID();
                 // Store session in the database

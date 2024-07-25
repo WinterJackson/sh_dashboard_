@@ -7,7 +7,7 @@ export interface User {
     username?: string;
     email: string;
     password: string;
-    roleId: number;
+    role: Role;
     hospitalId: number;
     isActive?: boolean;
     lastLogin?: Date;
@@ -15,10 +15,12 @@ export interface User {
     doctor?: Doctor;
 }
 
-export interface Role {
-    roleId: number;
-    roleName: string;
-    description: string;
+export enum Role {
+    SUPER_ADMIN = "SUPER_ADMIN",
+    ADMIN = "ADMIN",
+    DOCTOR = "DOCTOR",
+    NURSE = "NURSE",
+    STAFF = "STAFF",
 }
 
 export interface Profile {

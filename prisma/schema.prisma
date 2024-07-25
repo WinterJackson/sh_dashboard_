@@ -11,13 +11,21 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  DOCTOR
+  NURSE
+  STAFF
+}
+
 model User {
   userId     String    @id @default(uuid())
   username   String    @unique
   email      String    @unique
   password   String
-  roleId     Int
-  hospitalId Int
+  role       Role
+  hospitalId Int?
   isActive   Boolean   @default(true)
   lastLogin  DateTime?
   createdAt  DateTime  @default(now())
@@ -25,15 +33,7 @@ model User {
   doctor     Doctor?
   profile    Profile?
   sessions   Session[]
-  hospital   Hospital  @relation(fields: [hospitalId], references: [hospitalId])
-  role       Role      @relation(fields: [roleId], references: [roleId])
-}
-
-model Role {
-  roleId      Int    @id @default(autoincrement())
-  roleName    String @unique
-  description String
-  users       User[]
+  hospital   Hospital?  @relation(fields: [hospitalId], references: [hospitalId])
 }
 
 model Profile {
@@ -56,7 +56,7 @@ model Doctor {
   doctorId           Int             @id @default(autoincrement())
   userId             String          @unique
   email              String          @unique
-  hospitalId         Int             @unique
+  hospitalId         Int
   departmentId       Int
   serviceId          Int
   name               String
@@ -263,7 +263,7 @@ model Hospital {
   logoUrl      String
   appointments Appointment[]
   beds         Bed?
-  doctors      Doctor?
+  doctors      Doctor[]
   departments  HospitalDepartment[]
   patients     Patient[]
   payments     Payment?
@@ -298,4 +298,10 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model RoleConstraints {
+  constraintId Int     @id @default(autoincrement())
+  role         Role
+  count        Int
 }
