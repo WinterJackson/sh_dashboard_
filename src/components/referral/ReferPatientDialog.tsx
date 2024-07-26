@@ -28,12 +28,12 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
     const [currentSection, setCurrentSection] = useState(1);
     const router = useRouter();
 
-    useEffect(() => {
-        if (saved) {
-            const timer = setTimeout(() => setSaved(false), 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [saved]);
+    // useEffect(() => {
+    //     if (saved) {
+    //         const timer = setTimeout(() => setSaved(false), 3000);
+    //         return () => clearTimeout(timer);
+    //     }
+    // }, [saved]);
 
     const fetchAndSetPatientDetails = async (name: string) => {
         const details = await fetchPatientDetails(name);
@@ -77,7 +77,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
             setSaved(true);
 
             // Redirect to the updated referrals page
-            router.replace('/dashboard/referrals');
+            // router.replace('/dashboard/referrals');
 
         } catch (error) {
             console.error(error);
@@ -480,7 +480,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                         {currentSection === 3 && renderSection3()}
                 </form>
                 {saved && (
-                    <div className="absolute bottom-7 bg-bluelight ml-7 p-2 rounded-[10px]">
+                    <div className="absolute bottom-11 bg-bluelight left-20 ml-12 p-2 rounded-[10px]">
                         <p className=" text-black">Referred Successfully!</p>
                     </div>
                 )}

@@ -4,29 +4,39 @@
 
 import React from "react";
 import { useSession } from "next-auth/react";
+import AvailableDoctorsCard from "./AvailableDoctorsCard";
+import AvailableBedsCard from "./AvailableBedsCard";
+import AppointmentsTodayCard from "./AppointmentsTodayCard";
+import PatientsTodayCard from "./PatientsTodayCard";
 
 const AdminDashboard: React.FC = () => {
     const { data: session } = useSession();
     const firstName = session?.user ? session.user.username.split(" ")[0] : "Admin";
 
     return (
-        <div className="h-full p-4">
-            <div className="text-xl font-semibold">
+        <>
+            <div className="text-xl font-semibold p-4">
                 Welcome, {firstName}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                {/* Add cards or components displaying data relevant to Admin */}
-                <div className="bg-white shadow rounded p-4">
-                    <h2 className="text-lg font-medium">Hospital Overview Admin Dashboard</h2>
-                    {/* Content displaying hospital data */}
+            <div className="flex">
+                <div className="grid w-full">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                        <AvailableDoctorsCard />
+                        <AvailableBedsCard />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                        <AppointmentsTodayCard />
+                        <PatientsTodayCard />
+                    </div>
                 </div>
-                <div className="bg-white shadow rounded p-4">
-                    <h2 className="text-lg font-medium">Staff Management</h2>
-                    {/* Content displaying staff management data */}
+                <div className="grid w-full">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                        <AvailableDoctorsCard />
+                        <AvailableBedsCard />
+                    </div>
                 </div>
-                {/* Add more sections as needed */}
             </div>
-        </div>
+        </>
     );
 };
 

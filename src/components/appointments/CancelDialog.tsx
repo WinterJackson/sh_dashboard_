@@ -2,13 +2,20 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
+import React, { useState } from "react";
+import {
+    Dialog,
+    DialogTrigger,
+    DialogContent,
+    DialogTitle,
+    DialogDescription,
+    DialogClose,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 interface CancelDialogProps {
     appointmentId: string;
-    onSave: (reason: string) => void;
+    onSave: (reason: string) => Promise<void>;
     onClose: () => void;
 }
 
@@ -16,22 +23,16 @@ const CancelDialog: React.FC<CancelDialogProps> = ({ appointmentId, onSave, onCl
     const [reason, setReason] = useState<string>("");
     const [saved, setSaved] = useState<boolean>(false);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (reason) {
-            onSave(reason);
-            setSaved(true);
+            try {
+                await onSave(reason);
+                setSaved(true);
+            } catch (error) {
+                console.error("Error saving reason:", error);
+            }
         }
     };
-
-    useEffect(() => {
-        if (saved) {
-            const timer = setTimeout(() => {
-                onClose();
-                setSaved(false);
-            }, 1000);
-            return () => clearTimeout(timer);
-        }
-    }, [saved, onClose]);
 
     return (
         <Dialog open={true} onOpenChange={onClose}>
@@ -48,12 +49,27 @@ const CancelDialog: React.FC<CancelDialogProps> = ({ appointmentId, onSave, onCl
                     placeholder="Type here..."
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
+                    disabled={saved}
                 />
+                {saved && (
+                    <div className="absolute bottom-6 bg-bluelight ml-6 p-2 rounded-[10px]">
+                        <p className="text-black">Saved Successfully!</p>
+                    </div>
+                )}
                 <div className="flex justify-end gap-2 mt-4">
-                    <Button onClick={handleSave} className="text-white rounded-[10px]">Save</Button>
+                    <Button
+                        onClick={handleSave}
+                        className="text-white rounded-[10px]"
+                        disabled={saved}
+                    >
+                        Save
+                    </Button>
                 </div>
                 <DialogClose asChild>
-                    <button className="absolute hidden top-0 right-0 m-2" onClick={onClose}></button>
+                    <button
+                        className="absolute hidden top-0 right-0 m-2"
+                        onClick={onClose}
+                    ></button>
                 </DialogClose>
             </DialogContent>
         </Dialog>

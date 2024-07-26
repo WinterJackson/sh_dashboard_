@@ -219,7 +219,7 @@ model ServiceUsage {
 
 model Referral {
   referralId            Int      @id @default(autoincrement())
-  patientId             Int      @unique
+  patientId             Int
   hospitalId            Int
   date                  DateTime
   type                  String   // External or Internal
@@ -239,6 +239,8 @@ model Referral {
   doctors    DoctorReferral?
   hospital   Hospital?        @relation(fields: [hospitalId], references: [hospitalId])
   patient    Patient          @relation(fields: [patientId], references: [patientId])
+
+  @@unique([patientId, hospitalId, date, type])
 }
 
 model DoctorReferral {

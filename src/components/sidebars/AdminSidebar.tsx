@@ -70,7 +70,7 @@ const AdminSidebar = () => {
                     </Link>
 
                     <Link
-                        href="/dashboard/doctors"
+                        href=""
                         className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center ${
                             isActive("/dashboard/doctors")
                                 ? "bg-primary text-white"
@@ -83,7 +83,7 @@ const AdminSidebar = () => {
                     </Link>
 
                     <Link
-                        href="/dashboard/patients"
+                        href=""
                         className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center ${
                             isActive("/dashboard/patients")
                                 ? "bg-primary text-white"
@@ -96,7 +96,7 @@ const AdminSidebar = () => {
                     </Link>
 
                     <Link
-                        href="/dashboard/settings"
+                        href=""
                         className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center ${
                             isActive("/dashboard/settings")
                                 ? "bg-primary text-white"

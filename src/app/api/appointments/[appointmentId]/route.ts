@@ -80,7 +80,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { appointmen
         console.log('Updating appointment with data:', updateData);
 
         const updatedAppointment = await prisma.appointment.update({
-            where: { appointmentId: parseInt(appointmentId) },
+            where: { appointmentId: appointmentId },
             data: updateData,
         });
 

@@ -30,9 +30,7 @@ export async function POST(req: NextRequest) {
         } = await req.json();
 
         const hospital = await prisma.hospital.findFirst({
-            where: {
-                name: hospitalName,
-            },
+            where: { name: hospitalName },
         });
 
         if (!hospital) {
@@ -45,8 +43,7 @@ export async function POST(req: NextRequest) {
 
         const referralDate = new Date();
 
-        console.log(referralDate);
-
+        // Upsert patient
         const patient = await prisma.patient.upsert({
             where: { patientId },
             update: {
@@ -75,12 +72,16 @@ export async function POST(req: NextRequest) {
             },
         });
 
+        // Check for existing referral
         const existingReferral = await prisma.referral.findFirst({
             where: {
                 patientId: patient.patientId,
                 hospitalId: hospital.hospitalId,
                 type,
-                date: referralDate
+                date: {
+                    gte: new Date(new Date(referralDate).setHours(0, 0, 0, 0)),
+                    lt: new Date(new Date(referralDate).setHours(23, 59, 59, 999)),
+                },
             },
         });
 
@@ -91,6 +92,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        // Create new referral
         const newReferral = await prisma.referral.create({
             data: {
                 patientId: patient.patientId,

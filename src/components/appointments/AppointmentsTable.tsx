@@ -32,7 +32,7 @@ const CancelDialog = dynamic(
     () => import("@/components/appointments/CancelDialog")
 );
 const ActionDialog = dynamic(
-    () => import("@/components/appointments/ActionDialog")
+    () => import("@/components/appointments/PendingDialog")
 );
 
 // Pagination component

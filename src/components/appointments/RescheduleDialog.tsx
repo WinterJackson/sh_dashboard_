@@ -1,4 +1,4 @@
-// src/components/appointments/RescheduleDialog.tsx
+// File: src/components/appointments/RescheduleDialog.tsx
 
 "use client";
 
@@ -82,8 +82,6 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
             console.log("Appointment rescheduled successfully");
             setSaved(true);
             revalidatePath("/dashboard/appointments");
-
-            onClose();
         } catch (error) {
             console.error("Error:", error);
         }
@@ -122,12 +120,23 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                             You are required to provide the following:
                         </p>
                         <ol className="list-disc ml-10 text-gray-500 text-[13px]">
-                            <li>the <strong>new date</strong> of the appointment.</li>
+                            <li>
+                                the <strong>new date</strong> of the
+                                appointment.
+                            </li>
                             <li>the time when the appointment should start.</li>
                             <li>the time when the appointment should end.</li>
                             <li>the doctor associated with the appointment.</li>
-                            <li>the hospital where the appointment should take place if physical or that which is associated with the appointment if virtual.</li>
-                            <li>the type of the appointment <strong>Virtual</strong> or <strong>Walk In</strong>.</li>
+                            <li>
+                                the hospital where the appointment should take
+                                place if physical or that which is associated
+                                with the appointment if virtual.
+                            </li>
+                            <li>
+                                the type of the appointment{" "}
+                                <strong>Virtual</strong> or{" "}
+                                <strong>Walk In</strong>.
+                            </li>
                         </ol>
                     </div>
                 </details>
@@ -299,6 +308,11 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                             )}
                         </div>
                     </div>
+                    {saved && (
+                        <div className="absolute bottom-11 bg-bluelight p-2 rounded-[10px]">
+                            <p className=" text-black">Saved Successfully!</p>
+                        </div>
+                    )}
                     <div className="mt-4 flex justify-end">
                         <Button
                             type="submit"
