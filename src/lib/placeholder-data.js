@@ -1,23 +1,5 @@
 // src/lib/placeholder-data.js file
 
-// const roles = [
-//     {
-//         roleId: 1,
-//         roleName: "Admin",
-//         description: "Manages hospital operations",
-//     },
-//     {
-//         roleId: 2,
-//         roleName: "Doctor",
-//         description: "Provides medical care to patients",
-//     },
-//     {
-//         roleId: 3,
-//         roleName: "Staff",
-//         description: "Addresses patients",
-//     },
-// ];
-
 const hospitals = [
     {
         hospitalId: 1,
@@ -52,6 +34,17 @@ const hospitals = [
         website: "https://www.abujageneralhospital.com",
         logoUrl: "https://example.com/abuja-general-hospital.png",
     },
+    {
+        hospitalId: 4,
+        name: "Saint Bridget Hospital",
+        phone: "+254 700200098",
+        email: "info@stbridgethospital.com",
+        country: "Kenya",
+        city: "Kiambu",
+        referralCode: "SB487",
+        website: "https://www.stbridgethospital.com",
+        logoUrl: "https://example.com/stb-hospital.png",
+    }
 ];
 
 const users = [
