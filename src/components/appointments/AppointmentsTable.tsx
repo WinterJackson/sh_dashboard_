@@ -12,7 +12,9 @@ import { SymbolIcon } from "@radix-ui/react-icons";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { useRouter } from "next/navigation";
 import { useSearch } from "@/app/context/SearchContext";
-import { useAppointmentsStore } from "@/components/ui/store";
+// import { useAppointmentsStore } from "@/components/ui/store";
+import { fetchAppointments, updateAppointmentStatus } from "@/lib/data";
+import { useUser } from "@/app/context/UserContext"; 
 import dynamic from "next/dynamic";
 import {
     DropdownMenu,
@@ -61,13 +63,14 @@ interface AppointmentsTableProps {
     currentPage: number;
 }
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
-    appointments,
     totalAppointments,
     currentPage,
 }) => {
+    const { user, hospitalId } = useUser();
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [filterType, setFilterType] = useState<string>(
         filterOptions[0].value
@@ -83,7 +86,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         string | undefined
     >(undefined);
     const { searchTerm, clearSearchTerm } = useSearch();
-    const { fetchAppointments, updateAppointment } = useAppointmentsStore();
+    // const { fetchAppointments, updateAppointment } = useAppointmentsStore();
     const [actionText, setActionText] = useState<{ [key: string]: string }>({});
     const [openDialog, setOpenDialog] = useState(false);
     const [dialogType, setDialogType] = useState<string | undefined>(undefined);
@@ -116,8 +119,29 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
     };
 
     useEffect(() => {
-        fetchAppointments().then(() => setIsLoading(false));
-    }, [fetchAppointments]);
+        const getAppointments = async () => {
+            try {
+                setIsLoading(true);
+                let data = await fetchAppointments();
+
+                // Filter the appointments based on the user's role and hospitalId
+                if (user && user.role !== "SUPER_ADMIN" && hospitalId) {
+                    data = data.filter(
+                        (appointment) => appointment.hospitalId === hospitalId
+                    );
+                }
+
+                setAppointments(data);
+                console.log(data);
+            } catch (error) {
+                console.log("Failed to fetch appointments");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        getAppointments();
+    }, [user, hospitalId]);
 
     useEffect(() => {
         setDateFilter(undefined);
@@ -145,12 +169,14 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
     };
 
     const handleCancelSave = async (appointmentId: string, reason: string) => {
-        await updateAppointment(appointmentId, { status: "Cancelled", reason });
+        await updateAppointmentStatus(appointmentId, { status: "Cancelled", reason });
+        console.log("Updated appointment data after cancellation:", reason);
         handleActionChange(appointmentId, "Cancelled");
     };
 
     const handlePendingSave = async (appointmentId: string, reason: string) => {
-        await updateAppointment(appointmentId, { status: "Pending", reason });
+        await updateAppointmentStatus(appointmentId, { status: "Pending", reason });
+        console.log("Updated appointment data after setting to pending:", updateAppointmentStatus);
         handleActionChange(appointmentId, "Pending");
     };
 
@@ -183,6 +209,8 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         }
     };
 
+    console.log("Appointments data:", appointments);
+
     const filteredAppointments = appointments.filter((appointment) => {
         const searchTextLower = searchTerm.toLowerCase();
         let filterMatch = true;
@@ -209,7 +237,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                         .includes(searchTextLower);
                     break;
                 case "Doctor":
-                    filterMatch = appointment.doctor.name
+                    filterMatch = appointment.doctor.user.username
                         .toLowerCase()
                         .includes(searchTextLower);
                     break;
@@ -237,7 +265,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                         new Date(appointment.appointmentDate)
                             .toLocaleDateString()
                             .includes(searchTextLower) ||
-                        appointment.doctor.name
+                        appointment.doctor.user.username
                             .toLowerCase()
                             .includes(searchTextLower) ||
                         appointment.type
@@ -277,6 +305,9 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
 
         return filterMatch;
     });
+
+
+    console.log(filteredAppointments)
 
     const totalPages = Math.ceil(totalAppointments / ITEMS_PER_PAGE);
 
@@ -449,25 +480,22 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                                   <tr
                                       key={appointment.appointmentId}
                                       className={`text-center ${
-                                          isCancelled
-                                              ? "bg-red-100"
-                                              : ""
+                                          isCancelled ? "bg-red-100" : ""
                                       }`}
                                   >
                                       <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-left">
                                           {appointment.patient.name}
                                       </td>
                                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {appointment.patient.dateOfBirth
-                                            ? differenceInYears(
-                                                  new Date(),
-                                                  new Date(
-                                                      appointment.patient
-                                                          .dateOfBirth
-                                                  )
-                                              )
-                                            : "N/A"}
-                                    </td>
+                                          {appointment.patient.dateOfBirth
+                                              ? differenceInYears(
+                                                    new Date(),
+                                                    new Date(
+                                                        appointment.patient.dateOfBirth
+                                                    )
+                                                )
+                                              : "N/A"}
+                                      </td>
                                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                                           {appointment.patient.patientId}
                                       </td>
@@ -478,7 +506,22 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                                           {formattedDate}
                                       </td>
                                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                                          {appointment.doctor.name}
+                                          {(() => {
+                                              console.log(
+                                                  "Doctor info:",
+                                                  appointment.doctor?.user
+                                                      ?.profile
+                                              );
+                                              const firstName =
+                                                  appointment.doctor?.user
+                                                      ?.profile?.firstName;
+                                              const lastName =
+                                                  appointment.doctor?.user
+                                                      ?.profile?.lastName;
+                                              return firstName && lastName
+                                                  ? `${firstName} ${lastName}`
+                                                  : "N/A";
+                                          })()}
                                       </td>
                                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                                           {appointment.type === "Virtual" ? (

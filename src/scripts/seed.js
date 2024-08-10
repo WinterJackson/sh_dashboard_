@@ -10,7 +10,11 @@ const {
     users,
     departments,
     services,
+    superAdmins,
+    admins,
     doctors,
+    nurses,
+    staff,
     patients,
     appointments,
     doctorEarnings,
@@ -109,20 +113,51 @@ async function seedServices() {
     }
 }
 
+async function seedSuperAdmins() {
+    try {
+        await prisma.superAdmin.createMany({
+            data: superAdmins.map((superAdmin) => ({
+                superAdminId: superAdmin.superAdminId,
+                userId: superAdmin.userId,
+            })),
+            skipDuplicates: true,
+        });
+        console.log(`Seeded super admins`);
+    } catch (error) {
+        console.error("Error seeding super admins:", error);
+        throw error;
+    }
+}
+
+async function seedAdmins() {
+    try {
+        await prisma.admin.createMany({
+            data: admins.map((admin) => ({
+                adminId: admin.adminId,
+                userId: admin.userId,
+                hospitalId: admin.hospitalId,
+            })),
+            skipDuplicates: true,
+        });
+        console.log(`Seeded admins`);
+    } catch (error) {
+        console.error("Error seeding admins:", error);
+        throw error;
+    }
+}
+
 async function seedDoctors() {
     try {
         await prisma.doctor.createMany({
             data: doctors.map((doctor) => ({
                 doctorId: doctor.doctorId,
                 userId: doctor.userId,
-                email: doctor.email,
                 hospitalId: doctor.hospitalId,
                 departmentId: doctor.departmentId,
                 serviceId: doctor.serviceId,
-                name: doctor.name,
                 specialization: doctor.specialization,
                 status: doctor.status,
-                phoneNumber: doctor.phoneNumber,
+                phoneNo: doctor.phoneNo,
                 workingHours: doctor.workingHours,
                 averageRating: doctor.averageRating,
             })),
@@ -131,6 +166,52 @@ async function seedDoctors() {
         console.log(`Seeded doctors`);
     } catch (error) {
         console.error("Error seeding doctors:", error);
+        throw error;
+    }
+}
+
+async function seedNurses() {
+    try {
+        await prisma.nurse.createMany({
+            data: nurses.map((nurse) => ({
+                nurseId: nurse.nurseId,
+                userId: nurse.userId,
+                hospitalId: nurse.hospitalId,
+                departmentId: nurse.departmentId,
+                specialization: nurse.specialization,
+                status: nurse.status,
+                phoneNo: nurse.phoneNo,
+                workingHours: nurse.workingHours,
+                averageRating: nurse.averageRating,
+            })),
+            skipDuplicates: true,
+        });
+        console.log(`Seeded nurses`);
+    } catch (error) {
+        console.error("Error seeding nurses:", error);
+        throw error;
+    }
+}
+
+async function seedStaff() {
+    try {
+        await prisma.staff.createMany({
+            data: staff.map((staff) => ({
+                staffId: staff.staffId,
+                userId: staff.userId,
+                hospitalId: staff.hospitalId,
+                departmentId: staff.departmentId,
+                specialization: staff.specialization,
+                status: staff.status,
+                phoneNo: staff.phoneNo,
+                workingHours: staff.workingHours,
+                averageRating: staff.averageRating,
+            })),
+            skipDuplicates: true,
+        });
+        console.log(`Seeded staff`);
+    } catch (error) {
+        console.error("Error seeding staff:", error);
         throw error;
     }
 }
@@ -441,7 +522,11 @@ async function main() {
     await seedUsers();
     await seedDepartments();
     await seedServices();
+    await seedSuperAdmins();
+    await seedAdmins();
     await seedDoctors();
+    await seedNurses();
+    await seedStaff();
     await seedPatients();
     await seedAppointments();
     await seedDoctorEarnings();

@@ -1,17 +1,19 @@
 // src/components/dashboard/SuperAdminDashboard.tsx
 
-"use client"
+"use client";
 
-import React from "react";
 import { useSession } from "next-auth/react";
-import AvailableBedsCard from "./AvailableBedsCard";
-import AvailableDoctorsCard from "./AvailableDoctorsCard";
-import PatientsTodayCard from "./PatientsTodayCard";
-import AppointmentsTodayCard from "./AppointmentsTodayCard";
+import React from "react";
+import AppointmentsTodayCard from "../AppointmentsTodayCard";
+import AvailableBedsCard from "../AvailableBedsCard";
+import AvailableDoctorsCard from "../AvailableDoctorsCard";
+import PatientsTodayCard from "../PatientsTodayCard";
 
 const SuperAdminDashboard: React.FC = () => {
     const { data: session } = useSession();
-    const firstName = session?.user ? session.user.username.split(" ")[0] : "Super Admin";
+    const firstName = session?.user
+        ? session.user.username.split(" ")[0]
+        : "Super Admin";
 
     return (
         <>

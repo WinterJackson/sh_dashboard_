@@ -10,7 +10,7 @@ import { BellIcon } from "@radix-ui/react-icons";
 import { useSession } from "next-auth/react";
 import { getFirstName } from "@/lib/utils";
 import Skeleton from "@mui/material/Skeleton";
-import { useUser } from "@/app/context/UserContext";
+import { useUserProfile } from "@/app/context/ProfileContext";
 import Search from "@/components/ui/search";
 import dynamic from "next/dynamic";
 
@@ -20,7 +20,7 @@ const ReferPatientDialog = dynamic(() => import("@/components/referral/ReferPati
 
 const Header = () => {
     const { data: session } = useSession();
-    const { user } = useUser();
+    const { user } = useUserProfile();
     const firstName = session?.user ? getFirstName(session.user.username) : "";
     const nameWidth = firstName ? firstName.length * 10 : 100;
     const profileImageUrl = user?.imageUrl;

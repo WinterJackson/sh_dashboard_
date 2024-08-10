@@ -1,4 +1,4 @@
-// File: app/api/doctors/route.ts
+// File: src/app/api/doctors/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 // import prisma from "@/lib/prisma";
 
@@ -6,7 +6,13 @@ const prisma = require("@/lib/prisma")
 
 export async function GET(req: NextRequest) {
     try {
-        const doctors = await prisma.doctor.findMany();
+        const doctors = await prisma.doctor.findMany({
+            include: {
+                user: true,
+                hospital: true,
+            },
+        });
+
         return NextResponse.json(doctors);
     } catch (error) {
         return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
@@ -17,28 +23,24 @@ export async function POST(req: NextRequest) {
     try {
         const {
             userId,
-            email,
             hospitalId,
             departmentId,
             serviceId,
-            name,
             specialization,
             status,
-            phoneNumber,
+            phoneNo,
             workingHours
         } = await req.json();
 
         const newDoctor = await prisma.doctor.create({
             data: {
                 userId,
-                email,
                 hospitalId,
                 departmentId,
                 serviceId,
-                name,
                 specialization,
                 status,
-                phoneNumber,
+                phoneNo,
                 workingHours
             },
         });

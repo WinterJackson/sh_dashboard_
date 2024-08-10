@@ -6,18 +6,38 @@ import React, { useEffect, useState } from "react";
 import { fetchOnlineDoctors } from "@/lib/data";
 import icon from "../../../public/images/doctor.svg"
 import Image from "next/image";
+import { useUser } from "@/app/context/UserContext";
 
 const AvailableDoctorsCard = () => {
     const [availableDoctors, setAvailableDoctors] = useState(0);
+    const { user, hospitalId } = useUser();
 
     useEffect(() => {
         const fetchDoctors = async () => {
-            const doctors = await fetchOnlineDoctors();
-            setAvailableDoctors(doctors.length * 20000);
+            try {
+                const doctors = await fetchOnlineDoctors();
+    
+                // Filter doctors by hospitalId
+                if (user && user.role !== "SUPER_ADMIN" && hospitalId) {
+                    const filteredDoctors = doctors.filter(
+                        (doctor: { hospitalId: number }) => doctor.hospitalId === hospitalId
+                    );
+    
+                    setAvailableDoctors(filteredDoctors.length * 2000);
+                } else if (user && user.role === "SUPER_ADMIN") {
+                    // If Super Admin, set the total number of online doctors
+                    setAvailableDoctors(doctors.length * 2000);
+                }
+            } catch (error) {
+                console.error("Error fetching online doctors:", error);
+            }
         };
-
-        fetchDoctors();
-    }, []);
+    
+        // Fetch doctors only when user data is available
+        if (user) {
+            fetchDoctors();
+        }
+    }, [user, hospitalId]);
 
     const getFontSizeClass = (numDigits: number) => {
         if (numDigits <= 3) return "text-4xl xl:text-6xl"; // Default large size

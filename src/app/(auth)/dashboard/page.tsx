@@ -1,13 +1,11 @@
 // src/app/(auth)/dashboard/page.tsx file
 
-import { getServerSession } from "next-auth";
+import AdminDashboard from "@/components/dashboard/admin-dashboard/AdminDashboard";
+import NormalDashboard from "@/components/dashboard/normal-dashboard/NormalDashboard";
+import SuperAdminDashboard from "@/components/dashboard/super-admin-dashboard/SuperAdminDashboard";
 import { authOptions } from "@/lib/authOptions";
+import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { getFirstName } from "@/lib/utils";
-import SuperAdminDashboard from "@/components/dashboard/SuperAdminDashboard";
-import AdminDashboard from "@/components/dashboard/AdminDashboard";
-import NormalDashboard from "@/components/dashboard/NormalDashboard";
-
 
 export default async function DashboardPage() {
     const session = await getServerSession(authOptions);

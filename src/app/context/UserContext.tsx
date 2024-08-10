@@ -1,19 +1,22 @@
 // src/context/UserContext.tsx
+
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useSession } from "next-auth/react";
-import { Profile } from "@/lib/definitions";
+import { User } from "@/lib/definitions";
 
 interface UserContextType {
-    user: Profile | null;
+    user: User | null;
+    hospitalId: number | null;
     error: string | null;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<Profile | null>(null);
+    const [user, setUser] = useState<User | null>(null);
+    const [hospitalId, setHospitalId] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
     const { data: session } = useSession();
 
@@ -23,15 +26,19 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
                 const userId = session.user.id;
 
                 try {
-                    const response = await fetch(`/api/profile/${userId}`);
+                    const response = await fetch(`/api/users/${userId}`);
                     if (!response.ok) {
-                        throw new Error(`Failed to fetch user profile: ${response.statusText}`);
+                        throw new Error(`Failed to fetch user data: ${response.statusText}`);
                     }
-                    const profileData = await response.json();
-                    setUser(profileData);
+                    const userData = await response.json();
+
+                    console.log(userData)
+
+                    setUser(userData);
+                    setHospitalId(userData.hospitalId || null);
                 } catch (error) {
-                    setError('Error fetching user profile.');
-                    console.error("Error fetching user profile:", error);
+                    setError('Error fetching user data.');
+                    console.error("Error fetching user data:", error);
                 }
             }
         };
@@ -39,7 +46,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }, [session]);
 
     return (
-        <UserContext.Provider value={{ user, error }}>
+        <UserContext.Provider value={{ user, hospitalId, error }}>
             {children}
         </UserContext.Provider>
     );

@@ -53,27 +53,27 @@ const users = [
         username: "Edwin",
         email: "edwin@snarkhealth.com",
         password: "adminpassword",
+        role: "SUPER_ADMIN", // Super Admin role
+        hospitalId: null,
+        isActive: true,
+        lastLogin: null,
+    },
+    {
+        userId: "410544b2-0001-0000-000a-fec4b6a6442a",
+        username: "Kuzzi",
+        email: "kuzzi@snarkhealth.com",
+        password: "adminpassword",
+        role: "SUPER_ADMIN", // Super Admin role
+        hospitalId: null,
+        isActive: true,
+        lastLogin: null,
+    },
+    {
+        userId: "410544b2-8594-1125-5468-fec4b6a6442a",
+        username: "Ken",
+        email: "ken@snarkhealth.com",
+        password: "adminpassword",
         role: "ADMIN", // Admin role
-        hospitalId: 1, // Hospital 1
-        isActive: true,
-        lastLogin: null,
-    },
-    {
-        userId: "b78d23c4-1234-5678-90ab-fec4b6a6442b",
-        username: "John Smith",
-        email: "js@snarkhealth.com",
-        password: "docpassword",
-        role: "DOCTOR", // Doctor role
-        hospitalId: 1, // Hospital 1
-        isActive: true,
-        lastLogin: null,
-    },
-    {
-        userId: "b78d23c4-9856-5678-90ab-fec4b6a6442b",
-        username: "staff1",
-        email: "s1@snarkhealth.com",
-        password: "staffpassword",
-        role: "STAFF", // Staff role
         hospitalId: 1, // Hospital 1
         isActive: true,
         lastLogin: null,
@@ -89,6 +89,46 @@ const users = [
         lastLogin: null,
     },
     {
+        userId: "810544b2-5697-7789-2154-fec4b6a8442a",
+        username: "Vivian",
+        email: "viv@snarkhealth.com",
+        password: "adminpassword",
+        role: "ADMIN", // Admin role
+        hospitalId: 3, // Hospital 3
+        isActive: true,
+        lastLogin: null,
+    },
+    {
+        userId: "410544b2-9685-2222-h458-fec4b6h5442a",
+        username: "Martin",
+        email: "martin@snarkhealth.com",
+        password: "adminpassword",
+        role: "ADMIN", // Admin role
+        hospitalId: 4, // Hospital 4
+        isActive: true,
+        lastLogin: null,
+    },
+    {
+        userId: "880544b2-4565-9875-458u-fec4b6h5442a",
+        username: "Test",
+        email: "test@snarkhealth.com",
+        password: "adminpassword",
+        role: "ADMIN", // Admin role
+        hospitalId: 4, // Hospital 4
+        isActive: true,
+        lastLogin: null,
+    },
+    {
+        userId: "b78d23c4-1234-5678-90ab-fec4b6a6442b",
+        username: "John Smith",
+        email: "js@snarkhealth.com",
+        password: "docpassword",
+        role: "DOCTOR", // Doctor role
+        hospitalId: 1, // Hospital 1
+        isActive: true,
+        lastLogin: null,
+    },
+    {
         userId: "b78d23c4-0921-5678-90ab-fec4b6a6442b",
         username: "Phil Foden",
         email: "foden@snarkhealth.com",
@@ -99,12 +139,32 @@ const users = [
         lastLogin: null,
     },
     {
-        userId: "b78d23c4-0097-5678-90ab-fec4b6a6442b",
-        username: "staff2",
-        email: "s2@snarkhealth.com",
-        password: "staffpassword",
-        role: "STAFF", // Staff role
-        hospitalId: 2, // Hospital 2
+        userId: "b78d23c4-7625-5678-90ab-fec4b6a6442b",
+        username: "Xabi Alonso",
+        email: "xabi@snarkhealth.com",
+        password: "docpassword",
+        role: "DOCTOR", // Doctor role
+        hospitalId: 3, // Hospital 3
+        isActive: true,
+        lastLogin: null,
+    },
+    {
+        userId: "b78d23c4-4698-2147-45kg-fec4b6a6442b",
+        username: "Silva",
+        email: "silva@snarkhealth.com",
+        password: "docpassword",
+        role: "DOCTOR", // Doctor role
+        hospitalId: 3, // Hospital 3
+        isActive: true,
+        lastLogin: null,
+    },
+    {
+        userId: "b78d23c4-f478-9426-lo48-fec4b6a6442b",
+        username: "Stanley",
+        email: "stan@snarkhealth.com",
+        password: "docpassword",
+        role: "DOCTOR", // Doctor role
+        hospitalId: 3, // Hospital 3
         isActive: true,
         lastLogin: null,
     },
@@ -114,17 +174,107 @@ const users = [
         email: "arteta@snarkhealth.com",
         password: "docpassword",
         role: "DOCTOR", // Doctor role
-        hospitalId: 1, // Hospital 2
+        hospitalId: 4, // Hospital 4
         isActive: true,
         lastLogin: null,
     },
     {
-        userId: "b78d23c4-7625-5678-90ab-fec4b6a6442b",
-        username: "Xabi Alonso",
-        email: "xabi@snarkhealth.com",
+        userId: "b78d23c4-g458-3654-4598-fec4b6a6442b",
+        username: "Kante",
+        email: "kante@snarkhealth.com",
         password: "docpassword",
         role: "DOCTOR", // Doctor role
+        hospitalId: 4, // Hospital 4
+        isActive: true,
+        lastLogin: null,
+    },
+    {
+        userId: "b78d23c4-79p6-5698-4469-fec4b6a6442b",
+        username: "Linda",
+        email: "linda@snarkhealth.com",
+        password: "docpassword",
+        role: "DOCTOR", // Doctor role
+        hospitalId: 4, // Hospital 4
+        isActive: true,
+        lastLogin: null,
+    },
+    {
+        userId: "b78d23c4-5896-7789-hg88-fec4b6a6442b",
+        username: "Riley",
+        email: "riley@snarkhealth.com",
+        password: "nursepassword",
+        role: "NURSE", // Nurse role
+        hospitalId: 1, // Hospital 1
+        isActive: true,
+        lastLogin: null,
+    },
+    {
+        userId: "b78d23c4-0097-5678-90ab-fec4b6a6442b",
+        username: "Kimberly",
+        email: "kim@snarkhealth.com",
+        password: "nursepassword",
+        role: "NURSE", // Nurse role
         hospitalId: 2, // Hospital 2
+        isActive: true,
+        lastLogin: null,
+    },
+    {
+        userId: "b78d23c4-4565-7845-80ab-fec4b6a6442b",
+        username: "Lilian",
+        email: "lil@snarkhealth.com",
+        password: "nursepassword",
+        role: "NURSE", // Nurse role
+        hospitalId: 3, // Hospital 3
+        isActive: true,
+        lastLogin: null,
+    },
+    {
+        userId: "b78d23c4-jh85-4589-2569-fec4b6a6442b",
+        username: "Wendy",
+        email: "wendy@snarkhealth.com",
+        password: "nursepassword",
+        role: "NURSE", // Nurse role
+        hospitalId: 4, // Hospital 4
+        isActive: true,
+        lastLogin: null,
+    },
+    {
+        userId: "b78d23c4-4569-k475-5216-fec4b6a6442b",
+        username: "staff1",
+        email: "s1@snarkhealth.com",
+        password: "staffpassword",
+        role: "STAFF", // Staff role
+        hospitalId: 1, // Hospital 1
+        isActive: true,
+        lastLogin: null,
+    },
+    {
+        userId: "b78d23c4-3158-2987-d485-fec4b6a6442b",
+        username: "staff2",
+        email: "s2@snarkhealth.com",
+        password: "staffpassword",
+        role: "STAFF", // Staff role
+        hospitalId: 2, // Hospital 2
+        isActive: true,
+        lastLogin: null,
+    },
+    {
+        userId: "b78d23c4-6789-4369-7269-fec4b6a6442b",
+        username: "staff3",
+        email: "s3@snarkhealth.com",
+        password: "staffpassword",
+        role: "STAFF", // Staff role
+        hospitalId: 3, // Hospital 3
+        isActive: true,
+        lastLogin: null,
+    },
+    {
+        userId: "b78d23c4-h469-9726-v236-fec4b6a6442b",
+        username: "staff4",
+        email: "s4@snarkhealth.com",
+        password: "staffpassword",
+        role: "STAFF", // Staff role
+        hospitalId: 4, // Hospital 4
         isActive: true,
         lastLogin: null,
     },
@@ -160,6 +310,24 @@ const departments = [
         name: "General Services",
         description:
             "Holding the uncategorized services eg. blood and stool tests, consultations etc.",
+    },
+    {
+        departmentId: 6,
+        name: "Cleaning Services",
+        description:
+            "Focuses on cleanliness in the hospital.",
+    },
+    {
+        departmentId: 7,
+        name: "Office Services",
+        description:
+            "Focuses on office services in the hospital such as secretaries and personal assistants.",
+    },
+    {
+        departmentId: 8,
+        name: "Kitchen Services",
+        description:
+            "Focuses on food and all the kitchen activities in the hospital.",
     },
 ];
 
@@ -229,64 +397,252 @@ const services = [
         hospitalId: 3, // Hospital 3
         serviceName: "Consultation",
     },
+    {
+        serviceId: 14,
+        hospitalId: 3, // Hospital 3
+        serviceName: "Epilepsy treatment",
+    },
+    {
+        serviceId: 15,
+        hospitalId: 4, // Hospital 4
+        serviceName: "Cardiac MRI",
+    },
+    {
+        serviceId: 16,
+        hospitalId: 3, // Hospital 3
+        serviceName: "Urinalysis",
+    },
+];
+
+const superAdmins = [
+    {
+        superAdminId: 1,
+        userId: "410544b2-0001-0000-000a-fec4b6a6442a",
+    },
+    {
+        superAdminId: 2,
+        userId: "410544b2-4001-4271-9855-fec4b6a6442a",
+    },
+];
+
+const admins = [
+    {
+        adminId: 1,
+        userId: "410544b2-8594-1125-5468-fec4b6a6442a",
+        hospitalId: 1, // Hospital 1
+    },
+    {
+        adminId: 2,
+        userId: "410544b2-8263-4271-9855-fec4b6a6442a",
+        hospitalId: 2, // Hospital 2
+    },
+    {
+        adminId: 3,
+        userId: "810544b2-5697-7789-2154-fec4b6a8442a",
+        hospitalId: 3, // Hospital 3
+    },
+    {
+        adminId: 4,
+        userId: "410544b2-9685-2222-h458-fec4b6h5442a",
+        hospitalId: 4, // Hospital 4
+    },
+    {
+        adminId: 5,
+        userId: "880544b2-4565-9875-458u-fec4b6h5442a",
+        hospitalId: 4, // Hospital 4
+    }
 ];
 
 const doctors = [
     {
         doctorId: 1,
-        userId: "b78d23c4-1234-5678-90ab-fec4b6a6442b", // Reference user for login
-        email: "jsmith@snarkhealth.com",
+        userId: "b78d23c4-1234-5678-90ab-fec4b6a6442b",
         hospitalId: 1, // Hospital 1
         departmentId: 1, // Cardiology
         serviceId: 10, // Cardiac MRI
-        name: "Dr. John Smith",
         specialization: "Cardiologist",
         status: "Online",
-        phoneNumber: "+1234566372",
+        phoneNo: "+1234566372",
         workingHours: "Mon-Fri: 9AM-5PM",
         averageRating: 4.6,
     },
     {
         doctorId: 2,
-        userId: "b78d23c4-0921-5678-90ab-fec4b6a6442b", // Reference user for login
-        email: "pfoden@snarkhealth.com",
+        userId: "b78d23c4-0921-5678-90ab-fec4b6a6442b",
         hospitalId: 2, // Hospital 2
         departmentId: 2, // Neurology
         serviceId: 9, // Epilepsy treatment
-        name: "Dr. Phil Foden",
         specialization: "Neurosurgeon",
         status: "Online",
-        phoneNumber: "+1244567890",
+        phoneNo: "+1244567890",
         workingHours: "Mon-Fri: 8AM-5PM",
         averageRating: 4.8,
     },
     {
         doctorId: 3,
-        userId: "b78d23c4-8332-5678-90ab-fec4b6a6442b", // Reference user for login
-        email: "arteta@snarkhealth.com",
+        userId: "b78d23c4-4698-2147-45kg-fec4b6a6442b",
+        hospitalId: 3, // Hospital 3
+        departmentId: 2, // Neurology
+        serviceId: 14, // Epilepsy treatment
+        specialization: "Neurosurgeon",
+        status: "Online",
+        phoneNo: "+1269857890",
+        workingHours: "Mon-Fri: 8AM-5PM",
+        averageRating: 4.4,
+    },
+    {
+        doctorId: 4,
+        userId: "b78d23c4-g458-3654-4598-fec4b6a6442b",
+        hospitalId: 4, // Hospital 4
+        departmentId: 1, // Cardiology
+        serviceId: 15, // Cardiac MRI
+        specialization: "Cardiologist",
+        status: "Online",
+        phoneNo: "+1264893890",
+        workingHours: "Mon-Fri: 8AM-5PM",
+        averageRating: 4.2,
+    },
+    {
+        doctorId: 5,
+        userId: "b78d23c4-8332-5678-90ab-fec4b6a6442b",
         hospitalId: 1, // Hospital 1
         departmentId: 3, // Urology
         serviceId: 7, // Urinalysis
-        name: "Dr. Mikel Arteta",
         specialization: "Urologist",
         status: "Online",
-        phoneNumber: "+1244635424",
+        phoneNo: "+1244635424",
         workingHours: "Mon-Fri: 8AM-4PM",
         averageRating: 4.5,
     },
     {
-        doctorId: 4,
-        userId: "b78d23c4-7625-5678-90ab-fec4b6a6442b", // Reference user for login
-        email: "xabi@snarkhealth.com",
+        doctorId: 6,
+        userId: "b78d23c4-7625-5678-90ab-fec4b6a6442b",
         hospitalId: 2, // Hospital 2
         departmentId: 4, // Orthopedics
         serviceId: 8, // Arthroscopy
-        name: "Dr. Xabi Alonso",
         specialization: "Orthopedist",
         status: "Online",
-        phoneNumber: "+1244487632",
+        phoneNo: "+1244487632",
         workingHours: "Mon-Fri: 8AM-2PM",
         averageRating: 4.1,
+    },
+    {
+        doctorId: 7,
+        userId: "b78d23c4-f478-9426-lo48-fec4b6a6442b",
+        hospitalId: 3, // Hospital 3
+        departmentId: 3, // Urology
+        serviceId: 16, // Urinalysis
+        specialization: "Urologist",
+        status: "Online",
+        phoneNo: "+1245426824",
+        workingHours: "Mon-Fri: 8AM-4PM",
+        averageRating: 4.5,
+    },
+    {
+        doctorId: 8,
+        userId: "b78d23c4-79p6-5698-4469-fec4b6a6442b",
+        hospitalId: 4, // Hospital 4
+        departmentId: 1, // Cardiology
+        serviceId: 15, // Cardiac MRI
+        specialization: "Cardiologist",
+        status: "Online",
+        phoneNo: "+1243674814",
+        workingHours: "Mon-Fri: 8AM-4PM",
+        averageRating: 4.7,
+    },
+];
+
+const nurses = [
+    {
+        nurseId: 1,
+        userId: "b78d23c4-5896-7789-hg88-fec4b6a6442b",
+        hospitalId: 1, // Hospital 1
+        departmentId: 1, // Cardiology
+        specialization: "Cardiology",
+        status: "Online",
+        phoneNo: "+1234587322",
+        workingHours: "Mon-Fri: 9AM-5PM",
+        averageRating: 4.6,
+    },
+    {
+        nurseId: 2,
+        userId: "b78d23c4-0097-5678-90ab-fec4b6a6442b",
+        hospitalId: 2, // Hospital 2
+        departmentId: 3, // Urology
+        specialization: "Urology",
+        status: "Online",
+        phoneNo: "+1234856532",
+        workingHours: "Mon-Fri: 7AM-5PM",
+        averageRating: 4.1,
+    },
+    {
+        nurseId: 3,
+        userId: "b78d23c4-4565-7845-80ab-fec4b6a6442b",
+        hospitalId: 3, // Hospital 3
+        departmentId: 5, // General Services
+        specialization: "Cardiology",
+        status: "Online",
+        phoneNo: "+1234650932",
+        workingHours: "Mon-Fri: 7AM-5PM",
+        averageRating: 4.3,
+    },
+    {
+        nurseId: 4,
+        userId: "b78d23c4-jh85-4589-2569-fec4b6a6442b",
+        hospitalId: 4, // Hospital 4
+        departmentId: 5, // General Services
+        specialization: "Cardiology",
+        status: "Online",
+        phoneNo: "+1234076232",
+        workingHours: "Mon-Fri: 7AM-5PM",
+        averageRating: 4.6,
+    },
+];
+
+const staff = [
+    {
+        staffId: 1,
+        userId: "b78d23c4-4569-k475-5216-fec4b6a6442b",
+        hospitalId: 1, // Hospital 1
+        departmentId: 7, // Office Services
+        specialization: "Secretary",
+        status: "Online",
+        phoneNo: "+1235823322",
+        workingHours: "Mon-Fri: 9AM-5PM",
+        averageRating: 4.0,
+    },
+    {
+        staffId: 2,
+        userId: "b78d23c4-3158-2987-d485-fec4b6a6442b",
+        hospitalId: 2, // Hospital 2
+        departmentId: 7, // Office Services
+        specialization: "Secretary",
+        status: "Online",
+        phoneNo: "+1235879682",
+        workingHours: "Mon-Fri: 9AM-5PM",
+        averageRating: 4.0,
+    },
+    {
+        staffId: 3,
+        userId: "b78d23c4-6789-4369-7269-fec4b6a6442b",
+        hospitalId: 3, // Hospital 3
+        departmentId: 7, // Cleaning Services
+        specialization: "Cleaner",
+        status: "Online",
+        phoneNo: "+1234658722",
+        workingHours: "Mon-Fri: 8AM-5PM",
+        averageRating: 4.1,
+    },
+    {
+        staffId: 4,
+        userId: "b78d23c4-h469-9726-v236-fec4b6a6442b",
+        hospitalId: 4, // Hospital 4
+        departmentId: 8, // Kitchen Services
+        specialization: "Cheff",
+        status: "Online",
+        phoneNo: "+1247693722",
+        workingHours: "Mon-Fri: 8AM-5PM",
+        averageRating: 4.5,
     },
 ];
 
@@ -339,6 +695,58 @@ const patients = [
         dateOfBirth: new Date("1993-07-23T00:00:00"),
         gender: "Female",
         reasonForConsultation: "Chest pain",
+        admissionDate: null,
+        dischargeDate: null,
+        status: "Outpatient",
+    },
+    {
+        patientId: 13575,
+        hospitalId: 3, // Hospital 3
+        name: "David Adams",
+        phoneNo: "+7676233210",
+        email: "david.adams@example.com",
+        dateOfBirth: new Date("1987-02-10T00:00:00"),
+        gender: "Male",
+        reasonForConsultation: "Fracture",
+        admissionDate: null,
+        dischargeDate: null,
+        status: "Inpatient",
+    },
+    {
+        patientId: 13682,
+        hospitalId: 3, // Hospital 3
+        name: "Linda Carter",
+        phoneNo: "+7676547610",
+        email: "linda.carter@example.com",
+        dateOfBirth: new Date("1995-08-20T00:00:00"),
+        gender: "Female",
+        reasonForConsultation: "Diabetes",
+        admissionDate: null,
+        dischargeDate: null,
+        status: "Outpatient",
+    },
+    {
+        patientId: 14732,
+        hospitalId: 4, // Hospital 4
+        name: "Michael Thompson",
+        phoneNo: "+254700000001",
+        email: "michael.thompson@example.com",
+        dateOfBirth: new Date("1989-11-18T00:00:00"),
+        gender: "Male",
+        reasonForConsultation: "Hypertension",
+        admissionDate: null,
+        dischargeDate: null,
+        status: "Inpatient",
+    },
+    {
+        patientId: 14829,
+        hospitalId: 4, // Hospital 4
+        name: "Sophia Roberts",
+        phoneNo: "+254700000002",
+        email: "sophia.roberts@example.com",
+        dateOfBirth: new Date("1993-06-14T00:00:00"),
+        gender: "Female",
+        reasonForConsultation: "Asthma",
         admissionDate: null,
         dischargeDate: null,
         status: "Outpatient",
@@ -587,6 +995,54 @@ const beds = [
         ward: "Ward D",
         availability: "Available",
     },
+    {
+        bedId: 11,
+        hospitalId: 3, // Hospital 3
+        patientId: 13575,
+        type: "ICU",
+        ward: "Ward A",
+        availability: "Occupied",
+    },
+    {
+        bedId: 12,
+        hospitalId: 3, // Hospital 3
+        patientId: null,
+        type: "General",
+        ward: "Ward B",
+        availability: "Available",
+    },
+    {
+        bedId: 13,
+        hospitalId: 3, // Hospital 3
+        patientId: null,
+        type: "General",
+        ward: "Ward C",
+        availability: "Available",
+    },
+    {
+        bedId: 14,
+        hospitalId: 4, // Hospital 4
+        patientId: 14732,
+        type: "General",
+        ward: "Ward A",
+        availability: "Occupied",
+    },
+    {
+        bedId: 15,
+        hospitalId: 4, // Hospital 4
+        patientId: null,
+        type: "General",
+        ward: "Ward B",
+        availability: "Available",
+    },
+    {
+        bedId: 16,
+        hospitalId: 4, // Hospital 4
+        patientId: null,
+        type: "ICU",
+        ward: "Ward C",
+        availability: "Available",
+    },
 ];
 
 const departmentServices = [
@@ -596,14 +1052,29 @@ const departmentServices = [
         price: 1500.0,
     },
     {
+        departmentId: 1, // Cardiology
+        serviceId: 15, // Cardiac MRI
+        price: 2500.0,
+    },
+    {
         departmentId: 2, // Neurology
         serviceId: 9, // Epilepsy treatment
         price: 13000.0,
     },
     {
+        departmentId: 2, // Neurology
+        serviceId: 14, // Epilepsy treatment
+        price: 15000.0,
+    },
+    {
         departmentId: 3, // Urology
         serviceId: 7, // Urinalysis
         price: 500.0,
+    },
+    {
+        departmentId: 3, // Urology
+        serviceId: 16, // Urinalysis
+        price: 800.0,
     },
     {
         departmentId: 4, // Orthopedics
@@ -624,6 +1095,36 @@ const departmentServices = [
         departmentId: 5, // General Services
         serviceId: 13, // Consultation
         price: 200.0,
+    },
+    {
+        departmentId: 5, // General Services
+        serviceId: 1, // X-ray
+        price: 5000.0,
+    },
+    {
+        departmentId: 5, // General Services
+        serviceId: 2, // Blood Test
+        price: 500.0,
+    },
+    {
+        departmentId: 5, // General Services
+        serviceId: 3, // X-ray
+        price: 5500.0,
+    },
+    {
+        departmentId: 5, // General Services
+        serviceId: 4, // Blood Test
+        price: 550.0,
+    },
+    {
+        departmentId: 5, // General Services
+        serviceId: 5, // X-ray
+        price: 6000.0,
+    },
+    {
+        departmentId: 5, // General Services
+        serviceId: 6, // Blood Test
+        price: 650.0,
     },
 ];
 
@@ -674,6 +1175,22 @@ const hospitalDepartments = [
     },
     {
         hospitalId: 3, // Hospital 3
+        departmentId: 5, // General Services
+    },
+    {
+        hospitalId: 4, // Hospital 4
+        departmentId: 1, // Cardiology
+    },
+    {
+        hospitalId: 4, // Hospital 4
+        departmentId: 2, // Neurology
+    },
+    {
+        hospitalId: 4, // Hospital 4
+        departmentId: 3, // Urology
+    },
+    {
+        hospitalId: 4, // Hospital 4
         departmentId: 5, // General Services
     },
 ];
@@ -930,102 +1447,312 @@ const profiles = [
         emergencyContact: "+254711223344",
     },
     {
-        profileId: "2a3b4c5d-6789-01ab-cdef-2345678901bc",
-        userId: "b78d23c4-1234-5678-90ab-fec4b6a6442b", // John Smith
-        firstName: "John",
+        profileId: "1a2b3c4d-0001-0000-000a-1234567890ab",
+        userId: "410544b2-0001-0000-000a-fec4b6a6442a", // Kuzzi
+        firstName: "Kuzzi",
         lastName: "Smith",
         gender: "Male",
-        phone: "+254733445566",
-        address: "456 Nairobi Avenue, Nairobi, Kenya",
-        dateOfBirth: new Date("1975-08-22"),
+        phone: "+254711223345",
+        address: "124 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1985-04-20"),
         imageUrl: "/images/img-p2.png",
-        nextOfKin: "Mary Smith",
-        nextOfKinPhoneNo: "+254734567890",
-        emergencyContact: "+254733445566",
+        nextOfKin: "John Doe",
+        nextOfKinPhoneNo: "+254712345679",
+        emergencyContact: "+254711223345",
     },
     {
-        profileId: "3a4b5c6d-7890-12ab-cdef-3456789012cd",
-        userId: "b78d23c4-9856-5678-90ab-fec4b6a6442b", // staff1
-        firstName: "Alice",
-        lastName: "Williams",
-        gender: "Female",
-        phone: "+254744556677",
-        address: "789 Nairobi Blvd, Nairobi, Kenya",
-        dateOfBirth: new Date("1985-03-10"),
+        profileId: "1a2b3c4d-8594-1125-5468-1234567890ab",
+        userId: "410544b2-8594-1125-5468-fec4b6a6442a", // Ken
+        firstName: "Ken",
+        lastName: "Adams",
+        gender: "Male",
+        phone: "+254711223346",
+        address: "125 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1975-07-10"),
         imageUrl: "/images/img-p3.png",
-        nextOfKin: "Bob Williams",
-        nextOfKinPhoneNo: "+254745678901",
-        emergencyContact: "+254744556677",
+        nextOfKin: "Mary Doe",
+        nextOfKinPhoneNo: "+254712345680",
+        emergencyContact: "+254711223346",
     },
     {
-        profileId: "4a5b6c7d-8901-23ab-cdef-4567890123de",
+        profileId: "1a2b3c4d-8263-4271-9855-1234567890ab",
         userId: "410544b2-8263-4271-9855-fec4b6a6442a", // Jack
         firstName: "Jack",
         lastName: "Brown",
         gender: "Male",
-        phone: "+254755667788",
-        address: "123 Mombasa Road, Mombasa, Kenya",
-        dateOfBirth: new Date("1982-09-25"),
+        phone: "+254711223347",
+        address: "126 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1988-03-22"),
         imageUrl: "/images/img-p4.png",
-        nextOfKin: "Lucy Brown",
-        nextOfKinPhoneNo: "+254756789012",
-        emergencyContact: "+254755667788",
+        nextOfKin: "Anna Doe",
+        nextOfKinPhoneNo: "+254712345681",
+        emergencyContact: "+254711223347",
     },
     {
-        profileId: "5a6b7c8d-9012-34ab-cdef-5678901234ef",
+        profileId: "1a2b3c4d-5697-7789-2154-1234567890ab",
+        userId: "810544b2-5697-7789-2154-fec4b6a8442a", // Vivian
+        firstName: "Vivian",
+        lastName: "Lee",
+        gender: "Female",
+        phone: "+254711223348",
+        address: "127 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1992-06-12"),
+        imageUrl: "/images/img-p5.png",
+        nextOfKin: "Karen Doe",
+        nextOfKinPhoneNo: "+254712345682",
+        emergencyContact: "+254711223348",
+    },
+    {
+        profileId: "1a2b3c4d-9685-2222-h458-1234567890ab",
+        userId: "410544b2-9685-2222-h458-fec4b6h5442a", // Martin
+        firstName: "Martin",
+        lastName: "Garrix",
+        gender: "Male",
+        phone: "+254711223349",
+        address: "128 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1990-09-17"),
+        imageUrl: "/images/img-p6.png",
+        nextOfKin: "Sarah Doe",
+        nextOfKinPhoneNo: "+254712345683",
+        emergencyContact: "+254711223349",
+    },
+    {
+        profileId: "1a2b3c4d-4565-9875-458u-1234567890ab",
+        userId: "880544b2-4565-9875-458u-fec4b6h5442a", // Test
+        firstName: "Test",
+        lastName: "User",
+        gender: "Female",
+        phone: "+254711223350",
+        address: "129 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1985-11-25"),
+        imageUrl: "/images/img-p7.png",
+        nextOfKin: "Emily Doe",
+        nextOfKinPhoneNo: "+254712345684",
+        emergencyContact: "+254711223350",
+    },
+    {
+        profileId: "1a2b3c4d-1234-5678-90ab-1234567890ab",
+        userId: "b78d23c4-1234-5678-90ab-fec4b6a6442b", // John Smith
+        firstName: "John",
+        lastName: "Smith",
+        gender: "Male",
+        phone: "+254711223351",
+        address: "130 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1982-02-14"),
+        imageUrl: "/images/img-p8.png",
+        nextOfKin: "Catherine Doe",
+        nextOfKinPhoneNo: "+254712345685",
+        emergencyContact: "+254711223351",
+    },
+    {
+        profileId: "1a2b3c4d-0921-5678-90ab-1234567890ab",
         userId: "b78d23c4-0921-5678-90ab-fec4b6a6442b", // Phil Foden
         firstName: "Phil",
         lastName: "Foden",
         gender: "Male",
-        phone: "+254766778899",
-        address: "456 Mombasa Avenue, Mombasa, Kenya",
-        dateOfBirth: new Date("1990-07-19"),
-        imageUrl: "/images/img-p5.png",
-        nextOfKin: "Sarah Foden",
-        nextOfKinPhoneNo: "+254767890123",
-        emergencyContact: "+254766778899",
+        phone: "+254711223352",
+        address: "131 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1995-10-20"),
+        imageUrl: "/images/img-p1.png",
+        nextOfKin: "Sandra Doe",
+        nextOfKinPhoneNo: "+254712345686",
+        emergencyContact: "+254711223352",
     },
     {
-        profileId: "6a7b8c9d-0123-45ab-cdef-6789012345fg",
-        userId: "b78d23c4-0097-5678-90ab-fec4b6a6442b", // staff2
-        firstName: "Emma",
-        lastName: "Jones",
-        gender: "Female",
-        phone: "+254777889900",
-        address: "789 Mombasa Blvd, Mombasa, Kenya",
-        dateOfBirth: new Date("1987-01-30"),
-        imageUrl: "/images/img-p6.png",
-        nextOfKin: "Michael Jones",
-        nextOfKinPhoneNo: "+254778901234",
-        emergencyContact: "+254777889900",
-    },
-    {
-        profileId: "7a8b9c0d-1234-56ab-cdef-7890123456gh",
-        userId: "b78d23c4-8332-5678-90ab-fec4b6a6442b", // Mikel Arteta
-        firstName: "Mikel",
-        lastName: "Arteta",
-        gender: "Male",
-        phone: "+254788990011",
-        address: "123 Mombasa Street, Mombasa, Kenya",
-        dateOfBirth: new Date("1984-06-26"),
-        imageUrl: "/images/img-p7.png",
-        nextOfKin: "Laura Arteta",
-        nextOfKinPhoneNo: "+254789012345",
-        emergencyContact: "+254788990011",
-    },
-    {
-        profileId: "8a9b0c1d-2345-67ab-cdef-8901234567ij",
+        profileId: "1a2b3c4d-7625-5678-90ab-1234567890ab",
         userId: "b78d23c4-7625-5678-90ab-fec4b6a6442b", // Xabi Alonso
         firstName: "Xabi",
         lastName: "Alonso",
         gender: "Male",
-        phone: "+254799001122",
-        address: "456 Abuja Road, Abuja, Nigeria",
-        dateOfBirth: new Date("1981-11-25"),
+        phone: "+254711223353",
+        address: "132 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1990-12-01"),
+        imageUrl: "/images/img-p2.png",
+        nextOfKin: "Paul Doe",
+        nextOfKinPhoneNo: "+254712345687",
+        emergencyContact: "+254711223353",
+    },
+    {
+        profileId: "1a2b3c4d-4698-2147-45kg-1234567890ab",
+        userId: "b78d23c4-4698-2147-45kg-fec4b6a6442b", // Silva
+        firstName: "Silva",
+        lastName: "Santos",
+        gender: "Male",
+        phone: "+254711223354",
+        address: "133 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1994-01-15"),
+        imageUrl: "/images/img-p3.png",
+        nextOfKin: "Marcus Doe",
+        nextOfKinPhoneNo: "+254712345688",
+        emergencyContact: "+254711223354",
+    },
+    {
+        profileId: "1a2b3c4d-f478-9426-lo48-1234567890ab",
+        userId: "b78d23c4-f478-9426-lo48-fec4b6a6442b", // Stanley
+        firstName: "Stanley",
+        lastName: "Kubrick",
+        gender: "Male",
+        phone: "+254711223355",
+        address: "134 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1988-04-04"),
+        imageUrl: "/images/img-p4.png",
+        nextOfKin: "Alicia Doe",
+        nextOfKinPhoneNo: "+254712345689",
+        emergencyContact: "+254711223355",
+    },
+    {
+        profileId: "1a2b3c4d-8332-5678-90ab-1234567890ab",
+        userId: "b78d23c4-8332-5678-90ab-fec4b6a6442b", // Mikel Arteta
+        firstName: "Mikel",
+        lastName: "Arteta",
+        gender: "Male",
+        phone: "+254711223356",
+        address: "135 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1986-05-30"),
+        imageUrl: "/images/img-p5.png",
+        nextOfKin: "Martin Doe",
+        nextOfKinPhoneNo: "+254712345690",
+        emergencyContact: "+254711223356",
+    },
+    {
+        profileId: "1a2b3c4d-g458-3654-4598-1234567890ab",
+        userId: "b78d23c4-g458-3654-4598-fec4b6a6442b", // Kante
+        firstName: "N'Golo",
+        lastName: "Kante",
+        gender: "Male",
+        phone: "+254711223357",
+        address: "136 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1991-03-29"),
+        imageUrl: "/images/img-p6.png",
+        nextOfKin: "Simon Doe",
+        nextOfKinPhoneNo: "+254712345691",
+        emergencyContact: "+254711223357",
+    },
+    {
+        profileId: "1a2b3c4d-79p6-5698-4469-1234567890ab",
+        userId: "b78d23c4-79p6-5698-4469-fec4b6a6442b", // Linda
+        firstName: "Linda",
+        lastName: "Moore",
+        gender: "Female",
+        phone: "+254711223358",
+        address: "137 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1993-08-14"),
+        imageUrl: "/images/img-p7.png",
+        nextOfKin: "Laura Doe",
+        nextOfKinPhoneNo: "+254712345692",
+        emergencyContact: "+254711223358",
+    },
+    {
+        profileId: "1a2b3c4d-5896-7789-hg88-1234567890ab",
+        userId: "b78d23c4-5896-7789-hg88-fec4b6a6442b", // Riley
+        firstName: "Riley",
+        lastName: "Brown",
+        gender: "Female",
+        phone: "+254711223359",
+        address: "138 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1992-12-02"),
         imageUrl: "/images/img-p8.png",
-        nextOfKin: "Nagore Alonso",
-        nextOfKinPhoneNo: "+254790123456",
-        emergencyContact: "+254799001122",
+        nextOfKin: "George Doe",
+        nextOfKinPhoneNo: "+254712345693",
+        emergencyContact: "+254711223359",
+    },
+    {
+        profileId: "1a2b3c4d-0097-5678-90ab-1234567890ab",
+        userId: "b78d23c4-0097-5678-90ab-fec4b6a6442b", // Kimberly
+        firstName: "Kimberly",
+        lastName: "Adams",
+        gender: "Female",
+        phone: "+254711223360",
+        address: "139 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1987-07-07"),
+        imageUrl: "/images/img-p1.png",
+        nextOfKin: "Charles Doe",
+        nextOfKinPhoneNo: "+254712345694",
+        emergencyContact: "+254711223360",
+    },
+    {
+        profileId: "1a2b3c4d-4565-7845-80ab-1234567890ab",
+        userId: "b78d23c4-4565-7845-80ab-fec4b6a6442b", // Lilian
+        firstName: "Lilian",
+        lastName: "Clark",
+        gender: "Female",
+        phone: "+254711223361",
+        address: "140 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1989-10-10"),
+        imageUrl: "/images/img-p2.png",
+        nextOfKin: "Rebecca Doe",
+        nextOfKinPhoneNo: "+254712345695",
+        emergencyContact: "+254711223361",
+    },
+    {
+        profileId: "1a2b3c4d-jh85-4589-2569-1234567890ab",
+        userId: "b78d23c4-jh85-4589-2569-fec4b6a6442b", // Wendy
+        firstName: "Wendy",
+        lastName: "Evans",
+        gender: "Female",
+        phone: "+254711223362",
+        address: "141 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1994-11-19"),
+        imageUrl: "/images/img-p3.png",
+        nextOfKin: "Chris Doe",
+        nextOfKinPhoneNo: "+254712345696",
+        emergencyContact: "+254711223362",
+    },
+    {
+        profileId: "1a2b3c4d-4569-k475-5216-1234567890ab",
+        userId: "b78d23c4-4569-k475-5216-fec4b6a6442b", // Staff1
+        firstName: "John",
+        lastName: "Doe",
+        gender: "Male",
+        phone: "+254711223363",
+        address: "142 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1978-06-30"),
+        imageUrl: "/images/img-p4.png",
+        nextOfKin: "Jane Doe",
+        nextOfKinPhoneNo: "+254712345697",
+        emergencyContact: "+254711223363",
+    },
+    {
+        profileId: "1a2b3c4d-3158-2987-d485-1234567890ab",
+        userId: "b78d23c4-3158-2987-d485-fec4b6a6442b", // Staff2
+        firstName: "Paul",
+        lastName: "Jones",
+        gender: "Male",
+        phone: "+254711223364",
+        address: "143 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1985-02-15"),
+        imageUrl: "/images/img-p5.png",
+        nextOfKin: "Laura Doe",
+        nextOfKinPhoneNo: "+254712345698",
+        emergencyContact: "+254711223364",
+    },
+    {
+        profileId: "1a2b3c4d-6789-4369-7269-1234567890ab",
+        userId: "b78d23c4-6789-4369-7269-fec4b6a6442b", // Staff3
+        firstName: "Mark",
+        lastName: "Wilson",
+        gender: "Male",
+        phone: "+254711223365",
+        address: "144 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1983-11-11"),
+        imageUrl: "/images/img-p6.png",
+        nextOfKin: "Sophia Doe",
+        nextOfKinPhoneNo: "+254712345699",
+        emergencyContact: "+254711223365",
+    },
+    {
+        profileId: "1a2b3c4d-h469-9726-v236-1234567890ab",
+        userId: "b78d23c4-h469-9726-v236-fec4b6a6442b", // Staff4
+        firstName: "Lucy",
+        lastName: "White",
+        gender: "Female",
+        phone: "+254711223366",
+        address: "145 Nairobi Street, Nairobi, Kenya",
+        dateOfBirth: new Date("1991-09-09"),
+        imageUrl: "/images/img-p7.png",
+        nextOfKin: "Megan Doe",
+        nextOfKinPhoneNo: "+254712345700",
+        emergencyContact: "+254711223366",
     },
 ];
 
@@ -1034,7 +1761,11 @@ module.exports = {
     users,
     departments,
     services,
+    superAdmins,
+    admins,
     doctors,
+    nurses,
+    staff,
     patients,
     appointments,
     doctorEarnings,

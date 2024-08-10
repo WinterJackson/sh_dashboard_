@@ -1,4 +1,4 @@
-// File: app/api/doctors/[doctorId]/route.ts
+// File: src/app/api/doctors/[doctorId]/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
@@ -21,9 +21,9 @@ export async function GET(
     const { doctorId } = params;
 
     try {
-        const doctor = await prisma.user.findUnique({
-            where: { userId: parseInt(doctorId) },
-            include: { hospital: true },
+        const doctor = await prisma.doctor.findUnique({
+            where: { doctorId: parseInt(doctorId) },
+            include: { hospital: true, user: true },
         });
         if (!doctor) {
             return NextResponse.json(

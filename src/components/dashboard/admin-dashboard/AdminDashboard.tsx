@@ -1,17 +1,19 @@
 // src/components/dashboard/AdminDashboard.tsx
 
-"use client"
+"use client";
 
-import React from "react";
 import { useSession } from "next-auth/react";
-import AvailableDoctorsCard from "./AvailableDoctorsCard";
-import AvailableBedsCard from "./AvailableBedsCard";
-import AppointmentsTodayCard from "./AppointmentsTodayCard";
-import PatientsTodayCard from "./PatientsTodayCard";
+import React from "react";
+import AppointmentsTodayCard from "../AppointmentsTodayCard";
+import AvailableBedsCard from "../AvailableBedsCard";
+import AvailableDoctorsCard from "../AvailableDoctorsCard";
+import PatientsTodayCard from "../PatientsTodayCard";
 
 const AdminDashboard: React.FC = () => {
     const { data: session } = useSession();
-    const firstName = session?.user ? session.user.username.split(" ")[0] : "Admin";
+    const firstName = session?.user
+        ? session.user.username.split(" ")[0]
+        : "Admin";
 
     return (
         <>

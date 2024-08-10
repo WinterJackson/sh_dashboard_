@@ -23,7 +23,10 @@ import {
     fetchOnlineDoctors,
     fetchAllHospitals,
     fetchPatientDetails,
+    fetchOnlineDoctorsByHospital,
+    fetchDoctorDetails,
 } from "@/lib/data";
+import { useUser } from "@/app/context/UserContext";
 import { differenceInYears } from "date-fns";
 
 interface AddAppointmentDialogProps {
@@ -43,18 +46,40 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
     const [hospitals, setHospitals] = useState([]);
     const [patientDetails, setPatientDetails] = useState<any | null>(null);
     const router = useRouter();
+    const { user, hospitalId } = useUser();
 
     useEffect(() => {
         const fetchData = async () => {
-            const fetchedDoctors = await fetchOnlineDoctors();
-            setDoctors(fetchedDoctors);
+            try {
+                const fetchedHospitals = await fetchAllHospitals();
+                setHospitals(fetchedHospitals);
 
-            const fetchedHospitals = await fetchAllHospitals();
-            setHospitals(fetchedHospitals);
+                let doctorDetails;
+                if (user?.role === 'SUPER_ADMIN') {
+                    // Fetch all online doctors for SUPER_ADMIN
+                    doctorDetails = await fetchOnlineDoctors();
+
+                    console.log(doctorDetails);
+
+                    doctorDetails = doctorDetails.map((doctor: { specialization: string; user: { username: string }; doctorId: number }) => ({
+                        username: doctor.user.username,
+                        specialization: doctor.specialization,
+                        doctorId: doctor.doctorId,
+                    }));
+                } else if (hospitalId) {
+                    // Fetch online doctors by hospital for other roles
+                    doctorDetails = await fetchOnlineDoctorsByHospital(hospitalId);
+                }
+
+                console.log(doctorDetails);
+                setDoctors(doctorDetails);
+            } catch (error) {
+                console.error("Failed to fetch data:", error);
+            }
         };
 
         fetchData();
-    }, []);
+    }, [user, hospitalId]);
 
     const fetchAndSetPatientDetails = async (name: string) => {
         const details = await fetchPatientDetails(name);
@@ -73,6 +98,33 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
         }
     };
 
+    const fetchAndSetDoctorHospital = async (doctorId: number) => {
+        try {
+
+            console.log(doctorId)
+            // Fetch all online doctors
+            const onlineDoctors = await fetchOnlineDoctors();
+    
+            console.log(onlineDoctors)
+
+            // Find the selected doctor by doctorId
+            const selectedDoctor = onlineDoctors.find(
+                (doctor: { doctorId: number }) => doctor.doctorId === doctorId
+            );
+
+            console.log(selectedDoctor)
+    
+            // If the doctor is found, set the hospital name
+            if (selectedDoctor) {
+                setValue("hospitalName", selectedDoctor.hospital.name);
+            } else {
+                setValue("hospitalName", "");
+            }
+        } catch (error) {
+            console.error("Failed to fetch and set doctor hospital:", error);
+        }
+    };
+    
     const onSubmit = async (data: any) => {
         try {
             const response = await fetch("/api/appointments", {
@@ -83,7 +135,11 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                 body: JSON.stringify({
                     ...data,
                     date: selectedDate?.toISOString(),
+                    role: user?.role,
+                    userHospitalId: user?.hospitalId,
+                    doctorId: data.doctorId,
                 }),
+
             });
 
             if (!response.ok) {
@@ -107,6 +163,15 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
     const handleDateChange = (date: Date | undefined) => {
         setSelectedDate(date);
         setIsCalendarOpen(false);
+    };
+
+    const handleDoctorChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const doctorId = parseInt(event.target.value, 10);
+        
+        console.log(doctorId);
+        if (user?.role === 'SUPER_ADMIN' && doctorId) {
+            await fetchAndSetDoctorHospital(doctorId);
+        }
     };
 
     return (
@@ -139,16 +204,16 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                             </li>
                             <li>
                                 the patient&apos;s ID will also be{" "}
-                                <strong>automatically</strong>{" "}
-                                provided if the patient&apos;s information is in
-                                the database.
+                                <strong>automatically</strong> provided if the
+                                patient&apos;s information is in the database.
                             </li>
                             <li>
                                 the time when the appointment should begin -
                                 <strong>from</strong>.
                             </li>
                             <li>
-                                the time when the appointment should end - <strong>to</strong>.
+                                the time when the appointment should end -{" "}
+                                <strong>to</strong>.
                             </li>
                             <li>
                                 the date when the appointment is expected to
@@ -162,7 +227,9 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                                 the hospital associated with the appointment.
                             </li>
                             <li>
-                                the type of appointment weather <strong>Virtual</strong>{" "} or <strong>Walk In</strong>.
+                                the type of appointment weather{" "}
+                                <strong>Virtual</strong> or{" "}
+                                <strong>Walk In</strong>.
                             </li>
                         </ol>
                     </div>
@@ -264,11 +331,12 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                             )}
                         </div>
                         <div>
-                            <Label htmlFor="doctorName">Doctor</Label>
+                            <Label htmlFor="doctorId">Doctor</Label>
                             <select
-                                id="doctorName"
-                                {...register("doctorName", { required: true })}
+                                id="doctorId"
+                                {...register("doctorId", { required: true })}
                                 className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                onChange={handleDoctorChange}
                             >
                                 <option
                                     value=""
@@ -279,40 +347,44 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                                 {doctors.map((doctor: any) => (
                                     <option
                                         key={doctor.doctorId}
-                                        value={doctor.name}
+                                        value={doctor.doctorId}
                                         className="bg-white"
                                     >
-                                        {doctor.name} - {doctor.specialization}
+                                    Dr. {doctor.username} -{" "}
+                                        {doctor.specialization}
                                     </option>
                                 ))}
                             </select>
                         </div>
-                        <div>
-                            <Label htmlFor="hospitalName">Hospital</Label>
-                            <select
-                                id="hospitalName"
-                                {...register("hospitalName", {
-                                    required: true,
-                                })}
-                                className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                <option
-                                    value=""
-                                    className="bg-[#EFEFEF] text-gray-500"
+
+                        {user?.role === "SUPER_ADMIN" && (
+                            <div>
+                                <Label htmlFor="hospitalName">Hospital</Label>
+                                <select
+                                    id="hospitalName"
+                                    {...register("hospitalName", {
+                                        required: true,
+                                    })}
+                                    className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    Select a hospital
-                                </option>
-                                {hospitals.map((hospital: any) => (
                                     <option
-                                        key={hospital.hospitalId}
-                                        value={hospital.name}
-                                        className="bg-white"
+                                        value=""
+                                        className="bg-[#EFEFEF] text-gray-500"
                                     >
-                                        {hospital.name}
+                                        Select a hospital
                                     </option>
-                                ))}
-                            </select>
-                        </div>
+                                    {hospitals.map((hospital: any) => (
+                                        <option
+                                            key={hospital.hospitalId}
+                                            value={hospital.name}
+                                            className="bg-white"
+                                        >
+                                            {hospital.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
 
                         <div>
                             <Label htmlFor="type">Appointment Type</Label>
@@ -337,7 +409,9 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                         </div>
 
                         <div className="mt-4 flex justify-end">
-                            <Button type="submit">Save</Button>
+                            <Button type="submit" disabled={saved}>
+                                Save
+                            </Button>
                         </div>
                     </div>
                 </form>

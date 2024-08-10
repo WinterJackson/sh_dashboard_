@@ -9,22 +9,30 @@ export async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
         const page = parseInt(searchParams.get('page') || '1');
-        const limit = parseInt(searchParams.get('limit') || '5');
+        const limit = parseInt(searchParams.get('limit') || '10');
         const skip = (page - 1) * limit;
 
         const appointments = await prisma.appointment.findMany({
             skip,
             take: limit,
             include: {
+                doctor: {
+                    include: {
+                        user: {
+                            include: {
+                                profile: true,
+                            },
+                        },
+                    },
+                },
                 patient: true,
-                doctor: true,
                 hospital: true,
             },
         });
 
-        const totalAppointments = await prisma.appointment.count();
+        console.log(appointments)
 
-        return NextResponse.json({ appointments, totalAppointments }, { status: 200 });
+        return NextResponse.json(appointments);
     } catch (error) {
         return NextResponse.json({ error: 'Error fetching appointments' }, { status: 500 });
     }
@@ -39,36 +47,34 @@ export async function POST(req: NextRequest) {
             timeFrom,
             timeTo,
             date,
-            doctorName,
+            doctorId,
             type,
             hospitalName,
+            role,
+            userHospitalId,
         } = await req.json();
 
         if (!patientName || !patientId) {
             return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
         }
 
-        // Fetch doctorId using doctorName
-        const doctor = await prisma.doctor.findFirst({
-            where: {
-                name: doctorName,
-            },
-        });
-        if (!doctor) {
-            return NextResponse.json({ error: 'Doctor not found' }, { status: 404 });
-        }
-        const doctorId = doctor.doctorId;
+        let hospitalId;
 
-        // Fetch hospitalId using hospitalName
-        const hospital = await prisma.hospital.findFirst({
-            where: {
-                name: hospitalName,
-            },
-        });
-        if (!hospital) {
-            return NextResponse.json({ error: 'Hospital not found' }, { status: 404 });
+        if (role === 'SUPER_ADMIN') {
+            // Fetch hospitalId using hospitalName
+            const hospital = await prisma.hospital.findUnique({
+                where: { name: hospitalName },
+            });
+
+            if (!hospital) {
+                return NextResponse.json({ error: 'Hospital not found' }, { status: 404 });
+            }
+
+            hospitalId = hospital.hospitalId;
+        } else {
+            // hospitalId from user context
+            hospitalId = userHospitalId;
         }
-        const hospitalId = hospital.hospitalId;
 
         const appointmentDate = new Date(date);
         const [hoursFrom, minutesFrom] = timeFrom.split(':');
@@ -81,7 +87,7 @@ export async function POST(req: NextRequest) {
         const newAppointment = await prisma.appointment.create({
             data: {
                 patientId: parseInt(patientId),
-                doctorId,
+                doctorId: parseInt(doctorId),
                 hospitalId,
                 appointmentDate,
                 type,

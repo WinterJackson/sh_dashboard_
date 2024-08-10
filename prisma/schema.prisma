@@ -1,4 +1,4 @@
-// Prisma schema file,
+// prisma/schema.prisma
 
 generator client {
   provider        = "prisma-client-js"
@@ -20,20 +20,24 @@ enum Role {
 }
 
 model User {
-  userId     String    @id @default(uuid())
-  username   String    @unique
-  email      String    @unique
+  userId     String      @id @default(uuid())
+  username   String      @unique
+  email      String      @unique
   password   String
   role       Role
   hospitalId Int?
-  isActive   Boolean   @default(true)
+  isActive   Boolean     @default(true)
   lastLogin  DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
   doctor     Doctor?
   profile    Profile?
   sessions   Session[]
-  hospital   Hospital?  @relation(fields: [hospitalId], references: [hospitalId])
+  hospital   Hospital?   @relation(fields: [hospitalId], references: [hospitalId])
+  superAdmin SuperAdmin?
+  admin      Admin?
+  nurse      Nurse?
+  staff      Staff?
 }
 
 model Profile {
@@ -49,54 +53,96 @@ model Profile {
   nextOfKin        String?
   nextOfKinPhoneNo String?
   emergencyContact String?
-  user             User      @relation(fields: [userId], references: [userId])
+  user             User      @relation(fields: [userId], references: [userId], onDelete: Cascade)
+}
+
+model SuperAdmin {
+  superAdminId Int    @id @default(autoincrement())
+  userId       String @unique
+  user         User   @relation(fields: [userId], references: [userId])
+}
+
+model Admin {
+  adminId    Int      @id @default(autoincrement())
+  userId     String   @unique
+  hospitalId Int
+  user       User     @relation(fields: [userId], references: [userId])
+  hospital   Hospital @relation(fields: [hospitalId], references: [hospitalId])
 }
 
 model Doctor {
-  doctorId           Int             @id @default(autoincrement())
-  userId             String          @unique
-  email              String          @unique
-  hospitalId         Int
-  departmentId       Int
-  serviceId          Int
-  name               String
-  specialization     String
-  status             String
-  phoneNumber        String
-  workingHours       String
-  averageRating      Float
-  appointments       Appointment[]
-  department         Department      @relation(fields: [departmentId], references: [departmentId])
-  hospital           Hospital        @relation(fields: [hospitalId], references: [hospitalId])
-  service            Service         @relation(fields: [serviceId], references: [serviceId])
-  user               User            @relation(fields: [userId], references: [userId])
-  docEarnings        DoctorEarning?
-  referrals          DoctorReferral?
+  doctorId       Int             @id @default(autoincrement())
+  userId         String          @unique
+  hospitalId     Int
+  departmentId   Int
+  serviceId      Int
+  specialization String
+  status         String
+  phoneNo    String
+  workingHours   String
+  averageRating  Float
+  appointments   Appointment[]
+  department     Department      @relation(fields: [departmentId], references: [departmentId])
+  hospital       Hospital        @relation(fields: [hospitalId], references: [hospitalId])
+  service        Service?         @relation(fields: [serviceId], references: [serviceId])
+  user           User            @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  docEarnings    DoctorEarning?
+  referrals      DoctorReferral?
+}
+
+model Nurse {
+  nurseId      Int        @id @default(autoincrement())
+  userId         String          @unique
+  hospitalId     Int
+  departmentId   Int
+  specialization String
+  status         String          // "Online" or "Offline"
+  phoneNo    String
+  workingHours   String
+  averageRating  Float
+  user         User       @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  hospital     Hospital   @relation(fields: [hospitalId], references: [hospitalId])
+  department   Department @relation(fields: [departmentId], references: [departmentId])
+}
+
+model Staff {
+  staffId    Int      @id @default(autoincrement())
+  userId         String          @unique
+  hospitalId     Int
+  departmentId   Int
+  specialization String
+  status         String          // "Online" or "Offline"
+  phoneNo    String
+  workingHours   String
+  averageRating  Float
+  user         User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  hospital   Hospital @relation(fields: [hospitalId], references: [hospitalId])
+  department   Department @relation(fields: [departmentId], references: [departmentId])
 }
 
 model Patient {
-  patientId           Int                  @id @default(autoincrement())
-  hospitalId          Int
-  name                String               @unique
-  phoneNo             String               @unique
-  email               String               @unique
-  dateOfBirth         DateTime
-  gender              String
-  homeAddress         String?
-  state               String?
-  reasonForConsultation   String
-  admissionDate       DateTime?
-  dischargeDate       DateTime?
-  status              String               // Inpatient or Outpatient
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @default(now()) @updatedAt
-  appointments        Appointment[]
-  appointmentServices AppointmentService[]
-  currentBed          Bed?
-  hospital            Hospital             @relation(fields: [hospitalId], references: [hospitalId])
-  payments            Payment?
-  referrals           Referral[]
-  serviceUsages       ServiceUsage?
+  patientId             Int                  @id @default(autoincrement())
+  hospitalId            Int
+  name                  String               @unique
+  phoneNo               String               @unique
+  email                 String               @unique
+  dateOfBirth           DateTime
+  gender                String
+  homeAddress           String?
+  state                 String?
+  reasonForConsultation String
+  admissionDate         DateTime?
+  dischargeDate         DateTime?
+  status                String // Inpatient or Outpatient
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @default(now()) @updatedAt
+  appointments          Appointment[]
+  appointmentServices   AppointmentService[]
+  currentBed            Bed?
+  hospital              Hospital             @relation(fields: [hospitalId], references: [hospitalId])
+  payments              Payment?
+  referrals             Referral[]
+  serviceUsages         ServiceUsage?
 }
 
 model Appointment {
@@ -105,9 +151,9 @@ model Appointment {
   patientId                  Int
   hospitalId                 Int
   appointmentDate            DateTime
-  type                       String               // Virtual or Walk In
+  type                       String // Virtual or Walk In
   action                     String?
-  status                     String?
+  status                     String?   // (Pending, Confirmed, Completed, Cancelled, Rescheduled)
   consultationFee            Float?
   isPaid                     Boolean
   paymentId                  String?
@@ -117,6 +163,7 @@ model Appointment {
   appointmentEndAt           DateTime?
   rescheduledDate            DateTime?
   cancellationReason         String?
+  pendingReason              String?
   appointmentReminderSent    Int?
   appointmentReminderSentLTF DateTime?
   doctorAppointmentNotes     String?
@@ -169,6 +216,8 @@ model Department {
   description  String
   services     DepartmentService[]
   doctors      Doctor[]
+  nurses       Nurse[]
+  staff        Staff[]
   hospitals    HospitalDepartment[]
 }
 
@@ -222,23 +271,23 @@ model Referral {
   patientId             Int
   hospitalId            Int
   date                  DateTime
-  type                  String   // External or Internal
-  primaryCareProvider   String   // Primary care provider for the patient
-  referralAddress       String   // Address of the patient or the primary care provider
-  referralPhone         String   // Phone number of the patient or the primary care provider
-  reasonForConsultation String   // Reason why patient needs consultation
-  diagnosis             String   // Diagnosis of the patient
-  physicianName         String   // Name of the referring physician
-  physicianDepartment   String   // Department of the referring physician
-  physicianSpecialty    String   // Specialty of the referring physician
-  physicianEmail        String   // Email of the referring physician
-  physicianPhoneNumber  String   // Phone number of the referring physician
+  type                  String // External or Internal
+  primaryCareProvider   String // Primary care provider for the patient
+  referralAddress       String // Address of the patient or the primary care provider
+  referralPhone         String // Phone number of the patient or the primary care provider
+  reasonForConsultation String // Reason why patient needs consultation
+  diagnosis             String // Diagnosis of the patient
+  physicianName         String // Name of the referring physician
+  physicianDepartment   String // Department of the referring physician
+  physicianSpecialty    String // Specialty of the referring physician
+  physicianEmail        String // Email of the referring physician
+  physicianPhoneNumber  String // Phone number of the referring physician
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
-  doctors    DoctorReferral?
-  hospital   Hospital?        @relation(fields: [hospitalId], references: [hospitalId])
-  patient    Patient          @relation(fields: [patientId], references: [patientId])
+  doctors  DoctorReferral?
+  hospital Hospital?       @relation(fields: [hospitalId], references: [hospitalId])
+  patient  Patient         @relation(fields: [patientId], references: [patientId])
 
   @@unique([patientId, hospitalId, date, type])
 }
@@ -255,7 +304,7 @@ model DoctorReferral {
 
 model Hospital {
   hospitalId   Int                  @id @default(autoincrement())
-  name         String
+  name         String               @unique
   phone        String               @unique
   email        String               @unique
   country      String
@@ -266,12 +315,15 @@ model Hospital {
   appointments Appointment[]
   beds         Bed?
   doctors      Doctor[]
+  nurses       Nurse[]
   departments  HospitalDepartment[]
   patients     Patient[]
   payments     Payment?
   referrals    Referral[]
   services     Service[]
   users        User[]
+  admins       Admin[]
+  staffs       Staff[]
 }
 
 model HospitalDepartment {
@@ -303,7 +355,7 @@ model VerificationToken {
 }
 
 model RoleConstraints {
-  constraintId Int     @id @default(autoincrement())
+  constraintId Int  @id @default(autoincrement())
   role         Role
   count        Int
 }
