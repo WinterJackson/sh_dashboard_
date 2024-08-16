@@ -32,7 +32,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
                     }
                     const userData = await response.json();
 
-                    console.log(userData)
+                    // console.log(userData)
 
                     setUser(userData);
                     setHospitalId(userData.hospitalId || null);

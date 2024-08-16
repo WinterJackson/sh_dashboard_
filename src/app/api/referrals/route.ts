@@ -1,7 +1,30 @@
 // src/app/api/referrals/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
+
 const prisma = require("@/lib/prisma");
+
+export async function GET(req: NextRequest) {
+    try {
+        const referrals = await prisma.referral.findMany({
+            include: {
+                patient: true,
+                hospital: true,
+                doctors: true,
+            },
+        });
+
+        // console.log(referrals)
+
+        return NextResponse.json(referrals, { status: 200 });
+    } catch (error) {
+        console.error("Error fetching referrals:", error);
+        return NextResponse.json(
+            { error: "Error fetching referrals" },
+            { status: 500 }
+        );
+    }
+}
 
 export async function POST(req: NextRequest) {
     try {

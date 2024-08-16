@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
                 hospital: true,
             },
         });
-        console.log(beds)
+        // console.log(beds)
     
         return NextResponse.json(beds);
     } catch (error) {

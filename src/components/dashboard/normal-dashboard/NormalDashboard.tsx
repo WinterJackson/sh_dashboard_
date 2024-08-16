@@ -1,32 +1,46 @@
 // src/components/dashboard/NormalDashboard.tsx
 
-"use client"
+"use client";
 
-import React from "react";
 import { useSession } from "next-auth/react";
+import React from "react";
+import AppointmentsTodayCard from "../AppointmentsTodayCard";
+import AvailableBedsCard from "../AvailableBedsCard";
+import AvailableDoctorsCard from "../AvailableDoctorsCard";
+import PatientsTodayCard from "../PatientsTodayCard";
+import InwardReferralsCard from "../InwardReferralsCard";
+import OutwardReferralsCard from "../OutwardReferralsCard";
 
 const NormalDashboard: React.FC = () => {
     const { data: session } = useSession();
-    const firstName = session?.user ? session.user.username.split(" ")[0] : "";
+    const firstName = session?.user
+        ? session.user.username.split(" ")[0]
+        : "Admin";
 
     return (
-        <div className="h-full p-4">
-            <div className="text-xl font-semibold">Welcome, {firstName}</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                {/* Add cards or components displaying data relevant to Admin */}
-                <div className="bg-white shadow rounded p-4">
-                    <h2 className="text-lg font-medium">
-                        Staff Dashboard
-                    </h2>
-                    {/* Content displaying hospital data */}
-                </div>
-                <div className="bg-white shadow rounded p-4">
-                    <h2 className="text-lg font-medium">Staff Management</h2>
-                    {/* Content displaying staff management data */}
-                </div>
-                {/* Add more sections as needed */}
+        <>
+            <div className="text-xl font-semibold p-4">
+                Welcome, {firstName}
             </div>
-        </div>
+            <div className="flex">
+                <div className="grid w-full">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                        <AvailableDoctorsCard />
+                        <AvailableBedsCard />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                        <AppointmentsTodayCard />
+                        <PatientsTodayCard />
+                    </div>
+                </div>
+                <div className="grid w-full">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                        <OutwardReferralsCard />
+                        <InwardReferralsCard />
+                    </div>
+                </div>
+            </div>
+        </>
     );
 };
 

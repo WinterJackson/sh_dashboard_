@@ -6,20 +6,31 @@ import React, { useEffect, useState } from 'react';
 import { fetchAvailableBeds } from '@/lib/data';
 import icon from "../../../public/images/bed.svg"
 import Image from "next/image";
+import { useUser } from "@/app/context/UserContext";
 
 const AvailableBedsCard = () => {
     const [availableBeds, setAvailableBeds] = useState(0);
+    const { user, hospitalId } = useUser();
 
     useEffect(() => {
         const fetchBeds = async () => {
             const beds = await fetchAvailableBeds();
-            // setAvailableBeds(beds.length); // correct code
 
-            setAvailableBeds(beds + 40000); // for testing purposes
+            // console.log(beds);
+
+            // Filter beds based on the user's role and hospitalId
+            const filteredBeds = user?.role === "SUPER_ADMIN"
+                ? beds
+                : beds.filter((bed: any) => bed.hospitalId === hospitalId);
+
+            // setAvailableBeds(filteredBeds.length); // correct code
+            setAvailableBeds(filteredBeds.length + 580); // for display
+
+            // console.log(filteredBeds);
         };
 
         fetchBeds();
-    }, []);
+    }, [user, hospitalId]);
 
     const getFontSizeClass = (numDigits: number) => {
         if (numDigits <= 3) return "text-4xl xl:text-6xl"; // Default large size

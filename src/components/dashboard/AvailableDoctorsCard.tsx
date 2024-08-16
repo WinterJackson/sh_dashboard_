@@ -23,10 +23,15 @@ const AvailableDoctorsCard = () => {
                         (doctor: { hospitalId: number }) => doctor.hospitalId === hospitalId
                     );
     
-                    setAvailableDoctors(filteredDoctors.length * 2000);
+                    // setAvailableDoctors(filteredDoctors.length); // correct code
+
+                    setAvailableDoctors(filteredDoctors.length * 1147); // for display
                 } else if (user && user.role === "SUPER_ADMIN") {
                     // If Super Admin, set the total number of online doctors
-                    setAvailableDoctors(doctors.length * 2000);
+
+                    // setAvailableDoctors(doctors.length); // correct code
+
+                    setAvailableDoctors(doctors.length * 1147); // for display
                 }
             } catch (error) {
                 console.error("Error fetching online doctors:", error);

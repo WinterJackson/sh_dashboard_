@@ -59,7 +59,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                     // Fetch all online doctors for SUPER_ADMIN
                     doctorDetails = await fetchOnlineDoctors();
 
-                    console.log(doctorDetails);
+                    // console.log(doctorDetails);
 
                     doctorDetails = doctorDetails.map((doctor: { specialization: string; user: { username: string }; doctorId: number }) => ({
                         username: doctor.user.username,
@@ -71,7 +71,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                     doctorDetails = await fetchOnlineDoctorsByHospital(hospitalId);
                 }
 
-                console.log(doctorDetails);
+                // console.log(doctorDetails);
                 setDoctors(doctorDetails);
             } catch (error) {
                 console.error("Failed to fetch data:", error);
@@ -101,18 +101,15 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
     const fetchAndSetDoctorHospital = async (doctorId: number) => {
         try {
 
-            console.log(doctorId)
             // Fetch all online doctors
             const onlineDoctors = await fetchOnlineDoctors();
     
-            console.log(onlineDoctors)
-
             // Find the selected doctor by doctorId
             const selectedDoctor = onlineDoctors.find(
                 (doctor: { doctorId: number }) => doctor.doctorId === doctorId
             );
 
-            console.log(selectedDoctor)
+            // console.log(selectedDoctor)
     
             // If the doctor is found, set the hospital name
             if (selectedDoctor) {

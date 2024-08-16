@@ -373,7 +373,7 @@ async function seedReferrals() {
                 referralId: referral.referralId,
                 patientId: referral.patientId,
                 hospitalId: referral.hospitalId,
-                date: referral.date,
+                effectiveDate: referral.effectiveDate,
                 type: referral.type,
                 primaryCareProvider: referral.primaryCareProvider,
                 referralAddress: referral.referralAddress,

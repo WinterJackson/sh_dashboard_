@@ -27,10 +27,12 @@ export async function GET(req: NextRequest) {
                 },
                 patient: true,
                 hospital: true,
+                services: true,
+                payments: true,
             },
         });
 
-        console.log(appointments)
+        // console.log(appointments)
 
         return NextResponse.json(appointments);
     } catch (error) {

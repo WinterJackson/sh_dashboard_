@@ -7,22 +7,44 @@ import { fetchAppointmentsForLast14Days, fetchTodayAppointments } from "@/lib/da
 import icon from "../../../public/images/appointment.svg";
 import Image from "next/image";
 import { ArrowTopRightIcon, ArrowBottomRightIcon } from '@radix-ui/react-icons';
+import { useUser } from "@/app/context/UserContext";
 
 const AppointmentsTodayCard = () => {
     const [appointmentsToday, setAppointmentsToday] = useState(0);
     const [percentageChange, setPercentageChange] = useState<number>(0);
+    const { user, hospitalId } = useUser();
 
     useEffect(() => {
         const fetchAppointmentsData = async () => {
             const appointments = await fetchAppointmentsForLast14Days();
-            const todayAppointmentsCount = await fetchTodayAppointments();
+            const todayAppointments = await fetchTodayAppointments();
 
+            // Filter today's appointments based on user role
+            const filteredTodayAppointments = user?.role === "SUPER_ADMIN"
+                ? todayAppointments
+                : todayAppointments.filter(
+                    (appointment: { hospitalId: number }) => appointment.hospitalId === hospitalId
+                );
+
+            const todayAppointmentsCount = filteredTodayAppointments.length;
+            // setAppointmentsToday(todayAppointmentsCount); // correct code
+
+            setAppointmentsToday(22); // test code
+
+            // Get current date set to midnight
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
             const appointmentCounts = Array(14).fill(0);
 
-            appointments.forEach((appointment: { appointmentDate: string | number | Date; }) => {
+            // Filter and map appointments based on the user's role
+            const filteredAppointments = user?.role === "SUPER_ADMIN"
+                ? appointments
+                : appointments.filter(
+                    (appointment: { hospitalId: number }) => appointment.hospitalId === hospitalId
+                );
+
+            filteredAppointments.forEach((appointment: { appointmentDate: string | number | Date; }) => {
                 const date = new Date(appointment.appointmentDate);
                 const diff = (today.getTime() - date.getTime()) / (1000 * 3600 * 24);
                 const dayIndex = Math.floor(diff);
@@ -31,27 +53,23 @@ const AppointmentsTodayCard = () => {
                 }
             });
 
-            // const currentWeekCount = appointmentCounts.slice(0, 7).reduce((sum, count) => sum + count, 0);
-            // const previousWeekCount = appointmentCounts.slice(7, 14).reduce((sum, count) => sum + count, 0);
-
-            const currentWeekCount = 18 // test data
-            const previousWeekCount = 14 // test data
-
-            // setAppointmentsToday(todayAppointmentsCount);
-
-            setAppointmentsToday(12393); // test data
+            const currentWeekCount = appointmentCounts.slice(0, 7).reduce((sum, count) => sum + count, 0);
+            const previousWeekCount = appointmentCounts.slice(7, 14).reduce((sum, count) => sum + count, 0);
 
             if (previousWeekCount > 0) {
                 const change = currentWeekCount - previousWeekCount;
-                const percentage = (change / previousWeekCount) * 100;
+                const percentage = (change / previousWeekCount) * 100; // correct code
 
                 setPercentageChange(percentage);
-
             }
+
+            const percentage = 25;  // test code
+
+            setPercentageChange(percentage); // test code
         };
 
         fetchAppointmentsData();
-    }, []);
+    }, [user, hospitalId]);
 
     const getFontSizeClass = (numDigits: number) => {
         if (numDigits <= 3) return "text-4xl xl:text-6xl";

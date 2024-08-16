@@ -19,12 +19,13 @@ import { Calendar } from "@/components/ui/calendar";
 import { IconButton } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { fetchOnlineDoctors, fetchAllHospitals } from "@/lib/data";
+import { useUser } from "@/app/context/UserContext";
 import { revalidatePath } from "next/cache";
 
 interface RescheduleDialogProps {
     appointmentId: string;
     onClose: () => void;
-    handleActionChange: (appointmentId: string, action: string) => void; // New prop
+    handleActionChange: (appointmentId: string, action: string) => void;
 }
 
 const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
@@ -47,45 +48,54 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [doctors, setDoctors] = useState([]);
     const [hospitals, setHospitals] = useState([]);
+    const { user, hospitalId } = useUser();
 
     useEffect(() => {
         const fetchData = async () => {
             const fetchedDoctors = await fetchOnlineDoctors();
             setDoctors(fetchedDoctors);
 
-            const fetchedHospitals = await fetchAllHospitals();
-            setHospitals(fetchedHospitals);
+            if (user?.role === "SUPER_ADMIN") {
+                const fetchedHospitals = await fetchAllHospitals();
+                setHospitals(fetchedHospitals);
+            }
         };
 
         fetchData();
-    }, []);
+    }, [user]);
 
     const onSubmit = async (data: any) => {
         handleActionChange(appointmentId, "Rescheduled");
-
+    
         try {
+            const requestBody = {
+                ...data,
+                date: selectedDate?.toISOString(),
+                hospitalId: user?.role === "SUPER_ADMIN" ? data.hospitalId : hospitalId,
+                doctorId: parseInt(data.doctorId, 10),
+            };
+    
+            // console.log(requestBody);
+    
             const response = await fetch(`/api/appointments/${appointmentId}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                    ...data,
-                    date: selectedDate?.toISOString(),
-                }),
+                body: JSON.stringify(requestBody),
             });
-
+    
             if (!response.ok) {
                 throw new Error("Failed to reschedule appointment");
             }
-
-            console.log("Appointment rescheduled successfully");
+    
             setSaved(true);
             revalidatePath("/dashboard/appointments");
         } catch (error) {
             console.error("Error:", error);
         }
     };
+    
 
     const handleClose = () => {
         onClose();
@@ -218,10 +228,10 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                             </div>
                         </div>
                         <div>
-                            <Label htmlFor="doctor">Doctor</Label>
+                            <Label htmlFor="doctorId">Doctor</Label>
                             <select
-                                id="doctor"
-                                {...register("doctor", {
+                                id="doctorId"
+                                {...register("doctorId", {
                                     required: "Doctor is required.",
                                 })}
                                 className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -235,10 +245,11 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                 {doctors.map((doctor: any) => (
                                     <option
                                         key={doctor.doctorId}
-                                        value={doctor.name}
+                                        value={doctor.doctorId}
                                         className="bg-white"
                                     >
-                                        {doctor.name} - {doctor.specialization}
+                                        Dr. {doctor.user.username} -{" "}
+                                        {doctor.specialization}
                                     </option>
                                 ))}
                             </select>
@@ -248,37 +259,42 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                 </p>
                             )}
                         </div>
-                        <div>
-                            <Label htmlFor="hospital">Hospital</Label>
-                            <select
-                                id="hospital"
-                                {...register("hospital", {
-                                    required: "Hospital is required.",
-                                })}
-                                className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                <option
-                                    value=""
-                                    className="bg-[#EFEFEF] text-gray-500"
+
+                        {/* Conditionally render the Hospital input only for Super Admin */}
+                        {user?.role === "SUPER_ADMIN" && (
+                            <div>
+                                <Label htmlFor="hospitalId">Hospital</Label>
+                                <select
+                                    id="hospitalId"
+                                    {...register("hospitalId", {
+                                        required: "Hospital is required.",
+                                    })}
+                                    className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    Select a hospital
-                                </option>
-                                {hospitals.map((hospital: any) => (
                                     <option
-                                        key={hospital.hospitalId}
-                                        value={hospital.name}
-                                        className="bg-white"
+                                        value=""
+                                        className="bg-[#EFEFEF] text-gray-500"
                                     >
-                                        {hospital.name}
+                                        Select a hospital
                                     </option>
-                                ))}
-                            </select>
-                            {errors.hospital && (
-                                <p className="text-sm p-2 text-destructive">
-                                    Hospital is required.
-                                </p>
-                            )}
-                        </div>
+                                    {hospitals.map((hospital: any) => (
+                                        <option
+                                            key={hospital.hospitalId}
+                                            value={hospital.hospitalId} // Use hospitalId as the value
+                                            className="bg-white"
+                                        >
+                                            {hospital.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.hospitalId && (
+                                    <p className="text-sm p-2 text-destructive">
+                                        Hospital is required.
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
                         <div>
                             <Label htmlFor="type">Type</Label>
                             <select

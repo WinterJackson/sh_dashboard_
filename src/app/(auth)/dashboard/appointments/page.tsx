@@ -34,7 +34,7 @@ export default async function AppointmentsPage({ searchParams }: AppointmentsPag
         return null;
     }
 
-    const page = parseInt(searchParams.page || '1');
+    const page = parseInt(searchParams.page || "1");
 
     const [appointments, totalAppointments] = await prisma.$transaction([
         prisma.appointment.findMany({
@@ -49,11 +49,21 @@ export default async function AppointmentsPage({ searchParams }: AppointmentsPag
     ]);
 
     return (
-        <div className="flex flex-col h-full min-w-full p-4">
-            <h1 className="text-xl min-w-full font-semibold mb-1">Appointments</h1>
-            <div className="flex flex-row justify-between items-center mb-5">
-                <AppointmentsTable appointments={appointments} totalAppointments={totalAppointments} currentPage={page} />
+        <>
+            <div className="text-xl font-semibold p-4">
+                <h1 className="text-xl min-w-full font-semibold">
+                    Appointments
+                </h1>
             </div>
-        </div>
+            <div className="flex flex-col h-full min-w-full p-4 pt-7">
+                <div className="flex flex-row justify-between items-center mb-5">
+                    <AppointmentsTable
+                        appointments={appointments}
+                        totalAppointments={totalAppointments}
+                        currentPage={page}
+                    />
+                </div>
+            </div>
+        </>
     );
 }

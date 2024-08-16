@@ -8,6 +8,8 @@ import AppointmentsTodayCard from "../AppointmentsTodayCard";
 import AvailableBedsCard from "../AvailableBedsCard";
 import AvailableDoctorsCard from "../AvailableDoctorsCard";
 import PatientsTodayCard from "../PatientsTodayCard";
+import OutwardReferralsCard from "../OutwardReferralsCard";
+import InwardReferralsCard from "../InwardReferralsCard";
 
 const AdminDashboard: React.FC = () => {
     const { data: session } = useSession();
@@ -33,8 +35,8 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="grid w-full">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-                        <AvailableDoctorsCard />
-                        <AvailableBedsCard />
+                        <OutwardReferralsCard />
+                        <InwardReferralsCard />
                     </div>
                 </div>
             </div>

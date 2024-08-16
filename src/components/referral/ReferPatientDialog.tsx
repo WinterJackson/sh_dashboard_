@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import {
     Dialog,
@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { fetchPatientDetails } from "@/lib/data";
+import { useUser } from "@/app/context/UserContext";
 
 interface ReferPatientDialogProps {
     onClose: () => void;
@@ -27,13 +28,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
     const [saved, setSaved] = useState<boolean>(false);
     const [currentSection, setCurrentSection] = useState(1);
     const router = useRouter();
-
-    // useEffect(() => {
-    //     if (saved) {
-    //         const timer = setTimeout(() => setSaved(false), 3000);
-    //         return () => clearTimeout(timer);
-    //     }
-    // }, [saved]);
+    const { user } = useUser();
 
     const fetchAndSetPatientDetails = async (name: string) => {
         const details = await fetchPatientDetails(name);
@@ -58,6 +53,33 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
             setValue("status", "");
         }
     };
+
+   // Function to auto-fill referring physician details
+   const autoFillPhysicianDetails = useCallback(() => {
+       if (user?.role === "DOCTOR" || user?.role === "NURSE") {
+           const prefix = user.role === "DOCTOR" ? "Dr." : "Nurse";
+           const fullName = `${prefix} ${user.profile?.firstName} ${user.profile?.lastName}`;
+
+           const departmentName =
+               user?.doctor?.department?.name ||
+               user?.nurse?.department?.name ||
+               "";
+           const specialization =
+               user?.doctor?.specialization ||
+               user?.nurse?.specialization ||
+               "";
+
+           setValue("physicianName", fullName);
+           setValue("physicianDepartment", departmentName);
+           setValue("physicianSpecialty", specialization);
+           setValue("physicianEmail", user?.email || "");
+           setValue("physicianPhoneNumber", user?.profile?.phone || "");
+       }
+   }, [user, setValue]);
+
+useEffect(() => {
+    autoFillPhysicianDetails();
+}, [autoFillPhysicianDetails]);
 
     const onSubmit = async (data: any) => {
         try {
@@ -241,123 +263,163 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
         </div>
     );
 
-    const renderSection2 = () => (
-        <div className="relative h-auto grid gap-3">
-            <details
-                className="text-primary cursor-pointer pl-1 text-sm bg-primary/10 py-1 rounded-[5px]"
-                title="Click to expand and read instructions."
-            >
-                <summary className="font-semibold items-center">
-                    Help - Referring Physician.
-                </summary>
-                <div className="absolute bg-[#E5F0FB] outline outline-1 outline-secondary/50 z-10 rounded-[10px] mt-3 mr-2 pt-4 pb-4 pr-2">
-                    <p className="ml-5 text-gray-500">
-                        You are required to provide the following:
-                    </p>
-                    <ol className="list-disc ml-10 text-gray-500 text-[13px]">
-                        <li>
-                            full name of the referring physician (Doctor or
-                            Staff).
-                        </li>
-                        <li>department of the referring physician.</li>
-                        <li>specialization of the referring physician.</li>
-                        <li>email of the referring physician.</li>
-                        <li>phone number of the referring physician.</li>
-                    </ol>
+    const renderSection2 = () => {
+        
+        return (
+            <div className="relative h-auto grid gap-3">
+                {/* Help Section */}
+                <details
+                    className="text-primary cursor-pointer pl-1 text-sm bg-primary/10 py-1 rounded-[5px]"
+                    title="Click to expand and read instructions."
+                >
+                    <summary className="font-semibold items-center">
+                        Help - Referring Physician.
+                    </summary>
+                    <div className="absolute bg-[#E5F0FB] outline outline-1 outline-secondary/50 z-10 rounded-[10px] mt-3 mr-2 pt-4 pb-4 pr-2">
+                        <p className="ml-5 text-gray-500">
+                            You are required to provide the following:
+                        </p>
+                        <ol className="list-disc ml-10 text-gray-500 text-[13px]">
+                            <li>
+                                Full name of the referring physician (Doctor or
+                                Nurse).
+                            </li>
+                            <li>Department of the referring physician.</li>
+                            <li>Specialization of the referring physician.</li>
+                            <li>Email of the referring physician.</li>
+                            <li>Phone number of the referring physician.</li>
+                        </ol>
+                    </div>
+                </details>
+    
+                {/* Physician Name Field */}
+                <div>
+                    <Label htmlFor="physicianName">Physician Name</Label>
+                    <Input
+                        id="physicianName"
+                        className="bg-[#EFEFEF]"
+                        {...register("physicianName", { required: true })}
+                        value={`${
+                            user?.role === "DOCTOR"
+                                ? "Dr."
+                                : user?.role === "NURSE"
+                                ? "Nurse"
+                                : ""
+                        } ${user?.profile?.firstName} ${user?.profile?.lastName}`}
+                        readOnly
+                    />
                 </div>
-            </details>
-
-            <div>
-                <Label htmlFor="physicianName">Physician Name</Label>
-                <Input
-                    id="physicianName"
-                    className="bg-[#EFEFEF]"
-                    {...register("physicianName", { required: true })}
-                />
+    
+                {/* Department Field */}
+                <div>
+                    <Label htmlFor="department">Department</Label>
+                    <select
+                        id="department"
+                        {...register("physicianDepartment", { required: true })}
+                        className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        value={
+                            user?.role === "DOCTOR"
+                                ? user?.doctor?.department?.name
+                                : user?.role === "NURSE"
+                                ? user?.nurse?.department?.name
+                                : ""
+                        }
+                    >
+                        <option
+                            value={
+                                user?.role === "DOCTOR"
+                                    ? user?.doctor?.department?.name
+                                    : user?.role === "NURSE"
+                                    ? user?.nurse?.department?.name
+                                    : ""
+                            }
+                        >
+                            {user?.role === "DOCTOR"
+                                ? user?.doctor?.department?.name
+                                : user?.role === "NURSE"
+                                ? user?.nurse?.department?.name
+                                : "Select Department"}
+                        </option>
+                        {/* Other options can be added here if needed */}
+                    </select>
+                </div>
+    
+                {/* Specialty Field */}
+                <div>
+                    <Label htmlFor="specialty">Specialty</Label>
+                    <select
+                        id="specialty"
+                        {...register("physicianSpecialty", { required: true })}
+                        className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        value={
+                            user?.role === "DOCTOR"
+                                ? user?.doctor?.specialization
+                                : user?.role === "NURSE"
+                                ? user?.nurse?.specialization
+                                : ""
+                        }
+                    >
+                        <option
+                            value={
+                                user?.role === "DOCTOR"
+                                    ? user?.doctor?.specialization
+                                    : user?.role === "NURSE"
+                                    ? user?.nurse?.specialization
+                                    : ""
+                            }
+                        >
+                            {user?.role === "DOCTOR"
+                                ? user?.doctor?.specialization
+                                : user?.role === "NURSE"
+                                ? user?.nurse?.specialization
+                                : "Select Specialty"}
+                        </option>
+                        {/* Other options can be added here if needed */}
+                    </select>
+                </div>
+    
+                {/* Email Field */}
+                <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                        id="email"
+                        type="email"
+                        className="bg-[#EFEFEF]"
+                        {...register("physicianEmail", { required: true })}
+                        value={user?.email || ""}
+                        readOnly
+                    />
+                </div>
+    
+                {/* Phone Number Field */}
+                <div>
+                    <Label htmlFor="phoneNumber">Phone Number</Label>
+                    <Input
+                        id="phoneNumber"
+                        type="tel"
+                        className="bg-[#EFEFEF]"
+                        {...register("physicianPhoneNumber", { required: true })}
+                        value={user?.profile?.phone || ""}
+                        readOnly
+                    />
+                </div>
+    
+                {/* Navigation Buttons */}
+                <div className="mt-4 flex justify-between">
+                    <Button type="button" onClick={() => setCurrentSection(1)}>
+                        Back
+                    </Button>
+                    <Button
+                        type="button"
+                        onClick={() => setCurrentSection(3)}
+                        className="ml-2"
+                    >
+                        Next
+                    </Button>
+                </div>
             </div>
-            <div>
-                <Label htmlFor="department">Department</Label>
-                <select
-                    id="department"
-                    {...register("physicianDepartment", { required: true })}
-                    className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    <option value="" className="bg-[#EFEFEF] text-gray-500">
-                        Select Department
-                    </option>
-                    <option value="Cardiology" className="bg-white">
-                        Cardiology
-                    </option>
-                    <option value="Neurology" className="bg-white">
-                        Neurology
-                    </option>
-                    <option value="Urology" className="bg-white">
-                        Urology
-                    </option>
-                    <option value="Orthopedics" className="bg-white">
-                        Orthopedics
-                    </option>
-                    <option value="General Services" className="bg-white">
-                        General Services
-                    </option>
-                </select>
-            </div>
-            <div>
-                <Label htmlFor="specialty">Specialty</Label>
-                <select
-                    id="specialty"
-                    {...register("physicianSpecialty", { required: true })}
-                    className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    <option value="" className="bg-[#EFEFEF] text-gray-500">
-                        Select Specialty
-                    </option>
-                    <option value="Cardiologist" className="bg-white">
-                        Cardiologist
-                    </option>
-                    <option value="Neurosurgeon" className="bg-white">
-                        Neurosurgeon
-                    </option>
-                    <option value="Urologist" className="bg-white">
-                        Urologist
-                    </option>
-                    <option value="Orthopedist" className="bg-white">
-                        Orthopedist
-                    </option>
-                </select>
-            </div>
-            <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                    id="email"
-                    type="email"
-                    className="bg-[#EFEFEF]"
-                    {...register("physicianEmail", { required: true })}
-                />
-            </div>
-            <div>
-                <Label htmlFor="phoneNumber">Phone Number</Label>
-                <Input
-                    id="phoneNumber"
-                    type="tel"
-                    className="bg-[#EFEFEF]"
-                    {...register("physicianPhoneNumber", { required: true })}
-                />
-            </div>
-            <div className="mt-4 flex justify-between">
-                <Button type="button" onClick={() => setCurrentSection(1)}>
-                    Back
-                </Button>
-                <Button
-                    type="button"
-                    onClick={() => setCurrentSection(3)}
-                    className="ml-2"
-                >
-                    Next
-                </Button>
-            </div>
-        </div>
-    );
+        );
+    };
 
     const renderSection3 = () => (
         <div className="relative h-auto grid gap-3">

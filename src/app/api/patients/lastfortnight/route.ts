@@ -18,9 +18,14 @@ export async function GET(req: NextRequest) {
                     lt: new Date(today.getTime() + 24 * 60 * 60 * 1000), // Include today
                 },
             },
-            select: {
-                appointmentDate: true,
-                patientId: true,
+            include: {
+                appointments: true,
+                appointmentServices: true,
+                currentBed: true,
+                hospital: true,
+                payments: true,
+                referrals: true,
+                serviceUsages: true,
             },
         });
 

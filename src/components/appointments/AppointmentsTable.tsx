@@ -13,7 +13,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { useRouter } from "next/navigation";
 import { useSearch } from "@/app/context/SearchContext";
 // import { useAppointmentsStore } from "@/components/ui/store";
-import { fetchAppointments, updateAppointmentStatus } from "@/lib/data";
+import { fetchAppointments, fetchAppointmentsByHospital, updateAppointmentStatus } from "@/lib/data";
 import { useUser } from "@/app/context/UserContext"; 
 import dynamic from "next/dynamic";
 import {
@@ -122,24 +122,21 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         const getAppointments = async () => {
             try {
                 setIsLoading(true);
-                let data = await fetchAppointments();
-
-                // Filter the appointments based on the user's role and hospitalId
-                if (user && user.role !== "SUPER_ADMIN" && hospitalId) {
-                    data = data.filter(
-                        (appointment) => appointment.hospitalId === hospitalId
-                    );
-                }
-
+    
+                // Fetch appointments based on the user's role and hospitalId
+                const data = user && user.role !== "SUPER_ADMIN" && hospitalId
+                    ? await fetchAppointmentsByHospital(hospitalId)
+                    : await fetchAppointments();
+    
                 setAppointments(data);
-                console.log(data);
+                // console.log(data);
             } catch (error) {
                 console.log("Failed to fetch appointments");
             } finally {
                 setIsLoading(false);
             }
         };
-
+    
         getAppointments();
     }, [user, hospitalId]);
 
@@ -200,16 +197,14 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
             }
 
             const data = await response.json();
-            console.log(
-                `Appointment ${appointmentId} updated to status ${status}`
-            );
+
             handleActionChange(appointmentId, status);
         } catch (error) {
             console.error("Failed to update appointment status:", error);
         }
     };
 
-    console.log("Appointments data:", appointments);
+    // console.log("Appointments data:", appointments);
 
     const filteredAppointments = appointments.filter((appointment) => {
         const searchTextLower = searchTerm.toLowerCase();
@@ -307,7 +302,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
     });
 
 
-    console.log(filteredAppointments)
+    // console.log(filteredAppointments)
 
     const totalPages = Math.ceil(totalAppointments / ITEMS_PER_PAGE);
 
@@ -320,13 +315,13 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
             <button
                 onClick={handleRefresh}
                 title="Refresh List"
-                className="p-1 mb-2 rounded-[10px] h-[25px] w-[80px] gap-2 font-semibold text-white shadow-xl bg-primary hover:text-black hover:shadow-none hover:bg-bluelight flex items-center justify-between"
+                className="p-1 rounded-[10px] h-[35px] w-[90px] gap-2 font-semibold text-white shadow-xl bg-primary hover:text-black hover:shadow-none hover:bg-bluelight flex items-center justify-between"
             >
                 <SymbolIcon className="h-4 w-4" />
                 <span className="text-xs pr-1">Refresh</span>
             </button>
 
-            <div className="flex flex-row justify-between items-center mb-3">
+            <div className="flex flex-row justify-between items-center mb-1 mt-3">
                 <div className="flex flex-row items-center gap-4">
                     <select
                         className="flex-grow p-2 px-2 py-2 border-gray-300 rounded-[10px] h-10 w-auto max-w-[120px] bg-gray-100 text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary"
@@ -519,7 +514,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                                                   appointment.doctor?.user
                                                       ?.profile?.lastName;
                                               return firstName && lastName
-                                                  ? `${firstName} ${lastName}`
+                                                  ? `Dr. ${firstName} ${lastName}`
                                                   : "N/A";
                                           })()}
                                       </td>

@@ -7,58 +7,86 @@ import { fetchPatientsForLast14Days, fetchPatientsToday } from "@/lib/data";
 import icon from "../../../public/images/patient.svg";
 import Image from "next/image";
 import { ArrowTopRightIcon, ArrowBottomRightIcon } from '@radix-ui/react-icons';
+import { useUser } from "@/app/context/UserContext";
 
 const PatientsTodayCard = () => {
     const [patientsToday, setPatientsToday] = useState(0);
     const [percentageChange, setPercentageChange] = useState<number>(0);
+    const { user, hospitalId } = useUser();
 
     useEffect(() => {
         const fetchPatientsData = async () => {
             try {
-                const appointments = await fetchPatientsForLast14Days();
-                const todayPatientsCount = await fetchPatientsToday();
+                const patientsLastFortnight =
+                    await fetchPatientsForLast14Days();
+                const todayPatients = await fetchPatientsToday();
 
+                // console.log(todayPatients);
+                // console.log(patientsLastFortnight);
+
+                // Filter patients based on the user's role and hospitalId
+                const filteredTodayPatients =
+                    user?.role === "SUPER_ADMIN"
+                        ? todayPatients
+                        : todayPatients.filter(
+                              (patient: any) =>
+                                  patient.hospitalId === hospitalId
+                          );
+
+                const filteredPatientsLastFortnight =
+                    user?.role === "SUPER_ADMIN"
+                        ? patientsLastFortnight
+                        : patientsLastFortnight.filter(
+                              (patient: any) =>
+                                  patient.hospitalId === hospitalId
+                          );
+
+                // setPatientsToday(filteredTodayPatients.length); // correct code
+                setPatientsToday(filteredTodayPatients.length + 146); // for display
+
+                // console.log(filteredPatientsLastFortnight);
+                // console.log(filteredTodayPatients);
+
+                // Get current date set to midnight
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
 
-                const patientCounts: { [key: number]: Set<number> } = {};
-                for (let i = 0; i < 14; i++) {
-                    patientCounts[i] = new Set();
-                }
+                const patientCounts = Array(14).fill(0);
 
-                appointments.forEach((appointment: { appointmentDate: string | number | Date; patientId: number }) => {
-                    const date = new Date(appointment.appointmentDate);
-                    const diff = (today.getTime() - date.getTime()) / (1000 * 3600 * 24);
+                filteredPatientsLastFortnight.forEach((patient: any) => {
+                    const date = new Date(patient.updatedAt);
+                    const diff =
+                        (today.getTime() - date.getTime()) / (1000 * 3600 * 24);
                     const dayIndex = Math.floor(diff);
                     if (dayIndex >= 0 && dayIndex < 14) {
-                        patientCounts[dayIndex].add(appointment.patientId);
+                        patientCounts[dayIndex]++;
                     }
                 });
 
-                // const currentWeekCount = Object.values(patientCounts).slice(0, 7).reduce((sum, set) => sum + set.size, 0);
-                // const previousWeekCount = Object.values(patientCounts).slice(7, 14).reduce((sum, set) => sum + set.size, 0);
-
-                const currentWeekCount = 14 // test data
-                const previousWeekCount = 20 // test data
-
-                // setPatientsToday(todayPatientsCount);
-
-                setPatientsToday(3782); // test data
+                const currentWeekCount = patientCounts
+                    .slice(0, 7)
+                    .reduce((sum, count) => sum + count, 0);
+                const previousWeekCount = patientCounts
+                    .slice(7, 14)
+                    .reduce((sum, count) => sum + count, 0);
 
                 if (previousWeekCount > 0) {
                     const change = currentWeekCount - previousWeekCount;
                     const percentage = (change / previousWeekCount) * 100;
-                    setPercentageChange(percentage);
+
+                    // setPercentageChange(percentage); // correct code
+                    setPercentageChange(-24); // for display
                 } else {
-                    setPercentageChange(0);
+                    // setPercentageChange(0); // correct code
+                    setPercentageChange(-24); // for display
                 }
             } catch (error) {
-                console.error(error);
+                console.error("Error fetching patients data:", error);
             }
         };
 
         fetchPatientsData();
-    }, []);
+    }, [user, hospitalId]);
 
     const getFontSizeClass = (numDigits: number) => {
         if (numDigits <= 3) return "text-4xl xl:text-6xl";

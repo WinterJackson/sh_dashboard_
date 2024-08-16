@@ -10,23 +10,48 @@ export async function GET(req: NextRequest) {
         const tomorrow = new Date(today);
         tomorrow.setDate(today.getDate() + 1);
 
-        const patients = await prisma.appointment.findMany({
+        const appointments = await prisma.appointment.findMany({
             where: {
                 appointmentDate: {
                     gte: today,
                     lt: tomorrow,
                 },
             },
-            select: {
-                patientId: true,
+            include: {
+                doctor: {
+                    include: {
+                        user: {
+                            include: {
+                                profile: true,
+                            },
+                        },
+                    },
+                },
+                hospital: true,
+                patient: true,
+                services: true,
+                payments: true,
             },
         });
 
-        const uniquePatients = new Set(patients.map((p: { patientId: any; }) => p.patientId));
+        // Use a Map to track unique patients by their patientId
+        const uniquePatientsMap = new Map();
 
-        return NextResponse.json({ count: uniquePatients.size }, { status: 200 });
+        appointments.forEach((appointment: { patient: { patientId: any; }; }) => {
+            const patientId = appointment.patient.patientId;
+            if (!uniquePatientsMap.has(patientId)) {
+                uniquePatientsMap.set(patientId, appointment.patient);
+            }
+        });
+
+        // Convert the Map values to an array of unique patients
+        const uniquePatients = Array.from(uniquePatientsMap.values());
+
+        // console.log(uniquePatients);
+
+        return NextResponse.json(uniquePatients, { status: 200 });
     } catch (error) {
         console.error("Error fetching today's patients:", error);
-        return NextResponse.json({ error: 'Error fetching today\'s patients' }, { status: 500 });
+        return NextResponse.json({ error: "Error fetching today's patients" }, { status: 500 });
     }
 }

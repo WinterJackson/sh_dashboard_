@@ -189,11 +189,11 @@ model DoctorEarning {
 
 model Bed {
   bedId        Int      @id @default(autoincrement())
-  hospitalId   Int      @unique
+  hospitalId   Int
   patientId    Int?     @unique
-  type         String
+  type      String   // ICU, General
   ward         String
-  availability String
+  availability String   // Occupied or Available
   hospital     Hospital @relation(fields: [hospitalId], references: [hospitalId])
   patient      Patient? @relation(fields: [patientId], references: [patientId])
 }
@@ -270,7 +270,7 @@ model Referral {
   referralId            Int      @id @default(autoincrement())
   patientId             Int
   hospitalId            Int
-  date                  DateTime
+  effectiveDate         DateTime //Date when refferal should take place
   type                  String // External or Internal
   primaryCareProvider   String // Primary care provider for the patient
   referralAddress       String // Address of the patient or the primary care provider
@@ -289,7 +289,7 @@ model Referral {
   hospital Hospital?       @relation(fields: [hospitalId], references: [hospitalId])
   patient  Patient         @relation(fields: [patientId], references: [patientId])
 
-  @@unique([patientId, hospitalId, date, type])
+  @@unique([patientId, hospitalId, effectiveDate, type])
 }
 
 model DoctorReferral {
@@ -313,7 +313,7 @@ model Hospital {
   website      String?
   logoUrl      String
   appointments Appointment[]
-  beds         Bed?
+  beds         Bed[]
   doctors      Doctor[]
   nurses       Nurse[]
   departments  HospitalDepartment[]

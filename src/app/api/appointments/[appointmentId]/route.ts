@@ -26,8 +26,8 @@ export async function PATCH(
 
     try {
         const requestBody = await req.json();
-        console.log("Received PATCH request for appointmentId:", appointmentId);
-        console.log("Request Body:", requestBody);
+        // console.log("Received PATCH request for appointmentId:", appointmentId);
+        // console.log("Request Body:", requestBody);
 
         const {
             status,
@@ -35,8 +35,8 @@ export async function PATCH(
             date,
             timeFrom,
             timeTo,
-            doctor,
-            hospital,
+            doctorId,
+            hospitalId,
             type,
         } = requestBody;
 
@@ -51,15 +51,15 @@ export async function PATCH(
             } else if (status === "Pending") {
                 updateData.pendingReason = reason;
             }
-            console.log("Status update:", { status, reason });
+            // console.log("Status update:", { status, reason });
         } else {
             // Update other fields only if status is not being updated
             if (
                 !date ||
                 !timeFrom ||
                 !timeTo ||
-                !doctor ||
-                !hospital ||
+                !doctorId ||
+                !hospitalId ||
                 !type
             ) {
                 console.error("Missing fields in the request body");
@@ -68,32 +68,6 @@ export async function PATCH(
                     { status: 400 }
                 );
             }
-
-            const doctorRecord = await prisma.doctor.findFirst({
-                where: { name: doctor },
-            });
-            if (!doctorRecord) {
-                console.error("Doctor not found:", doctor);
-                return NextResponse.json(
-                    { error: "Doctor not found" },
-                    { status: 404 }
-                );
-            }
-            const doctorId = doctorRecord.doctorId;
-            console.log('Doctor found:', doctorRecord);
-
-            const hospitalRecord = await prisma.hospital.findFirst({
-                where: { name: hospital },
-            });
-            if (!hospitalRecord) {
-                console.error("Hospital not found:", hospital);
-                return NextResponse.json(
-                    { error: "Hospital not found" },
-                    { status: 404 }
-                );
-            }
-            const hospitalId = hospitalRecord.hospitalId;
-            console.log('Hospital found:', hospitalRecord);
 
             const appointmentDate = new Date(date);
             const [hoursFrom, minutesFrom] = timeFrom.split(":");
@@ -113,23 +87,23 @@ export async function PATCH(
             updateData.type = type;
             updateData.status = "Rescheduled";
 
-            console.log("Reschedule data:", {
-                appointmentDate,
-                appointmentEndAt,
-                doctorId,
-                hospitalId,
-                type,
-            });
+            // console.log("Reschedule data:", {
+            //     appointmentDate,
+            //     appointmentEndAt,
+            //     doctorId,
+            //     hospitalId,
+            //     type,
+            // });
         }
 
-        console.log("Updating appointment with data:", updateData);
+        // console.log("Updating appointment with data:", updateData);
 
         const updatedAppointment = await prisma.appointment.update({
             where: { appointmentId: appointmentId },
             data: updateData,
         });
 
-        console.log("Appointment updated successfully:", updatedAppointment);
+        // console.log("Appointment updated successfully:", updatedAppointment);
 
         revalidatePath("/dashboard/appointments");
         return NextResponse.json(updatedAppointment, { status: 200 });

@@ -3,11 +3,7 @@
 "use client"
 
 import Header from "@/components/header/Header";
-import SuperAdminSidebar from "@/components/sidebars/SuperAdminSidebar";
-import AdminSidebar from "@/components/sidebars/AdminSidebar";
-import DoctorSidebar from "@/components/sidebars/DoctorSidebar";
-import NurseSidebar from "@/components/sidebars/NurseSidebar";
-import StaffSidebar from "@/components/sidebars/StaffSidebar";
+import Sidebar from "@/components/sidebars/Sidebar";
 import { useUserRole } from "@/hooks/useUserRole";
 import React from "react";
 
@@ -16,23 +12,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     return (
         <div className="flex relative w-full flex-col min-h-screen">
+            {/* Fixed Header */}
             <Header />
-            <div className="flex relative w-full flex-row h-full">
-                <div className="w-auto">
-                    {role === "SUPER_ADMIN" ? (
-                        <SuperAdminSidebar />
-                    ) : role === "ADMIN" ? (
-                        <AdminSidebar />
-                    ) : role === "DOCTOR" ? (
-                        <DoctorSidebar />
-                    ) : role === "NURSE" ? (
-                        <NurseSidebar />
-                    ) : role === "STAFF" ? (
-                        <StaffSidebar />
-                    ) : null
-                    }
-                </div>
-                <main className="w-3/4 flex-grow">{children}</main>
+
+            <div className="flex flex-row flex-grow pt-20 min-h-screen">
+                {/* Fixed Sidebar */}
+                <aside className="fixed top-20 left-0 w-64 h-[calc(100vh-4rem)] bg-white z-40 shadow-lg">
+                    <Sidebar />
+                </aside>
+
+                {/* Scrollable Main Content */}
+                <main className="ml-64 w-full h-screen overflow-y-auto p-4 bg-gray-100">
+                    {children}
+                </main>
             </div>
         </div>
     );

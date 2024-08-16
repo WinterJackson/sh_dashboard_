@@ -18,8 +18,20 @@ export async function GET(req: NextRequest) {
                     lt: new Date(today.getTime() + 24 * 60 * 60 * 1000), // Include today
                 },
             },
-            select: {
-                appointmentDate: true,
+            include: {
+                doctor: {
+                    include: {
+                        user: {
+                            include: {
+                                profile: true,
+                            },
+                        },
+                    },
+                },
+                hospital: true,
+                patient: true,
+                services: true,
+                payments: true,
             },
         });
 

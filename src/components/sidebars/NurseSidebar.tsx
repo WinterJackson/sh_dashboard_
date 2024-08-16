@@ -40,7 +40,7 @@ const NurseSidebar = () => {
     const nameWidth = firstName ? firstName.length * 10 : 100;
 
     return (
-        <div className="relative w-64 h-full bg-white shadow-lg shadow-gray-300 flex flex-col rounded-2xl m-2">
+        <div className="relative w-64 h-full bg-white shadow-lg shadow-gray-300 flex flex-col rounded-2xl">
             {isLoading && <LoadingSpinner />}
             <div className="flex-grow pb-60 pt-20">
                 <nav className="flex flex-col pb-60">

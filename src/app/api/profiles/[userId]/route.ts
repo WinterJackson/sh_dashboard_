@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
         const userId = session.user.id;
 
-        console.log(userId)
+        // console.log(userId)
 
         const profile = await prisma.profile.findUnique({
             where: { userId },
