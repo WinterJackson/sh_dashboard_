@@ -45,7 +45,7 @@ const Header = () => {
     // console.log(role)
 
     return (
-        <header className="flex z-50 fixed top-0 left-0 w-full items-center justify-between p-4 m-2 bg-white shadow-lg shadow-gray-300 rounded-2xl">
+        <header className="flex z-10 fixed top-0 left-0 w-full items-center justify-between p-4 py-5 m-2 bg-white shadow-lg shadow-gray-300 rounded-2xl">
             {/* Logo */}
             <div className="flex items-center w-1/4">
                 <Image src={logo} alt="Hospital Logo" width={120} height={40} />

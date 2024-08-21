@@ -85,6 +85,7 @@ export async function fetchAllHospitals() {
     try {
         const response = await fetch("/api/hospitals");
         const data = await response.json();
+
         return data;
     } catch (error) {
         console.error("Failed to fetch hospitals:", error);
@@ -240,6 +241,21 @@ export async function fetchPatientsToday() {
     } catch (error) {
         console.error("Failed to fetch today's patients:", error);
         return 0;
+    }
+}
+
+// Fetch all patients
+export async function fetchAllPatients() {
+    try {
+        const response = await fetch("/api/patients");
+        const data = await response.json();
+        
+        console.log(data);
+
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch hospitals:", error);
+        return [];
     }
 }
 

@@ -4,109 +4,120 @@
 
 import React, { useEffect, useState } from "react";
 import { fetchAllReferrals } from "@/lib/data";
-import { useUser } from "@/app/context/UserContext";
+import { useSessionData } from "@/hooks/useSessionData";
 import { ArrowTopRightIcon, ArrowBottomRightIcon } from "@radix-ui/react-icons";
 
 const InwardReferralsCard = () => {
-    const { user, hospitalId } = useUser();
+    const sessionData = useSessionData();
+    const role = sessionData?.user?.role;
+
     const [inwardReferrals, setInwardReferrals] = useState(0);
     const [percentageChange, setPercentageChange] = useState<number>(0);
     const [patientChangeText, setPatientChangeText] = useState<string>("");
 
     useEffect(() => {
-        if (!user || !hospitalId) {
-            return;
-        }
-
         const fetchReferrals = async () => {
-            const referrals = await fetchAllReferrals();
+            try {
+                const referrals = await fetchAllReferrals();
 
-            let filteredReferrals = referrals;
-            if (user?.role !== "SUPER_ADMIN" && hospitalId) {
-                filteredReferrals = referrals.filter(
-                    (referral: { hospitalId: number }) =>
-                        referral.hospitalId === hospitalId
-                );
-            }
+                // Filter the referrals based on the role
+                let filteredReferrals: any[] = [];
 
-            const inwardReferrals = filteredReferrals.filter(
-                (referral: { type: string }) => referral.type === "Internal"
-            );
-
-            setInwardReferrals(inwardReferrals.length);
-
-            const today = new Date();
-            const currentWeekReferrals: any[] = [];
-            const previousWeekReferrals: any[] = [];
-
-            inwardReferrals.forEach(
-                (referral: { effectiveDate: string | number | Date }) => {
-                    const date = new Date(referral.effectiveDate);
-                    const diff =
-                        (today.getTime() - date.getTime()) / (1000 * 3600 * 24);
-                    const dayIndex = Math.floor(diff);
-
-                    if (dayIndex >= 0 && dayIndex < 7) {
-                        currentWeekReferrals.push(referral);
-                    } else if (dayIndex >= 7 && dayIndex < 14) {
-                        previousWeekReferrals.push(referral);
-                    }
+                if (referrals) {
+                    filteredReferrals = referrals.filter(
+                        (referral: { type: string }) =>
+                            referral.type === "Internal"
+                    );
                 }
-            );
 
-            const getUniquePatientCount = (referralsArray: any[]) => {
-                const uniquePatients = new Set();
-                referralsArray.forEach((referral) => {
-                    uniquePatients.add(referral.patientId);
-                });
-                return uniquePatients.size;
-            };
+                if (role !== "SUPER_ADMIN") {
+                    const hospitalId = sessionData?.user?.hospitalId;
+                    filteredReferrals = filteredReferrals.filter(
+                        (referral: { hospitalId: number }) =>
+                            referral.hospitalId === hospitalId
+                    );
+                }
 
-            const currentWeekPatientsCount =
-                getUniquePatientCount(currentWeekReferrals);
-            const previousWeekPatientsCount = getUniquePatientCount(
-                previousWeekReferrals
-            );
+                setInwardReferrals(filteredReferrals.length);
 
-            const patientChange =
-                currentWeekPatientsCount - previousWeekPatientsCount;
+                // Separate referrals into current week and previous week
+                const today = new Date();
+                const currentWeekReferrals: any[] = [];
+                const previousWeekReferrals: any[] = [];
 
-            let percentage = 0;
-            if (
-                previousWeekReferrals.length === 0 &&
-                currentWeekReferrals.length > 0
-            ) {
-                percentage = 100;
-            } else if (
-                currentWeekReferrals.length === 0 &&
-                previousWeekReferrals.length > 0
-            ) {
-                percentage = -100;
-            } else if (previousWeekReferrals.length > 0) {
-                const referralChange =
-                    currentWeekReferrals.length - previousWeekReferrals.length;
-                percentage =
-                    (referralChange / previousWeekReferrals.length) * 100;
-            }
-            setPercentageChange(percentage);
+                filteredReferrals.forEach(
+                    (referral: { effectiveDate: string | number | Date }) => {
+                        const date = new Date(referral.effectiveDate);
+                        const diff =
+                            (today.getTime() - date.getTime()) /
+                            (1000 * 3600 * 24);
+                        const dayIndex = Math.floor(diff);
 
-            if (patientChange > 0) {
-                setPatientChangeText(
-                    `Increased In Data By ${patientChange} \nPatient(s) In The Last 7 Days.`
+                        if (dayIndex >= 0 && dayIndex < 7) {
+                            currentWeekReferrals.push(referral);
+                        } else if (dayIndex >= 7 && dayIndex < 14) {
+                            previousWeekReferrals.push(referral);
+                        }
+                    }
                 );
-            } else if (patientChange < 0) {
-                setPatientChangeText(
-                    `Decreased In Data By ${Math.abs(patientChange)} \nPatient(s) In The Last 7 Days.`
+
+                const getUniquePatientCount = (referralsArray: any[]) => {
+                    const uniquePatients = new Set();
+                    referralsArray.forEach((referral) => {
+                        uniquePatients.add(referral.patientId);
+                    });
+                    return uniquePatients.size;
+                };
+
+                const currentWeekPatientsCount =
+                    getUniquePatientCount(currentWeekReferrals);
+                const previousWeekPatientsCount = getUniquePatientCount(
+                    previousWeekReferrals
                 );
-            } else {
-                setPatientChangeText(
-                    "No Change In Patient Referrals \nIn The Last 7 Days!"
-                );
+
+                const patientChange =
+                    currentWeekPatientsCount - previousWeekPatientsCount;
+
+                // Calculate percentage change
+                let percentage = 0;
+                if (
+                    previousWeekReferrals.length === 0 &&
+                    currentWeekReferrals.length > 0
+                ) {
+                    percentage = 100;
+                } else if (
+                    currentWeekReferrals.length === 0 &&
+                    previousWeekReferrals.length > 0
+                ) {
+                    percentage = -100;
+                } else if (previousWeekReferrals.length > 0) {
+                    const referralChange = currentWeekReferrals.length - previousWeekReferrals.length;
+                    percentage = (referralChange / previousWeekReferrals.length) * 100;
+                }
+
+                setPercentageChange(percentage);
+
+                // Set the text for patient change
+                if (patientChange > 0) {
+                    setPatientChangeText(
+                        `Increased In Data By ${patientChange} \nPatient(s) In The Last 7 Days.`
+                    );
+                } else if (patientChange < 0) {
+                    setPatientChangeText(
+                        `Decreased In Data By ${Math.abs( patientChange )} \nPatient(s) In The Last 7 Days.`
+                    );
+                } else {
+                    setPatientChangeText(
+                        "No Change In Patient Referrals \nIn The Last 7 Days!"
+                    );
+                }
+            } catch (error) {
+                console.error("Error fetching referrals:", error);
             }
         };
 
         fetchReferrals();
-    }, [user, hospitalId]);
+    }, [role, sessionData]);
 
     const getFontSizeClass = (numDigits: number) => {
         if (numDigits <= 3) return "text-4xl xl:text-6xl";
@@ -118,23 +129,19 @@ const InwardReferralsCard = () => {
 
     return (
         <div className="rounded-2xl bg-gradient-to-br from-[#0485D8] to-[#04D7E1] shadow-lg shadow-gray-300 p-4">
-            <h3 className="text-sm xl:text-base text-[#9afaff] font-semibold mb-10 pb-12">
+            <h3 className="text-sm xl:text-base text-[#9afaff] font-semibold mb-10 pb-10">
                 Inward Referrals
             </h3>
 
-            <div className="flex items-center mb-10 pt-9 p-1">
+            <div className="flex items-center mb-14 pt-8 p-1">
                 <div
                     className={`flex items-center text-white bg-black/20 ${
                         percentageChange < 0 ? "text-white" : ""
-                    }`}
-                    style={{
-                        borderRadius: "2rem !important",
-                        border: "3px solid #04D7E1",
-                    }}
+                    } rounded-[20px] border-[3px] border-solid border-[#04D7E1]`}
                 >
                     {percentageChange > 0 && <ArrowTopRightIcon />}
                     {percentageChange < 0 && <ArrowBottomRightIcon />}
-                    <span className="text-xl xl:text-2xl ml-2 p-2">
+                    <span className="text-xl xl:text-2xl p-2">
                         {percentageChange.toFixed(2)}%
                     </span>
                 </div>

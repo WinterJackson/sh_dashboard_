@@ -10,6 +10,7 @@ import AvailableDoctorsCard from "../AvailableDoctorsCard";
 import PatientsTodayCard from "../PatientsTodayCard";
 import OutwardReferralsCard from "../OutwardReferralsCard";
 import InwardReferralsCard from "../InwardReferralsCard";
+import PatientsGraphCard from "../PatientsGraphCard";
 
 const AdminDashboard: React.FC = () => {
     const { data: session } = useSession();
@@ -38,6 +39,14 @@ const AdminDashboard: React.FC = () => {
                         <OutwardReferralsCard />
                         <InwardReferralsCard />
                     </div>
+                </div>
+            </div>
+            <div className="flex">
+                <div className="grid w-full p-4">
+                    <PatientsGraphCard />
+                </div>
+                <div className="grid w-full p-4">
+                    <PatientsGraphCard />
                 </div>
             </div>
         </>

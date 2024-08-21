@@ -26,7 +26,7 @@ import {
     fetchOnlineDoctorsByHospital,
     fetchDoctorDetails,
 } from "@/lib/data";
-import { useUser } from "@/app/context/UserContext";
+import { useSessionData } from "@/hooks/useSessionData";
 import { differenceInYears } from "date-fns";
 
 interface AddAppointmentDialogProps {
@@ -46,7 +46,9 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
     const [hospitals, setHospitals] = useState([]);
     const [patientDetails, setPatientDetails] = useState<any | null>(null);
     const router = useRouter();
-    const { user, hospitalId } = useUser();
+    const sessionData = useSessionData(); // Get the session data
+    const role = sessionData?.user?.role;
+    const hospitalId = sessionData?.user?.hospitalId;
 
     useEffect(() => {
         const fetchData = async () => {
@@ -55,11 +57,9 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                 setHospitals(fetchedHospitals);
 
                 let doctorDetails;
-                if (user?.role === 'SUPER_ADMIN') {
+                if (role === 'SUPER_ADMIN') {
                     // Fetch all online doctors for SUPER_ADMIN
                     doctorDetails = await fetchOnlineDoctors();
-
-                    // console.log(doctorDetails);
 
                     doctorDetails = doctorDetails.map((doctor: { specialization: string; user: { username: string }; doctorId: number }) => ({
                         username: doctor.user.username,
@@ -71,7 +71,6 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                     doctorDetails = await fetchOnlineDoctorsByHospital(hospitalId);
                 }
 
-                // console.log(doctorDetails);
                 setDoctors(doctorDetails);
             } catch (error) {
                 console.error("Failed to fetch data:", error);
@@ -79,7 +78,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
         };
 
         fetchData();
-    }, [user, hospitalId]);
+    }, [role, hospitalId]);
 
     const fetchAndSetPatientDetails = async (name: string) => {
         const details = await fetchPatientDetails(name);
@@ -132,8 +131,8 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                 body: JSON.stringify({
                     ...data,
                     date: selectedDate?.toISOString(),
-                    role: user?.role,
-                    userHospitalId: user?.hospitalId,
+                    role: role,
+                    hospitalId: hospitalId,
                     doctorId: data.doctorId,
                 }),
 
@@ -164,9 +163,8 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
 
     const handleDoctorChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
         const doctorId = parseInt(event.target.value, 10);
-        
-        console.log(doctorId);
-        if (user?.role === 'SUPER_ADMIN' && doctorId) {
+
+        if (role === 'SUPER_ADMIN' && doctorId) {
             await fetchAndSetDoctorHospital(doctorId);
         }
     };
@@ -354,7 +352,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                             </select>
                         </div>
 
-                        {user?.role === "SUPER_ADMIN" && (
+                        {role === "SUPER_ADMIN" && (
                             <div>
                                 <Label htmlFor="hospitalName">Hospital</Label>
                                 <select

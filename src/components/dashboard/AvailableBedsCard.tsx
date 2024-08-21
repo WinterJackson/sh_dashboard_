@@ -6,31 +6,33 @@ import React, { useEffect, useState } from 'react';
 import { fetchAvailableBeds } from '@/lib/data';
 import icon from "../../../public/images/bed.svg"
 import Image from "next/image";
-import { useUser } from "@/app/context/UserContext";
+import { useSessionData } from "@/hooks/useSessionData";
 
 const AvailableBedsCard = () => {
     const [availableBeds, setAvailableBeds] = useState(0);
-    const { user, hospitalId } = useUser();
+    const sessionData = useSessionData();
+
+    const role = sessionData?.user?.role;
+    const hospitalId = sessionData?.user?.hospitalId;
 
     useEffect(() => {
         const fetchBeds = async () => {
             const beds = await fetchAvailableBeds();
 
-            // console.log(beds);
-
             // Filter beds based on the user's role and hospitalId
-            const filteredBeds = user?.role === "SUPER_ADMIN"
+            const filteredBeds = role === "SUPER_ADMIN"
                 ? beds
                 : beds.filter((bed: any) => bed.hospitalId === hospitalId);
 
             // setAvailableBeds(filteredBeds.length); // correct code
             setAvailableBeds(filteredBeds.length + 580); // for display
-
-            // console.log(filteredBeds);
         };
 
-        fetchBeds();
-    }, [user, hospitalId]);
+        // Fetch beds only when session data is available
+        if (role) {
+            fetchBeds();
+        }
+    }, [role, hospitalId]);
 
     const getFontSizeClass = (numDigits: number) => {
         if (numDigits <= 3) return "text-4xl xl:text-6xl"; // Default large size
@@ -59,7 +61,7 @@ const AvailableBedsCard = () => {
                         {availableBeds}
                     </span>
                 </div>
-                <div className="flex w-full items-center justify-end h-3/4 relative">
+                <div className="flex w-1/3 items-center justify-end h-3/4 relative">
                     <Image
                         src={icon}
                         alt="bed icon"

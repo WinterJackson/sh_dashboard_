@@ -6,11 +6,14 @@ import React, { useEffect, useState } from "react";
 import { fetchOnlineDoctors } from "@/lib/data";
 import icon from "../../../public/images/doctor.svg"
 import Image from "next/image";
-import { useUser } from "@/app/context/UserContext";
+import { useSessionData } from "@/hooks/useSessionData";
 
 const AvailableDoctorsCard = () => {
     const [availableDoctors, setAvailableDoctors] = useState(0);
-    const { user, hospitalId } = useUser();
+    const sessionData = useSessionData();
+
+    const role = sessionData?.user?.role;
+    const hospitalId = sessionData?.user?.hospitalId;
 
     useEffect(() => {
         const fetchDoctors = async () => {
@@ -18,15 +21,15 @@ const AvailableDoctorsCard = () => {
                 const doctors = await fetchOnlineDoctors();
     
                 // Filter doctors by hospitalId
-                if (user && user.role !== "SUPER_ADMIN" && hospitalId) {
+                if (role !== "SUPER_ADMIN" && hospitalId) {
                     const filteredDoctors = doctors.filter(
                         (doctor: { hospitalId: number }) => doctor.hospitalId === hospitalId
                     );
-    
+
                     // setAvailableDoctors(filteredDoctors.length); // correct code
 
                     setAvailableDoctors(filteredDoctors.length * 1147); // for display
-                } else if (user && user.role === "SUPER_ADMIN") {
+                } else if (role === "SUPER_ADMIN") {
                     // If Super Admin, set the total number of online doctors
 
                     // setAvailableDoctors(doctors.length); // correct code
@@ -38,11 +41,11 @@ const AvailableDoctorsCard = () => {
             }
         };
     
-        // Fetch doctors only when user data is available
-        if (user) {
+        // Fetch doctors only when session data is available
+        if (role) {
             fetchDoctors();
         }
-    }, [user, hospitalId]);
+    }, [role, hospitalId]);
 
     const getFontSizeClass = (numDigits: number) => {
         if (numDigits <= 3) return "text-4xl xl:text-6xl"; // Default large size
@@ -71,7 +74,7 @@ const AvailableDoctorsCard = () => {
                         {availableDoctors}
                     </span>
                 </div>
-                <div className="flex w-full items-center justify-end h-3/4 relative">
+                <div className="flex w-1/3 items-center justify-end h-3/4 relative">
                     <Image
                         src={icon}
                         alt="doctor icon"

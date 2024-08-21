@@ -7,12 +7,15 @@ import { fetchAppointmentsForLast14Days, fetchTodayAppointments } from "@/lib/da
 import icon from "../../../public/images/appointment.svg";
 import Image from "next/image";
 import { ArrowTopRightIcon, ArrowBottomRightIcon } from '@radix-ui/react-icons';
-import { useUser } from "@/app/context/UserContext";
+import { useSessionData } from "@/hooks/useSessionData";
 
 const AppointmentsTodayCard = () => {
     const [appointmentsToday, setAppointmentsToday] = useState(0);
     const [percentageChange, setPercentageChange] = useState<number>(0);
-    const { user, hospitalId } = useUser();
+    const sessionData = useSessionData();
+
+    const role = sessionData?.user?.role;
+    const hospitalId = sessionData?.user?.hospitalId;
 
     useEffect(() => {
         const fetchAppointmentsData = async () => {
@@ -20,7 +23,7 @@ const AppointmentsTodayCard = () => {
             const todayAppointments = await fetchTodayAppointments();
 
             // Filter today's appointments based on user role
-            const filteredTodayAppointments = user?.role === "SUPER_ADMIN"
+            const filteredTodayAppointments = role === "SUPER_ADMIN"
                 ? todayAppointments
                 : todayAppointments.filter(
                     (appointment: { hospitalId: number }) => appointment.hospitalId === hospitalId
@@ -38,7 +41,7 @@ const AppointmentsTodayCard = () => {
             const appointmentCounts = Array(14).fill(0);
 
             // Filter and map appointments based on the user's role
-            const filteredAppointments = user?.role === "SUPER_ADMIN"
+            const filteredAppointments = role === "SUPER_ADMIN"
                 ? appointments
                 : appointments.filter(
                     (appointment: { hospitalId: number }) => appointment.hospitalId === hospitalId
@@ -56,20 +59,22 @@ const AppointmentsTodayCard = () => {
             const currentWeekCount = appointmentCounts.slice(0, 7).reduce((sum, count) => sum + count, 0);
             const previousWeekCount = appointmentCounts.slice(7, 14).reduce((sum, count) => sum + count, 0);
 
+            let percentage = 0;
             if (previousWeekCount > 0) {
                 const change = currentWeekCount - previousWeekCount;
-                const percentage = (change / previousWeekCount) * 100; // correct code
+                percentage = (change / previousWeekCount) * 100;
 
-                setPercentageChange(percentage);
+                // setPercentageChange(percentage); // correct code
             }
-
-            const percentage = 25;  // test code
-
-            setPercentageChange(percentage); // test code
+            // setPercentageChange(percentage); // correct code
+            setPercentageChange(percentage + 25.6); // test code
         };
 
-        fetchAppointmentsData();
-    }, [user, hospitalId]);
+        // Fetch data only when session data is available
+        if (role) {
+            fetchAppointmentsData();
+        }
+    }, [role, hospitalId]);
 
     const getFontSizeClass = (numDigits: number) => {
         if (numDigits <= 3) return "text-4xl xl:text-6xl";
@@ -95,7 +100,7 @@ const AppointmentsTodayCard = () => {
                         {appointmentsToday}
                     </span>
                 </div>
-                <div className="flex w-full items-center justify-end h-3/4 relative">
+                <div className="flex w-1/3 items-center justify-end h-3/4 relative">
                     <Image
                         src={icon}
                         alt="appointment icon"

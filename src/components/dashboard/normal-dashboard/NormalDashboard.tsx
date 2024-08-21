@@ -10,12 +10,13 @@ import AvailableDoctorsCard from "../AvailableDoctorsCard";
 import PatientsTodayCard from "../PatientsTodayCard";
 import InwardReferralsCard from "../InwardReferralsCard";
 import OutwardReferralsCard from "../OutwardReferralsCard";
+import PatientsGraphCard from "../PatientsGraphCard";
 
 const NormalDashboard: React.FC = () => {
     const { data: session } = useSession();
     const firstName = session?.user
         ? session.user.username.split(" ")[0]
-        : "Admin";
+        : "";
 
     return (
         <>
@@ -38,6 +39,14 @@ const NormalDashboard: React.FC = () => {
                         <OutwardReferralsCard />
                         <InwardReferralsCard />
                     </div>
+                </div>
+            </div>
+            <div className="flex">
+                <div className="grid w-full p-4">
+                    <PatientsGraphCard />
+                </div>
+                <div className="grid w-full p-4">
+                    <PatientsGraphCard />
                 </div>
             </div>
         </>

@@ -12,9 +12,8 @@ import { SymbolIcon } from "@radix-ui/react-icons";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { useRouter } from "next/navigation";
 import { useSearch } from "@/app/context/SearchContext";
-// import { useAppointmentsStore } from "@/components/ui/store";
 import { fetchAppointments, fetchAppointmentsByHospital, updateAppointmentStatus } from "@/lib/data";
-import { useUser } from "@/app/context/UserContext"; 
+import { useSessionData } from "@/hooks/useSessionData"; 
 import dynamic from "next/dynamic";
 import {
     DropdownMenu,
@@ -69,7 +68,8 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
     totalAppointments,
     currentPage,
 }) => {
-    const { user, hospitalId } = useUser();
+    const sessionData = useSessionData();
+    const { role, hospitalId } = sessionData?.user || {}; 
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [filterType, setFilterType] = useState<string>(
@@ -120,25 +120,28 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
 
     useEffect(() => {
         const getAppointments = async () => {
+            setIsLoading(true);
             try {
-                setIsLoading(true);
-    
-                // Fetch appointments based on the user's role and hospitalId
-                const data = user && user.role !== "SUPER_ADMIN" && hospitalId
-                    ? await fetchAppointmentsByHospital(hospitalId)
-                    : await fetchAppointments();
-    
+                let data = [];
+
+                if (role === "SUPER_ADMIN") {
+                    // Fetch all appointments for SUPER_ADMIN
+                    data = await fetchAppointments();
+                } else if (role !== "SUPER_ADMIN" && hospitalId) {
+                    // Fetch appointments for the specific hospital for non-SUPER_ADMIN users
+                    data = await fetchAppointmentsByHospital(hospitalId);
+                }
+
                 setAppointments(data);
-                // console.log(data);
             } catch (error) {
-                console.log("Failed to fetch appointments");
+                console.error("Failed to fetch appointments:", error);
             } finally {
                 setIsLoading(false);
             }
         };
-    
+
         getAppointments();
-    }, [user, hospitalId]);
+    }, [role, hospitalId]);
 
     useEffect(() => {
         setDateFilter(undefined);

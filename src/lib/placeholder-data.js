@@ -505,7 +505,7 @@ const doctors = [
     {
         doctorId: 5,
         userId: "b78d23c4-8332-5678-90ab-fec4b6a6442b",
-        hospitalId: 1, // Hospital 1
+        hospitalId: 4, // Hospital 4
         departmentId: 3, // Urology
         serviceId: 7, // Urinalysis
         specialization: "Urologist",
@@ -517,7 +517,7 @@ const doctors = [
     {
         doctorId: 6,
         userId: "b78d23c4-7625-5678-90ab-fec4b6a6442b",
-        hospitalId: 2, // Hospital 2
+        hospitalId: 3, // Hospital 3
         departmentId: 4, // Orthopedics
         serviceId: 8, // Arthroscopy
         specialization: "Orthopedist",
@@ -1090,6 +1090,1483 @@ const appointments = [
         reasonForVisit: "Blood Test",
     },
 ];
+
+// const appointments = [
+//     {
+//         appointmentId: "f432a1c7-2345-6789-0abc-defgjdhdlmnop",
+//         doctorId: 1, // Dr. John Smith
+//         patientId: 12875, // Thomas Patey
+//         hospitalId: 1, // Hospital 1
+//         appointmentDate: new Date("2024-05-22T10:00:00"), // Replace with desired date
+//         type: "Virtual",
+//         status: "Completed", // (Pending, Confirmed, Completed, Cancelled)
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-a456-426614174021", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 5, // Optional: Commission for doctor (percentage)
+//         appointmentEndAt: new Date("2024-05-22T10:30:00"), // Optional: Appointment end time
+//         appointmentReminderSent: 0, // Number of reminders sent
+//         appointmentReminderSentLTF: null, // Optional: Last time reminder was sent
+//         doctorAppointmentNotes: "Referred to Dr. Phil Foden", // Doctor's notes for the appointment
+//         patientAppointmentNotes: "", // Patient's notes for the appointment
+//         reasonForVisit: "Follow-up for previous surgery",
+//     },
+//     {
+//         appointmentId: "f432a1c7-2345-6789-0abc-defghijklkngs",
+//         doctorId: 2, // Dr. Phil Foden
+//         patientId: 12875, // Thomas Patey
+//         hospitalId: 2, // Hospital 2
+//         appointmentDate: new Date("2024-05-23T10:00:00"), // Replace with desired date
+//         type: "Walk In",
+//         status: "Completed", // (Pending, Confirmed, Completed, Cancelled)
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-a456-426614174313", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40, // Optional: Commission for doctor (percentage)
+//         appointmentEndAt: new Date("2024-05-23T10:30:00"), // Optional: Appointment end time
+//         appointmentReminderSent: 0, // Number of reminders sent
+//         appointmentReminderSentLTF: null, // Optional: Last time reminder was sent
+//         doctorAppointmentNotes: "Blood test", // Doctor's notes for the appointment
+//         patientAppointmentNotes: "Much appreciation", // Patient's notes for the appointment
+//         reasonForVisit:
+//             "Blood test follow-up (as recommended by Dr. John Smith)",
+//     },
+//     {
+//         appointmentId: "f432a1c7-2345-6789-0abc-dihjffijklmnop",
+//         doctorId: 2, // Dr. Phil Foden
+//         patientId: 12329, // Alicia Keys
+//         hospitalId: 2, // Hospital 2
+//         appointmentDate: new Date("2024-05-24T10:30:00"), // Replace with desired date
+//         type: "Walk In",
+//         status: "Cancelled", // (Pending, Confirmed, Completed, Cancelled)
+//         consultationFee: 100.0,
+//         isPaid: false,
+//         paymentId: null, //Reference to payment record
+//         completed: false,
+//         isVideoStarted: false,
+//         commissionPercentage: 40, // Optional: Commission for doctor (percentage)
+//         appointmentEndAt: null, // Optional: Appointment end time
+//         appointmentReminderSent: 0, // Number of reminders sent
+//         appointmentReminderSentLTF: null, // Optional: Last time reminder was sent
+//         doctorAppointmentNotes: "", // Doctor's notes for the appointment
+//         patientAppointmentNotes: "", // Patient's notes for the appointment
+//         reasonForVisit: "Check-up",
+//     },
+//     {
+//         appointmentId: "f432a1c7-2345-6789-0abc-defghijknbcvp",
+//         doctorId: 1, // Dr. John Smith
+//         patientId: 12982, // Alice Johnson
+//         hospitalId: 1, // Hospital 1
+//         appointmentDate: new Date("2024-05-24T12:30:00"), // Replace with desired date
+//         type: "Virtual",
+//         status: "Cancelled", // (Pending, Confirmed, Completed, Cancelled)
+//         consultationFee: 100.0,
+//         isPaid: false,
+//         paymentId: null, //Reference to payment record
+//         completed: false,
+//         isVideoStarted: false,
+//         commissionPercentage: 40, // Optional: Commission for doctor (percentage)
+//         appointmentEndAt: null, // Optional: Appointment end time
+//         appointmentReminderSent: 0, // Number of reminders sent
+//         appointmentReminderSentLTF: null, // Optional: Last time reminder was sent
+//         doctorAppointmentNotes: "", // Doctor's notes for the appointment
+//         patientAppointmentNotes: "", // Patient's notes for the appointment
+//         reasonForVisit: "Check-up",
+//     },
+//     {
+//         appointmentId: "f432a1c7-2345-6789-0abc-defghiksjnop",
+//         doctorId: 1, // Dr. John Smith
+//         patientId: 12982, // Alice Johnson
+//         hospitalId: 1, // Hospital 1
+//         appointmentDate: new Date("2024-05-25T10:00:00"), // Replace with desired date
+//         type: "Walk In",
+//         status: "Completed", // (Pending, Confirmed, Completed, Cancelled)
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-a456-426614174293", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40, // Optional: Commission for doctor (percentage)
+//         appointmentEndAt: new Date("2024-05-25T10:25:00"), // Optional: Appointment end time
+//         appointmentReminderSent: 0, // Number of reminders sent
+//         appointmentReminderSentLTF: null, // Optional: Last time reminder was sent
+//         doctorAppointmentNotes: "Referred to Dr. Mikel Arteta", // Doctor's notes for the appointment
+//         patientAppointmentNotes: "", // Patient's notes for the appointment
+//         reasonForVisit: "Check-up as referred by Dr. John Smith",
+//     },
+//     {
+//         appointmentId: "f432a1c7-2345-6789-0abc-oeujhijklmnop",
+//         doctorId: 2, // Dr. Phil Foden
+//         patientId: 12332, // Kyle Walker
+//         hospitalId: 2, // Hospital 2
+//         appointmentDate: new Date("2024-05-27T10:00:00"), // Replace with desired date
+//         type: "Walk In",
+//         status: "Pending", // (Pending, Confirmed, Completed, Cancelled)
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-a456-426614174342", //Reference to payment record
+//         completed: false,
+//         isVideoStarted: false,
+//         commissionPercentage: 40, // Optional: Commission for doctor (percentage)
+//         appointmentEndAt: null, // Optional: Appointment end time
+//         appointmentReminderSent: 0, // Number of reminders sent
+//         appointmentReminderSentLTF: null, // Optional: Last time reminder was sent
+//         doctorAppointmentNotes: "", // Doctor's notes for the appointment
+//         patientAppointmentNotes: "", // Patient's notes for the appointment
+//         reasonForVisit: "Blood Test",
+//     },
+
+//     // January 2023
+//     {
+//         appointmentId: "f432a1c7-dd88-6789-0abc-dihjffijklmnop",
+//         doctorId: 1, // Dr. John Smith
+//         patientId: 15001, // Kevin Oduor
+//         hospitalId: 1, // Hospital 1
+//         appointmentDate: new Date("2023-01-15T09:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-4896-a456-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-01-15T09:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes:
+//             "Routine check-up, advised for follow-up in 6 months.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Routine check-up",
+//     },
+//     {
+//         appointmentId: "f432a1c7-w7f5-7777-0abc-dihjffijklmnop",
+//         doctorId: 2, // Dr. Phil Foden
+//         patientId: 15985, // Ali Hassan
+//         hospitalId: 2, // Hospital 2
+//         appointmentDate: new Date("2023-01-20T14:00:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-9631-12d3-a456-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-01-20T14:45:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2023-01-20T13:00:00"),
+//         doctorAppointmentNotes: "Blood test results discussed.",
+//         patientAppointmentNotes: "Happy with the service.",
+//         reasonForVisit: "Blood test follow-up",
+//     },
+//     {
+//         appointmentId: "f432a1c7-2345-sd74-0abc-difghrijklmnop",
+//         doctorId: 3, // Dr. Xabi Alonso
+//         patientId: 12332, // Kyle Walker
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2023-01-25T11:00:00"),
+//         type: "Virtual",
+//         status: "Cancelled",
+//         consultationFee: 100.0,
+//         isPaid: false,
+//         paymentId: null,
+//         completed: false,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: null,
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Consultation",
+//     },
+
+//     // February 2023
+//     {
+//         appointmentId: "f432a1c7-ff74-6789-0abc-dihjffijklmnop",
+//         doctorId: 4, // Dr. Mikel Arteta
+//         patientId: 15013, // Felix Njoroge
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2023-02-10T10:30:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-1452-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-02-10T11:00:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2023-02-10T09:00:00"),
+//         doctorAppointmentNotes: "Referred to cardiologist.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Chest pain",
+//     },
+//     {
+//         appointmentId: "f432a1c7-2345-6789-0000-dihjffijklmnop",
+//         doctorId: 5, // Dr. Silva
+//         patientId: 15009, // Chinedu Okeke
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2023-02-15T15:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-g784-12d3-a456-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-02-15T15:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "Follow-up for hypertension management.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Hypertension management",
+//     },
+//     {
+//         appointmentId: "a1c7-2345-e954-0abc-123456789006",
+//         doctorId: 6, // Dr. Stanley
+//         patientId: 15014, // Miriam Mwangi
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2023-02-22T13:00:00"),
+//         type: "Walk In",
+//         status: "Cancelled",
+//         consultationFee: 100.0,
+//         isPaid: false,
+//         paymentId: null,
+//         completed: false,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: null,
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Consultation",
+//     },
+
+//     // March 2023
+//     {
+//         appointmentId: "f432a1c7-3ewj-6789-8kjd-dihjffijklmnop",
+//         doctorId: 7, // Dr. Silva
+//         patientId: 15010, // Ngozi Eze
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2023-03-05T12:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-l413-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-03-05T12:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "Follow-up for routine check-up.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Routine check-up",
+//     },
+//     {
+//         appointmentId: "f432a1c7-jh67-6789-8754-dihjffijklmnop",
+//         doctorId: 8, // Dr. Mikel Arteta
+//         patientId: 14732, // Michael Thompson
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2023-03-12T14:30:00"),
+//         type: "Walk In",
+//         status: "Pending",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-4822-a456-426614174342", //Reference to payment record
+//         completed: false,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: null,
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2023-03-12T13:00:00"),
+//         doctorAppointmentNotes: "Pending blood test results.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Blood test follow-up",
+//     },
+
+//     // April 2023
+//     {
+//         appointmentId: "f432a1c7-1010-5e43-0abc-dihjffijklmnop",
+//         doctorId: 4, // Dr. Mikel Arteta
+//         patientId: 14829, // Sophia Roberts
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2023-04-10T09:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-9455-12d3-a456-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-04-10T09:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "Follow-up for flu symptoms.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Flu symptoms",
+//     },
+//     {
+//         appointmentId: "f432a1c7-76xt-783h-0abc-dihjffijklmnop",
+//         doctorId: 5, // Dr. Silva
+//         patientId: 15016, // Alex Mwangi
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2023-04-12T14:00:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-6666-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-04-12T14:45:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2023-04-12T13:00:00"),
+//         doctorAppointmentNotes: "Routine check-up completed.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Routine check-up",
+//     },
+//     {
+//         appointmentId: "f432a1c7-0ij7-8888-0abc-dihjffijklmnop",
+//         doctorId: 6, // Dr. Stanley
+//         patientId: 15015, // Grace Kimani
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2023-04-22T11:00:00"),
+//         type: "Virtual",
+//         status: "Cancelled",
+//         consultationFee: 100.0,
+//         isPaid: false,
+//         paymentId: null,
+//         completed: false,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: null,
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Consultation",
+//     },
+//     {
+//         appointmentId: "f432a1c7-2980-bv67-0abc-dihjffijklmnop",
+//         doctorId: 7, // Dr. Silva
+//         patientId: 15003, // Esther Wanjiku
+//         hospitalId: 1, // Hospital 1
+//         appointmentDate: new Date("2023-04-05T10:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "12345727-yh45-12d3-a456-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-04-05T10:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes:
+//             "Referred to Dr. Foden for further consultation.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Follow-up for surgery",
+//     },
+//     {
+//         appointmentId: "f432a1c7-21jh-655e-0abc-dihjffijklmnop",
+//         doctorId: 8, // Dr. Mikel Arteta
+//         patientId: 15014, // Miriam Mwangi
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2023-04-12T14:30:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "12345727-yh45-1599-a456-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-04-12T15:00:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2023-05-12T13:30:00"),
+//         doctorAppointmentNotes: "Routine check-up completed.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Routine check-up",
+//     },
+//     {
+//         appointmentId: "f432a1c7-fd54-6789-0087-dihjffijklmnop",
+//         doctorId: 6, // Dr. Stanley
+//         patientId: 15013, // Felix Njoroge
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2023-04-22T11:00:00"),
+//         type: "Virtual",
+//         status: "Cancelled",
+//         consultationFee: 100.0,
+//         isPaid: false,
+//         paymentId: null,
+//         completed: false,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: null,
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Consultation",
+//     },
+
+//     // June 2023
+//     {
+//         appointmentId: "f432a1c7-2222-at65-0abc-dihjffijklmnop",
+//         doctorId: 7, // Dr. Silva
+//         patientId: 12875, // Thomas Patey
+//         hospitalId: 1, // Hospital 1
+//         appointmentDate: new Date("2023-06-10T10:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "12345727-yh45-2556-a456-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-06-10T10:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "Consultation for headache.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Headache",
+//     },
+//     {
+//         appointmentId: "f432a1c7-76fg-6789-54bg-dihjffijklmnop",
+//         doctorId: 8, // Dr. Mikel Arteta
+//         patientId: 15014, // Miriam Mwangi
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2023-06-15T14:30:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "12345727-n862-12d3-a456-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-06-15T15:00:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2023-06-15T13:30:00"),
+//         doctorAppointmentNotes: "Routine check-up completed.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Routine check-up",
+//     },
+//     {
+//         appointmentId: "f432a1c7-6663-5wrf-0abc-dihjffijklmnop",
+//         doctorId: 6, // Dr. Stanley
+//         patientId: 15013, // Felix Njoroge
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2023-06-22T11:00:00"),
+//         type: "Virtual",
+//         status: "Cancelled",
+//         consultationFee: 100.0,
+//         isPaid: false,
+//         paymentId: null,
+//         completed: false,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: null,
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Consultation",
+//     },
+//     {
+//         appointmentId: "f432a1c7-7635-8n65-0abc-dihjffijklmnop",
+//         doctorId: 7, // Dr. Silva
+//         patientId: 15002, // Esther Wanjiku
+//         hospitalId: 1, // Hospital 1
+//         appointmentDate: new Date("2023-06-05T10:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "12345727-n862-4111-a456-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-06-05T10:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "Check-up for post-surgery recovery.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Post-surgery recovery",
+//     },
+
+//     // July 2023
+
+//     {
+//         appointmentId: "f432a1c7-2345-65dd-hhg5-dihjffijklmnop",
+//         doctorId: 8, // Dr. Mikel Arteta
+//         patientId: 15015, // Grace Kimani
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2023-07-12T14:30:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "12345727-5999-12d3-a456-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-07-12T15:00:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2023-07-12T13:30:00"),
+//         doctorAppointmentNotes: "Routine check-up.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Routine check-up",
+//     },
+//     {
+//         appointmentId: "f432a1c7-76d3-0938-0abc-dihjffijklmnop",
+//         doctorId: 6, // Dr. Stanley
+//         patientId: 15016, // Alex Mwangi
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2023-07-22T11:00:00"),
+//         type: "Virtual",
+//         status: "Cancelled",
+//         consultationFee: 100.0,
+//         isPaid: false,
+//         paymentId: null,
+//         completed: false,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: null,
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Consultation",
+//     },
+
+//     // August 2023
+//     {
+//         appointmentId: "f4764hc7-2345-7ury-0abc-dihjffijklmnop",
+//         doctorId: 7, // Dr. Silva
+//         patientId: 12875, // Thomas Patey
+//         hospitalId: 1, // Hospital 1
+//         appointmentDate: new Date("2023-08-10T10:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "12345727-n862-12d3-7222-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-08-10T10:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "Follow-up consultation.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Follow-up",
+//     },
+//     {
+//         appointmentId: "f4764hc7-4444-8hft-0abc-dihjffijklmnop",
+//         doctorId: 8, // Dr. Mikel Arteta
+//         patientId: 15014, // Miriam Mwangi
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2023-08-15T14:30:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123fg887-n862-8223-a456-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-08-15T15:00:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2023-08-15T13:30:00"),
+//         doctorAppointmentNotes: "Routine check-up.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Routine check-up",
+//     },
+//     {
+//         appointmentId: "f4764hc7-6gfr-0987-0abc-dihjffijklmnop",
+//         doctorId: 6, // Dr. Stanley
+//         patientId: 15013, // Felix Njoroge
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2023-08-20T11:00:00"),
+//         type: "Virtual",
+//         status: "Cancelled",
+//         consultationFee: 100.0,
+//         isPaid: false,
+//         paymentId: null,
+//         completed: false,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: null,
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Consultation",
+//     },
+
+//     // September 2023
+//     {
+//         appointmentId: "f4764hc7-h67h-3773-0abc-dihjffijklmnop",
+//         doctorId: 7, // Dr. Silva
+//         patientId: 12875, // Thomas Patey
+//         hospitalId: 1, // Hospital 1
+//         appointmentDate: new Date("2023-09-05T10:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123fg887-n862-8223-3333-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-09-05T10:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "Consultation for post-operative care.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Post-operative care",
+//     },
+//     {
+//         appointmentId: "f4764hc7-2345-88jh-8ied-dihjffijklmnop",
+//         doctorId: 8, // Dr. Mikel Arteta
+//         patientId: 15014, // Miriam Mwangi
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2023-09-12T14:30:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123fg887-n862-t452-a456-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-09-12T15:00:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2023-09-12T13:30:00"),
+//         doctorAppointmentNotes: "Routine check-up.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Routine check-up",
+//     },
+//     {
+//         appointmentId: "f4764hc7-2222-7786-0abc-dihjffijklmnop",
+//         doctorId: 6, // Dr. Stanley
+//         patientId: 15013, // Felix Njoroge
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2023-09-20T11:00:00"),
+//         type: "Virtual",
+//         status: "Cancelled",
+//         consultationFee: 100.0,
+//         isPaid: false,
+//         paymentId: null,
+//         completed: false,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: null,
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Consultation",
+//     },
+
+//     // October 2023
+//     {
+//         appointmentId: "f4764hc7-1919-5tde-0abc-dihjffijklmnop",
+//         doctorId: 7, // Dr. Silva
+//         patientId: 12875, // Thomas Patey
+//         hospitalId: 1, // Hospital 1
+//         appointmentDate: new Date("2023-10-05T10:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123fg887-n862-8223-4469-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-10-05T10:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "Consultation for headache.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Headache",
+//     },
+//     {
+//         appointmentId: "f4764hc7-hdtd-7ury-0abc-dihjffijklmnop",
+//         doctorId: 8, // Dr. Mikel Arteta
+//         patientId: 15014, // Miriam Mwangi
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2023-10-15T14:30:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123fg887-n862-e5hn-a456-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-10-15T15:00:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2023-10-15T13:30:00"),
+//         doctorAppointmentNotes: "Routine check-up.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Routine check-up",
+//     },
+//     {
+//         appointmentId: "f4764hc7-87uy-7ury-0abc-dihjffijklmnop",
+//         doctorId: 6, // Dr. Stanley
+//         patientId: 15013, // Felix Njoroge
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2023-10-20T11:00:00"),
+//         type: "Virtual",
+//         status: "Cancelled",
+//         consultationFee: 100.0,
+//         isPaid: false,
+//         paymentId: null,
+//         completed: false,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: null,
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Consultation",
+//     },
+
+//     // November 2023
+//     {
+//         appointmentId: "f4764hc7-2345-o909-0abc-dihjffijklmnop",
+//         doctorId: 7, // Dr. Silva
+//         patientId: 12875, // Thomas Patey
+//         hospitalId: 1, // Hospital 1
+//         appointmentDate: new Date("2023-11-05T10:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123fg887-7o15-8223-a456-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-11-05T10:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "Consultation for follow-up.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Follow-up",
+//     },
+//     {
+//         appointmentId: "f4764hc7-0000-06tg-0abc-dihjffijklmnop",
+//         doctorId: 8, // Dr. Mikel Arteta
+//         patientId: 15014, // Miriam Mwangi
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2023-11-15T14:30:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123fg887-n862-v46e-a456-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-11-15T15:00:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2023-11-15T13:30:00"),
+//         doctorAppointmentNotes: "Routine check-up.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Routine check-up",
+//     },
+//     {
+//         appointmentId: "f4764hc7-54fe-3313-0abc-dihjffijklmnop",
+//         doctorId: 6, // Dr. Stanley
+//         patientId: 15013, // Felix Njoroge
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2023-11-20T11:00:00"),
+//         type: "Virtual",
+//         status: "Cancelled",
+//         consultationFee: 100.0,
+//         isPaid: false,
+//         paymentId: null,
+//         completed: false,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: null,
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Consultation",
+//     },
+//     {
+//         appointmentId: "f4764hc7-6689-7ury-ht65-dihjffijklmnop",
+//         doctorId: 7, // Dr. Silva
+//         patientId: 12875, // Thomas Patey
+//         hospitalId: 1, // Hospital 1
+//         appointmentDate: new Date("2023-11-05T10:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123fg887-n862-u472-a456-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-11-05T10:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "Consultation for flu symptoms.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Flu symptoms",
+//     },
+//     {
+//         appointmentId: "f4764hc7-875g-88hf-0abc-dihjffijklmnop",
+//         doctorId: 8, // Dr. Mikel Arteta
+//         patientId: 15014, // Miriam Mwangi
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2023-11-12T14:30:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123fg887-y47i-8223-a456-426614174342", //Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2023-11-12T15:00:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2023-12-12T13:30:00"),
+//         doctorAppointmentNotes: "Routine check-up.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Routine check-up",
+//     },
+
+//     // December 2023
+
+//     {
+//         appointmentId: "f4764hc7-990m-87hs-0abc-dihjffijklmnop",
+//         doctorId: 6, // Dr. Stanley
+//         patientId: 15013, // Felix Njoroge
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2023-12-20T11:00:00"),
+//         type: "Virtual",
+//         status: "Cancelled",
+//         consultationFee: 100.0,
+//         isPaid: false,
+//         paymentId: null,
+//         completed: false,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: null,
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Consultation",
+//     },
+
+//     // January 2024
+//     {
+//         appointmentId: "f4764hc7-66gf-7u09-0abc-dihjffijklmnop",
+//         doctorId: 1, // Dr. John Smith
+//         patientId: 12875, // Thomas Patey
+//         hospitalId: 1, // Hospital 1
+//         appointmentDate: new Date("2024-01-15T09:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-4896-a456-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-01-15T09:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes:
+//             "Routine check-up, no follow-up needed until next year.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Routine check-up",
+//     },
+//     {
+//         appointmentId: "f4764hc7-66gf-7u09-0095-dihjffijklmnop",
+//         doctorId: 2, // Dr. Phil Foden
+//         patientId: 12982, // Alice Johnson
+//         hospitalId: 2, // Hospital 2
+//         appointmentDate: new Date("2024-01-20T14:00:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-9631-12d3-a456-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-01-20T14:45:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2024-01-20T13:00:00"),
+//         doctorAppointmentNotes:
+//             "Blood pressure controlled, advised to continue medication.",
+//         patientAppointmentNotes: "Satisfied with the consultation.",
+//         reasonForVisit: "Blood pressure check",
+//     },
+//     {
+//         appointmentId: "f4764hc7-66gf-98kk-0abc-dihjffijklmnop",
+//         doctorId: 3, // Dr. Xabi Alonso
+//         patientId: 12332, // Kyle Walker
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2024-01-25T11:00:00"),
+//         type: "Virtual",
+//         status: "Cancelled",
+//         consultationFee: 100.0,
+//         isPaid: false,
+//         paymentId: null,
+//         completed: false,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: null,
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Consultation",
+//     },
+//     {
+//         appointmentId: "f4764hc7-hg55-7u09-0abc-dihjffijklmnop",
+//         doctorId: 4, // Dr. Mikel Arteta
+//         patientId: 15013, // Felix Njoroge
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2024-01-10T10:30:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-1452-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-01-10T11:00:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2024-02-10T09:00:00"),
+//         doctorAppointmentNotes:
+//             "Referred for additional tests due to persistent chest pain.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Chest pain",
+//     },
+
+//     // February 2024
+
+//     {
+//         appointmentId: "f4764hc7-5t68-7u09-0abc-dihjffijklmnop",
+//         doctorId: 5, // Dr. Silva
+//         patientId: 12982, // Alice Johnson
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2024-02-15T15:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-g784-12d3-a456-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-02-15T15:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "Hypertension medication adjusted.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Hypertension management",
+//     },
+//     {
+//         appointmentId: "f4764hc7-66gf-7u09-vvv6-dihjffijklmnop",
+//         doctorId: 6, // Dr. Stanley
+//         patientId: 15014, // Miriam Mwangi
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2024-02-22T13:00:00"),
+//         type: "Walk In",
+//         status: "Cancelled",
+//         consultationFee: 100.0,
+//         isPaid: false,
+//         paymentId: null,
+//         completed: false,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: null,
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Consultation",
+//     },
+
+//     // March 2024
+//     {
+//         appointmentId: "f4764hc7-66gf-zxs3-0abc-dihjffijklmnop",
+//         doctorId: 7, // Dr. Silva
+//         patientId: 12982, // Alice Johnson
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2024-03-05T12:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-l413-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-03-05T12:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "Routine check-up.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Routine check-up",
+//     },
+
+//     // April 2024
+
+//     {
+//         appointmentId: "f4764hc7-66gf-7u09-mkkl-dihjffijklmnop",
+//         doctorId: 8, // Dr. Mikel Arteta
+//         patientId: 12332, // Kyle Walker
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2024-04-12T14:30:00"),
+//         type: "Walk In",
+//         status: "Pending",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-4822-a456-426614174342", // Reference to payment record
+//         completed: false,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: null,
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2024-03-12T13:00:00"),
+//         doctorAppointmentNotes: "Pending blood test results.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Blood test follow-up",
+//     },
+//     {
+//         appointmentId: "f4764hc7-zaq2-7u09-0abc-dihjffijklmnop",
+//         doctorId: 4, // Dr. Mikel Arteta
+//         patientId: 15014, // Miriam Mwangi
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2024-04-10T09:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-9455-12d3-a456-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-04-10T09:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes:
+//             "Follow-up consultation for anxiety management.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Anxiety management",
+//     },
+//     {
+//         appointmentId: "f4764hc7-asw4-7u09-0abc-dihjffijklmnop",
+//         doctorId: 5, // Dr. Silva
+//         patientId: 12875, // Thomas Patey
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2024-04-15T11:00:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-a456-478614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-04-15T11:30:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2024-04-15T10:00:00"),
+//         doctorAppointmentNotes: "Advised to reduce alcohol consumption.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Diet and lifestyle consultation",
+//     },
+
+//     // May 2024
+//     {
+//         appointmentId: "f4764hc7-66gf-7u09-f456-dihjffijklmnop",
+//         doctorId: 6, // Dr. Stanley
+//         patientId: 15014, // Miriam Mwangi
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2024-05-07T09:30:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-a456-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-05-07T10:00:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2024-05-07T08:30:00"),
+//         doctorAppointmentNotes: "Reviewed MRI results, no abnormalities.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "MRI results review",
+//     },
+
+//     // June 2024
+//     {
+//         appointmentId: "f4764hc7-66gf-7u09-efg6-dihjffijklmnop",
+//         doctorId: 7, // Dr. Silva
+//         patientId: 12875, // Thomas Patey
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2024-06-15T13:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-a456-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-06-15T13:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "Routine check-up.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Routine check-up",
+//     },
+//     // July 2024
+//     {
+//         appointmentId: "f4764hc7-ub65-7u09-0abc-dihjffijklmnop",
+//         doctorId: 1, // Dr. John Smith
+//         patientId: 15013, // Felix Njoroge
+//         hospitalId: 1, // Hospital 1
+//         appointmentDate: new Date("2024-07-05T11:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-1536-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-07-05T11:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes:
+//             "Advised for diet modification due to cholesterol issues.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Cholesterol management",
+//     },
+//     {
+//         appointmentId: "f4764hc7-66gf-za65-0abc-dihjffijklmnop",
+//         doctorId: 2, // Dr. Phil Foden
+//         patientId: 12982, // Alice Johnson
+//         hospitalId: 2, // Hospital 2
+//         appointmentDate: new Date("2024-07-12T14:00:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-1489-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-07-12T14:30:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2024-07-12T13:00:00"),
+//         doctorAppointmentNotes: "Mild dehydration, advised on hydration.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Fatigue and dehydration",
+//     },
+//     {
+//         appointmentId: "f4764hc7-66gf-7u09-7895-dihjffijklmnop",
+//         doctorId: 3, // Dr. Xabi Alonso
+//         patientId: 12332, // Kyle Walker
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2024-07-19T11:30:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-1675-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-07-19T12:00:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes:
+//             "Discussed knee pain, referred to physical therapy.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Knee pain",
+//     },
+
+//     // August 2024
+//     {
+//         appointmentId: "f4764hc7-7pi8-7u09-0abc-dihjffijklmnop",
+//         doctorId: 4, // Dr. Mikel Arteta
+//         patientId: 15014, // Miriam Mwangi
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2024-08-03T10:00:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-1785-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-08-03T10:45:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2024-08-03T09:00:00"),
+//         doctorAppointmentNotes:
+//             "Continued anxiety management, patient responding well to treatment.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Anxiety management follow-up",
+//     },
+//     {
+//         appointmentId: "f4764hc7-75h6-7u09-0abc-dihjffijklmnop",
+//         doctorId: 5, // Dr. Silva
+//         patientId: 12875, // Thomas Patey
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2024-08-10T09:30:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-1685-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-08-10T10:00:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "Discussed lifestyle changes.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Diet consultation",
+//     },
+
+//     // September 2024
+
+//     {
+//         appointmentId: "f4764hc7-97hr-7u09-0abc-dihjffijklmnop",
+//         doctorId: 6, // Dr. Stanley
+//         patientId: 12332, // Kyle Walker
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2024-09-18T15:00:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-1796-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-09-18T15:45:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2024-08-18T14:00:00"),
+//         doctorAppointmentNotes:
+//             "Discussed back pain, advised on stretching exercises.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Back pain",
+//     },
+//     {
+//         appointmentId: "f4764hc7-8j34-7u09-0abc-dihjffijklmnop",
+//         doctorId: 7, // Dr. Silva
+//         patientId: 15013, // Felix Njoroge
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2024-09-01T13:30:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-1801-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-09-01T14:00:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "Routine check-up, patient in good health.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Routine check-up",
+//     },
+//     {
+//         appointmentId: "f4764hc7-s875-7u09-0abc-dihjffijklmnop",
+//         doctorId: 8, // Dr. Mikel Arteta
+//         patientId: 12982, // Alice Johnson
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2024-09-10T09:00:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-1896-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-09-10T09:30:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2024-09-10T08:00:00"),
+//         doctorAppointmentNotes: "Minor headaches, advised hydration and rest.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Headache",
+//     },
+//     {
+//         appointmentId: "f4764hc7-7pi8-7777-77jh-dihjffijklmnop",
+//         doctorId: 1, // Dr. John Smith
+//         patientId: 15014, // Miriam Mwangi
+//         hospitalId: 1, // Hospital 1
+//         appointmentDate: new Date("2024-09-06T10:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-1235-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-09-06T10:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes: "Blood pressure checked, within normal range.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Blood pressure check",
+//     },
+
+//     // October 2024
+
+//     {
+//         appointmentId: "f4764hc7-98jh-7u09-0abc-dihjffijklmnop",
+//         doctorId: 2, // Dr. Phil Foden
+//         patientId: 12875, // Thomas Patey
+//         hospitalId: 2, // Hospital 2
+//         appointmentDate: new Date("2024-10-14T14:30:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-1359-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-10-14T15:00:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2024-10-14T13:30:00"),
+//         doctorAppointmentNotes: "Routine check-up, no issues noted.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Routine check-up",
+//     },
+
+//     // November 2024
+//     {
+//         appointmentId: "f4764hc7-221b-7u09-0abc-dihjffijklmnop",
+//         doctorId: 3, // Dr. Xabi Alonso
+//         patientId: 12332, // Kyle Walker
+//         hospitalId: 1, // Hospital 1
+//         appointmentDate: new Date("2024-11-11T13:30:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-1495-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-11-11T14:00:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes:
+//             "Discussed dietary concerns, patient advised to reduce sugar intake.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Diet consultation",
+//     },
+//     {
+//         appointmentId: "f4764hc7-7pi8-7u09-98b4-dkjfrfijklmnop",
+//         doctorId: 4, // Dr. Mikel Arteta
+//         patientId: 12982, // Alice Johnson
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2024-11-21T09:00:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-1597-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-11-21T09:30:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2024-11-21T08:00:00"),
+//         doctorAppointmentNotes:
+//             "Patient reports stress, advised relaxation techniques.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Stress management",
+//     },
+//     {
+//         appointmentId: "f4764hc7-87lp-7u09-98b4-dkjfrfijklmnop",
+//         doctorId: 5, // Dr. Silva
+//         patientId: 15013, // Felix Njoroge
+//         hospitalId: 3, // Hospital 3
+//         appointmentDate: new Date("2024-11-12T13:00:00"),
+//         type: "Virtual",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-1625-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: true,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-11-12T13:30:00"),
+//         appointmentReminderSent: 0,
+//         appointmentReminderSentLTF: null,
+//         doctorAppointmentNotes:
+//             "End-of-year check-up, no significant findings.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "End-of-year check-up",
+//     },
+
+//     // December 2024
+
+//     {
+//         appointmentId: "f4764hc7-9900-7u09-98b4-dkjfrfijklmnop",
+//         doctorId: 6, // Dr. Stanley
+//         patientId: 12332, // Kyle Walker
+//         hospitalId: 4, // Hospital 4
+//         appointmentDate: new Date("2024-12-20T09:30:00"),
+//         type: "Walk In",
+//         status: "Completed",
+//         consultationFee: 100.0,
+//         isPaid: true,
+//         paymentId: "123e4567-e89b-12d3-1755-426614174342", // Reference to payment record
+//         completed: true,
+//         isVideoStarted: false,
+//         commissionPercentage: 40,
+//         appointmentEndAt: new Date("2024-12-20T10:00:00"),
+//         appointmentReminderSent: 1,
+//         appointmentReminderSentLTF: new Date("2024-12-20T08:30:00"),
+//         doctorAppointmentNotes:
+//             "Discussed minor knee pain, advised rest and ice.",
+//         patientAppointmentNotes: "",
+//         reasonForVisit: "Knee pain",
+//     },
+// ];
 
 const doctorEarnings = [
     {

@@ -38,6 +38,8 @@ export const authOptions: NextAuthOptions = {
                     include: { hospital: true },
                 });
 
+                // console.log(user);
+
                 // If no user was found or passwords do not match
                 if (
                     !user ||
@@ -52,7 +54,8 @@ export const authOptions: NextAuthOptions = {
                     username: user.username,
                     email: user.email,
                     role: user.role as Role,
-                    hospital: user.hospital?.name,
+                    hospitalId: user.hospital?.hospitalId || null,
+                    hospital: user.hospital?.name || null,
                 };
             },
         }),
@@ -71,7 +74,8 @@ export const authOptions: NextAuthOptions = {
                 session.user.id = token.id as string;
                 session.user.username = token.username as string;
                 session.user.role = token.role as Role;
-                session.user.hospital = token.hospital as string;
+                session.user.hospitalId = token.hospitalId as number | null;
+                session.user.hospital = token.hospital as string | null;
             }
 
             return session;
@@ -81,8 +85,10 @@ export const authOptions: NextAuthOptions = {
                 token.id = user.id;
                 token.username = user.username;
                 token.role = user.role as Role;
-                token.hospital = user.hospital;
+                token.hospitalId = user.hospitalId as number | null;
+                token.hospital = user.hospital as string | null;
                 token.sessionToken = crypto.randomUUID();
+
                 // Store session in the database
                 await prisma.session.create({
                     data: {

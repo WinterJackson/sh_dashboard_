@@ -7,18 +7,20 @@ import { fetchPatientsForLast14Days, fetchPatientsToday } from "@/lib/data";
 import icon from "../../../public/images/patient.svg";
 import Image from "next/image";
 import { ArrowTopRightIcon, ArrowBottomRightIcon } from '@radix-ui/react-icons';
-import { useUser } from "@/app/context/UserContext";
+import { useSessionData } from "@/hooks/useSessionData";
 
 const PatientsTodayCard = () => {
     const [patientsToday, setPatientsToday] = useState(0);
     const [percentageChange, setPercentageChange] = useState<number>(0);
-    const { user, hospitalId } = useUser();
+    const sessionData = useSessionData();
+
+    const role = sessionData?.user?.role;
+    const hospitalId = sessionData?.user?.hospitalId;
 
     useEffect(() => {
         const fetchPatientsData = async () => {
             try {
-                const patientsLastFortnight =
-                    await fetchPatientsForLast14Days();
+                const patientsLastFortnight = await fetchPatientsForLast14Days();
                 const todayPatients = await fetchPatientsToday();
 
                 // console.log(todayPatients);
@@ -26,20 +28,16 @@ const PatientsTodayCard = () => {
 
                 // Filter patients based on the user's role and hospitalId
                 const filteredTodayPatients =
-                    user?.role === "SUPER_ADMIN"
+                    role === "SUPER_ADMIN"
                         ? todayPatients
                         : todayPatients.filter(
-                              (patient: any) =>
-                                  patient.hospitalId === hospitalId
-                          );
+                            (patient: any) => patient.hospitalId === hospitalId);
 
                 const filteredPatientsLastFortnight =
-                    user?.role === "SUPER_ADMIN"
+                    role === "SUPER_ADMIN"
                         ? patientsLastFortnight
                         : patientsLastFortnight.filter(
-                              (patient: any) =>
-                                  patient.hospitalId === hospitalId
-                          );
+                            (patient: any) => patient.hospitalId === hospitalId);
 
                 // setPatientsToday(filteredTodayPatients.length); // correct code
                 setPatientsToday(filteredTodayPatients.length + 146); // for display
@@ -63,30 +61,27 @@ const PatientsTodayCard = () => {
                     }
                 });
 
-                const currentWeekCount = patientCounts
-                    .slice(0, 7)
-                    .reduce((sum, count) => sum + count, 0);
-                const previousWeekCount = patientCounts
-                    .slice(7, 14)
-                    .reduce((sum, count) => sum + count, 0);
+                const currentWeekCount = patientCounts.slice(0, 7).reduce((sum, count) => sum + count, 0);
+                const previousWeekCount = patientCounts.slice(7, 14).reduce((sum, count) => sum + count, 0);
 
+                let percentage = 0;
                 if (previousWeekCount > 0) {
                     const change = currentWeekCount - previousWeekCount;
-                    const percentage = (change / previousWeekCount) * 100;
-
-                    // setPercentageChange(percentage); // correct code
-                    setPercentageChange(-24); // for display
-                } else {
-                    // setPercentageChange(0); // correct code
-                    setPercentageChange(-24); // for display
+                    percentage = (change / previousWeekCount) * 100;
                 }
+                // setPercentageChange(percentage); // correct code
+                setPercentageChange(percentage + 14.2); // test code
+
             } catch (error) {
                 console.error("Error fetching patients data:", error);
             }
         };
 
-        fetchPatientsData();
-    }, [user, hospitalId]);
+        // Fetch data only when session data is available
+        if (role) {
+            fetchPatientsData();
+        }
+    }, [role, hospitalId]);
 
     const getFontSizeClass = (numDigits: number) => {
         if (numDigits <= 3) return "text-4xl xl:text-6xl";
@@ -112,7 +107,7 @@ const PatientsTodayCard = () => {
                         {patientsToday}
                     </span>
                 </div>
-                <div className="flex w-full items-center justify-end h-3/4 relative">
+                <div className="flex w-1/3 items-center justify-end h-3/4 relative">
                     <Image
                         src={icon}
                         alt="patient icon"

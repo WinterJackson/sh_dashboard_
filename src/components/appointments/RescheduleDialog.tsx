@@ -19,7 +19,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { IconButton } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { fetchOnlineDoctors, fetchAllHospitals } from "@/lib/data";
-import { useUser } from "@/app/context/UserContext";
+import { useSessionData } from "@/hooks/useSessionData";
 import { revalidatePath } from "next/cache";
 
 interface RescheduleDialogProps {
@@ -37,32 +37,68 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
         register,
         handleSubmit,
         control,
+        setValue,
         formState: { errors },
     } = useForm({
         mode: "onBlur", // Validate on blur to provide feedback as user types
     });
     const [saved, setSaved] = useState<boolean>(false);
-    const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-        undefined
-    );
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [doctors, setDoctors] = useState([]);
     const [hospitals, setHospitals] = useState([]);
-    const { user, hospitalId } = useUser();
 
+    const sessionData = useSessionData();
+    const userRole = sessionData?.user?.role;
+    const hospitalId = sessionData?.user?.hospitalId;
+    
     useEffect(() => {
         const fetchData = async () => {
-            const fetchedDoctors = await fetchOnlineDoctors();
+            let fetchedDoctors = await fetchOnlineDoctors();
+
+            // If not a SUPER_ADMIN, filter doctors by hospitalId
+            if (userRole !== "SUPER_ADMIN" && hospitalId) {
+                fetchedDoctors = fetchedDoctors.filter(
+                    (doctor: { hospitalId: number }) => doctor.hospitalId === hospitalId
+                );
+            }
+
             setDoctors(fetchedDoctors);
 
-            if (user?.role === "SUPER_ADMIN") {
+            // Fetch hospitals if the user is a SUPER_ADMIN
+            if (userRole === "SUPER_ADMIN") {
                 const fetchedHospitals = await fetchAllHospitals();
                 setHospitals(fetchedHospitals);
             }
         };
 
         fetchData();
-    }, [user]);
+    }, [userRole, hospitalId]);
+
+    const fetchAndSetDoctorHospital = async (doctorId: number) => {
+        try {
+            const onlineDoctors = await fetchOnlineDoctors();
+            const selectedDoctor = onlineDoctors.find(
+                (doctor: { doctorId: number }) => doctor.doctorId === doctorId
+            );
+
+            if (selectedDoctor) {
+                setValue("hospitalId", selectedDoctor.hospitalId);
+            } else {
+                setValue("hospitalId", "");
+            }
+        } catch (error) {
+            console.error("Failed to fetch and set doctor hospital:", error);
+        }
+    };
+
+    const handleDoctorChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const doctorId = parseInt(event.target.value, 10);
+
+        if (userRole === "SUPER_ADMIN" && doctorId) {
+            await fetchAndSetDoctorHospital(doctorId);
+        }
+    };
 
     const onSubmit = async (data: any) => {
         handleActionChange(appointmentId, "Rescheduled");
@@ -71,7 +107,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
             const requestBody = {
                 ...data,
                 date: selectedDate?.toISOString(),
-                hospitalId: user?.role === "SUPER_ADMIN" ? data.hospitalId : hospitalId,
+                hospitalId: userRole === "SUPER_ADMIN" ? data.hospitalId : hospitalId,
                 doctorId: parseInt(data.doctorId, 10),
             };
     
@@ -235,6 +271,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                     required: "Doctor is required.",
                                 })}
                                 className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                onChange={handleDoctorChange}
                             >
                                 <option
                                     value=""
@@ -261,7 +298,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                         </div>
 
                         {/* Conditionally render the Hospital input only for Super Admin */}
-                        {user?.role === "SUPER_ADMIN" && (
+                        {userRole === "SUPER_ADMIN" && (
                             <div>
                                 <Label htmlFor="hospitalId">Hospital</Label>
                                 <select
