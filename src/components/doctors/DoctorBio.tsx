@@ -27,7 +27,7 @@ function DoctorBio({cancel}: Props) {
                                 <h1 className="text-lg capitalize">Gynecologist</h1>
                                 <div className="flex flex-col gap-2">
                                     <div className="">
-                                        <p className='text-gray-400 text-lg capitalize'>women's health</p>
+                                        <p className='text-gray-400 text-lg capitalize'>women&apos;s health</p>
                                         <p className='capitalize'>Joined Feb 2023</p>
                                     </div>
                                     <p className='capitalize text-sm text-primary'>Self-Registered </p>
