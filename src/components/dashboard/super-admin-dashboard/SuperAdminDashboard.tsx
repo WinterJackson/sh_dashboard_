@@ -11,6 +11,9 @@ import PatientsTodayCard from "../PatientsTodayCard";
 import InwardReferralsCard from "../InwardReferralsCard";
 import OutwardReferralsCard from "../OutwardReferralsCard";
 import PatientsGraphCard from "../PatientsGraphCard";
+import TopDoctorsCard from "../TopDoctorsCard";
+import AppointmentsTable from "@/components/appointments/AppointmentsTable";
+import LearnMoreCard from "../LearnMoreCard";
 
 const SuperAdminDashboard: React.FC = () => {
     const { data: session } = useSession();
@@ -47,6 +50,26 @@ const SuperAdminDashboard: React.FC = () => {
                 </div>
                 <div className="grid w-full p-4">
                     <PatientsGraphCard />
+                </div>
+            </div>
+            <div className="flex p-5 gap-7">
+                <div className="w-2/3 bg-white rounded-2xl ">
+                    <div className="p-4">
+                        <h1 className="font-semibold capitalize">
+                            Appointments Details
+                        </h1>
+                    </div>
+                    <div className="p-3">
+                        <AppointmentsTable />
+                    </div>
+                </div>
+                <div className="w-1/3 flex flex-col gap-6">
+                    <div className="flex h-[60%]">
+                        <TopDoctorsCard/>
+                    </div>
+                    <div className="flex h-[40%]">
+                        <LearnMoreCard/>
+                    </div>
                 </div>
             </div>
         </>

@@ -2,6 +2,15 @@
   @tailwind components;
   @tailwind utilities;
 
+  .truncate-lines {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3; /* Number of lines to show */
+    line-clamp: 3; /* Number of lines to show */
+    
+  }
+
   /* @layer base {
     :root {
       --background: 0 0% 100%;
