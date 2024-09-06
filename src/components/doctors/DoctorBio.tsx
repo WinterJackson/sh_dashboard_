@@ -2,6 +2,8 @@
 import React, { useState } from 'react'
 import PercentageBar from './UI components/PercentageBar';
 import CloseIcon from '@mui/icons-material/Close';
+import Image from 'next/image';
+
 
 type Props = {
     cancel : () => void
