@@ -16,8 +16,14 @@ function DoctorsCard({}: Props) {
         <div className=' relative flex justify-center flex-1 min-w-[330px] max-w-[400px] gap-4 items-center border-2 border-bluelight rounded-xl p-6'>
             <p className="absolute top-2 left-2">Online</p>
             <div className="flex flex-col gap-4 items-center" onClick={handleShowBio}>
-                <img src="/images/img-p3.png" alt="" className='rounded-full w-[100px] h-[100px] object-cover '/>
-                <h1 className="font-bold text-xl">Dr Jane Gold</h1>
+<Image 
+  src="/images/img-p3.png" 
+  alt="Description of the image" 
+  width={100} 
+  height={100} 
+  className='rounded-full object-cover' 
+/>         
+       <h1 className="font-bold text-xl">Dr Jane Gold</h1>
             </div>
             <div className="flex flex-col gap-3" >
                 <h1 className="text-lg capitalize" onClick={handleShowBio}>Gynecologist</h1>
