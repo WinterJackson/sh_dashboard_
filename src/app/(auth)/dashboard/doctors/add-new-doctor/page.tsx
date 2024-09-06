@@ -75,7 +75,7 @@ function AddDoctorPage({}: Props) {
                     <div className="py-3 border-b flex flex-col gap-2 flex-1 min-w-[360px]">
                         <label htmlFor="department" className='capitalize font-semibold'>department</label>
                         <select name="department" id="department" className='outline-none'>
-                            <option value=""disabled selected>Eg Women's Health</option>
+                            <option value=""disabled selected>Eg Women&apos;s Health</option>
                         </select>
                     </div>
                     <div className="py-3 border-b flex flex-col gap-2 flex-1 min-w-[360px]">
