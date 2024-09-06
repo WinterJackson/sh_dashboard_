@@ -38,7 +38,7 @@ export default function NotificationSettingsPage({}: Props) {
                 <div className="flex justify-between items-end max-w-[900px] ">
                     <div className="flex flex-col gap-4">
                         <h2 className="font-bold ">Security Alerts</h2>
-                        <p className='capitalize'>Enhance your account's security with real-time security notifications.</p>
+                        <p className='capitalize'>Enhance your account&apos;s security with real-time security notifications.</p>
                     </div>
                     <button className='flex'>
                         <Toggle/>
