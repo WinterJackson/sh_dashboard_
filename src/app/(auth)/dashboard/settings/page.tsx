@@ -1,4 +1,6 @@
 import React from 'react'
+import Image from 'next/image';
+
 
 type Props = {}
 
@@ -17,8 +19,13 @@ export default function SettingsPage({}: Props) {
             <div className="flex flex-col gap-4">
                 <p className='font-bold text-primary'>Profile Picture</p>
                 <div className="flex gap-5 items-center">
-                    <img src="/images/profile placeholder.png" alt="" className='h-36 w-36 object-cover rounded-full' />
-                    <div className="flex flex-col gap-3">
+<Image 
+  src="/images/profile placeholder.png" 
+  alt="Profile placeholder" 
+  width={144}
+  height={144}
+  className="object-cover rounded-full" 
+/>                    <div className="flex flex-col gap-3">
                         <p className="font-bold capitapize">John Doe</p>
                         <p className="capitalize">Admin</p>
                         <p className="truncate">johndoe@example.com</p>
