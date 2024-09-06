@@ -22,7 +22,7 @@ function DoctorsCard({}: Props) {
             <div className="flex flex-col gap-3" >
                 <h1 className="text-lg capitalize" onClick={handleShowBio}>Gynecologist</h1>
                 <div className="flex flex-col gap-2" onClick={handleShowBio}>
-                    <p className='text-gray-400 capitalize'>women's health</p>
+                    <p className='text-gray-400 capitalize'>women&apos;s health</p>
                     <div className="flex gap-2">
 <Image 
   src="/images/Star.svg" 
