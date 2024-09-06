@@ -1,4 +1,6 @@
 import React from 'react'
+import Image from 'next/image';
+
 
 type Props = {}
 
@@ -9,7 +11,13 @@ function TopDoctorsCard({}: Props) {
         <div className="flex flex-col gap-3 w-full overflow-y-scroll  overflow-x-hidden ">
     {/* map */}
             <div className="flex gap-3 items-center">
-                <img src="/images/img-p6.png" alt="" className='w-[50px] h-[50px] object-cover rounded-full ' />
+<Image 
+  src="/images/img-p6.png" 
+  alt="profile image" 
+  width={50} 
+  height={50} 
+  className="object-cover rounded-full" 
+/>
                 <div className="flex gap-10 items-center w-full justify-between">
                     <div className="flex flex-col gap-2">
                         <h1 className="font-semibold text-base capitalize">Dr John Doe</h1>
@@ -18,11 +26,41 @@ function TopDoctorsCard({}: Props) {
                     <div className="flex flex-col gap-2">
                     {/* Rating */}
                         <div className="flex gap-2">
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>             
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
                         </div>
                         <p>250 ratings</p>
                     </div>
@@ -30,8 +68,14 @@ function TopDoctorsCard({}: Props) {
             </div>
 {/* test scroll */}
             <div className="flex gap-3 items-center">
-                <img src="/images/img-p6.png" alt="" className='w-[50px] h-[50px] object-cover rounded-full ' />
-                <div className="flex gap-10 items-center w-full justify-between">
+<Image
+  src="/images/img-p6.png"
+  alt="Description of image" 
+  width={50} 
+  height={50} 
+  className="object-cover rounded-full"
+/> 
+               <div className="flex gap-10 items-center w-full justify-between">
                     <div className="flex flex-col gap-2">
                         <h1 className="font-semibold text-base capitalize">Dr John Doe</h1>
                         <p className='text-accent capitalize'>General Physician</p>
@@ -39,19 +83,55 @@ function TopDoctorsCard({}: Props) {
                     <div className="flex flex-col gap-2">
                     {/* Rating */}
                         <div className="flex gap-2">
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
+                            <Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>             
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
                         </div>
                         <p>250 ratings</p>
                     </div>
                 </div>
             </div>
-            <div className="flex gap-3 items-center">
-                <img src="/images/img-p6.png" alt="" className='w-[50px] h-[50px] object-cover rounded-full ' />
-                <div className="flex gap-10 items-center w-full justify-between">
+ <div className="flex gap-3 items-center">
+<Image
+  src="/images/img-p6.png"
+  alt="Description of image" 
+  width={50} 
+  height={50} 
+  className="object-cover rounded-full"
+/> 
+               <div className="flex gap-10 items-center w-full justify-between">
                     <div className="flex flex-col gap-2">
                         <h1 className="font-semibold text-base capitalize">Dr John Doe</h1>
                         <p className='text-accent capitalize'>General Physician</p>
@@ -59,19 +139,55 @@ function TopDoctorsCard({}: Props) {
                     <div className="flex flex-col gap-2">
                     {/* Rating */}
                         <div className="flex gap-2">
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
+                            <Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>             
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
                         </div>
                         <p>250 ratings</p>
                     </div>
                 </div>
             </div>
-            <div className="flex gap-3 items-center">
-                <img src="/images/img-p6.png" alt="" className='w-[50px] h-[50px] object-cover rounded-full ' />
-                <div className="flex gap-10 items-center w-full justify-between">
+ <div className="flex gap-3 items-center">
+<Image
+  src="/images/img-p6.png"
+  alt="Description of image" 
+  width={50} 
+  height={50} 
+  className="object-cover rounded-full"
+/> 
+               <div className="flex gap-10 items-center w-full justify-between">
                     <div className="flex flex-col gap-2">
                         <h1 className="font-semibold text-base capitalize">Dr John Doe</h1>
                         <p className='text-accent capitalize'>General Physician</p>
@@ -79,19 +195,55 @@ function TopDoctorsCard({}: Props) {
                     <div className="flex flex-col gap-2">
                     {/* Rating */}
                         <div className="flex gap-2">
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
+                            <Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>             
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
                         </div>
                         <p>250 ratings</p>
                     </div>
                 </div>
             </div>
-            <div className="flex gap-3 items-center">
-                <img src="/images/img-p6.png" alt="" className='w-[50px] h-[50px] object-cover rounded-full ' />
-                <div className="flex gap-10 items-center w-full justify-between">
+ <div className="flex gap-3 items-center">
+<Image
+  src="/images/img-p6.png"
+  alt="Description of image" 
+  width={50} 
+  height={50} 
+  className="object-cover rounded-full"
+/> 
+               <div className="flex gap-10 items-center w-full justify-between">
                     <div className="flex flex-col gap-2">
                         <h1 className="font-semibold text-base capitalize">Dr John Doe</h1>
                         <p className='text-accent capitalize'>General Physician</p>
@@ -99,16 +251,47 @@ function TopDoctorsCard({}: Props) {
                     <div className="flex flex-col gap-2">
                     {/* Rating */}
                         <div className="flex gap-2">
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
-                            <img src="/images/Star.svg" alt="" className='scale-150' />
+                            <Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>             
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50}  
+  height={50}
+  className='scale-150'
+/>       
                         </div>
                         <p>250 ratings</p>
                     </div>
                 </div>
             </div>
+            
            
 
         </div>
