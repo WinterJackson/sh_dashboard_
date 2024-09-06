@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from 'react'
 import DoctorBio from './DoctorBio'
+import Image from 'next/image';
 
 type Props = {}
 
@@ -23,10 +24,34 @@ function DoctorsCard({}: Props) {
                 <div className="flex flex-col gap-2" onClick={handleShowBio}>
                     <p className='text-gray-400 capitalize'>women's health</p>
                     <div className="flex gap-2">
-                        <img src="/images/Star.svg" alt="" />
-                        <img src="/images/Star.svg" alt="" />
-                        <img src="/images/Star.svg" alt="" />
-                        <img src="/images/Star.svg" alt="" />
+<Image 
+  src="/images/Star.svg" 
+  alt="description" 
+  width={300} 
+  height={150} 
+  layout="responsive" 
+/>                        
+<Image 
+  src="/images/Star.svg" 
+  alt="description" 
+width={300} 
+  height={150} 
+  layout="responsive" 
+/> 
+<Image 
+  src="/images/Star.svg" 
+  alt="description" 
+ width={300} 
+  height={150} 
+  layout="responsive" 
+/> 
+<Image 
+  src="/images/Star.svg" 
+  alt="description" 
+width={300} 
+  height={150} 
+  layout="responsive" 
+/> 
                     </div>
                 </div>
             <button className="p-2 border-2 border-primary text-primary hover:bg-blue-300 hover:text-black hover:border-blue-300 font-semibold rounded-xl">Appoint Doctor</button>
