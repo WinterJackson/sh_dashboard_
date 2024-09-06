@@ -3,6 +3,8 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import MailOutlineRoundedIcon from '@mui/icons-material/MailOutlineRounded';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import Image from 'next/image';
+
 
 type Props = {}
 
@@ -20,7 +22,13 @@ export default function PatientProfilePage({}: Props) {
 {/* left */}
             <div className="flex flex-col gap-7 p-4 w-1/3 min-w-80 rounded bg-white">
                 <div className="flex gap-4 items-center  xxl:justify-start justify-center  flex-wrap">
-                    <img src="/images/img-p2.png" alt="" className='w-48 h-48 object-cover rounded-full' />
+<Image 
+  src="/images/img-p2.png" 
+  alt="" 
+  width={192} 
+  height={192} 
+  className='object-cover rounded-full' 
+/>
                     <div className="flex flex-col gap-3 ">
                         <p className='text-xl font-semibold'>Albert Ehimoroo </p>
                         <p className='text-gray-400 font-semibold'>Reg:KEFT237YY82</p>
@@ -47,14 +55,14 @@ export default function PatientProfilePage({}: Props) {
                         </div>
                         <div className="flex gap-4 items-center">
                             <div className='w-1/3 flex gap-4 items-center'>
-                                <img src="/images/phone.svg" alt="" />
+<Image src="/images/phone.svg" alt="" width={24} height={24} />
                                 <span>Phone</span>
                             </div>
                             <span className='font-bold w-2/3'>+123 456 734 829</span>
                         </div>
                         <div className="flex gap-4 items-center">
                             <div className='w-1/3 flex gap-4 items-center'>
-                                <img src="/images/email.svg" alt="" />
+<Image src="/images/email.svg" alt="" width={24} height={24} />
                                 <span>Email</span>
                             </div>
                             <span className='font-bold  w-2/3 truncate'>Albertehimoroo@gmail.commmmmmmmmmm</span>
@@ -79,14 +87,14 @@ export default function PatientProfilePage({}: Props) {
                         </div>
                         <div className="flex gap-4 items-center">
                             <div className='w-1/3 flex gap-4 items-center'>
-                                <img src="/images/phone.svg" alt="" />
+<Image src="/images/phone.svg" alt="" width={24} height={24} />
                                 <span>Phone</span>
                             </div>
                             <span className='font-bold w-2/3'>+123 456 734 829</span>
                         </div>
                         <div className="flex gap-4 items-center">
                             <div className='w-1/3 flex gap-4 items-center'>
-                                <img src="/images/email.svg" alt="" />
+<Image src="/images/email.svg" alt="" width={24} height={24} />
                                 <span>Email</span>
                             </div>
                             <span className='font-bold w-2/3 truncate'>janeehimoroo@gmail.commmmmmmmmmm</span>
@@ -100,40 +108,40 @@ export default function PatientProfilePage({}: Props) {
             <div className="flex flex-col w-2/3 gap-3 ">
                 <div className="flex  justify-between items-center mb-4">
                     <p className='text-accent font-bold'>Medical Information</p>
-                    <img src="/images/Edit.svg" alt="" />
+<Image src="/images/Edit.svg" alt="" width={24} height={24} />
                 </div>
                 <div className="flex gap-5 flex-wrap">
                     <div className="py-6 px-8 flex-1 max-w-56 flex flex-col bg-white shadow-lg rounded-xl items-center gap-4">
                         <div className="flex gap-1">
-                            <img src="/images/Rule.svg" alt="" />
+<Image src="/images/Rule.svg" alt="" width={24} height={24} />
                             <p className='text-blue-900'>Height</p>
                         </div>
                         <p className='text-red-300'>5ft7inch</p>
                     </div>
                     <div className="py-6 px-8 flex-1 max-w-56 flex flex-col bg-white shadow-lg rounded-xl items-center gap-4">
                         <div className="flex gap-1">
-                            <img src="/images/weight.svg" alt="" />
+<Image src="/images/weight.svg" alt="" width={24} height={24} />
                             <p className='text-blue-900'>Weight</p>
                         </div>
                         <p className='text-red-300'>140lb</p>
                     </div>
                     <div className="py-6 px-8 flex-1 max-w-56 flex flex-col bg-white shadow-lg rounded-xl items-center gap-4">
                         <div className="flex gap-1">
-                            <img src="/images/Rule.svg" alt="" />
+<Image src="/images/Rule.svg" alt="" width={24} height={24} />
                             <p className='text-blue-900'>Alcohol</p>
                         </div>
                         <p className='text-red-300'>No</p>
                     </div>
                     <div className="py-6 px-8 flex-1 max-w-56 flex flex-col bg-white shadow-lg rounded-xl items-center gap-4">
                         <div className="flex gap-1">
-                            <img src="/images/Rule.svg" alt="" />
+<Image src="/images/Rule.svg" alt="" width={24} height={24} />
                             <p className='text-blue-900'>Body Type</p>
                         </div>
                         <p className='text-red-300'>Endomorph</p>
                     </div>
                     <div className="py-6 px-8 flex-1 max-w-56 flex flex-col bg-white shadow-lg rounded-xl items-center gap-4">
                         <div className="flex gap-1">
-                            <img src="/images/Rule.svg" alt="" />
+<Image src="/images/Rule.svg" alt="" width={24} height={24} />
                             <p className='text-blue-900'>Drugs</p>
                         </div>
                         <p className='text-red-300'>No</p>
@@ -152,7 +160,7 @@ export default function PatientProfilePage({}: Props) {
                                     <td className='flex  flex-1 justify-start items-center gap-4 px-3 border-r border-blue-100'>
                                     <input type="checkbox"/> 
                                     <div className="flex flex-col gap-1">
-                                            <p className='text-blue-900 font-bold'>26 June'23</p>
+                                            <p className='text-blue-900 font-bold'>26 June, 2023</p>
                                             <p className='text-primary'>9:00-10:00</p>
                                     </div>
                                     </td>
@@ -177,7 +185,7 @@ export default function PatientProfilePage({}: Props) {
                                     <td className='flex flex-col  flex-1 justify-center items-center'>
                                         <div className="flex gap-3">
                                             <p className='text-blue-900 text-lg'>Notes</p>
-                                            <img src="/images/notes.svg" alt="" />
+<Image src="/images/notes.svg" alt="" width={24} height={24} />
                                         </div>
                                     </td>
                                 </tr>
@@ -202,21 +210,21 @@ export default function PatientProfilePage({}: Props) {
                         </div>
                         <div className="flex bg-slate-100 p-4 gap-4 items-center justify-between rounded-xl">
                             <div className="flex gap-4 items-center">
-                                <img src="/images/notes.svg" alt="" />
+<Image src="/images/notes.svg" alt="" width={24} height={24} />
                                 <p>Checkup Result.2.Pdf</p>
                             </div>
                             <span>123kb</span>
                         </div>
                         <div className="flex bg-slate-100 p-4 gap-4 items-center justify-between rounded-xl">
                             <div className="flex gap-4 items-center">
-                                <img src="/images/notes.svg" alt="" />
+<Image src="/images/notes.svg" alt="" width={24} height={24} />
                                 <p>X-ray Result.2.Pdf</p>
                             </div>
                             <span>123kb</span>
                         </div>
                         <div className="flex bg-slate-100 p-4 gap-4 items-center justify-between rounded-xl">
                             <div className="flex gap-4 items-center">
-                                <img src="/images/notes.svg" alt="" />
+<Image src="/images/notes.svg" alt="" width={24} height={24} />
                                 <p>Checkup Result.2.Pdf</p>
                             </div>
                             <span>123kb</span>
