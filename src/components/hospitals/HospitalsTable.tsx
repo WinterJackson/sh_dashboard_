@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Hospital } from "@/lib/definitions";
+import Image from 'next/image';
 
 interface HospitalsTableProps {
     hospitals: Hospital[];
@@ -92,11 +93,8 @@ const HospitalsTable: React.FC<HospitalsTableProps> = ({ hospitals, totalHospita
                                   }
                               >
                                   <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                      <img
-                                          src={hospital.logoUrl}
-                                          alt={`${hospital.name} Logo`}
-                                          className="h-10 w-10"
-                                      />
+                                      <Image src="/hospital-logo.jpg" alt="Hospital logo" width={150} height={150} />
+
                                   </td>
                                   <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                       {hospital.name}
