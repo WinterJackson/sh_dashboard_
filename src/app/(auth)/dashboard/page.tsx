@@ -1,7 +1,7 @@
 // src/app/(auth)/dashboard/page.tsx file
 
 import AdminDashboard from "@/components/dashboard/admin-dashboard/AdminDashboard";
-import NormalDashboard from "@/components/dashboard/normal-dashboard/NormalDashboard";
+// import NormalDashboard from "@/components/dashboard/normal-dashboard/NormalDashboard";
 import SuperAdminDashboard from "@/components/dashboard/super-admin-dashboard/SuperAdminDashboard";
 import { authOptions } from "@/lib/authOptions";
 import { getServerSession } from "next-auth";
