@@ -20,7 +20,14 @@ function DoctorBio({cancel}: Props) {
         {/* profile bio */}
                 <div className="flex flex-1 flex-col gap-7 items-center w-[500px]">
                     <div className="flex gap-5 items-center">
-                        <img src="/images/img-p3.png" alt="" className='w-[150px] h-[150px] rounded-full object-cover'/>
+<Image
+  src="/images/img-p3.png"
+  alt="" 
+  width={150}
+  height={150}
+  className='rounded-full'
+  style={{ objectFit: 'cover' }}
+/>
                         <div className="flex flex-col gap-4">
                             <h1 className="font-semibold text-lg capitalize">Dr Jane Gold</h1>
                             <div className="flex flex-col gap-0 ">
@@ -83,11 +90,41 @@ function DoctorBio({cancel}: Props) {
                     <div className="flex flex-col gap-2 w-full items-center lg:items-start">
                         <div className="flex justify-between gap-10 max-w-[400px] w-full bg-bluelight items-center p-3 rounded-2xl">
                             <div className="flex gap-2">
-                                <img src="/images/Star.svg" alt="" className='scale-150'/>
-                                <img src="/images/Star.svg" alt="" className='scale-150'/>
-                                <img src="/images/Star.svg" alt="" className='scale-150'/>
-                                <img src="/images/Star.svg" alt="" className='scale-150'/>
-                                <img src="/images/Star.svg" alt="" className='scale-150'/>
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50} 
+  height={50} 
+  className='scale-150' 
+/>
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50} 
+  height={50} 
+  className='scale-150' 
+/>
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50} 
+  height={50} 
+  className='scale-150' 
+/>
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50} 
+  height={50} 
+  className='scale-150' 
+/>
+<Image 
+  src="/images/Star.svg" 
+  alt="" 
+  width={50} 
+  height={50} 
+  className='scale-150' 
+/>
                             </div>
                             <div className="">
                                 <p>4.7 out of 5</p>
@@ -129,7 +166,31 @@ function DoctorBio({cancel}: Props) {
                 <h1 className="font-semibold mb-6">Licence</h1>
                 <div className="flex flex-wrap gap-4  justify-center">
                     <div className="flex flex-1 gap-5 items-center max-w-[430px] min-w-[380px] border border-black p-4 rounded-xl">
-                        <img src="/images/document.svg" alt="" />
+<Image 
+  src="/images/document.svg" 
+  alt="Document icon" 
+  width={24}  
+  height={24} 
+/>                      
+  <div className="flex flex-col gap-2  flex-1">
+                            <h2 className="font-semibold capitalize">General Medical Practice Licence</h2>
+                            <PercentageBar percentage={"25%"} />
+                            <div className="flex justify-between items-center">
+                                <div className="flex flex-col gap-1">
+                                    <h2>Expiry Date</h2>
+                                    <span className="text-gray-400">21/2/23</span>
+                                </div>
+                                <button className='bg-primary text-white px-6 py-2 rounded-2xl'>View</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex flex-1 gap-5 items-center max-w-[430px] min-w-[380px] border border-black p-4 rounded-xl">
+<Image 
+  src="/images/document.svg" 
+  alt="Document icon" 
+  width={24}  
+  height={24} 
+/>   
                         <div className="flex flex-col gap-2  flex-1">
                             <h2 className="font-semibold capitalize">General Medical Practice Licence</h2>
                             <PercentageBar percentage={"25%"} />
@@ -143,21 +204,12 @@ function DoctorBio({cancel}: Props) {
                         </div>
                     </div>
                     <div className="flex flex-1 gap-5 items-center max-w-[430px] min-w-[380px] border border-black p-4 rounded-xl">
-                        <img src="/images/document.svg" alt="" />
-                        <div className="flex flex-col gap-2  flex-1">
-                            <h2 className="font-semibold capitalize">General Medical Practice Licence</h2>
-                            <PercentageBar percentage={"25%"} />
-                            <div className="flex justify-between items-center">
-                                <div className="flex flex-col gap-1">
-                                    <h2>Expiry Date</h2>
-                                    <span className="text-gray-400">21/2/23</span>
-                                </div>
-                                <button className='bg-primary text-white px-6 py-2 rounded-2xl'>View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex flex-1 gap-5 items-center max-w-[430px] min-w-[380px] border border-black p-4 rounded-xl">
-                        <img src="/images/document.svg" alt="" />
+<Image 
+  src="/images/document.svg" 
+  alt="Document icon" 
+  width={24}  
+  height={24} 
+/>   
                         <div className="flex flex-col gap-2  flex-1">
                             <h2 className="font-semibold capitalize">General Medical Practice Licence</h2>
                             <PercentageBar percentage={"25%"} />
