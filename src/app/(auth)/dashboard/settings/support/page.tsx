@@ -1,5 +1,6 @@
 import FAQ from '@/components/settings/FAQs/FAQ'
 import React from 'react'
+import Image from 'next/image';
 
 type Props = {}
 
@@ -8,7 +9,7 @@ export default function SupportPage({}: Props) {
     <div className='flex gap-10 h-full'>
         {/* left */}
         <div className="flex justify-center items-center h-full w-[50%]">
-            <img src="/images/amico.svg" alt="" />
+<Image src="/images/amico.svg" alt="" width={500} height={500} />
         </div>
         {/* right */}
         <div className="flex h-full w-[50%] pt-7">
