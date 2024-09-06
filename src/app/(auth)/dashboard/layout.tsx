@@ -24,7 +24,7 @@ export default function DashboardLayout({
                 </aside>
 
                 {/* Scrollable Main Content */}
-                <main className="ml-64 w-full h-screen overflow-y-auto p-4 pt-11 bg-gray-100">
+                <main className="ml-64 w-full h-full lg:h-[calc(100vh-100px)] overflow-y-auto p-4 pt-11 bg-gray-100">
                     {children}
                 </main>
             </div>
