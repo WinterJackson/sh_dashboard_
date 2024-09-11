@@ -13,8 +13,10 @@ export interface User {
     lastLogin?: Date;
     createdAt: Date;
     updatedAt: Date;
-    profile?: Profile;
     doctor?: Doctor;
+    profile?: Profile;
+    sessions?: Session[];
+    hospital?: Hospital;
     superAdmin?: SuperAdmin;
     admin?: Admin;
     nurse?: Nurse;
@@ -35,7 +37,7 @@ export interface Profile {
     firstName: string;
     lastName: string;
     gender?: string;
-    phone?: string;
+    phoneNo?: string;
     address?: string;
     dateOfBirth?: Date;
     imageUrl?: string;
@@ -71,12 +73,12 @@ export interface Doctor {
     workingHours: string;
     averageRating: number;
     appointments: Appointment[];
-    referrals?: DoctorReferral;
-    docEarnings?: DoctorEarning;
     department: Department;
-    user: User;
     hospital: Hospital;
     service?: Service;
+    user: User;
+    docEarnings?: DoctorEarning[];
+    referrals?: DoctorReferral[];
 }
 
 export interface Nurse {
@@ -127,9 +129,9 @@ export interface Patient {
     updatedAt: Date;
     appointments: Appointment[];
     appointmentServices: AppointmentService[];
-    currentBed?: Bed;
+    currentBed?: Bed[];
     hospital: Hospital;
-    payments?: Payment;
+    payments?: Payment[];
     referrals: Referral[];
     serviceUsages?: ServiceUsage;
 }
@@ -164,7 +166,7 @@ export interface Appointment {
     hospital: Hospital;
     patient: Patient;
     services: AppointmentService[];
-    payments?: Payment;
+    payments?: Payment[];
 }
 
 export interface DoctorEarning {
@@ -189,13 +191,11 @@ export interface Bed {
 
 export interface Service {
     serviceId: number;
-    hospitalId: number;
     serviceName: string;
     appointments: AppointmentService[];
     departments: DepartmentService[];
     doctors: Doctor[];
-    payments?: Payment;
-    hospital: Hospital;
+    payments?: Payment[];
     serviceUsages?: ServiceUsage;
 }
 
@@ -209,17 +209,16 @@ export interface Hospital {
     referralCode?: string;
     website?: string;
     logoUrl: string;
-    users: User[];
-    doctors: Doctor[];
-    patients: Patient[];
     appointments: Appointment[];
-    beds?: Bed;
-    services: Service[];
-    payments?: Payment;
-    departments: HospitalDepartment[];
-    referrals: Referral[];
-    admins: Admin[];
+    beds?: Bed[];
+    doctors: Doctor[];
     nurses: Nurse[];
+    departments: HospitalDepartment[];
+    patients: Patient[];
+    payments?: Payment[];
+    referrals: Referral[];
+    users: User[];
+    admins: Admin[];
     staffs: Staff[];
 }
 
@@ -262,7 +261,7 @@ export interface Referral {
     referralId: number;
     patientId: number;
     hospitalId: number;
-    date: Date;
+    effectiveDate: Date;
     type: string;
     primaryCareProvider: string;
     referralAddress: string;
@@ -276,7 +275,7 @@ export interface Referral {
     physicianPhoneNumber: string;
     createdAt: Date;
     updatedAt: Date;
-    doctors?: DoctorReferral;
+    doctors?: DoctorReferral[];
     hospital?: Hospital;
     patient: Patient;
 }
@@ -318,6 +317,8 @@ export interface Session {
     sessionToken: string;
     userId: string;
     expires: Date;
+    createdAt: Date;
+    updatedAt: Date;
     user: User;
 }
 

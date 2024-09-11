@@ -13,6 +13,8 @@ export async function fetchOnlineDoctors() {
             (doctor: { status: string }) => doctor.status === "Online"
         );
 
+        console.log(onlineDoctors);
+
         return onlineDoctors;
     } catch (error) {
         console.error("Failed to fetch doctors:", error);
@@ -68,6 +70,23 @@ export const fetchOnlineDoctorsByHospital = async (hospitalId: number) => {
     }
 };
 
+export const fetchDoctorIdByUserId = async (userId: string) => {
+    try {
+        const response = await fetch(`/api/doctors/byUserId/${userId}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch doctor ID');
+        }
+        const doctor = await response.json();
+
+        console.log(doctor);
+
+        return doctor.doctorId;
+    } catch (error) {
+        console.error('Error fetching doctorId:', error);
+        return null;
+    }
+};
+
 // Fetch all doctors
 export async function fetchAllDoctors() {
     try {
@@ -101,6 +120,9 @@ export async function fetchPatientDetails(name: string) {
             throw new Error("Patient not found");
         }
         const data = await response.json();
+
+        console.log(data);
+
         return data;
     } catch (error) {
         console.error("Failed to fetch patient details:", error);

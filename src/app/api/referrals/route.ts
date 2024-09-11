@@ -101,9 +101,9 @@ export async function POST(req: NextRequest) {
                 patientId: patient.patientId,
                 hospitalId: hospital.hospitalId,
                 type,
-                date: {
-                    gte: new Date(new Date(referralDate).setHours(0, 0, 0, 0)),
-                    lt: new Date(new Date(referralDate).setHours(23, 59, 59, 999)),
+                effectiveDate: {
+                    gte: new Date(referralDate.setHours(0, 0, 0, 0)),
+                    lt: new Date(referralDate.setHours(23, 59, 59, 999)),
                 },
             },
         });
@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
             data: {
                 patientId: patient.patientId,
                 hospitalId,
-                date: referralDate,
+                effectiveDate: referralDate,
                 type,
                 primaryCareProvider,
                 referralAddress,
@@ -144,3 +144,4 @@ export async function POST(req: NextRequest) {
         );
     }
 }
+

@@ -78,6 +78,9 @@ export async function POST(req: NextRequest) {
             hospitalId = userHospitalId;
         }
 
+        const parsedDoctorId = parseInt(doctorId, 10); // Parse doctorId as integer
+        const parsedPatientId = parseInt(patientId, 10); // Parse patientId as integer
+
         const appointmentDate = new Date(date);
         const [hoursFrom, minutesFrom] = timeFrom.split(':');
         appointmentDate.setHours(parseInt(hoursFrom), parseInt(minutesFrom));
@@ -88,9 +91,9 @@ export async function POST(req: NextRequest) {
 
         const newAppointment = await prisma.appointment.create({
             data: {
-                patientId: parseInt(patientId),
-                doctorId: parseInt(doctorId),
-                hospitalId,
+                patientId: parsedPatientId,
+                doctorId: parsedDoctorId,
+                hospitalId: parseInt(hospitalId, 10),
                 appointmentDate,
                 type,
                 status: 'Pending',

@@ -26,15 +26,13 @@ const AvailableDoctorsCard = () => {
                         (doctor: { hospitalId: number }) => doctor.hospitalId === hospitalId
                     );
 
-                    // setAvailableDoctors(filteredDoctors.length); // correct code
+                    setAvailableDoctors(filteredDoctors.length);
 
-                    setAvailableDoctors(filteredDoctors.length * 1147); // for display
                 } else if (role === "SUPER_ADMIN") {
                     // If Super Admin, set the total number of online doctors
 
-                    // setAvailableDoctors(doctors.length); // correct code
+                    setAvailableDoctors(doctors.length);
 
-                    setAvailableDoctors(doctors.length * 1147); // for display
                 }
             } catch (error) {
                 console.error("Error fetching online doctors:", error);
@@ -71,7 +69,7 @@ const AvailableDoctorsCard = () => {
                             availableDoctors.toString().length
                         )}`}
                     >
-                        {availableDoctors}
+                        {availableDoctors}20
                     </span>
                 </div>
                 <div className="flex w-1/3 items-center justify-end h-3/4 relative">

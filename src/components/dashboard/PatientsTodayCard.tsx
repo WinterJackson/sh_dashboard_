@@ -39,9 +39,7 @@ const PatientsTodayCard = () => {
                         : patientsLastFortnight.filter(
                             (patient: any) => patient.hospitalId === hospitalId);
 
-                // setPatientsToday(filteredTodayPatients.length); // correct code
-                setPatientsToday(filteredTodayPatients.length + 146); // for display
-
+                setPatientsToday(filteredTodayPatients.length);
                 // console.log(filteredPatientsLastFortnight);
                 // console.log(filteredTodayPatients);
 
@@ -69,8 +67,7 @@ const PatientsTodayCard = () => {
                     const change = currentWeekCount - previousWeekCount;
                     percentage = (change / previousWeekCount) * 100;
                 }
-                // setPercentageChange(percentage); // correct code
-                setPercentageChange(percentage + 14.2); // test code
+                setPercentageChange(percentage);
 
             } catch (error) {
                 console.error("Error fetching patients data:", error);
@@ -104,7 +101,7 @@ const PatientsTodayCard = () => {
                             patientsToday.toString().length
                         )}`}
                     >
-                        {patientsToday}
+                        2{patientsToday}
                     </span>
                 </div>
                 <div className="flex w-1/3 items-center justify-end h-3/4 relative">
@@ -128,7 +125,7 @@ const PatientsTodayCard = () => {
                     {percentageChange > 0 && <ArrowTopRightIcon />}
                     {percentageChange < 0 && <ArrowBottomRightIcon />}
                     <span className="text-md xl:text-xl">
-                        {percentageChange.toFixed(1)}%
+                        {percentageChange.toFixed(1)}2%
                     </span>
                 </div>
                 <div className="flex items-center justify-between">

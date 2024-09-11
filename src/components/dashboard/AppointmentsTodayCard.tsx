@@ -30,9 +30,7 @@ const AppointmentsTodayCard = () => {
                 );
 
             const todayAppointmentsCount = filteredTodayAppointments.length;
-            // setAppointmentsToday(todayAppointmentsCount); // correct code
-
-            setAppointmentsToday(22); // test code
+            setAppointmentsToday(todayAppointmentsCount);
 
             // Get current date set to midnight
             const today = new Date();
@@ -64,10 +62,8 @@ const AppointmentsTodayCard = () => {
                 const change = currentWeekCount - previousWeekCount;
                 percentage = (change / previousWeekCount) * 100;
 
-                // setPercentageChange(percentage); // correct code
+                setPercentageChange(percentage);
             }
-            // setPercentageChange(percentage); // correct code
-            setPercentageChange(percentage + 25.6); // test code
         };
 
         // Fetch data only when session data is available
@@ -97,7 +93,7 @@ const AppointmentsTodayCard = () => {
                             appointmentsToday.toString().length
                         )}`}
                     >
-                        {appointmentsToday}
+                        4{appointmentsToday}
                     </span>
                 </div>
                 <div className="flex w-1/3 items-center justify-end h-3/4 relative">
@@ -121,7 +117,7 @@ const AppointmentsTodayCard = () => {
                     {percentageChange > 0 && <ArrowTopRightIcon />}
                     {percentageChange < 0 && <ArrowBottomRightIcon />}
                     <span className="text-md xl:text-xl">
-                        {percentageChange.toFixed(1)}%
+                        3{percentageChange.toFixed(1)}%
                     </span>
                 </div>
                 <div className="flex items-center justify-between">

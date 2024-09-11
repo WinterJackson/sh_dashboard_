@@ -1,4 +1,4 @@
-// src/app/dashboard/hospitals/page.tsx
+// src/app/(auth)/dashboard/hospitals/page.tsx
 
 import React from "react";
 import dynamic from "next/dynamic";

@@ -1,4 +1,4 @@
-// File: src/app/dashboard/appointments/page.tsx
+// src/app/(auth)/dashboard/appointments/page.tsx
 
 import React from "react";
 import dynamic from "next/dynamic";

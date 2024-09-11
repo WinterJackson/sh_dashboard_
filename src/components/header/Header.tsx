@@ -42,7 +42,7 @@ const Header = () => {
 
     const role = session?.user?.role
 
-    // console.log(role)
+    // console.log(role)gui
 
     return (
         <header className="flex z-10 fixed top-0 left-0 w-full items-center justify-between p-4 py-5 m-2 bg-white shadow-lg shadow-gray-300 rounded-2xl">
@@ -68,12 +68,15 @@ const Header = () => {
                             </button>
                         ) : null}
 
-                        <button
-                            className=" w-1/2 px-2 py-2 border-4 border-gray-600 text-black text-xs font-semibold rounded-2xl hover:bg-primary hover:border-primary hover:text-white"
-                            onClick={handleAddAppointment}
-                        >
-                            Add Appointment +
-                        </button>
+                        {/* Conditionally render Add Appointmemnt button */}
+                        {role !== "STAFF" && (
+                            <button
+                                className="w-1/2 px-2 py-2 border-4 border-gray-600 text-black text-xs font-semibold rounded-2xl hover:bg-primary hover:border-primary hover:text-white"
+                                onClick={handleAddAppointment}
+                            >
+                                Add Appointment +
+                            </button>
+                        )}
                     </div>
 
                     {/* User Profile Section */}

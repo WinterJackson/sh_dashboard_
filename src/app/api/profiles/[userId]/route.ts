@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
                 firstName: true,
                 lastName: true,
                 gender: true,
-                phone: true,
+                phoneNo: true,
                 address: true,
                 dateOfBirth: true,
                 imageUrl: true,

@@ -54,6 +54,8 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
         }
     };
 
+    console.log(user)
+
    // Function to auto-fill referring physician details
    const autoFillPhysicianDetails = useCallback(() => {
        if (user?.role === "DOCTOR" || user?.role === "NURSE") {
@@ -73,7 +75,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
            setValue("physicianDepartment", departmentName);
            setValue("physicianSpecialty", specialization);
            setValue("physicianEmail", user?.email || "");
-           setValue("physicianPhoneNumber", user?.profile?.phone || "");
+           setValue("physicianPhoneNumber", user?.profile?.phoneNo || "");
        }
    }, [user, setValue]);
 
@@ -399,7 +401,7 @@ useEffect(() => {
                         type="tel"
                         className="bg-[#EFEFEF]"
                         {...register("physicianPhoneNumber", { required: true })}
-                        value={user?.profile?.phone || ""}
+                        value={user?.profile?.phoneNo || ""}
                         readOnly
                     />
                 </div>

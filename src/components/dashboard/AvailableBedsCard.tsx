@@ -24,8 +24,7 @@ const AvailableBedsCard = () => {
                 ? beds
                 : beds.filter((bed: any) => bed.hospitalId === hospitalId);
 
-            // setAvailableBeds(filteredBeds.length); // correct code
-            setAvailableBeds(filteredBeds.length + 580); // for display
+            setAvailableBeds(filteredBeds.length);
         };
 
         // Fetch beds only when session data is available
@@ -58,7 +57,7 @@ const AvailableBedsCard = () => {
                             availableBeds.toString().length
                         )}`}
                     >
-                        {availableBeds}
+                        {availableBeds}2
                     </span>
                 </div>
                 <div className="flex w-1/3 items-center justify-end h-3/4 relative">

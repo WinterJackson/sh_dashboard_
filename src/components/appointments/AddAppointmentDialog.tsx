@@ -20,11 +20,10 @@ import { useRouter } from "next/navigation";
 import { IconButton } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import {
-    fetchOnlineDoctors,
-    fetchAllHospitals,
-    fetchPatientDetails,
     fetchOnlineDoctorsByHospital,
-    fetchDoctorDetails,
+    fetchPatientDetails,
+    fetchDoctorIdByUserId,
+    fetchAllHospitals,
 } from "@/lib/data";
 import { useSessionData } from "@/hooks/useSessionData";
 import { differenceInYears } from "date-fns";
@@ -46,96 +45,96 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
     const [hospitals, setHospitals] = useState([]);
     const [patientDetails, setPatientDetails] = useState<any | null>(null);
     const router = useRouter();
-    const sessionData = useSessionData(); // Get the session data
+    const sessionData = useSessionData();
     const role = sessionData?.user?.role;
     const hospitalId = sessionData?.user?.hospitalId;
+    const userId = sessionData?.user?.id;
 
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                const fetchedHospitals = await fetchAllHospitals();
+
+        try {
+
+            if (role === "SUPER_ADMIN" && patientDetails) {
+                const fetchedDoctors = await fetchOnlineDoctorsByHospital(
+                    patientDetails.hospitalId
+                );
+                setDoctors(fetchedDoctors);
+
+                const fetchHospitals = await fetchAllHospitals();
+
+                // Filter the data for online doctors only
+                const fetchedHospitals = fetchHospitals.filter(
+                    (hospital: { hospitalId: number }) => hospital.hospitalId === patientDetails.hospitalId
+                );
+
+                console.log(fetchedHospitals)
+
                 setHospitals(fetchedHospitals);
 
-                let doctorDetails;
-                if (role === 'SUPER_ADMIN') {
-                    // Fetch all online doctors for SUPER_ADMIN
-                    doctorDetails = await fetchOnlineDoctors();
-
-                    doctorDetails = doctorDetails.map((doctor: { specialization: string; user: { username: string }; doctorId: number }) => ({
-                        username: doctor.user.username,
-                        specialization: doctor.specialization,
-                        doctorId: doctor.doctorId,
-                    }));
-                } else if (hospitalId) {
-                    // Fetch online doctors by hospital for other roles
-                    doctorDetails = await fetchOnlineDoctorsByHospital(hospitalId);
-                }
-
-                setDoctors(doctorDetails);
-            } catch (error) {
-                console.error("Failed to fetch data:", error);
+            } else if ((role === "ADMIN" || role === "NURSE") && hospitalId) {
+                const fetchedDoctors = await fetchOnlineDoctorsByHospital(
+                    hospitalId
+                );
+                setDoctors(fetchedDoctors);
+            } else if (role === "DOCTOR") {
+                setDoctors([]); // Doctor schedules for themselves
             }
-        };
-
+        } catch (error) {
+            console.error("Failed to fetch data:", error);
+        }
+    }
         fetchData();
-    }, [role, hospitalId]);
+    }, [role, hospitalId, patientDetails]);
 
     const fetchAndSetPatientDetails = async (name: string) => {
         const details = await fetchPatientDetails(name);
         if (details) {
-            const age = differenceInYears(
-                new Date(),
-                new Date(details.dateOfBirth)
-            ); // Calculate age from date of birth
+            const age = differenceInYears(new Date(), new Date(details.dateOfBirth));
             setValue("age", age);
             setValue("patientId", details.patientId);
             setPatientDetails(details);
+    
+            if (role === "SUPER_ADMIN") {
+                setValue("hospitalName", details.hospital.name);
+                setValue("hospitalId", details.hospitalId);
+            } else if ((role === "ADMIN" || role === "DOCTOR" || role === "NURSE") && sessionData?.user) {
+                setValue("hospitalName", sessionData.user.hospital);
+                setValue("hospitalId", sessionData.user.hospitalId);
+            }
         } else {
             setValue("age", "");
             setValue("patientId", "");
+            setValue("hospitalName", "");
+            setValue("hospitalId", "");
             setPatientDetails(null);
         }
     };
 
-    const fetchAndSetDoctorHospital = async (doctorId: number) => {
-        try {
-
-            // Fetch all online doctors
-            const onlineDoctors = await fetchOnlineDoctors();
-    
-            // Find the selected doctor by doctorId
-            const selectedDoctor = onlineDoctors.find(
-                (doctor: { doctorId: number }) => doctor.doctorId === doctorId
-            );
-
-            // console.log(selectedDoctor)
-    
-            // If the doctor is found, set the hospital name
-            if (selectedDoctor) {
-                setValue("hospitalName", selectedDoctor.hospital.name);
-            } else {
-                setValue("hospitalName", "");
-            }
-        } catch (error) {
-            console.error("Failed to fetch and set doctor hospital:", error);
-        }
-    };
-    
     const onSubmit = async (data: any) => {
         try {
+            let selectedHospitalId = hospitalId;
+
+            // SUPER_ADMIN should use the patient's hospitalId
+            if (role === "SUPER_ADMIN" && patientDetails) {
+                selectedHospitalId = patientDetails.hospitalId;
+            }
+
+            // Ensure hospitalId is not undefined or null
+            if (!selectedHospitalId) {
+                throw new Error("Hospital ID is missing");
+            }
+
             const response = await fetch("/api/appointments", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ...data,
                     date: selectedDate?.toISOString(),
-                    role: role,
-                    hospitalId: hospitalId,
-                    doctorId: data.doctorId,
+                    role,
+                    hospitalId: selectedHospitalId,
+                    doctorId: role === "DOCTOR" && userId ? await fetchDoctorIdByUserId(userId) : data.doctorId,
                 }),
-
             });
 
             if (!response.ok) {
@@ -143,9 +142,10 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
             }
 
             const result = await response.json();
+
+            console.log(result);
             setSaved(true);
 
-            // Redirect to the updated appointments page
             router.replace("/dashboard/appointments");
         } catch (error) {
             console.error(error);
@@ -159,14 +159,6 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
     const handleDateChange = (date: Date | undefined) => {
         setSelectedDate(date);
         setIsCalendarOpen(false);
-    };
-
-    const handleDoctorChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const doctorId = parseInt(event.target.value, 10);
-
-        if (role === 'SUPER_ADMIN' && doctorId) {
-            await fetchAndSetDoctorHospital(doctorId);
-        }
     };
 
     return (
@@ -325,32 +317,36 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                                 </div>
                             )}
                         </div>
-                        <div>
-                            <Label htmlFor="doctorId">Doctor</Label>
-                            <select
-                                id="doctorId"
-                                {...register("doctorId", { required: true })}
-                                className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                onChange={handleDoctorChange}
-                            >
-                                <option
-                                    value=""
-                                    className="bg-[#EFEFEF] text-gray-500"
+
+                        {(role === "SUPER_ADMIN" || role === "ADMIN" || role === "NURSE") && (
+                            <div>
+                                <Label htmlFor="doctorId">Doctor</Label>
+                                <select
+                                    id="doctorId"
+                                    {...register("doctorId", {
+                                        required: true,
+                                    })}
+                                    className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    Select a doctor
-                                </option>
-                                {doctors.map((doctor: any) => (
                                     <option
-                                        key={doctor.doctorId}
-                                        value={doctor.doctorId}
-                                        className="bg-white"
+                                        value=""
+                                        className="bg-[#EFEFEF] text-gray-500"
                                     >
-                                    Dr. {doctor.username} -{" "}
-                                        {doctor.specialization}
+                                        Select a doctor
                                     </option>
-                                ))}
-                            </select>
-                        </div>
+                                    {doctors.map((doctor: any) => (
+                                        <option
+                                            key={doctor.doctorId}
+                                            value={doctor.doctorId}
+                                            className="bg-white"
+                                        >
+                                            Dr. {doctor.username} -{" "}
+                                            {doctor.specialization}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
 
                         {role === "SUPER_ADMIN" && (
                             <div>
