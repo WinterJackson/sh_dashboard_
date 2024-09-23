@@ -10,7 +10,7 @@ import { DateRangePicker } from "@/components/appointments/DateRangePicker";
 import { DateRange } from "react-day-picker";
 import { SymbolIcon } from "@radix-ui/react-icons";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSearch } from "@/app/context/SearchContext";
 import { fetchAppointments, fetchAppointmentsByHospital, updateAppointmentStatus } from "@/lib/data";
 import { useSessionData } from "@/hooks/useSessionData"; 
@@ -24,6 +24,8 @@ import {
 import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
 import PlaceIcon from "@mui/icons-material/Place";
 import { differenceInYears } from "date-fns";
+import { Pagination, PaginationItem, PaginationContent, PaginationPrevious, PaginationNext, PaginationEllipsis } from "@/components/ui/pagination";
+
 
 // Dynamic imports for dialogs
 const RescheduleDialog = dynamic(
@@ -36,15 +38,6 @@ const ActionDialog = dynamic(
     () => import("@/components/appointments/PendingDialog")
 );
 
-// Pagination component
-import {
-    Pagination,
-    PaginationContent,
-    PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious,
-} from "@/components/ui/pagination";
 
 const filterOptions = [
     { value: "", label: "Filter By" },
@@ -62,7 +55,7 @@ interface AppointmentsTableProps {
     currentPage: number;
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 15;
 
 const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
     totalAppointments,
@@ -93,7 +86,9 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
     const [dialogAppointmentId, setDialogAppointmentId] = useState<
         string | undefined
     >(undefined);
+    const [page, setPage] = useState(currentPage || 1);
     const router = useRouter();
+    const searchParams = useSearchParams();
 
     const handleFilterTypeChange = (
         e: React.ChangeEvent<HTMLSelectElement>
@@ -142,6 +137,24 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
 
         getAppointments();
     }, [role, hospitalId]);
+
+    // Fetch appointments whenever page changes
+    useEffect(() => {
+        const fetchAppointmentsData = async () => {
+            setIsLoading(true);
+            try {
+                const pageParam = searchParams.get('page') || '1';
+                const data = await fetchAppointments(parseInt(pageParam, 10), ITEMS_PER_PAGE);
+                setAppointments(data);
+            } catch (error) {
+                console.error("Error fetching appointments:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+    
+        fetchAppointmentsData();
+    }, [searchParams]);
 
     useEffect(() => {
         setDateFilter(undefined);
@@ -304,14 +317,17 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         return filterMatch;
     });
 
-
     // console.log(filteredAppointments)
 
     const totalPages = Math.ceil(totalAppointments / ITEMS_PER_PAGE);
 
-    const handlePageChange = (page: number) => {
-        router.push(`?page=${page}`);
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setPage(newPage);
+            router.replace(`?page=${newPage}`);
+        }
     };
+    
 
     return (
         <div className="flex flex-col min-w-full">
@@ -397,7 +413,8 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                 </div>
             </div>
 
-            <table className="min-w-full sm:w-full border-collapse divide-y divide-gray-200 mt-2">
+            <div className="overflow-x-auto w-full">
+            <table className="min-w-full w-full border-collapse divide-y divide-gray-200 mt-2 table-auto">
                 <thead className="bg-bluelight">
                     <tr>
                         <th
@@ -452,7 +469,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                     {isLoading
-                        ? Array.from({ length: 10 }).map((_, index) => (
+                        ? Array.from({ length: 15 }).map((_, index) => (
                               <tr key={index}>
                                   <td colSpan={8}>
                                       <Skeleton
@@ -612,28 +629,62 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                           })}
                 </tbody>
             </table>
+            </div>
+
+
             <Pagination className="mt-4">
                 <PaginationContent>
-                    <PaginationPrevious
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                    />
-                    {Array.from({ length: totalPages }).map((_, index) => (
-                        <PaginationItem key={index}>
-                            <PaginationLink
-                                isActive={currentPage === index + 1}
-                                onClick={() => handlePageChange(index + 1)}
-                            >
-                                {index + 1}
-                            </PaginationLink>
+                    {page > 1 && (
+                        <PaginationPrevious
+                            onClick={() => handlePageChange(page - 1)}
+                        />
+                    )}
+
+                    {/* Render "1" only if the current page is not 1 */}
+                    {page !== 1 && (
+                        <PaginationItem onClick={() => handlePageChange(1)}>
+                            1
                         </PaginationItem>
-                    ))}
-                    <PaginationNext
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                    />
+                    )}
+
+                    {page > 3 && <PaginationEllipsis />}
+
+                    {page > 2 && (
+                        <PaginationItem
+                            onClick={() => handlePageChange(page - 1)}
+                        >
+                            {page - 1}
+                        </PaginationItem>
+                    )}
+
+                    <PaginationItem isActive={true}>{page}</PaginationItem>
+
+                    {page < totalPages - 1 && (
+                        <PaginationItem
+                            onClick={() => handlePageChange(page + 1)}
+                        >
+                            {page + 1}
+                        </PaginationItem>
+                    )}
+
+                    {page < totalPages - 2 && <PaginationEllipsis />}
+
+                    {page !== totalPages && (
+                        <PaginationItem
+                            onClick={() => handlePageChange(totalPages)}
+                        >
+                            {totalPages}
+                        </PaginationItem>
+                    )}
+
+                    {page < totalPages && (
+                        <PaginationNext
+                            onClick={() => handlePageChange(page + 1)}
+                        />
+                    )}
                 </PaginationContent>
             </Pagination>
+
             {openDialog && dialogType && dialogAppointmentId && (
                 <>
                     {dialogType === "Reschedule" && dialogAppointmentId && (

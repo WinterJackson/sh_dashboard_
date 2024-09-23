@@ -30,11 +30,19 @@ PaginationContent.displayName = "PaginationContent"
 
 const PaginationItem = React.forwardRef<
   HTMLLIElement,
-  React.ComponentProps<"li">
->(({ className, ...props }, ref) => (
-  <li ref={ref} className={cn("cursor-pointer", className)} {...props} />
-))
-PaginationItem.displayName = "PaginationItem"
+  React.ComponentProps<"li"> & { isActive?: boolean }
+>(({ className, isActive, ...props }, ref) => (
+  <li
+    ref={ref}
+    className={cn(
+      "cursor-pointer", 
+      isActive ? "bg-blue-500 text-white" : "text-black", // Customize the active state styles here
+      className
+    )}
+    {...props}
+  />
+));
+PaginationItem.displayName = "PaginationItem";
 
 type PaginationLinkProps = {
   isActive?: boolean

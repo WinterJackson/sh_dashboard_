@@ -16,7 +16,7 @@ const AppointmentsTable = dynamic<{ appointments: Appointment[], totalAppointmen
     }
 );
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 15;
 
 interface SearchParams {
     page?: string;
@@ -49,14 +49,14 @@ export default async function AppointmentsPage({ searchParams }: AppointmentsPag
     ]);
 
     return (
-        <>
+        <div className="overflow-x-hidden">
             <div className="text-xl font-semibold p-4">
                 <h1 className="text-xl min-w-full font-semibold">
                     Appointments
                 </h1>
             </div>
             <div className="p-4 pt-7">
-                <div className="flex flex-row justify-between items-center mb-5">
+                <div className="flex w-full flex-row justify-between items-center">
                     <AppointmentsTable
                         appointments={appointments}
                         totalAppointments={totalAppointments}
@@ -64,6 +64,6 @@ export default async function AppointmentsPage({ searchParams }: AppointmentsPag
                     />
                 </div>
             </div>
-        </>
+        </div>
     );
 }

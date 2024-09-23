@@ -151,20 +151,20 @@ export async function fetchAvailableBeds() {
 }
 
 // Fetch appointments
-export async function fetchAppointments(): Promise<Appointment[]> {
+export async function fetchAppointments(page: number = 1, limit: number = 15): Promise<Appointment[]> {
     try {
-        const response = await fetch("/api/appointments");
+        const response = await fetch(`/api/appointments?page=${page}&limit=${limit}`);
         if (!response.ok) {
             throw new Error(`Error: ${response.status}`);
         }
         const data = await response.json();
-        // console.log(data);
         return data;
     } catch (error) {
         console.error("Error fetching appointments:", error);
         throw error;
     }
 }
+
 
 // Function to fetch appointments by hospitalId
 export const fetchAppointmentsByHospital = async (hospitalId: number) => {

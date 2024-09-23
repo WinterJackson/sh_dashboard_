@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
         const page = parseInt(searchParams.get('page') || '1');
-        const limit = parseInt(searchParams.get('limit') || '10');
+        const limit = parseInt(searchParams.get('limit') || '15');
         const skip = (page - 1) * limit;
 
         const appointments = await prisma.appointment.findMany({
