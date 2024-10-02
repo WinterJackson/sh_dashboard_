@@ -11,6 +11,9 @@ import PatientsTodayCard from "../PatientsTodayCard";
 import InwardReferralsCard from "../InwardReferralsCard";
 import OutwardReferralsCard from "../OutwardReferralsCard";
 import PatientsGraphCard from "../PatientsGraphCard";
+import TopDoctorsCard from "../TopDoctorsCard";
+import DashboardAppointments from "@/components/appointments/DashboardAppointments"; // Import the new component
+import LearnMoreCard from "../LearnMoreCard";
 
 const SuperAdminDashboard: React.FC = () => {
     const { data: session } = useSession();
@@ -47,6 +50,19 @@ const SuperAdminDashboard: React.FC = () => {
                 </div>
                 <div className="grid w-full p-4">
                     <PatientsGraphCard />
+                </div>
+            </div>
+            <div className="flex w-full">
+                <div className="w-2/3 p-4">
+                    <DashboardAppointments />
+                </div>
+                <div className="w-1/3 p-2">
+                    <div className="h-1/2">
+                        <TopDoctorsCard />
+                    </div>
+                    <div className="h-1/2">
+                        <LearnMoreCard />
+                    </div>
                 </div>
             </div>
         </>

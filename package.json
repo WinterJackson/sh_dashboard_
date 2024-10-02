@@ -16,6 +16,7 @@
   "dependencies": {
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
+    "@eslint/config-array": "^0.18.0",
     "@fortawesome/fontawesome-free": "^6.5.2",
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
@@ -32,6 +33,7 @@
     "@radix-ui/react-select": "^2.0.0",
     "@radix-ui/react-toast": "^1.2.1",
     "@vercel/postgres": "^0.9.0",
+    "ajv": "^8.17.1",
     "autoprefixer": "^10",
     "bcrypt": "^5.1.1",
     "chance": "^1.1.12",
@@ -50,7 +52,8 @@
     "react-icons": "^5.2.1",
     "react-toastify": "^10.0.5",
     "recharts": "^2.13.0-alpha.1",
-    "shadcn-ui": "^0.8.0",
+    "rimraf": "^6.0.1",
+    "shadcn-ui": "^0.9.1",
     "use-debounce": "^10.0.1",
     "validator": "^13.12.0",
     "zod": "^3.17.3",
@@ -64,7 +67,7 @@
     "@types/react": "^18.2.19",
     "@types/react-dom": "^18.2.9",
     "@types/validator": "^13.11.10",
-    "eslint": "^8.57.0",
+    "eslint": "^9.11.1",
     "eslint-config-next": "14.2.4",
     "next": "^14.2.4",
     "postcss": "^8.4.39",
@@ -73,5 +76,9 @@
     "tailwindcss": "^3.4.1",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.5.3"
+  },
+  "resolutions": {
+    "glob": "9.0.0",
+    "rimraf": "^4.0.0"
   }
 }

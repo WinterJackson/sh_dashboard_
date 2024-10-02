@@ -11,6 +11,8 @@ import PatientsTodayCard from "../PatientsTodayCard";
 import InwardReferralsCard from "../InwardReferralsCard";
 import OutwardReferralsCard from "../OutwardReferralsCard";
 import PatientsGraphCard from "../PatientsGraphCard";
+import DashboardAppointments from "@/components/appointments/DashboardAppointments";
+import TopDoctorsCard from "../TopDoctorsCard";
 
 const DoctorDashboard: React.FC = () => {
     const { data: session } = useSession();
@@ -45,6 +47,14 @@ const DoctorDashboard: React.FC = () => {
                 </div>
                 <div className="grid w-full p-4">
                     <PatientsGraphCard />
+                </div>
+            </div>
+            <div className="flex w-full">
+                <div className="w-2/3 p-4">
+                    <DashboardAppointments />
+                </div>
+                <div className="w-1/3 p-4">
+                    <TopDoctorsCard />
                 </div>
             </div>
         </>

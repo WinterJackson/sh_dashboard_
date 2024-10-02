@@ -35,8 +35,8 @@ const PaginationItem = React.forwardRef<
   <li
     ref={ref}
     className={cn(
-      "cursor-pointer", 
-      isActive ? "bg-blue-500 text-white" : "text-black", // Customize the active state styles here
+      "cursor-pointer",
+      isActive ? "bg-primary text-white" : "text-black", // Customize the active state styles here
       className
     )}
     {...props}

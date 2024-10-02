@@ -26,8 +26,6 @@ export async function PATCH(
 
     try {
         const requestBody = await req.json();
-        // console.log("Received PATCH request for appointmentId:", appointmentId);
-        // console.log("Request Body:", requestBody);
 
         const {
             status,
@@ -42,6 +40,7 @@ export async function PATCH(
 
         const updateData: any = {};
 
+        // Update status and related fields
         if (status) {
             updateData.status = status;
 
@@ -51,9 +50,15 @@ export async function PATCH(
             } else if (status === "Pending") {
                 updateData.pendingReason = reason;
             }
-            // console.log("Status update:", { status, reason });
-        } else {
-            // Update other fields only if status is not being updated
+        }
+
+        // Update the appointment type if provided
+        if (type) {
+            updateData.type = type;
+        }
+
+        // Update other fields for rescheduling
+        if (!status && (date || timeFrom || timeTo || doctorId || hospitalId)) {
             if (
                 !date ||
                 !timeFrom ||
@@ -86,24 +91,13 @@ export async function PATCH(
             updateData.hospitalId = hospitalId;
             updateData.type = type;
             updateData.status = "Rescheduled";
-
-            // console.log("Reschedule data:", {
-            //     appointmentDate,
-            //     appointmentEndAt,
-            //     doctorId,
-            //     hospitalId,
-            //     type,
-            // });
         }
 
-        // console.log("Updating appointment with data:", updateData);
-
+        // Update the appointment in the database
         const updatedAppointment = await prisma.appointment.update({
             where: { appointmentId: appointmentId },
             data: updateData,
         });
-
-        // console.log("Appointment updated successfully:", updatedAppointment);
 
         revalidatePath("/dashboard/appointments");
         return NextResponse.json(updatedAppointment, { status: 200 });

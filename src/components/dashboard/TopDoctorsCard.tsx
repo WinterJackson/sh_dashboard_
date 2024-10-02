@@ -1,318 +1,106 @@
-import React from "react";
+// File: src/components/dashboard/TopDoctorsCard.tsx
+
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import { Rating } from "@mui/material";
+import { useSessionData } from "@/hooks/useSessionData";
+import { fetchAllDoctors } from "@/lib/data";
+import { Doctor } from "@/lib/definitions";
+import { Skeleton } from "@/components/ui/skeleton"; // Assuming the Skeleton component is similar to the one in DashboardAppointments
 
-type Props = {};
+const TopDoctorsCard: React.FC = () => {
+    const [topDoctors, setTopDoctors] = useState<Doctor[]>([]);
+    const [loading, setLoading] = useState(true); // Loading state
+    const sessionData = useSessionData();
+    const { role, hospitalId } = sessionData?.user || {};
 
-function TopDoctorsCard({}: Props) {
+    // Fetch all doctors
+    const fetchTopDoctors = async () => {
+        try {
+            const allDoctors = await fetchAllDoctors();
+            let doctorsData: Doctor[] = [];
+
+            if (role === "SUPER_ADMIN") {
+                // top 5 across all hospitals
+                doctorsData = allDoctors
+                    .sort((a: { averageRating: number; }, b: { averageRating: number; }) => b.averageRating - a.averageRating)
+                    .slice(0, 5);
+            } else if (hospitalId && role && ["ADMIN", "DOCTOR", "NURSE", "STAFF"].includes(role)) {
+                // top 5 from same hospital as user
+                doctorsData = allDoctors
+                    .filter((doctor: { hospitalId: number; }) => doctor.hospitalId === hospitalId)
+                    .sort((a: { averageRating: number; }, b: { averageRating: number; }) => b.averageRating - a.averageRating)
+                    .slice(0, 5);
+            }
+
+            setTopDoctors(doctorsData);
+            setLoading(false); // Stop loading when data is fetched
+        } catch (error) {
+            console.error("Failed to fetch top doctors:", error);
+            setLoading(false); // Stop loading in case of an error
+        }
+    };
+
+    useEffect(() => {
+        if (role) {
+            fetchTopDoctors();
+        }
+    }, [role, hospitalId]);
+
     return (
-        <div className="p-4 flex flex-col gap-4 bg-white rounded-xl w-full border border-bluelight">
-            <h1 className="text-lg capitalize">Top doctors</h1>
-            <div className="flex flex-col gap-3 w-full overflow-y-scroll  overflow-x-hidden ">
-                {/* map */}
-                <div className="flex gap-3 items-center">
-                    <Image
-                        src="/images/img-p6.png"
-                        alt="profile image"
-                        width={50}
-                        height={50}
-                        className="object-cover rounded-full"
-                    />
-                    <div className="flex gap-10 items-center w-full justify-between">
-                        <div className="flex flex-col gap-2">
-                            <h1 className="font-semibold text-base capitalize">
-                                Dr John Doe
-                            </h1>
-                            <p className="text-accent capitalize">
-                                General Physician
-                            </p>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            {/* Rating */}
-                            <div className="flex gap-2">
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
+        <div className="p-6 flex flex-col gap-4 shadow-lg shadow-gray-300 rounded-[20px] bg-slate-100 w-full mb-10">
+            <h1 className="text-base font-semibold capitalize whitespace-nowrap">Top Doctors</h1>
+            <div className="flex flex-col gap-5 w-full overflow-x-auto whitespace-nowrap py-3">
+                {loading ? (
+                    // Render 5 skeletons for the top doctors
+                    Array.from({ length: 5 }).map((_, index) => (
+                        <div key={index} className="flex gap-3">
+                            <Skeleton className="w-[50px] h-[50px] rounded-full bg-gray-200" />
+                            <div className="flex w-full items-center justify-between gap-4">
+                                <div className="flex-shrink-0 flex flex-col gap-2 min-w-[400px]">
+                                    <Skeleton className="w-full h-[15px] bg-gray-200" />
+                                    <Skeleton className="w-2/3 h-[15px] bg-gray-200" />
+                                </div>
+                                <div className="flex-shrink-0 flex flex-col gap-2 items-end min-w-[100px]">
+                                    <Skeleton className="w-[80px] h-[15px] bg-gray-200" />
+                                    <Skeleton className="w-[50px] h-[15px] bg-gray-200" />
+                                </div>
                             </div>
-                            <p>250 ratings</p>
                         </div>
-                    </div>
-                </div>
-                {/* test scroll */}
-                <div className="flex gap-3 items-center">
-                    <Image
-                        src="/images/img-p6.png"
-                        alt="Description of image"
-                        width={50}
-                        height={50}
-                        className="object-cover rounded-full"
-                    />
-                    <div className="flex gap-10 items-center w-full justify-between">
-                        <div className="flex flex-col gap-2">
-                            <h1 className="font-semibold text-base capitalize">
-                                Dr John Doe
-                            </h1>
-                            <p className="text-accent capitalize">
-                                General Physician
-                            </p>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            {/* Rating */}
-                            <div className="flex gap-2">
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
+                    ))
+                ) : (
+                    // Render top doctors when data is loaded
+                    topDoctors.map((doctor) => (
+                        <div key={doctor.doctorId} className="flex gap-3">
+                            <Image
+                                src={doctor.user.profile?.imageUrl || "/default-profile.png"}
+                                alt={`${doctor.user.profile?.firstName} ${doctor.user.profile?.lastName}`}
+                                width={50}
+                                height={50}
+                                className="object-cover rounded-full"
+                            />
+                            <div className="flex w-full items-center justify-between gap-4">
+                                <div className="flex-shrink-0 flex flex-col gap-2 min-w-[400px]">
+                                    <h1 className="font-semibold text-base capitalize whitespace-nowrap">
+                                        Dr. {doctor.user.profile?.firstName} {doctor.user.profile?.lastName}
+                                    </h1>
+                                    <p className="text-accent capitalize whitespace-nowrap">
+                                        {doctor.specialization}
+                                    </p>
+                                </div>
+                                <div className="flex-shrink-0 flex flex-col gap-2 items-end min-w-[100px]">
+                                    <Rating value={doctor.averageRating} precision={0.1} readOnly />
+                                    <p className="whitespace-nowrap">{doctor.averageRating.toFixed(1)} / 5</p>
+                                </div>
                             </div>
-                            <p>250 ratings</p>
                         </div>
-                    </div>
-                </div>
-                <div className="flex gap-3 items-center">
-                    <Image
-                        src="/images/img-p6.png"
-                        alt="Description of image"
-                        width={50}
-                        height={50}
-                        className="object-cover rounded-full"
-                    />
-                    <div className="flex gap-10 items-center w-full justify-between">
-                        <div className="flex flex-col gap-2">
-                            <h1 className="font-semibold text-base capitalize">
-                                Dr John Doe
-                            </h1>
-                            <p className="text-accent capitalize">
-                                General Physician
-                            </p>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            {/* Rating */}
-                            <div className="flex gap-2">
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                            </div>
-                            <p>250 ratings</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex gap-3 items-center">
-                    <Image
-                        src="/images/img-p6.png"
-                        alt="Description of image"
-                        width={50}
-                        height={50}
-                        className="object-cover rounded-full"
-                    />
-                    <div className="flex gap-10 items-center w-full justify-between">
-                        <div className="flex flex-col gap-2">
-                            <h1 className="font-semibold text-base capitalize">
-                                Dr John Doe
-                            </h1>
-                            <p className="text-accent capitalize">
-                                General Physician
-                            </p>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            {/* Rating */}
-                            <div className="flex gap-2">
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                            </div>
-                            <p>250 ratings</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex gap-3 items-center">
-                    <Image
-                        src="/images/img-p6.png"
-                        alt="Description of image"
-                        width={50}
-                        height={50}
-                        className="object-cover rounded-full"
-                    />
-                    <div className="flex gap-10 items-center w-full justify-between">
-                        <div className="flex flex-col gap-2">
-                            <h1 className="font-semibold text-base capitalize">
-                                Dr John Doe
-                            </h1>
-                            <p className="text-accent capitalize">
-                                General Physician
-                            </p>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            {/* Rating */}
-                            <div className="flex gap-2">
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                                <Image
-                                    src="/images/Star.svg"
-                                    alt=""
-                                    width={50}
-                                    height={50}
-                                    className="scale-150"
-                                />
-                            </div>
-                            <p>250 ratings</p>
-                        </div>
-                    </div>
-                </div>
+                    ))
+                )}
             </div>
         </div>
     );
-}
+};
 
 export default TopDoctorsCard;

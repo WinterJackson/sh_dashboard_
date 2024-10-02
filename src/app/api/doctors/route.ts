@@ -1,21 +1,32 @@
 // File: src/app/api/doctors/route.ts
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 // import prisma from "@/lib/prisma";
 
-const prisma = require("@/lib/prisma")
+const prisma = require("@/lib/prisma");
 
 export async function GET(req: NextRequest) {
     try {
         const doctors = await prisma.doctor.findMany({
             include: {
-                user: true,
+                user: {
+                    include: {
+                        profile: {
+                            select: {
+                                firstName: true,
+                                lastName: true,
+                                imageUrl: true,
+                            },
+                        },
+                    },
+                },
                 hospital: true,
             },
         });
 
-        return NextResponse.json(doctors);
+        return NextResponse.json(doctors, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+        console.error("Error fetching doctors:", error);
+        return NextResponse.json({ message: "Internal server error" }, { status: 500 });
     }
 }
 
@@ -29,7 +40,7 @@ export async function POST(req: NextRequest) {
             specialization,
             status,
             phoneNo,
-            workingHours
+            workingHours,
         } = await req.json();
 
         const newDoctor = await prisma.doctor.create({
@@ -41,13 +52,16 @@ export async function POST(req: NextRequest) {
                 specialization,
                 status,
                 phoneNo,
-                workingHours
+                workingHours,
             },
         });
 
         return NextResponse.json(newDoctor, { status: 201 });
     } catch (error) {
-        console.error('Error adding doctor:', error);
-        return NextResponse.json({ error: 'Error adding doctor' }, { status: 500 });
+        console.error("Error adding doctor:", error);
+        return NextResponse.json(
+            { error: "Error adding doctor" },
+            { status: 500 }
+        );
     }
 }

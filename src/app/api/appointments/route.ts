@@ -12,6 +12,8 @@ export async function GET(req: NextRequest) {
         const limit = parseInt(searchParams.get('limit') || '15');
         const skip = (page - 1) * limit;
 
+        const totalAppointments = await prisma.appointment.count();
+
         const appointments = await prisma.appointment.findMany({
             skip,
             take: limit,
@@ -34,7 +36,7 @@ export async function GET(req: NextRequest) {
 
         // console.log(appointments)
 
-        return NextResponse.json(appointments);
+        return NextResponse.json({ appointments, totalAppointments });
     } catch (error) {
         return NextResponse.json({ error: 'Error fetching appointments' }, { status: 500 });
     }

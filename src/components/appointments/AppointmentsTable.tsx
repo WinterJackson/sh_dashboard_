@@ -1,8 +1,8 @@
-// src/components/appointments/AppointmentsTable.tsx
+// File: src/components/appointments/AppointmentsTable.tsx
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Appointment } from "@/lib/definitions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/appointments/DatePicker";
@@ -10,10 +10,13 @@ import { DateRangePicker } from "@/components/appointments/DateRangePicker";
 import { DateRange } from "react-day-picker";
 import { SymbolIcon } from "@radix-ui/react-icons";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useSearch } from "@/app/context/SearchContext";
-import { fetchAppointments, fetchAppointmentsByHospital, updateAppointmentStatus } from "@/lib/data";
-import { useSessionData } from "@/hooks/useSessionData"; 
+import {
+    fetchAppointments,
+    fetchAppointmentsByHospital,
+    updateAppointmentStatus,
+} from "@/lib/data";
 import dynamic from "next/dynamic";
 import {
     DropdownMenu,
@@ -24,8 +27,14 @@ import {
 import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
 import PlaceIcon from "@mui/icons-material/Place";
 import { differenceInYears } from "date-fns";
-import { Pagination, PaginationItem, PaginationContent, PaginationPrevious, PaginationNext, PaginationEllipsis } from "@/components/ui/pagination";
-
+import {
+    Pagination,
+    PaginationItem,
+    PaginationContent,
+    PaginationPrevious,
+    PaginationNext,
+    PaginationEllipsis,
+} from "@/components/ui/pagination";
 
 // Dynamic imports for dialogs
 const RescheduleDialog = dynamic(
@@ -37,7 +46,6 @@ const CancelDialog = dynamic(
 const ActionDialog = dynamic(
     () => import("@/components/appointments/PendingDialog")
 );
-
 
 const filterOptions = [
     { value: "", label: "Filter By" },
@@ -58,13 +66,11 @@ interface AppointmentsTableProps {
 const ITEMS_PER_PAGE = 15;
 
 const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
+    appointments = [],
     totalAppointments,
     currentPage,
 }) => {
-    const sessionData = useSessionData();
-    const { role, hospitalId } = sessionData?.user || {}; 
-    const [appointments, setAppointments] = useState<Appointment[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [filterType, setFilterType] = useState<string>(
         filterOptions[0].value
     );
@@ -79,8 +85,8 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         string | undefined
     >(undefined);
     const { searchTerm, clearSearchTerm } = useSearch();
-    // const { fetchAppointments, updateAppointment } = useAppointmentsStore();
     const [actionText, setActionText] = useState<{ [key: string]: string }>({});
+    const [typeText, setTypeText] = useState<{ [key: string]: string }>({});
     const [openDialog, setOpenDialog] = useState(false);
     const [dialogType, setDialogType] = useState<string | undefined>(undefined);
     const [dialogAppointmentId, setDialogAppointmentId] = useState<
@@ -88,7 +94,6 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
     >(undefined);
     const [page, setPage] = useState(currentPage || 1);
     const router = useRouter();
-    const searchParams = useSearchParams();
 
     const handleFilterTypeChange = (
         e: React.ChangeEvent<HTMLSelectElement>
@@ -113,55 +118,6 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         clearSearchTerm();
     };
 
-    useEffect(() => {
-        const getAppointments = async () => {
-            setIsLoading(true);
-            try {
-                let data = [];
-
-                if (role === "SUPER_ADMIN") {
-                    // Fetch all appointments for SUPER_ADMIN
-                    data = await fetchAppointments();
-                } else if (role !== "SUPER_ADMIN" && hospitalId) {
-                    // Fetch appointments for the specific hospital for non-SUPER_ADMIN users
-                    data = await fetchAppointmentsByHospital(hospitalId);
-                }
-
-                setAppointments(data);
-            } catch (error) {
-                console.error("Failed to fetch appointments:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        getAppointments();
-    }, [role, hospitalId]);
-
-    // Fetch appointments whenever page changes
-    useEffect(() => {
-        const fetchAppointmentsData = async () => {
-            setIsLoading(true);
-            try {
-                const pageParam = searchParams.get('page') || '1';
-                const data = await fetchAppointments(parseInt(pageParam, 10), ITEMS_PER_PAGE);
-                setAppointments(data);
-            } catch (error) {
-                console.error("Error fetching appointments:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-    
-        fetchAppointmentsData();
-    }, [searchParams]);
-
-    useEffect(() => {
-        setDateFilter(undefined);
-        setDateRangeFilter(undefined);
-        setAppointmentTypeFilter(undefined);
-    }, [filterType]);
-
     const handleActionChange = (appointmentId: string, action: string) => {
         setActionText((prevState) => ({
             ...prevState,
@@ -182,14 +138,18 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
     };
 
     const handleCancelSave = async (appointmentId: string, reason: string) => {
-        await updateAppointmentStatus(appointmentId, { status: "Cancelled", reason });
-        console.log("Updated appointment data after cancellation:", reason);
+        await updateAppointmentStatus(appointmentId, {
+            status: "Cancelled",
+            reason,
+        });
         handleActionChange(appointmentId, "Cancelled");
     };
 
     const handlePendingSave = async (appointmentId: string, reason: string) => {
-        await updateAppointmentStatus(appointmentId, { status: "Pending", reason });
-        console.log("Updated appointment data after setting to pending:", updateAppointmentStatus);
+        await updateAppointmentStatus(appointmentId, {
+            status: "Pending",
+            reason,
+        });
         handleActionChange(appointmentId, "Pending");
     };
 
@@ -212,15 +172,11 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                 );
             }
 
-            const data = await response.json();
-
             handleActionChange(appointmentId, status);
         } catch (error) {
             console.error("Failed to update appointment status:", error);
         }
     };
-
-    // console.log("Appointments data:", appointments);
 
     const filteredAppointments = appointments.filter((appointment) => {
         const searchTextLower = searchTerm.toLowerCase();
@@ -289,10 +245,8 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         if (statusFilter) {
             filterMatch =
                 filterMatch &&
-                (statusFilter === "Confirmed" ||
-                    statusFilter === "Completed") ===
-                    (appointment.status === "Confirmed" ||
-                        appointment.status === "Completed");
+                (statusFilter === "Confirmed" || statusFilter === "Completed" || statusFilter === "Rescheduled") ===
+                    (appointment.status === "Confirmed" || appointment.status === "Completed" || appointment.status === "Rescheduled");
         }
 
         if (dateFilter) {
@@ -317,8 +271,6 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         return filterMatch;
     });
 
-    // console.log(filteredAppointments)
-
     const totalPages = Math.ceil(totalAppointments / ITEMS_PER_PAGE);
 
     const handlePageChange = (newPage: number) => {
@@ -327,7 +279,38 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
             router.replace(`?page=${newPage}`);
         }
     };
-    
+
+    const handleUpdateAppointmentType = async (
+        appointmentId: string,
+        type: string
+    ) => {
+        // Optimistically update the UI immediately to reflect the selection
+        setTypeText((prev) => ({
+            ...prev,
+            [appointmentId]: type, // Set the new selected type for the specific appointment
+        }));
+
+        try {
+            // Send the PATCH request to update the type in the backend
+            const response = await fetch(`/api/appointments/${appointmentId}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ type }),
+            });
+
+            if (!response.ok) {
+                throw new Error(
+                    `Error updating appointment type: ${response.statusText}`
+                );
+            }
+
+            // The backend update is successful, no need to change state again
+        } catch (error) {
+            console.error("Failed to update appointment type:", error);
+        }
+    };
 
     return (
         <div className="flex flex-col min-w-full">
@@ -414,263 +397,345 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
             </div>
 
             <div className="overflow-x-auto w-full">
-            <table className="min-w-full w-full border-collapse divide-y divide-gray-200 mt-2 table-auto">
-                <thead className="bg-bluelight">
-                    <tr>
-                        <th
-                            scope="col"
-                            className="px-4 py-5 text-nowrap text-left text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
-                        >
-                            Patient Name
-                        </th>
-                        <th
-                            scope="col"
-                            className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
-                        >
-                            Age
-                        </th>
-                        <th
-                            scope="col"
-                            className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
-                        >
-                            Id
-                        </th>
-                        <th
-                            scope="col"
-                            className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
-                        >
-                            Time
-                        </th>
-                        <th
-                            scope="col"
-                            className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
-                        >
-                            Date
-                        </th>
-                        <th
-                            scope="col"
-                            className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
-                        >
-                            Doctor&apos;s Name
-                        </th>
-                        <th
-                            scope="col"
-                            className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
-                        >
-                            Type
-                        </th>
-                        <th
-                            scope="col"
-                            className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
-                        >
-                            Action
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                    {isLoading
-                        ? Array.from({ length: 15 }).map((_, index) => (
-                              <tr key={index}>
-                                  <td colSpan={8}>
-                                      <Skeleton
-                                          className={`h-[45px] w-full p-4 rounded-sm py-4`}
-                                      />
-                                  </td>
-                              </tr>
-                          ))
-                        : filteredAppointments.map((appointment) => {
-                              const appointmentDate = new Date(
-                                  appointment.appointmentDate
-                              );
-                              const formattedDate =
-                                  appointmentDate.toLocaleDateString();
-                              const formattedTime =
-                                  appointmentDate.toLocaleTimeString();
-                              const isCancelled =
-                                  actionText[appointment.appointmentId] ===
-                                      "Cancelled" ||
-                                  appointment.status === "Cancelled";
+                <table className="min-w-full w-full border-collapse divide-y divide-gray-200 mt-2 table-auto">
+                    <thead className="bg-bluelight">
+                        <tr>
+                            <th
+                                scope="col"
+                                className="px-4 py-5 text-nowrap text-left text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
+                            >
+                                Patient Name
+                            </th>
+                            <th
+                                scope="col"
+                                className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
+                            >
+                                Age
+                            </th>
+                            <th
+                                scope="col"
+                                className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
+                            >
+                                Id
+                            </th>
+                            <th
+                                scope="col"
+                                className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
+                            >
+                                Time
+                            </th>
+                            <th
+                                scope="col"
+                                className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
+                            >
+                                Date
+                            </th>
+                            <th
+                                scope="col"
+                                className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
+                            >
+                                Doctor&apos;s Name
+                            </th>
+                            <th
+                                scope="col"
+                                className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
+                            >
+                                Type
+                            </th>
+                            <th
+                                scope="col"
+                                className="px-2 py-5 text-nowrap text-center text-sm font-bold text-black uppercase tracking-wider white-space: nowrap"
+                            >
+                                Action
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {isLoading
+                            ? Array.from({ length: 15 }).map((_, index) => (
+                                  <tr key={index}>
+                                      <td colSpan={8}>
+                                          <Skeleton
+                                              className={`h-[45px] w-full p-4 rounded-sm py-4`}
+                                          />
+                                      </td>
+                                  </tr>
+                              ))
+                            : filteredAppointments.map((appointment) => {
+                                  const appointmentDate = new Date(
+                                      appointment.appointmentDate
+                                  );
+                                  const formattedDate =
+                                      appointmentDate.toLocaleDateString();
+                                  const formattedTime =
+                                      appointmentDate.toLocaleTimeString();
 
-                              return (
-                                  <tr
-                                      key={appointment.appointmentId}
-                                      className={`text-center ${
-                                          isCancelled ? "bg-red-100" : ""
-                                      }`}
-                                  >
-                                      <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-left">
-                                          {appointment.patient.name}
-                                      </td>
-                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                          {appointment.patient.dateOfBirth
-                                              ? differenceInYears(
-                                                    new Date(),
-                                                    new Date(
-                                                        appointment.patient.dateOfBirth
+                                  const currentStatus =
+                                      actionText[appointment.appointmentId] ||
+                                      appointment.status;
+                                  const isCancelled =
+                                      currentStatus === "Cancelled";
+
+                                  const rowClass = isCancelled
+                                      ? "bg-red-100"
+                                      : "bg-white";
+
+                                  return (
+                                      <tr
+                                          key={appointment.appointmentId}
+                                          className={`text-center ${rowClass}`}
+                                      >
+                                          <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-left">
+                                              {appointment.patient.name}
+                                          </td>
+                                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                              {appointment.patient.dateOfBirth
+                                                  ? differenceInYears(
+                                                        new Date(),
+                                                        new Date(
+                                                            appointment.patient.dateOfBirth
+                                                        )
                                                     )
-                                                )
-                                              : "N/A"}
-                                      </td>
-                                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                                          {appointment.patient.patientId}
-                                      </td>
-                                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                                          {formattedTime}
-                                      </td>
-                                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                                          {formattedDate}
-                                      </td>
-                                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                                          {(() => {
-                                              console.log(
-                                                  "Doctor info:",
-                                                  appointment.doctor?.user
-                                                      ?.profile
-                                              );
-                                              const firstName =
-                                                  appointment.doctor?.user
-                                                      ?.profile?.firstName;
-                                              const lastName =
-                                                  appointment.doctor?.user
-                                                      ?.profile?.lastName;
-                                              return firstName && lastName
-                                                  ? `Dr. ${firstName} ${lastName}`
-                                                  : "N/A";
-                                          })()}
-                                      </td>
-                                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                                          {appointment.type === "Virtual" ? (
-                                              <>
-                                                  <VideoCameraFrontIcon className="text-primary" />
-                                                  <span className="text-primary ml-2">
-                                                      {appointment.type}
-                                                  </span>
-                                              </>
-                                          ) : (
-                                              <>
-                                                  <PlaceIcon className="text-black/70" />
-                                                  {appointment.type}
-                                              </>
-                                          )}
-                                      </td>
-                                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                                          <div className="flex justify-center">
+                                                  : "N/A"}
+                                          </td>
+                                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                              {appointment.patient.patientId}
+                                          </td>
+                                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                              {formattedTime}
+                                          </td>
+                                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                              {formattedDate}
+                                          </td>
+                                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                              {(() => {
+                                                  console.log(
+                                                      "Doctor info:",
+                                                      appointment.doctor?.user
+                                                          ?.profile
+                                                  );
+                                                  const firstName =
+                                                      appointment.doctor?.user
+                                                          ?.profile?.firstName;
+                                                  const lastName =
+                                                      appointment.doctor?.user
+                                                          ?.profile?.lastName;
+                                                  return firstName && lastName
+                                                      ? `Dr. ${firstName} ${lastName}`
+                                                      : "N/A";
+                                              })()}
+                                          </td>
+                                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                                               <DropdownMenu>
-                                                  <DropdownMenuTrigger className="flex w-auto justify-center p-1 border-gray-300 rounded max-w-[120px] bg-gray-100 text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary">
-                                                      <span className="flex gap-1">
-                                                          <span className="pl-2">
-                                                              {actionText[
-                                                                  appointment
-                                                                      .appointmentId
-                                                              ] ||
-                                                                  appointment.status ||
-                                                                  "Action"}
-                                                          </span>
+                                                  <DropdownMenuTrigger className="flex w-auto justify-center p-1 border-gray-300 rounded max-w-[120px] bg-gray-100 text-gray-700">
+                                                      <span className="flex gap-1 items-center">
+                                                          {(() => {
+                                                              let icon;
+                                                              let label;
+
+                                                              if (
+                                                                  typeText[
+                                                                      appointment
+                                                                          .appointmentId
+                                                                  ] ===
+                                                                      "Virtual" ||
+                                                                  appointment.type ===
+                                                                      "Virtual"
+                                                              ) {
+                                                                  icon = (
+                                                                      <VideoCameraFrontIcon className="text-primary" />
+                                                                  );
+                                                                  label =
+                                                                      "Virtual";
+                                                              } else if (
+                                                                  typeText[
+                                                                      appointment
+                                                                          .appointmentId
+                                                                  ] ===
+                                                                      "Walk In" ||
+                                                                  appointment.type ===
+                                                                      "Walk In"
+                                                              ) {
+                                                                  icon = (
+                                                                      <PlaceIcon className="text-black/70" />
+                                                                  );
+                                                                  label =
+                                                                      "Walk In";
+                                                              }
+
+                                                              return (
+                                                                  <>
+                                                                      {icon}
+                                                                      <span className="pl-2">
+                                                                          {
+                                                                              label
+                                                                          }
+                                                                      </span>
+                                                                  </>
+                                                              );
+                                                          })()}
                                                           <ArrowDropDownIcon />
                                                       </span>
                                                   </DropdownMenuTrigger>
                                                   <DropdownMenuContent>
                                                       <DropdownMenuItem
-                                                          onSelect={() => {
-                                                              handleDialogOpen(
-                                                                  "Reschedule",
-                                                                  appointment.appointmentId
-                                                              );
-                                                          }}
-                                                      >
-                                                          Reschedule
-                                                      </DropdownMenuItem>
-                                                      <DropdownMenuItem
-                                                          onSelect={() => {
-                                                              handleDialogOpen(
-                                                                  "Cancel",
-                                                                  appointment.appointmentId
-                                                              );
-                                                          }}
-                                                      >
-                                                          Cancel
-                                                      </DropdownMenuItem>
-                                                      <DropdownMenuItem
-                                                          onSelect={() => {
-                                                              handleDialogOpen(
-                                                                  "Pending",
-                                                                  appointment.appointmentId
-                                                              );
-                                                          }}
-                                                      >
-                                                          Pending
-                                                      </DropdownMenuItem>
-                                                      <DropdownMenuItem
-                                                          onSelect={() => {
-                                                              handleUpdateStatus(
+                                                          onSelect={() =>
+                                                              handleUpdateAppointmentType(
                                                                   appointment.appointmentId,
-                                                                  "Confirmed"
-                                                              );
-                                                          }}
+                                                                  "Virtual"
+                                                              )
+                                                          }
                                                       >
-                                                          Confirm
+                                                          <VideoCameraFrontIcon className="text-primary mr-2" />
+                                                          Virtual
                                                       </DropdownMenuItem>
                                                       <DropdownMenuItem
-                                                          onSelect={() => {
-                                                              handleUpdateStatus(
+                                                          onSelect={() =>
+                                                              handleUpdateAppointmentType(
                                                                   appointment.appointmentId,
-                                                                  "Completed"
-                                                              );
-                                                          }}
+                                                                  "Walk In"
+                                                              )
+                                                          }
                                                       >
-                                                          Completed
+                                                          <PlaceIcon className="text-black/70 mr-2" />
+                                                          Walk In
                                                       </DropdownMenuItem>
                                                   </DropdownMenuContent>
                                               </DropdownMenu>
-                                          </div>
-                                      </td>
-                                  </tr>
-                              );
-                          })}
-                </tbody>
-            </table>
+                                          </td>
+                                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                              <div className="flex justify-center">
+                                                  <DropdownMenu>
+                                                      <DropdownMenuTrigger className="flex w-auto justify-center p-1 border-gray-300 rounded max-w-[120px] bg-gray-100 text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary">
+                                                          <span className="flex gap-1">
+                                                              <span className="pl-2">
+                                                                  {actionText[
+                                                                      appointment
+                                                                          .appointmentId
+                                                                  ] ||
+                                                                      appointment.status ||
+                                                                      "Action"}
+                                                              </span>
+                                                              <ArrowDropDownIcon />
+                                                          </span>
+                                                      </DropdownMenuTrigger>
+                                                      <DropdownMenuContent>
+                                                          <DropdownMenuItem
+                                                              onSelect={() => {
+                                                                  handleDialogOpen(
+                                                                      "Reschedule",
+                                                                      appointment.appointmentId
+                                                                  );
+                                                              }}
+                                                          >
+                                                              Reschedule
+                                                          </DropdownMenuItem>
+                                                          <DropdownMenuItem
+                                                              onSelect={() => {
+                                                                  handleDialogOpen(
+                                                                      "Cancel",
+                                                                      appointment.appointmentId
+                                                                  );
+                                                              }}
+                                                          >
+                                                              Cancel
+                                                          </DropdownMenuItem>
+                                                          <DropdownMenuItem
+                                                              onSelect={() => {
+                                                                  handleDialogOpen(
+                                                                      "Pending",
+                                                                      appointment.appointmentId
+                                                                  );
+                                                              }}
+                                                          >
+                                                              Pending
+                                                          </DropdownMenuItem>
+                                                          <DropdownMenuItem
+                                                              onSelect={() => {
+                                                                  handleUpdateStatus(
+                                                                      appointment.appointmentId,
+                                                                      "Confirmed"
+                                                                  );
+                                                              }}
+                                                          >
+                                                              Confirm
+                                                          </DropdownMenuItem>
+                                                          <DropdownMenuItem
+                                                              onSelect={() => {
+                                                                  handleUpdateStatus(
+                                                                      appointment.appointmentId,
+                                                                      "Completed"
+                                                                  );
+                                                              }}
+                                                          >
+                                                              Completed
+                                                          </DropdownMenuItem>
+                                                      </DropdownMenuContent>
+                                                  </DropdownMenu>
+                                              </div>
+                                          </td>
+                                      </tr>
+                                  );
+                              })}
+                    </tbody>
+                </table>
             </div>
 
-
-            <Pagination className="mt-4">
+            <Pagination className="mt-4 bg-bluelight p-3 rounded-b-[10px]">
                 <PaginationContent>
                     {page > 1 && (
                         <PaginationPrevious
+                            className="px-4 py-2 rounded-[10px] select-none"
                             onClick={() => handlePageChange(page - 1)}
                         />
                     )}
 
                     {/* Render "1" only if the current page is not 1 */}
                     {page !== 1 && (
-                        <PaginationItem onClick={() => handlePageChange(1)}>
+                        <PaginationItem
+                            className="px-4 py-2 rounded-[10px] select-none"
+                            onClick={() => handlePageChange(1)}
+                        >
                             1
                         </PaginationItem>
                     )}
 
-                    {page > 3 && <PaginationEllipsis />}
+                    {page > 3 && (
+                        <PaginationEllipsis className="px-4 py-2 rounded-[10px] select-none" />
+                    )}
 
                     {page > 2 && (
                         <PaginationItem
+                            className="px-4 py-2 rounded-[10px] select-none"
                             onClick={() => handlePageChange(page - 1)}
                         >
                             {page - 1}
                         </PaginationItem>
                     )}
 
-                    <PaginationItem isActive={true}>{page}</PaginationItem>
+                    <PaginationItem
+                        isActive={true}
+                        className="px-4 py-2 rounded-[10px] select-none"
+                    >
+                        {page}
+                    </PaginationItem>
 
                     {page < totalPages - 1 && (
                         <PaginationItem
+                            className="px-4 py-2 rounded-[10px] select-none"
                             onClick={() => handlePageChange(page + 1)}
                         >
                             {page + 1}
                         </PaginationItem>
                     )}
 
-                    {page < totalPages - 2 && <PaginationEllipsis />}
+                    {page < totalPages - 2 && (
+                        <PaginationEllipsis className="px-4 py-2 rounded-[10px] select-none" />
+                    )}
 
                     {page !== totalPages && (
                         <PaginationItem
+                            className="px-4 py-2 rounded-[10px] select-none"
                             onClick={() => handlePageChange(totalPages)}
                         >
                             {totalPages}
@@ -679,6 +744,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
 
                     {page < totalPages && (
                         <PaginationNext
+                            className="px-4 py-2 rounded-[10px] select-none"
                             onClick={() => handlePageChange(page + 1)}
                         />
                     )}

@@ -1,6 +1,6 @@
 // src/lib/data.ts
 
-import { Appointment } from "./definitions";
+import { Appointment, Role, Doctor } from "./definitions";
 
 // Fetch available doctors
 export async function fetchOnlineDoctors() {
@@ -99,6 +99,30 @@ export async function fetchAllDoctors() {
     }
 }
 
+// Fetch top 5 doctors based on role and hospitalId
+export const fetchTopDoctors = async (role: Role, hospitalId?: number): Promise<Doctor[]> => {
+    try {
+      let endpoint = "/api/doctors/top"; // Default endpoint for super admin
+  
+      // Adjust endpoint based on user role
+      if (role !== Role.SUPER_ADMIN && hospitalId) {
+        endpoint = `/api/doctors/top?hospitalId=${hospitalId}`;
+      }
+  
+      const response = await fetch(endpoint);
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(`Failed to fetch top doctors: ${response.statusText}`);
+      }
+  
+      return data; // Assume this returns an array of top 5 doctors
+    } catch (error) {
+      console.error("Error fetching top doctors:", error);
+      return [];
+    }
+  };
+
 // Fetch all hospitals
 export async function fetchAllHospitals() {
     try {
@@ -158,13 +182,12 @@ export async function fetchAppointments(page: number = 1, limit: number = 15): P
             throw new Error(`Error: ${response.status}`);
         }
         const data = await response.json();
-        return data;
+        return data.appointments;
     } catch (error) {
         console.error("Error fetching appointments:", error);
         throw error;
     }
 }
-
 
 // Function to fetch appointments by hospitalId
 export const fetchAppointmentsByHospital = async (hospitalId: number) => {
