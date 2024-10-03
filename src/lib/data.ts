@@ -74,7 +74,7 @@ export const fetchDoctorIdByUserId = async (userId: string) => {
     try {
         const response = await fetch(`/api/doctors/byUserId/${userId}`);
         if (!response.ok) {
-            throw new Error('Failed to fetch doctor ID');
+            throw new Error("Failed to fetch doctor ID");
         }
         const doctor = await response.json();
 
@@ -82,7 +82,7 @@ export const fetchDoctorIdByUserId = async (userId: string) => {
 
         return doctor.doctorId;
     } catch (error) {
-        console.error('Error fetching doctorId:', error);
+        console.error("Error fetching doctorId:", error);
         return null;
     }
 };
@@ -98,30 +98,6 @@ export async function fetchAllDoctors() {
         return [];
     }
 }
-
-// Fetch top 5 doctors based on role and hospitalId
-export const fetchTopDoctors = async (role: Role, hospitalId?: number): Promise<Doctor[]> => {
-    try {
-      let endpoint = "/api/doctors/top"; // Default endpoint for super admin
-  
-      // Adjust endpoint based on user role
-      if (role !== Role.SUPER_ADMIN && hospitalId) {
-        endpoint = `/api/doctors/top?hospitalId=${hospitalId}`;
-      }
-  
-      const response = await fetch(endpoint);
-      const data = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(`Failed to fetch top doctors: ${response.statusText}`);
-      }
-  
-      return data; // Assume this returns an array of top 5 doctors
-    } catch (error) {
-      console.error("Error fetching top doctors:", error);
-      return [];
-    }
-  };
 
 // Fetch all hospitals
 export async function fetchAllHospitals() {
@@ -175,9 +151,14 @@ export async function fetchAvailableBeds() {
 }
 
 // Fetch appointments
-export async function fetchAppointments(page: number = 1, limit: number = 15): Promise<Appointment[]> {
+export async function fetchAppointments(
+    page: number = 1,
+    limit: number = 15
+): Promise<Appointment[]> {
     try {
-        const response = await fetch(`/api/appointments?page=${page}&limit=${limit}`);
+        const response = await fetch(
+            `/api/appointments?page=${page}&limit=${limit}`
+        );
         if (!response.ok) {
             throw new Error(`Error: ${response.status}`);
         }
@@ -280,7 +261,7 @@ export async function fetchPatientsToday() {
     try {
         const response = await fetch("/api/patients/today");
         const data = await response.json();
-        
+
         // console.log(data);
         return data;
     } catch (error) {
@@ -294,7 +275,7 @@ export async function fetchAllPatients() {
     try {
         const response = await fetch("/api/patients");
         const data = await response.json();
-        
+
         console.log(data);
 
         return data;

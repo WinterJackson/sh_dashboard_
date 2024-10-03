@@ -8,11 +8,11 @@ import { Rating } from "@mui/material";
 import { useSessionData } from "@/hooks/useSessionData";
 import { fetchAllDoctors } from "@/lib/data";
 import { Doctor } from "@/lib/definitions";
-import { Skeleton } from "@/components/ui/skeleton"; // Assuming the Skeleton component is similar to the one in DashboardAppointments
+import { Skeleton } from "@/components/ui/skeleton";
 
 const TopDoctorsCard: React.FC = () => {
     const [topDoctors, setTopDoctors] = useState<Doctor[]>([]);
-    const [loading, setLoading] = useState(true); // Loading state
+    const [loading, setLoading] = useState(true);
     const sessionData = useSessionData();
     const { role, hospitalId } = sessionData?.user || {};
 
@@ -36,10 +36,10 @@ const TopDoctorsCard: React.FC = () => {
             }
 
             setTopDoctors(doctorsData);
-            setLoading(false); // Stop loading when data is fetched
+            setLoading(false);
         } catch (error) {
             console.error("Failed to fetch top doctors:", error);
-            setLoading(false); // Stop loading in case of an error
+            setLoading(false);
         }
     };
 
@@ -54,7 +54,6 @@ const TopDoctorsCard: React.FC = () => {
             <h1 className="text-base font-semibold capitalize whitespace-nowrap">Top Doctors</h1>
             <div className="flex flex-col gap-5 w-full overflow-x-auto whitespace-nowrap py-3">
                 {loading ? (
-                    // Render 5 skeletons for the top doctors
                     Array.from({ length: 5 }).map((_, index) => (
                         <div key={index} className="flex gap-3">
                             <Skeleton className="w-[50px] h-[50px] rounded-full bg-gray-200" />
@@ -71,7 +70,6 @@ const TopDoctorsCard: React.FC = () => {
                         </div>
                     ))
                 ) : (
-                    // Render top doctors when data is loaded
                     topDoctors.map((doctor) => (
                         <div key={doctor.doctorId} className="flex gap-3">
                             <Image

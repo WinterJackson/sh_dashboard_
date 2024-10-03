@@ -40,5 +40,3 @@ export async function GET(
         );
     }
 }
-
-// Implement POST, PUT, and DELETE similarly

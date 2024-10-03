@@ -13,6 +13,7 @@ import OutwardReferralsCard from "../OutwardReferralsCard";
 import PatientsGraphCard from "../PatientsGraphCard";
 import DashboardAppointments from "@/components/appointments/DashboardAppointments";
 import TopDoctorsCard from "../TopDoctorsCard";
+import LearnMoreCard from "../LearnMoreCard";
 
 const StaffDashboard: React.FC = () => {
     const { data: session } = useSession();
@@ -53,8 +54,13 @@ const StaffDashboard: React.FC = () => {
                 <div className="w-2/3 p-4">
                     <DashboardAppointments />
                 </div>
-                <div className="w-1/3 p-4">
-                    <TopDoctorsCard />
+                <div className="w-1/3 p-2">
+                    <div className="h-1/2">
+                        <TopDoctorsCard />
+                    </div>
+                    <div className="h-1/2">
+                        <LearnMoreCard />
+                    </div>
                 </div>
             </div>
         </>
