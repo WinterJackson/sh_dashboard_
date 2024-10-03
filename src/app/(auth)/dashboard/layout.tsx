@@ -13,7 +13,7 @@ export default function DashboardLayout({
 }) {
 
     return (
-        <div className="flex relative w-full flex-col min-h-screen bg-gray-100 overflow-auto scrollbar-custom">
+        <div className="flex relative w-full flex-col min-h-screen bg-gray-100 overflow-hidden">
             {/* Fixed Header */}
             <Header />
 
@@ -24,7 +24,7 @@ export default function DashboardLayout({
                 </aside>
 
                 {/* Scrollable Main Content */}
-                <main className="ml-64 w-full h-full lg:h-[calc(100vh-100px)] overflow-auto p-4 pt-11 bg-gray-100 scrollbar-custom">
+                <main className="ml-64 w-full h-[calc(100vh-100px)] overflow-y-auto p-4 pt-11 bg-gray-100 scrollbar-custom">
                     {children}
                 </main>
             </div>

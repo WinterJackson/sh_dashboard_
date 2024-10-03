@@ -54,7 +54,7 @@ const DoctorDashboard: React.FC = () => {
                 <div className="w-2/3 p-4">
                     <DashboardAppointments />
                 </div>
-                <div className="w-1/3 p-2">
+                <div className="w-1/3 p-2 h-full">
                     <div className="h-1/2">
                         <TopDoctorsCard />
                     </div>
