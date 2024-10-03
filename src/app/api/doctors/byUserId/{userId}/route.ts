@@ -10,7 +10,7 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
         // Find the doctor by userId
         const doctor = await prisma.doctor.findUnique({
             where: {
-                userId: userId,  // Match userId directly
+                userId: userId,  // Match userId
             },
             include: {
                 user: true,
