@@ -28,36 +28,34 @@ const DashboardAppointments: React.FC = () => {
   const { role, hospitalId } = sessionData?.user || {};
 
   // Fetch appointments data based on user role
-  const fetchAppointmentsData = async (page: number) => {
-    setLoading(true);
-    try {
-      let appointmentsData = [];
-      let totalAppointmentsCount = 0;
-
-      if (role === "SUPER_ADMIN") {
-        // Fetch all appointments
-        const response = await fetch(`/api/appointments?page=${page}&limit=${ITEMS_PER_PAGE}`);
-        const data = await response.json();
-        appointmentsData = data.appointments;
-        totalAppointmentsCount = data.totalAppointments;
-      } else if (hospitalId) {
-        // Fetch appointments by hospital
-        const response = await fetch(`/api/appointments/byHospital/${hospitalId}?page=${page}&limit=${ITEMS_PER_PAGE}`);
-        const data = await response.json();
-        appointmentsData = data.appointments;
-        totalAppointmentsCount = data.totalAppointments;
-      }
-
-      setAppointments(appointmentsData || []);
-      setTotalAppointments(totalAppointmentsCount || 0);
-    } catch (error) {
-      console.error("Failed to fetch appointments:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchAppointmentsData = async (page: number) => {
+      setLoading(true);
+      try {
+        let appointmentsData = [];
+        let totalAppointmentsCount = 0;
+  
+        if (role === "SUPER_ADMIN") {
+          const response = await fetch(`/api/appointments?page=${page}&limit=${ITEMS_PER_PAGE}`);
+          const data = await response.json();
+          appointmentsData = data.appointments;
+          totalAppointmentsCount = data.totalAppointments;
+        } else if (hospitalId) {
+          const response = await fetch(`/api/appointments/byHospital/${hospitalId}?page=${page}&limit=${ITEMS_PER_PAGE}`);
+          const data = await response.json();
+          appointmentsData = data.appointments;
+          totalAppointmentsCount = data.totalAppointments;
+        }
+  
+        setAppointments(appointmentsData || []);
+        setTotalAppointments(totalAppointmentsCount || 0);
+      } catch (error) {
+        console.error("Failed to fetch appointments:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
     if (role) {
       fetchAppointmentsData(currentPage);
     }
@@ -95,7 +93,7 @@ const DashboardAppointments: React.FC = () => {
                 Date
               </th>
               <th className="px-2 py-5 text-center text-sm font-bold text-black uppercase tracking-wider">
-                Doctor's Name
+                Doctor&apos;s Name
               </th>
               <th className="px-2 py-5 text-center text-sm font-bold text-black uppercase tracking-wider">
                 Type
