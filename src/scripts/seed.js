@@ -161,6 +161,8 @@ async function seedProfiles() {
                 phoneNo: profile.phoneNo,
                 address: profile.address,
                 dateOfBirth: profile.dateOfBirth,
+                city: profile.city,
+                state: profile.state,
                 imageUrl: profile.imageUrl,
                 nextOfKin: profile.nextOfKin,
                 nextOfKinPhoneNo: profile.nextOfKinPhoneNo,
@@ -174,6 +176,7 @@ async function seedProfiles() {
         throw error;
     }
 }
+
 
 async function seedSuperAdmins() {
     try {
@@ -218,6 +221,8 @@ async function seedDoctors() {
                 departmentId: doctor.departmentId,
                 serviceId: doctor.serviceId,
                 specialization: doctor.specialization,
+                qualifications: doctor.qualifications,
+                about: doctor.about,
                 status: doctor.status,
                 phoneNo: doctor.phoneNo,
                 workingHours: doctor.workingHours,
@@ -231,6 +236,7 @@ async function seedDoctors() {
         throw error;
     }
 }
+
 
 async function seedNurses() {
     try {

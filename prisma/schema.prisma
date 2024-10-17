@@ -49,6 +49,8 @@ model Profile {
   phoneNo          String?
   address          String?
   dateOfBirth      DateTime?
+  city             String?
+  state            String?
   imageUrl         String?
   nextOfKin        String?
   nextOfKinPhoneNo String?
@@ -77,6 +79,8 @@ model Doctor {
   departmentId   Int
   serviceId      Int
   specialization String
+  qualifications String?
+  about          String?
   status         String
   phoneNo        String
   workingHours   String
