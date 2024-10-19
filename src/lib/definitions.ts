@@ -61,18 +61,27 @@ export interface Admin {
     hospital: Hospital;
 }
 
+export interface Specialization {
+    specializationId: number;
+    name: string;
+    doctors: Doctor[];
+}
+
 export interface Doctor {
     doctorId: number;
     userId: string;
     hospitalId: number;
     departmentId: number;
     serviceId?: number | null;
-    specialization: string;
+    specializationId: number;
+    qualifications?: string;
+    about?: string;
     status: string;
     phoneNo: string;
     workingHours: string;
     averageRating: number;
     appointments: Appointment[];
+    specialization?: Specialization;
     department: Department;
     hospital: Hospital;
     service?: Service;

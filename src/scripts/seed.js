@@ -2,7 +2,7 @@
 
 // import prisma from "../lib/prisma";
 
-const prisma = require("../lib/prisma")
+const prisma = require("../lib/prisma");
 
 const bcrypt = require("bcrypt");
 const {
@@ -29,9 +29,25 @@ const {
     doctorEarnings,
     sessions,
     verificationTokens,
-    roleConstraints
+    roleConstraints,
+    specializations,
 } = require("../lib/placeholder-data");
 
+async function seedSpecializations() {
+    try {
+        await prisma.specialization.createMany({
+            data: specializations.map((spec) => ({
+                specializationId: spec.specializationId,
+                name: spec.name,
+            })),
+            skipDuplicates: true,
+        });
+        console.log(`Seeded specializations`);
+    } catch (error) {
+        console.error("Error seeding specializations:", error);
+        throw error;
+    }
+}
 
 async function seedHospitals() {
     try {
@@ -220,7 +236,7 @@ async function seedDoctors() {
                 hospitalId: doctor.hospitalId,
                 departmentId: doctor.departmentId,
                 serviceId: doctor.serviceId,
-                specialization: doctor.specialization,
+                specializationId: doctor.specializationId,
                 qualifications: doctor.qualifications,
                 about: doctor.about,
                 status: doctor.status,
@@ -545,6 +561,7 @@ async function seedVerificationTokens() {
 
 async function main() {
     // Seed database
+    await seedSpecializations();
     await seedHospitals();
     await seedDepartments();
     await seedHospitalDepartments();

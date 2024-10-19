@@ -72,20 +72,27 @@ model Admin {
   hospital   Hospital @relation(fields: [hospitalId], references: [hospitalId])
 }
 
+model Specialization {
+  specializationId        Int      @id @default(autoincrement())
+  name      String   @unique
+  doctors   Doctor[]
+}
+
 model Doctor {
   doctorId       Int              @id @default(autoincrement())
   userId         String           @unique
   hospitalId     Int
   departmentId   Int
   serviceId      Int
-  specialization String
-  qualifications String?
+  specializationId Int
   about          String?
+  qualifications String?
   status         String
   phoneNo        String
   workingHours   String
   averageRating  Float
   appointments   Appointment[]
+  specialization Specialization? @relation(fields: [specializationId], references: [specializationId])
   department     Department       @relation(fields: [departmentId], references: [departmentId])
   hospital       Hospital         @relation(fields: [hospitalId], references: [hospitalId])
   service        Service?         @relation(fields: [serviceId], references: [serviceId])

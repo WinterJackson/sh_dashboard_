@@ -2440,6 +2440,20 @@ const admins = [
     },
 ];
 
+const specializations = [
+    { specializationId: 1, name: "Cardiology" },
+    { specializationId: 2, name: "Neurology" },
+    { specializationId: 3, name: "Pediatrics" },
+    { specializationId: 4, name: "Orthopedics" },
+    { specializationId: 5, name: "Gynecology" },
+    { specializationId: 6, name: "Psychiatry" },
+    { specializationId: 7, name: "Surgery" },
+    { specializationId: 8, name: "Radiology" },
+    { specializationId: 9, name: "Emergency Medicine" },
+    { specializationId: 10, name: "Dermatology" },
+    { specializationId: 11, name: "Nutrition" }
+];
+
 const doctors = [
     {
         doctorId: 1,
@@ -2447,7 +2461,7 @@ const doctors = [
         hospitalId: 1,
         departmentId: 9,
         serviceId: 20,
-        specialization: "Cardiologist",
+        specializationId: 1, // Cardiology
         qualifications: "MD, FACC",
         about: "Experienced cardiologist with over 15 years of practice.",
         status: "Online",
@@ -2461,7 +2475,7 @@ const doctors = [
         hospitalId: 2,
         departmentId: 2,
         serviceId: 3,
-        specialization: "Pediatrician",
+        specializationId: 3, // Pediatrics
         qualifications: "MBBS, DCH",
         about: "Dedicated to children's health, specializing in pediatric care.",
         status: "Online",
@@ -2475,7 +2489,7 @@ const doctors = [
         hospitalId: 3,
         departmentId: 3,
         serviceId: 6,
-        specialization: "Nephrologist",
+        specializationId: 2, // Neurology
         qualifications: "MD, PhD",
         about: "Specialist in kidney health and dialysis treatment.",
         status: "Offline",
@@ -2489,7 +2503,7 @@ const doctors = [
         hospitalId: 4,
         departmentId: 15,
         serviceId: 32,
-        specialization: "Emergency Medicine Specialist",
+        specializationId: 9, // Emergency Medicine
         qualifications: "MD, ACLS",
         about: "Expert in handling critical medical emergencies.",
         status: "Online",
@@ -2503,7 +2517,7 @@ const doctors = [
         hospitalId: 5,
         departmentId: 13,
         serviceId: 29,
-        specialization: "Psychiatrist",
+        specializationId: 6, // Psychiatry
         qualifications: "MD, DPM",
         about: "Focusing on mental health and psychiatric care.",
         status: "Offline",
@@ -2517,7 +2531,7 @@ const doctors = [
         hospitalId: 6,
         departmentId: 4,
         serviceId: 8,
-        specialization: "Dietitian",
+        specializationId: 11, // Nutrition
         qualifications: "RD, MSc Nutrition",
         about: "Helping patients with personalized nutrition plans.",
         status: "Online",
@@ -2531,7 +2545,7 @@ const doctors = [
         hospitalId: 7,
         departmentId: 19,
         serviceId: 18,
-        specialization: "Neurosurgeon",
+        specializationId: 7, // Surgery
         qualifications: "MD, FRCP",
         about: "Treating disorders of the nervous system, including the brain and spinal cord.",
         status: "Offline",
@@ -2545,7 +2559,7 @@ const doctors = [
         hospitalId: 8,
         departmentId: 14,
         serviceId: 31,
-        specialization: "Gynecologist",
+        specializationId: 5, // Gynecology
         qualifications: "MD, OB-GYN",
         about: "Specializes in women's reproductive health with 10+ years of experience.",
         status: "Online",
@@ -2559,7 +2573,7 @@ const doctors = [
         hospitalId: 9,
         departmentId: 11,
         serviceId: 24,
-        specialization: "Surgeon",
+        specializationId: 7, // Surgery
         qualifications: "MD, FRCS",
         about: "Experienced surgeon in general and specialized surgeries, including trauma and emergency procedures.",
         status: "Online",
@@ -2573,7 +2587,7 @@ const doctors = [
         hospitalId: 10,
         departmentId: 12,
         serviceId: 26,
-        specialization: "Radiologist",
+        specializationId: 8, // Radiology
         qualifications: "MBBS, MD Radiology",
         about: "Specializing in diagnostic imaging techniques such as MRI and CT scans.",
         status: "Offline",
@@ -29675,6 +29689,7 @@ module.exports = {
     profiles,
     superAdmins,
     admins,
+    specializations,
     doctors,
     nurses,
     staff,
