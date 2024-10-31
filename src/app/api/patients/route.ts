@@ -7,13 +7,16 @@ const prisma = require("@/lib/prisma")
 
 export async function GET(req: NextRequest) {
     try {
-        const patients = await prisma.patient.findMany();
+        const patients = await prisma.patient.findMany({
+            include: {
+                appointments: true,
+            },
+        });
         return NextResponse.json(patients);
     } catch (error) {
         return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
     }
 }
-
 export async function POST(req: NextRequest) {
     try {
         const {

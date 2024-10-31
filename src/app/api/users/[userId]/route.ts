@@ -1,7 +1,7 @@
 // src/app/api/users/[userId]/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-const prisma = require("@/lib/prisma")
+const prisma = require("@/lib/prisma");
 
 export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
     const { userId } = params;
@@ -22,6 +22,11 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
                         department: true,
                         hospital: true,
                         service: true,
+                        specialization: {
+                            select: {
+                                name: true,
+                            },
+                        },
                     },
                 },
                 nurse: {
@@ -47,11 +52,9 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
             );
         }
 
-        // console.log(user)
-
         return NextResponse.json(user, { status: 200 });
     } catch (error) {
-        console.error("Failed to fetch patient details:", error);
+        console.error("Failed to fetch user details:", error);
         return NextResponse.json(
             { error: "Internal Server Error" },
             { status: 500 }

@@ -42,8 +42,6 @@ const Header = () => {
 
     const role = session?.user?.role
 
-    // console.log(role)gui
-
     return (
         <header className="flex z-10 fixed top-0 left-0 w-full items-center justify-between p-4 py-5 m-2 bg-white shadow-lg shadow-gray-300 rounded-2xl">
             {/* Logo */}
@@ -107,17 +105,17 @@ const Header = () => {
                                 </>
                             )}
                         </div>
-                        <div className="flex items-center justify-center rounded-full border border-black p-1 w-[45px] h-[45px]">
+                        <div className="flex items-center justify-center rounded-full w-[55px] h-[55px]">
                             {profileImageUrl ? (
                                 <Image
                                     src={profileImageUrl}
                                     alt="Profile Picture"
-                                    width={45}
-                                    height={45}
-                                    className="rounded-full"
+                                    width={55}
+                                    height={55}
+                                    className="rounded-full border-4 border-gray-300"
                                 />
                             ) : (
-                                <FaUserCircle className=" text-gray-500 rounded-full w-[45px] h-[45px]" />
+                                <FaUserCircle className=" text-gray-500 rounded-full w-[55px] h-[55px]" />
                             )}
                         </div>
                     </div>

@@ -85,7 +85,7 @@ useEffect(() => {
 
     const onSubmit = async (data: any) => {
         try {
-            const response = await fetch("/api/referrals", {
+            const response = await fetch(`${process.env.API_URL}/referrals`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -293,7 +293,7 @@ useEffect(() => {
                         </ol>
                     </div>
                 </details>
-    
+
                 {/* Physician Name Field */}
                 <div>
                     <Label htmlFor="physicianName">Physician Name</Label>
@@ -307,11 +307,13 @@ useEffect(() => {
                                 : user?.role === "NURSE"
                                 ? "Nurse"
                                 : ""
-                        } ${user?.profile?.firstName} ${user?.profile?.lastName}`}
+                        } ${user?.profile?.firstName} ${
+                            user?.profile?.lastName
+                        }`}
                         readOnly
                     />
                 </div>
-    
+
                 {/* Department Field */}
                 <div>
                     <Label htmlFor="department">Department</Label>
@@ -345,7 +347,7 @@ useEffect(() => {
                         {/* Other options can be added here if needed */}
                     </select>
                 </div>
-    
+
                 {/* Specialty Field */}
                 <div>
                     <Label htmlFor="specialty">Specialty</Label>
@@ -355,31 +357,30 @@ useEffect(() => {
                         className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         value={
                             user?.role === "DOCTOR"
-                                ? user?.doctor?.specialization
+                                ? user?.doctor?.specialization?.name // Use specialization name as string
                                 : user?.role === "NURSE"
-                                ? user?.nurse?.specialization
+                                ? user?.nurse?.specialization?.name // Use specialization name as string
                                 : ""
                         }
                     >
                         <option
                             value={
                                 user?.role === "DOCTOR"
-                                    ? user?.doctor?.specialization
+                                    ? user?.doctor?.specialization?.name
                                     : user?.role === "NURSE"
-                                    ? user?.nurse?.specialization
+                                    ? user?.nurse?.specialization?.name
                                     : ""
                             }
                         >
                             {user?.role === "DOCTOR"
-                                ? user?.doctor?.specialization
+                                ? user?.doctor?.specialization?.name
                                 : user?.role === "NURSE"
-                                ? user?.nurse?.specialization
+                                ? user?.nurse?.specialization?.name
                                 : "Select Specialty"}
                         </option>
-                        {/* Other options can be added here if needed */}
                     </select>
                 </div>
-    
+
                 {/* Email Field */}
                 <div>
                     <Label htmlFor="email">Email</Label>
@@ -392,7 +393,7 @@ useEffect(() => {
                         readOnly
                     />
                 </div>
-    
+
                 {/* Phone Number Field */}
                 <div>
                     <Label htmlFor="phoneNumber">Phone Number</Label>
@@ -400,12 +401,14 @@ useEffect(() => {
                         id="phoneNumber"
                         type="tel"
                         className="bg-[#EFEFEF]"
-                        {...register("physicianPhoneNumber", { required: true })}
+                        {...register("physicianPhoneNumber", {
+                            required: true,
+                        })}
                         value={user?.profile?.phoneNo || ""}
                         readOnly
                     />
                 </div>
-    
+
                 {/* Navigation Buttons */}
                 <div className="mt-4 flex justify-between">
                     <Button type="button" onClick={() => setCurrentSection(1)}>

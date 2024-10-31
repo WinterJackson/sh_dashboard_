@@ -65,6 +65,8 @@ export interface Specialization {
     specializationId: number;
     name: string;
     doctors: Doctor[];
+    nurses: Nurse[];
+    staff: Staff[];
 }
 
 export interface Doctor {
@@ -95,8 +97,9 @@ export interface Nurse {
     userId: string;
     hospitalId: number;
     departmentId: number;
-    specialization: string;
-    status: string;
+    specializationId: number;
+    specialization: Specialization;
+    status: string;  // "Online" or "Offline"
     phoneNo: string;
     workingHours: string;
     averageRating: number;
@@ -110,8 +113,9 @@ export interface Staff {
     userId: string;
     hospitalId: number;
     departmentId: number;
-    specialization: string;
-    status: string;
+    specializationId: number;
+    specialization: Specialization;
+    status: string;  // "Online" or "Offline"
     phoneNo: string;
     workingHours: string;
     averageRating: number;

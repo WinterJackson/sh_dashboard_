@@ -5,16 +5,12 @@ import dynamic from "next/dynamic";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
-import { Hospital } from "@/lib/definitions";
+import { Role } from "@/lib/definitions";
+import HospitalsPagination from "@/components/hospitals/HospitalsPagination";
 
 const prisma = require("@/lib/prisma");
 
-const HospitalsTable = dynamic<{ hospitals: Hospital[], totalHospitals: number, currentPage: number }>(
-    () => import("@/components/hospitals/HospitalsTable"),
-    {
-        ssr: false,
-    }
-);
+const HospitalsTable = dynamic(() => import("@/components/hospitals/HospitalsTable"), { ssr: false });
 
 const ITEMS_PER_PAGE = 5;
 
@@ -29,13 +25,13 @@ interface HospitalsPageProps {
 export default async function HospitalsPage({ searchParams }: HospitalsPageProps) {
     const session = await getServerSession(authOptions);
 
-    if (!session) {
-        redirect("/sign-in");
+    // Check for session and user role with optional chaining
+    if (!session || session?.user?.role !== Role.SUPER_ADMIN) {
+        redirect("/unauthorized");
         return null;
     }
 
-    const page = parseInt(searchParams.page || '1');
-
+    const page = parseInt(searchParams.page || "1");
     const [hospitals, totalHospitals] = await prisma.$transaction([
         prisma.hospital.findMany({
             skip: (page - 1) * ITEMS_PER_PAGE,
@@ -47,9 +43,10 @@ export default async function HospitalsPage({ searchParams }: HospitalsPageProps
     return (
         <div className="flex flex-col h-full min-w-full p-4">
             <h1 className="text-xl min-w-full font-semibold mb-1">Hospitals</h1>
-            <div className="flex flex-row justify-between items-center mb-5">
-                <HospitalsTable hospitals={hospitals} totalHospitals={totalHospitals} currentPage={page} />
-            </div>
+            <HospitalsTable hospitals={hospitals} totalHospitals={totalHospitals} currentPage={page} />
+            <HospitalsPagination totalItems={totalHospitals} itemsPerPage={ITEMS_PER_PAGE} currentPage={page} />
         </div>
     );
 }
+
+

@@ -1523,7 +1523,6 @@ const users = [
         isActive: true,
         lastLogin: null,
     },
-
     {
         userId: "3a005ae5-f997-4f9b-9b5b-2759b892056e",
         username: "Kiki",
@@ -2451,7 +2450,47 @@ const specializations = [
     { specializationId: 8, name: "Radiology" },
     { specializationId: 9, name: "Emergency Medicine" },
     { specializationId: 10, name: "Dermatology" },
-    { specializationId: 11, name: "Nutrition" }
+    { specializationId: 11, name: "Nutrition" },
+    { specializationId: 12, name: "Critical Care Nurse (ICU Nurse)" },
+    { specializationId: 13, name: "Emergency Room (ER) Nurse" },
+    { specializationId: 14, name: "Pediatric Nurse" },
+    { specializationId: 15, name: "Neonatal Nurse" },
+    { specializationId: 16, name: "Cardiac Nurse" },
+    { specializationId: 17, name: "Oncology Nurse" },
+    { specializationId: 18, name: "Geriatric Nurse" },
+    { specializationId: 19, name: "Psychiatric (Mental Health) Nurse" },
+    { specializationId: 20, name: "Nurse Anesthetist (CRNA)" },
+    { specializationId: 21, name: "Nurse Midwife" },
+    { specializationId: 22, name: "Family Nurse Practitioner (FNP)" },
+    { specializationId: 23, name: "Public Health Nurse" },
+    { specializationId: 24, name: "Home Health Nurse" },
+    { specializationId: 25, name: "Orthopedic Nurse" },
+    { specializationId: 26, name: "Perioperative (Surgical) Nurse" },
+    { specializationId: 27, name: "Dialysis Nurse" },
+    { specializationId: 28, name: "Infection Control Nurse" },
+    { specializationId: 29, name: "Nurse Educator" },
+    { specializationId: 30, name: "Clinical Nurse Specialist (CNS)" },
+    { specializationId: 31, name: "Hospice and Palliative Care Nurse" },
+    { specializationId: 32, name: "Flight Nurse" },
+    { specializationId: 33, name: "Occupational Health Nurse" },
+    { specializationId: 34, name: "Rehabilitation Nurse" },
+    { specializationId: 35, name: "Dermatology Nurse" },
+    { specializationId: 36, name: "Pain Management Nurse" },
+    { specializationId: 37, name: "Neuroscience Nurse" },
+    { specializationId: 38, name: "Research Nurse" },
+    { specializationId: 39, name: "Forensic Nurse" },
+    { specializationId: 40, name: "Transplant Nurse" },
+    { specializationId: 41, name: "Wound Care Nurse" },
+    { specializationId: 42, name: "Secretary" },
+    { specializationId: 43, name: "HR Manager" },
+    { specializationId: 44, name: "Receptionist" },
+    { specializationId: 45, name: "IT Support" },
+    { specializationId: 46, name: "Procurement Officer" },
+    { specializationId: 47, name: "Security Personnel" },
+    { specializationId: 48, name: "Ambulance Driver" },
+    { specializationId: 49, name: "Chef" },
+    { specializationId: 50, name: "Cleaner" },
+    { specializationId: 51, name: "General Staff" },
 ];
 
 const doctors = [
@@ -2543,7 +2582,7 @@ const doctors = [
         doctorId: 7,
         userId: "f1116390-da65-4924-a5f7-a9c14e2310c5",
         hospitalId: 7,
-        departmentId: 19,
+        departmentId: 8,
         serviceId: 18,
         specializationId: 7, // Surgery
         qualifications: "MD, FRCP",
@@ -2602,8 +2641,8 @@ const nurses = [
         nurseId: 1,
         userId: "af935b75-87fd-498c-a452-13ad10e422b8",
         hospitalId: 1,
-        departmentId: 11,
-        specialization: "Perioperative Nurse",
+        departmentId: 11,  // Surgery
+        specializationId: 26,  // Perioperative (Surgical) Nurse
         status: "Online",
         phoneNo: "448 152 1287",
         workingHours: "Mon-Thur: 9AM-5PM",
@@ -2613,8 +2652,8 @@ const nurses = [
         nurseId: 2,
         userId: "fd9e1125-c278-47c3-9d01-368c04e07379",
         hospitalId: 2,
-        departmentId: 15,
-        specialization: "Emergency Nurse",
+        departmentId: 15,  // Emergency Department
+        specializationId: 13,  // Emergency Room (ER) Nurse
         status: "Online",
         phoneNo: "987 881 2886",
         workingHours: "Mon-Thur: 8AM-4PM",
@@ -2624,8 +2663,8 @@ const nurses = [
         nurseId: 3,
         userId: "2c68da8e-b6ea-42d4-b8f7-6f8138ff8523",
         hospitalId: 3,
-        departmentId: 14,
-        specialization: "Women's Health Nurse",
+        departmentId: 14,  // Gynecology
+        specializationId: 21,  // Nurse Midwife
         status: "Offline",
         phoneNo: "780 433 1320",
         workingHours: "Fri-Sun: 7AM-3PM",
@@ -2635,8 +2674,8 @@ const nurses = [
         nurseId: 4,
         userId: "e66afa0c-3f69-4238-811b-a7804c043417",
         hospitalId: 4,
-        departmentId: 8,
-        specialization: "Neuroscience Nurse",
+        departmentId: 8,  // Neurology
+        specializationId: 37,  // Neuroscience Nurse
         status: "Online",
         phoneNo: "630 409 5126",
         workingHours: "Mon-Thur: 7AM-3PM",
@@ -2646,8 +2685,8 @@ const nurses = [
         nurseId: 5,
         userId: "08eab0cb-9207-476f-9533-07f7a671c45c",
         hospitalId: 5,
-        departmentId: 5,
-        specialization: "Psychiatric Nurse",
+        departmentId: 5,  // Mental Health
+        specializationId: 19,  // Psychiatric (Mental Health) Nurse
         status: "Offline",
         phoneNo: "501 904 4271",
         workingHours: "Fri-Sun: 9AM-5PM",
@@ -2657,8 +2696,8 @@ const nurses = [
         nurseId: 6,
         userId: "6a1b599f-92a3-4664-9804-7238087ad2f8",
         hospitalId: 6,
-        departmentId: 4,
-        specialization: "Nutrition Support Nurse",
+        departmentId: 4,  // Nutrition
+        specializationId: 17,  // Oncology Nurse (linked to nutrition)
         status: "Online",
         phoneNo: "719 539 0696",
         workingHours: "Mon-Thur: 9AM-5PM",
@@ -2668,8 +2707,8 @@ const nurses = [
         nurseId: 7,
         userId: "b7ca0eb0-8910-4310-8024-e5d61fafbe93",
         hospitalId: 7,
-        departmentId: 19,
-        specialization: "General Nurse",
+        departmentId: 14,  // Gynacology
+        specializationId: 15,  // Neonatal Nurse
         status: "Online",
         phoneNo: "801 167 4269",
         workingHours: "Fri-Sun: 8AM-4PM",
@@ -2679,8 +2718,8 @@ const nurses = [
         nurseId: 8,
         userId: "9690fd61-2fef-4b6d-8b35-a085842bcc2f",
         hospitalId: 8,
-        departmentId: 13,
-        specialization: "Psychiatric Nurse",
+        departmentId: 13,  // Psychiatry
+        specializationId: 19,  // Psychiatric (Mental Health) Nurse
         status: "Online",
         phoneNo: "132 278 8626",
         workingHours: "Mon-Thur: 8AM-4PM",
@@ -2690,8 +2729,8 @@ const nurses = [
         nurseId: 9,
         userId: "ecdedced-6cde-448c-9c0a-95a8811dba37",
         hospitalId: 9,
-        departmentId: 12,
-        specialization: "Radiologic Nurse",
+        departmentId: 12,  // Radiology
+        specializationId: 8,  // Radiology Nurse
         status: "Online",
         phoneNo: "336 233 5449",
         workingHours: "Mon-Thur: 7AM-3PM",
@@ -2701,8 +2740,8 @@ const nurses = [
         nurseId: 10,
         userId: "27f043e5-b997-4a8b-939d-7be026e23070",
         hospitalId: 10,
-        departmentId: 16,
-        specialization: "General Nurse",
+        departmentId: 16,  // Administration
+        specializationId: 30,  // Clinical Nurse Specialist (CNS)
         status: "Offline",
         phoneNo: "647 851 9039",
         workingHours: "Fri-Sun: 9AM-5PM",
@@ -2716,7 +2755,7 @@ const staff = [
         userId: "80591269-ce9f-4e11-89c4-1b6d01d43c63",
         hospitalId: 1,
         departmentId: 16,
-        specialization: "Secretary",
+        specializationId: 42,  // Secretary
         status: "Online",
         phoneNo: "936 317 9571",
         workingHours: "Mon-Thur: 9AM-5PM",
@@ -2727,7 +2766,7 @@ const staff = [
         userId: "49f08bbb-fafa-4fe8-b76a-d11fac84fdaf",
         hospitalId: 2,
         departmentId: 17,
-        specialization: "HR Manager",
+        specializationId: 43,  // HR Manager
         status: "Online",
         phoneNo: "125 759 7671",
         workingHours: "Mon-Thur: 8AM-4PM",
@@ -2738,7 +2777,7 @@ const staff = [
         userId: "d1d417ee-e230-4c0a-8115-b024ea6a2ece",
         hospitalId: 3,
         departmentId: 18,
-        specialization: "Receptionist",
+        specializationId: 44,  // Receptionist
         status: "Offline",
         phoneNo: "327 600 9279",
         workingHours: "Fri-Sun: 7AM-3PM",
@@ -2749,7 +2788,7 @@ const staff = [
         userId: "80b70865-2e99-4070-a14c-b5df58af683f",
         hospitalId: 4,
         departmentId: 19,
-        specialization: "IT Support",
+        specializationId: 45,  // IT Support
         status: "Online",
         phoneNo: "157 647 6805",
         workingHours: "Mon-Thur: 7AM-3PM",
@@ -2760,7 +2799,7 @@ const staff = [
         userId: "7df1dc71-79d0-4215-bf50-77e20fb6ca30",
         hospitalId: 5,
         departmentId: 20,
-        specialization: "Procurement Officer",
+        specializationId: 46,  // Procurement Officer
         status: "Offline",
         phoneNo: "613 327 7979",
         workingHours: "Fri-Sun: 8AM-4PM",
@@ -2771,7 +2810,7 @@ const staff = [
         userId: "3c615ba7-acae-4dd9-a0f9-9bcf166e198b",
         hospitalId: 6,
         departmentId: 22,
-        specialization: "Security Personnel",
+        specializationId: 47,  // Security Personnel
         status: "Online",
         phoneNo: "872 172 5948",
         workingHours: "Mon-Thur: 9AM-5PM",
@@ -2782,7 +2821,7 @@ const staff = [
         userId: "48cc0952-703a-4ee0-972f-5f97841fbf82",
         hospitalId: 7,
         departmentId: 23,
-        specialization: "Ambulance Driver",
+        specializationId: 48,  // Ambulance Driver
         status: "Online",
         phoneNo: "735 850 7801",
         workingHours: "Fri-Sun: 9AM-5PM",
@@ -2793,7 +2832,7 @@ const staff = [
         userId: "2e8dd7cb-830e-43d5-9193-955b35516a3b",
         hospitalId: 8,
         departmentId: 25,
-        specialization: "Chef",
+        specializationId: 49,  // Chef
         status: "Online",
         phoneNo: "929 100 2659",
         workingHours: "Mon-Thur: 8AM-4PM",
@@ -2804,7 +2843,7 @@ const staff = [
         userId: "d6ee2a87-3e0f-4846-9da5-aee7240a30b3",
         hospitalId: 9,
         departmentId: 21,
-        specialization: "Cleaner",
+        specializationId: 50,  // Cleaner
         status: "Online",
         phoneNo: "686 965 9263",
         workingHours: "Mon-Thur: 7AM-3PM",
@@ -2815,7 +2854,7 @@ const staff = [
         userId: "4a693ccb-b2be-4efe-a34c-f546c76ef7a0",
         hospitalId: 10,
         departmentId: 5,
-        specialization: "General Staff",
+        specializationId: 51,  // General Staff
         status: "Online",
         phoneNo: "746 384 0565",
         workingHours: "Fri-Sun: 8AM-4PM",

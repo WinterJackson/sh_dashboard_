@@ -1,5 +1,3 @@
-// src/app/components/doctors/DoctorBio.tsx
-
 "use client";
 import React, { useState } from "react";
 import PercentageBar from "./UI components/PercentageBar";
@@ -12,15 +10,16 @@ type Props = {
 
 function DoctorBio({ cancel }: Props) {
     const [slide, setSlide] = useState("0");
-    console.log(slide);
+
     return (
-        <div className="absolute top-0  left-0 z-30 flex justify-center items-center lg:bg-[#7978780c]  h-full w-screen">
-            <div className=" relative flex flex-col gap-8 p-6 bg-white opacity-100 lg:w-fit rounded-2xl h-full lg:max-h-[800px] overflow-y-scroll w-full lg:max-w-[1000px]">
+        <div className="absolute top-0 left-0 z-30 flex justify-center items-center lg:bg-[#7978780c] h-full w-screen">
+            <div className="relative flex flex-col gap-8 p-6 bg-white opacity-100 lg:w-fit rounded-2xl h-full lg:max-h-[800px] overflow-y-scroll scrollbar-custom w-full lg:max-w-[1000px]">
                 <div className="absolute top-1 right-1" onClick={cancel}>
                     <CloseIcon />
                 </div>
+
                 <div className="flex gap-6 flex-wrap justify-center lg:justify-start">
-                    {/* profile bio */}
+                    {/* Profile bio */}
                     <div className="flex flex-1 flex-col gap-7 items-center w-[500px]">
                         <div className="flex gap-5 items-center">
                             <Image
@@ -35,44 +34,45 @@ function DoctorBio({ cancel }: Props) {
                                 <h1 className="font-semibold text-lg capitalize">
                                     Dr Jane Gold
                                 </h1>
-                                <div className="flex flex-col gap-0 ">
+                                <div className="flex flex-col gap-0">
                                     <h1 className="text-lg capitalize">
                                         Gynecologist
                                     </h1>
                                     <div className="flex flex-col gap-2">
-                                        <div className="">
+                                        <div>
                                             <p className="text-gray-400 text-lg capitalize">
-                                                women&apos;s health
+                                                Women's Health
                                             </p>
                                             <p className="capitalize">
                                                 Joined Feb 2023
                                             </p>
                                         </div>
                                         <p className="capitalize text-sm text-primary">
-                                            Self-Registered{" "}
+                                            Self-Registered
                                         </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        {/* sliding bio */}
+
+                        {/* Sliding bio */}
                         <div className="flex flex-col gap-6 min-w-[360px] max-w-[400px]">
                             <div className="flex justify-between gap-2 min-w-[360px] max-w-[400px]">
                                 <div
                                     className={`flex w-1/3 justify-center font-bold py-3 border-b-2 ${
                                         slide === "0"
                                             ? "border-primary text-primary"
-                                            : " border-gray-400 text-gray-400 "
+                                            : "border-gray-400 text-gray-400"
                                     }`}
                                     onClick={() => setSlide("0")}
                                 >
-                                    <p>Biograghy</p>
+                                    <p>Biography</p>
                                 </div>
                                 <div
                                     className={`flex w-1/3 justify-center font-bold py-3 border-b-2 ${
                                         slide === "400"
                                             ? "border-primary text-primary"
-                                            : " border-gray-400 text-gray-400 "
+                                            : "border-gray-400 text-gray-400"
                                     }`}
                                     onClick={() => setSlide("400")}
                                 >
@@ -82,22 +82,19 @@ function DoctorBio({ cancel }: Props) {
                                     className={`flex w-1/3 justify-center font-bold py-3 border-b-2 ${
                                         slide === "800"
                                             ? "border-primary text-primary"
-                                            : " border-gray-400 text-gray-400 "
+                                            : "border-gray-400 text-gray-400"
                                     }`}
                                     onClick={() => setSlide("800")}
                                 >
-                                    <p className="text-nowrap">
-                                        Contact Information
-                                    </p>
+                                    <p>Contact Information</p>
                                 </div>
                             </div>
                             <div className="overflow-hidden">
                                 <div
-                                    className={`flex gap-0 transition-transform duration-800 `}
+                                    className="flex gap-0 transition-transform duration-800"
                                     style={{
                                         transform: `translateX(-${slide}px)`,
-                                        transition:
-                                            "transform 0.3s ease-in-out",
+                                        transition: "transform 0.3s ease-in-out",
                                     }}
                                 >
                                     <div className="w-[400px] flex-shrink-0">
@@ -124,7 +121,6 @@ function DoctorBio({ cancel }: Props) {
                                     </div>
                                     <div className="w-[400px] flex-shrink-0">
                                         <p className="flex gap-10">
-                                            {" "}
                                             <span className="font-bold text-primary">
                                                 Email
                                             </span>
@@ -133,7 +129,6 @@ function DoctorBio({ cancel }: Props) {
                                             </span>
                                         </p>
                                         <p className="flex gap-10">
-                                            {" "}
                                             <span className="font-bold text-primary">
                                                 Phone Number
                                             </span>
@@ -142,16 +137,14 @@ function DoctorBio({ cancel }: Props) {
                                             </span>
                                         </p>
                                         <p className="flex gap-10">
-                                            {" "}
                                             <span className="font-bold text-primary">
                                                 Address
                                             </span>
                                             <span className="text-gray-400">
-                                                Nairobi, Kenya{" "}
+                                                Nairobi, Kenya
                                             </span>
                                         </p>
                                         <p className="flex gap-10">
-                                            {" "}
                                             <span className="font-bold text-primary">
                                                 LinkedIn
                                             </span>
@@ -164,7 +157,8 @@ function DoctorBio({ cancel }: Props) {
                             </div>
                         </div>
                     </div>
-                    {/* patient reviews  */}
+
+                    {/* Patient reviews */}
                     <div className="flex flex-1 flex-col gap-5 min-w-[400px] max-w-[500px] items-center lg:items-start">
                         <h1 className="font-semibold">Patient Reviews</h1>
                         <div className="flex flex-col gap-2 w-full items-center lg:items-start">
@@ -206,45 +200,47 @@ function DoctorBio({ cancel }: Props) {
                                         className="scale-150"
                                     />
                                 </div>
-                                <div className="">
+                                <div>
                                     <p>4.7 out of 5</p>
                                 </div>
                             </div>
                             <p>40 patients rating</p>
                         </div>
+
                         <div className="flex flex-col max-w-[400px] gap-4 flex-1 w-full">
                             <div className="flex justify-between gap-2 items-center">
                                 <h2 className="font-bold w-[50px]">5 star</h2>
                                 <PercentageBar percentage="80%" />
-                                <span className="text-gray-500"> 80%</span>
+                                <span className="text-gray-500">80%</span>
                             </div>
                             <div className="flex justify-between gap-2 items-baseline">
                                 <h2 className="font-bold w-[50px]">4 star</h2>
                                 <PercentageBar percentage="10%" />
-                                <span className="text-gray-500"> 10%</span>
+                                <span className="text-gray-500">10%</span>
                             </div>
                             <div className="flex justify-between gap-2 items-baseline">
                                 <h2 className="font-bold w-[50px]">3 star</h2>
                                 <PercentageBar percentage="6%" />
-                                <span className="text-gray-500"> 6%</span>
+                                <span className="text-gray-500">6%</span>
                             </div>
                             <div className="flex justify-between gap-2 items-baseline">
                                 <h2 className="font-bold w-[50px]">2 star</h2>
                                 <PercentageBar percentage="4%" />
-                                <span className="text-gray-500"> 4%</span>
+                                <span className="text-gray-500">4%</span>
                             </div>
                             <div className="flex justify-between gap-2 items-baseline">
                                 <h2 className="font-bold w-[50px]">1 star</h2>
                                 <PercentageBar percentage="0%" />
-                                <span className="text-gray-500"> 0%</span>
+                                <span className="text-gray-500">0%</span>
                             </div>
                         </div>
                     </div>
                 </div>
-                {/* licences  */}
+
+                {/* Licenses */}
                 <div className="flex flex-col">
-                    <h1 className="font-semibold mb-6">Licence</h1>
-                    <div className="flex flex-wrap gap-4  justify-center">
+                    <h1 className="font-semibold mb-6">License</h1>
+                    <div className="flex flex-wrap gap-4 justify-center">
                         <div className="flex flex-1 gap-5 items-center max-w-[430px] min-w-[380px] border border-black p-4 rounded-xl">
                             <Image
                                 src="/images/document.svg"
@@ -252,9 +248,9 @@ function DoctorBio({ cancel }: Props) {
                                 width={24}
                                 height={24}
                             />
-                            <div className="flex flex-col gap-2  flex-1">
+                            <div className="flex flex-col gap-2 flex-1">
                                 <h2 className="font-semibold capitalize">
-                                    General Medical Practice Licence
+                                    General Medical Practice License
                                 </h2>
                                 <PercentageBar percentage={"25%"} />
                                 <div className="flex justify-between items-center">
@@ -270,6 +266,7 @@ function DoctorBio({ cancel }: Props) {
                                 </div>
                             </div>
                         </div>
+
                         <div className="flex flex-1 gap-5 items-center max-w-[430px] min-w-[380px] border border-black p-4 rounded-xl">
                             <Image
                                 src="/images/document.svg"
@@ -277,9 +274,9 @@ function DoctorBio({ cancel }: Props) {
                                 width={24}
                                 height={24}
                             />
-                            <div className="flex flex-col gap-2  flex-1">
+                            <div className="flex flex-col gap-2 flex-1">
                                 <h2 className="font-semibold capitalize">
-                                    General Medical Practice Licence
+                                    General Medical Practice License
                                 </h2>
                                 <PercentageBar percentage={"25%"} />
                                 <div className="flex justify-between items-center">
@@ -295,6 +292,7 @@ function DoctorBio({ cancel }: Props) {
                                 </div>
                             </div>
                         </div>
+
                         <div className="flex flex-1 gap-5 items-center max-w-[430px] min-w-[380px] border border-black p-4 rounded-xl">
                             <Image
                                 src="/images/document.svg"
@@ -302,9 +300,9 @@ function DoctorBio({ cancel }: Props) {
                                 width={24}
                                 height={24}
                             />
-                            <div className="flex flex-col gap-2  flex-1">
+                            <div className="flex flex-col gap-2 flex-1">
                                 <h2 className="font-semibold capitalize">
-                                    General Medical Practice Licence
+                                    General Medical Practice License
                                 </h2>
                                 <PercentageBar percentage={"25%"} />
                                 <div className="flex justify-between items-center">

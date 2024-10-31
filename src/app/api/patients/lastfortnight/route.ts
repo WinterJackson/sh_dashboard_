@@ -15,17 +15,15 @@ export async function GET(req: NextRequest) {
             where: {
                 appointmentDate: {
                     gte: fourteenDaysAgo,
-                    lt: new Date(today.getTime() + 24 * 60 * 60 * 1000), // Include today
+                    lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
                 },
             },
             include: {
-                appointments: true,
-                appointmentServices: true,
-                currentBed: true,
+                services: true,
                 hospital: true,
                 payments: true,
-                referrals: true,
-                serviceUsages: true,
+                doctor: true,
+                patient: true,
             },
         });
 

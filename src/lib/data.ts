@@ -1,11 +1,15 @@
 // src/lib/data.ts
 
-import { Appointment, Role, Doctor } from "./definitions";
+import { Appointment, Role, Doctor, Patient } from "./definitions";
 
 // Fetch available doctors
 export async function fetchOnlineDoctors() {
     try {
-        const response = await fetch("/api/doctors");
+        const response = await fetch(`${process.env.API_URL}/doctors`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
         const data = await response.json();
 
         // Filter the data for online doctors only
@@ -25,72 +29,56 @@ export async function fetchOnlineDoctors() {
 // Fetch doctor details
 export async function fetchDoctorDetails(doctorId: string) {
     try {
-        const response = await fetch(`/api/doctors/${doctorId}`);
+        const response = await fetch(`${process.env.API_URL}/doctors/${doctorId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
         const doctor = await response.json();
 
-        // console.log(doctor);
         return doctor;
     } catch (error) {
-        console.error("Failed to fetch doctors:", error);
+        console.error("Failed to fetch doctor details:", error);
         return [];
     }
 }
 
-export const fetchOnlineDoctorsByHospital = async (hospitalId: number) => {
-    try {
-        const response = await fetch(`/api/doctors/byHospital/${hospitalId}`);
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(
-                `Failed to fetch online doctors: ${response.statusText}`
-            );
-        }
-
-        // Map the online doctors to only include username and specialization
-        const doctorDetails = data.map(
-            (doctor: {
-                doctorId: string;
-                specialization: string;
-                user: { username: string };
-            }) => ({
-                doctorId: doctor.doctorId,
-                username: doctor.user.username,
-                specialization: doctor.specialization,
-            })
-        );
-
-        // console.log(doctorDetails);
-
-        return doctorDetails;
-    } catch (error) {
-        console.error("Error fetching online doctors:", error);
-        throw error;
-    }
-};
-
+// Fetch doctor by userId
 export const fetchDoctorIdByUserId = async (userId: string) => {
-    try {
-        const response = await fetch(`/api/doctors/byUserId/${userId}`);
-        if (!response.ok) {
-            throw new Error("Failed to fetch doctor ID");
-        }
-        const doctor = await response.json();
+    if (!userId) {
+        console.error("No userId provided to fetchDoctorIdByUserId");
+        return null;
+    }
 
-        console.log(doctor);
+    try {
+        const response = await fetch(`${process.env.API_URL}/doctors/byUserId/${userId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch doctor data");
+        }
+
+        const doctor = await response.json();
+        console.log("Doctor data received:", doctor);
 
         return doctor.doctorId;
     } catch (error) {
-        console.error("Error fetching doctorId:", error);
+        console.error("Error fetching doctor data:", error);
         return null;
     }
-};
+}
 
 // Fetch all doctors
 export async function fetchAllDoctors() {
     try {
-        const response = await fetch("/api/doctors");
+        const response = await fetch(`${process.env.API_URL}/doctors`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
         const data = await response.json();
         return data;
     } catch (error) {
@@ -102,7 +90,11 @@ export async function fetchAllDoctors() {
 // Fetch all hospitals
 export async function fetchAllHospitals() {
     try {
-        const response = await fetch("/api/hospitals");
+        const response = await fetch(`${process.env.API_URL}/hospitals`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
         const data = await response.json();
 
         return data;
@@ -115,7 +107,12 @@ export async function fetchAllHospitals() {
 // Fetch patient details by name
 export async function fetchPatientDetails(name: string) {
     try {
-        const response = await fetch(`/api/patients/byName/${name}`);
+        const response = await fetch(`${process.env.API_URL}/patients/byName/${name}`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
         if (!response.ok) {
             throw new Error("Patient not found");
         }
@@ -133,10 +130,12 @@ export async function fetchPatientDetails(name: string) {
 // Fetch available beds
 export async function fetchAvailableBeds() {
     try {
-        const response = await fetch("/api/beds");
+        const response = await fetch(`${process.env.API_URL}/beds`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
         const data = await response.json();
-
-        console.log(data);
 
         const availableBeds = data.filter(
             (bed: any) => bed.availability === "Occupied"
@@ -156,12 +155,16 @@ export async function fetchAppointments(
     limit: number = 15
 ): Promise<Appointment[]> {
     try {
-        const response = await fetch(
-            `/api/appointments?page=${page}&limit=${limit}`
-        );
+        const response = await fetch(`${process.env.API_URL}/appointments?page=${page}&limit=${limit}`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
         if (!response.ok) {
             throw new Error(`Error: ${response.status}`);
         }
+
         const data = await response.json();
         return data.appointments;
     } catch (error) {
@@ -173,21 +176,23 @@ export async function fetchAppointments(
 // Function to fetch appointments by hospitalId
 export const fetchAppointmentsByHospital = async (hospitalId: number) => {
     try {
-        const response = await fetch(
-            `/api/appointments/byHospital/${hospitalId}`
-        );
+        const response = await fetch(`${process.env.API_URL}/appointments/byHospital/${hospitalId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
         if (!response.ok) {
             throw new Error("Failed to fetch appointments");
         }
 
         const data = await response.json();
-        // console.log(data);
         return data;
     } catch (error) {
-        console.error(error);
+        console.error("Failed to fetch appointments by hospital:", error);
         return [];
     }
-};
+}
 
 // Update appointment status
 export async function updateAppointmentStatus(
@@ -195,28 +200,19 @@ export async function updateAppointmentStatus(
     updateData: { status: string; reason: string }
 ) {
     try {
-        // console.log("Sending PATCH request with the following data:", {
-        //     appointmentId,
-        //     updateData,
-        // });
-
-        const response = await fetch(`/api/appointments/${appointmentId}`, {
+        const response = await fetch(`${process.env.API_URL}/appointments/${appointmentId}`, {
             method: "PATCH",
             headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify(updateData),
         });
 
         if (!response.ok) {
-            throw new Error(
-                `Failed to update appointment: ${response.statusText}`
-            );
+            throw new Error(`Failed to update appointment: ${response.statusText}`);
         }
 
         const updatedAppointment = await response.json();
-        // console.log("Received response from server:", updatedAppointment);
-
         return updatedAppointment;
     } catch (error) {
         console.error("Error updating appointment:", error);
@@ -224,14 +220,43 @@ export async function updateAppointmentStatus(
     }
 }
 
+// Update appointment type
+export async function updateAppointmentType(
+    appointmentId: string,
+    newType: string
+): Promise<{ success: boolean; updatedType?: string }> {
+    try {
+        const response = await fetch(`${process.env.API_URL}/appointments/${appointmentId}`, {
+            method: "PATCH",
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ type: newType }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error updating appointment type: ${response.statusText}`);
+        }
+
+        const updatedAppointment = await response.json();
+        return { success: true, updatedType: updatedAppointment.type };
+    } catch (error) {
+        console.error("Failed to update appointment type:", error);
+        return { success: false };
+    }
+}
+
+
 // Fetch today's appointments count
 export async function fetchTodayAppointments() {
     try {
-        const response = await fetch("/api/appointments/today");
+        const response = await fetch(`${process.env.API_URL}/appointments/today`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
         const data = await response.json();
-
-        // console.log(data);
-
         return data;
     } catch (error) {
         console.error("Failed to fetch today's appointments:", error);
@@ -242,16 +267,16 @@ export async function fetchTodayAppointments() {
 // Fetch appointments for the last 14 days
 export async function fetchAppointmentsForLast14Days() {
     try {
-        const response = await fetch("/api/appointments/lastfortnight");
-        const data = await response.json();
+        const response = await fetch(`${process.env.API_URL}/appointments/lastfortnight`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
 
-        // console.log(data);
+        const data = await response.json();
         return data;
     } catch (error) {
-        console.error(
-            "Failed to fetch appointments for the last 14 days:",
-            error
-        );
+        console.error("Failed to fetch appointments for the last 14 days:", error);
         return [];
     }
 }
@@ -259,10 +284,13 @@ export async function fetchAppointmentsForLast14Days() {
 // Fetch today's patients count
 export async function fetchPatientsToday() {
     try {
-        const response = await fetch("/api/patients/today");
-        const data = await response.json();
+        const response = await fetch(`${process.env.API_URL}/patients/today`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
 
-        // console.log(data);
+        const data = await response.json();
         return data;
     } catch (error) {
         console.error("Failed to fetch today's patients:", error);
@@ -271,30 +299,74 @@ export async function fetchPatientsToday() {
 }
 
 // Fetch all patients
-export async function fetchAllPatients() {
+export async function fetchAllPatients(): Promise<Patient[]> {
     try {
-        const response = await fetch("/api/patients");
+        const response = await fetch(`${process.env.API_URL}/patients`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
         const data = await response.json();
 
-        console.log(data);
-
-        return data;
+        return data.map((patient: any) => ({
+            ...patient,
+            appointments: patient.appointments || [],
+        }));
     } catch (error) {
-        console.error("Failed to fetch hospitals:", error);
+        console.error("Failed to fetch patients:", error);
         return [];
     }
+}
+
+// Fetch patients by hospitalId
+export async function fetchPatientsByHospital(hospitalId: number): Promise<Patient[]> {
+    try {
+        const response = await fetch(`${process.env.API_URL}/patients/byHospital/${hospitalId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        const data = await response.json();
+
+        return data.map((patient: any) => ({
+            ...patient,
+            appointments: patient.appointments || [],
+        }));
+    } catch (error) {
+        console.error('Failed to fetch patients by hospital:', error);
+        return [];
+    }
+}
+
+// Fetch patients based on user role
+export async function fetchPatientsByRole(user: any): Promise<Patient[]> {
+    if (user.role === 'SUPER_ADMIN') {
+        return await fetchAllPatients();
+    } else if (['ADMIN', 'DOCTOR', 'NURSE', 'STAFF'].includes(user.role)) {
+        if (user.hospitalId) {
+            return await fetchPatientsByHospital(user.hospitalId);
+        }
+    }
+    return [];
 }
 
 // Fetch patients for the last 14 days
 export async function fetchPatientsForLast14Days() {
     try {
-        const response = await fetch("/api/appointments/lastfortnight");
+        const response = await fetch(`${process.env.API_URL}/appointments/lastfortnight`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
         if (!response.ok) {
             throw new Error("Failed to fetch patients for the last 14 days");
         }
+
         const appointments: Appointment[] = await response.json();
 
-        // Extract and return unique patients
         const patientsMap: { [key: number]: boolean } = {};
         const uniquePatients = appointments
             .map((appointment) => appointment.patient)
@@ -306,7 +378,6 @@ export async function fetchPatientsForLast14Days() {
                 return false;
             });
 
-        // console.log(uniquePatients);
         return uniquePatients;
     } catch (error) {
         console.error("Error fetching patients for the last 14 days:", error);
@@ -317,7 +388,12 @@ export async function fetchPatientsForLast14Days() {
 // Fetch doctors by hospital
 export async function fetchDoctorsByHospital(hospitalId: number) {
     try {
-        const response = await fetch(`/api/doctors/byHospital/${hospitalId}`);
+        const response = await fetch(`${process.env.API_URL}/doctors/byHospital/${hospitalId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
         const data = await response.json();
         return data;
     } catch (error) {
@@ -329,12 +405,37 @@ export async function fetchDoctorsByHospital(hospitalId: number) {
 // Fetch inward referrals
 export async function fetchAllReferrals() {
     try {
-        const response = await fetch("/api/referrals");
-        const data = await response.json();
+        const response = await fetch(`${process.env.API_URL}/referrals`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
 
+        const data = await response.json();
         return data;
     } catch (error) {
-        console.error("Failed to fetch doctors:", error);
+        console.error("Failed to fetch referrals:", error);
         return [];
+    }
+}
+
+// Fetch departments
+export async function fetchDepartments() {
+    try {
+        const response = await fetch(`${process.env.API_URL}/departments`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch departments");
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Error fetching departments:", error);
+        throw error;
     }
 }

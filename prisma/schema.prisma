@@ -76,6 +76,8 @@ model Specialization {
   specializationId        Int      @id @default(autoincrement())
   name      String   @unique
   doctors   Doctor[]
+  Nurse Nurse[]
+  Staff Staff[]
 }
 
 model Doctor {
@@ -92,7 +94,7 @@ model Doctor {
   workingHours   String
   averageRating  Float
   appointments   Appointment[]
-  specialization Specialization? @relation(fields: [specializationId], references: [specializationId])
+  specialization Specialization @relation(fields: [specializationId], references: [specializationId])
   department     Department       @relation(fields: [departmentId], references: [departmentId])
   hospital       Hospital         @relation(fields: [hospitalId], references: [hospitalId])
   service        Service?         @relation(fields: [serviceId], references: [serviceId])
@@ -106,7 +108,7 @@ model Nurse {
   userId         String     @unique
   hospitalId     Int
   departmentId   Int
-  specialization String
+  specializationId Int
   status         String // "Online" or "Offline"
   phoneNo        String
   workingHours   String
@@ -114,6 +116,7 @@ model Nurse {
   user           User       @relation(fields: [userId], references: [userId], onDelete: Cascade)
   hospital       Hospital   @relation(fields: [hospitalId], references: [hospitalId])
   department     Department @relation(fields: [departmentId], references: [departmentId])
+  specialization Specialization @relation(fields: [specializationId], references: [specializationId])
 }
 
 model Staff {
@@ -121,7 +124,7 @@ model Staff {
   userId         String     @unique
   hospitalId     Int
   departmentId   Int
-  specialization String
+  specializationId Int
   status         String // "Online" or "Offline"
   phoneNo        String
   workingHours   String
@@ -129,6 +132,7 @@ model Staff {
   user           User       @relation(fields: [userId], references: [userId], onDelete: Cascade)
   hospital       Hospital   @relation(fields: [hospitalId], references: [hospitalId])
   department     Department @relation(fields: [departmentId], references: [departmentId])
+  specialization Specialization @relation(fields: [specializationId], references: [specializationId])
 }
 
 model Patient {

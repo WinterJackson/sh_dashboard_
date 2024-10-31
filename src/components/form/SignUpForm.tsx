@@ -58,7 +58,7 @@ const SignUpForm = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const hospitalsResponse = await fetch('/api/hospitals');
+            const hospitalsResponse = await fetch(`${process.env.API_URL}/hospitals`);
             const hospitalsData = await hospitalsResponse.json();
             setHospitals(hospitalsData);
         };
@@ -69,7 +69,7 @@ const SignUpForm = () => {
     const onSubmit = async (values: z.infer<typeof FormSchema>) => {
         setIsLoading(true);
 
-        const response = await fetch("/api/auth/register", {
+        const response = await fetch(`${process.env.API_URL}/auth/register`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

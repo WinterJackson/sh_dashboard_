@@ -16,6 +16,7 @@ import {
     fetchAppointments,
     fetchAppointmentsByHospital,
     updateAppointmentStatus,
+    updateAppointmentType,
 } from "@/lib/data";
 import dynamic from "next/dynamic";
 import {
@@ -86,7 +87,12 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
     >(undefined);
     const { searchTerm, clearSearchTerm } = useSearch();
     const [actionText, setActionText] = useState<{ [key: string]: string }>({});
-    const [typeText, setTypeText] = useState<{ [key: string]: string }>({});
+    const [typeText, setTypeText] = useState<{ [key: string]: string }>(() =>
+        appointments.reduce((acc, appointment) => {
+            acc[appointment.appointmentId] = appointment.type;
+            return acc;
+        }, {} as { [key: string]: string })
+    );
     const [openDialog, setOpenDialog] = useState(false);
     const [dialogType, setDialogType] = useState<string | undefined>(undefined);
     const [dialogAppointmentId, setDialogAppointmentId] = useState<
@@ -158,13 +164,16 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         status: string
     ) => {
         try {
-            const response = await fetch(`/api/appointments/${appointmentId}`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ status }),
-            });
+            const response = await fetch(
+                `${process.env.API_URL}/appointments/${appointmentId}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ status }),
+                }
+            );
 
             if (!response.ok) {
                 throw new Error(
@@ -245,8 +254,12 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         if (statusFilter) {
             filterMatch =
                 filterMatch &&
-                (statusFilter === "Confirmed" || statusFilter === "Completed" || statusFilter === "Rescheduled") ===
-                    (appointment.status === "Confirmed" || appointment.status === "Completed" || appointment.status === "Rescheduled");
+                (statusFilter === "Confirmed" ||
+                    statusFilter === "Completed" ||
+                    statusFilter === "Rescheduled") ===
+                    (appointment.status === "Confirmed" ||
+                        appointment.status === "Completed" ||
+                        appointment.status === "Rescheduled");
         }
 
         if (dateFilter) {
@@ -280,36 +293,99 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         }
     };
 
+    // const handleUpdateAppointmentType = async (
+    //     appointmentId: string,
+    //     type: string
+    // ) => {
+    //     // Optimistically update the UI immediately to reflect the selection
+    //     setTypeText((prev) => ({
+    //         ...prev,
+    //         [appointmentId]: type, // Set the new selected type for the specific appointment
+    //     }));
+
+    //     try {
+    //         // Send the PATCH request to update the type in the backend
+    //         const response = await fetch(`${process.env.API_URL}/appointments/${appointmentId}`, {
+    //             method: "PATCH",
+    //             headers: {
+    //                 "Content-Type": "application/json",
+    //             },
+    //             body: JSON.stringify({ type }),
+    //         });
+
+    //         if (!response.ok) {
+    //             throw new Error(
+    //                 `Error updating appointment type: ${response.statusText}`
+    //             );
+    //         }
+
+    //     } catch (error) {
+    //         console.error("Failed to update appointment type:", error);
+    //     }
+    // };
+
+    // Function to handle appointment type update
     const handleUpdateAppointmentType = async (
         appointmentId: string,
-        type: string
+        newType: string
     ) => {
-        // Optimistically update the UI immediately to reflect the selection
+        // Optimistically update the UI to reflect the selection
         setTypeText((prev) => ({
             ...prev,
-            [appointmentId]: type, // Set the new selected type for the specific appointment
+            [appointmentId]: newType,
         }));
 
-        try {
-            // Send the PATCH request to update the type in the backend
-            const response = await fetch(`/api/appointments/${appointmentId}`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ type }),
-            });
+        // Attempt backend update
+        const { success, updatedType } = await updateAppointmentType(
+            appointmentId,
+            newType
+        );
 
-            if (!response.ok) {
-                throw new Error(
-                    `Error updating appointment type: ${response.statusText}`
-                );
+        // If update fails, revert to the previous state
+        if (!success) {
+            console.error("Failed to update appointment type");
+            setTypeText((prev) => ({
+                ...prev,
+                [appointmentId]:
+                    appointments.find((a) => a.appointmentId === appointmentId)
+                        ?.type || newType,
+            }));
+        } else if (updatedType) {
+            // Confirmed update from the backend
+            setTypeText((prev) => ({
+                ...prev,
+                [appointmentId]: updatedType,
+            }));
+        }
+    };
+
+    // Render pages with ellipsis
+    const getPageNumbers = () => {
+        const pages: (number | string)[] = [];
+        if (totalPages <= 7) {
+            // Show all pages if total pages are less than 7
+            for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+            // Always show first page
+            pages.push(1);
+
+            if (page > 4) pages.push("..."); // Ellipsis after the first page
+
+            // Show two pages before and after current page
+            for (
+                let i = Math.max(2, page - 2);
+                i <= Math.min(totalPages - 1, page + 2);
+                i++
+            ) {
+                pages.push(i);
             }
 
-            // The backend update is successful, no need to change state again
-        } catch (error) {
-            console.error("Failed to update appointment type:", error);
+            if (page < totalPages - 3) pages.push("..."); // Ellipsis before the last page
+
+            // Always show the last page
+            pages.push(totalPages);
         }
+        return pages;
     };
 
     return (
@@ -527,66 +603,38 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                                           </td>
                                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                                               <DropdownMenu>
-                                                  <DropdownMenuTrigger className="flex w-auto justify-center p-1 border-gray-300 rounded max-w-[120px] bg-gray-100 text-gray-700">
+                                                  <DropdownMenuTrigger className="flex w-auto justify-center p-1 border-gray-300 rounded-[5px] max-w-[120px] bg-gray-100 text-gray-700">
                                                       <span className="flex gap-1 items-center">
-                                                          {(() => {
-                                                              let icon;
-                                                              let label;
-
-                                                              if (
+                                                          {typeText[
+                                                              appointment
+                                                                  .appointmentId
+                                                          ] === "Virtual" ? (
+                                                              <VideoCameraFrontIcon className="text-primary" />
+                                                          ) : (
+                                                              <PlaceIcon className="text-black/70" />
+                                                          )}
+                                                          <span>
+                                                              {
                                                                   typeText[
                                                                       appointment
                                                                           .appointmentId
-                                                                  ] ===
-                                                                      "Virtual" ||
-                                                                  appointment.type ===
-                                                                      "Virtual"
-                                                              ) {
-                                                                  icon = (
-                                                                      <VideoCameraFrontIcon className="text-primary" />
-                                                                  );
-                                                                  label =
-                                                                      "Virtual";
-                                                              } else if (
-                                                                  typeText[
-                                                                      appointment
-                                                                          .appointmentId
-                                                                  ] ===
-                                                                      "Walk In" ||
-                                                                  appointment.type ===
-                                                                      "Walk In"
-                                                              ) {
-                                                                  icon = (
-                                                                      <PlaceIcon className="text-black/70" />
-                                                                  );
-                                                                  label =
-                                                                      "Walk In";
+                                                                  ]
                                                               }
-
-                                                              return (
-                                                                  <>
-                                                                      {icon}
-                                                                      <span className="pl-2">
-                                                                          {
-                                                                              label
-                                                                          }
-                                                                      </span>
-                                                                  </>
-                                                              );
-                                                          })()}
-                                                          <ArrowDropDownIcon />
+                                                          </span>
+                                                          <ArrowDropDownIcon className="ml-1 text-gray-500" />
                                                       </span>
                                                   </DropdownMenuTrigger>
-                                                  <DropdownMenuContent>
-                                                      <DropdownMenuItem
+                                                  <DropdownMenuContent className=" rounded-[10px] shadow-md p-2">
+                                                  <DropdownMenuItem
                                                           onSelect={() =>
                                                               handleUpdateAppointmentType(
                                                                   appointment.appointmentId,
                                                                   "Virtual"
                                                               )
                                                           }
+                                                          className="p-2 rounded-[5px]"
                                                       >
-                                                          <VideoCameraFrontIcon className="text-primary mr-2" />
+                                                          <VideoCameraFrontIcon className="text-black/70 mr-2" />
                                                           Virtual
                                                       </DropdownMenuItem>
                                                       <DropdownMenuItem
@@ -596,6 +644,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                                                                   "Walk In"
                                                               )
                                                           }
+                                                          className="p-2 rounded-[5px]"
                                                       >
                                                           <PlaceIcon className="text-black/70 mr-2" />
                                                           Walk In
@@ -619,14 +668,15 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                                                               <ArrowDropDownIcon />
                                                           </span>
                                                       </DropdownMenuTrigger>
-                                                      <DropdownMenuContent>
-                                                          <DropdownMenuItem
+                                                      <DropdownMenuContent className=" rounded-[10px] shadow-md p-2">
+                                                      <DropdownMenuItem
                                                               onSelect={() => {
                                                                   handleDialogOpen(
                                                                       "Reschedule",
                                                                       appointment.appointmentId
                                                                   );
                                                               }}
+                                                              className="p-2 rounded-[5px]"
                                                           >
                                                               Reschedule
                                                           </DropdownMenuItem>
@@ -637,6 +687,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                                                                       appointment.appointmentId
                                                                   );
                                                               }}
+                                                              className="p-2 rounded-[5px]"
                                                           >
                                                               Cancel
                                                           </DropdownMenuItem>
@@ -647,6 +698,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                                                                       appointment.appointmentId
                                                                   );
                                                               }}
+                                                              className="p-2 rounded-[5px]"
                                                           >
                                                               Pending
                                                           </DropdownMenuItem>
@@ -657,6 +709,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                                                                       "Confirmed"
                                                                   );
                                                               }}
+                                                              className="p-2 rounded-[5px]"
                                                           >
                                                               Confirm
                                                           </DropdownMenuItem>
@@ -667,6 +720,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                                                                       "Completed"
                                                                   );
                                                               }}
+                                                              className="p-2 rounded-[5px]"
                                                           >
                                                               Completed
                                                           </DropdownMenuItem>
@@ -681,74 +735,50 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                 </table>
             </div>
 
-            <Pagination className="mt-4 bg-bluelight p-3 rounded-b-[10px]">
-                <PaginationContent>
-                    {page > 1 && (
-                        <PaginationPrevious
-                            className="px-4 py-2 rounded-[10px] select-none"
-                            onClick={() => handlePageChange(page - 1)}
-                        />
-                    )}
+            <Pagination className="mt-4 bg-bluelight p-4 rounded-b-2xl">
+                <PaginationPrevious
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page === 1}
+                    className="px-3 py-1 mx-1 bg-gray-200 text-gray-700 rounded-[10px] mr-4 hover:bg-gray-300 disabled:opacity-50 cursor-pointer"
+                >
+                    Previous
+                </PaginationPrevious>
 
-                    {/* Render "1" only if the current page is not 1 */}
-                    {page !== 1 && (
-                        <PaginationItem
-                            className="px-4 py-2 rounded-[10px] select-none"
-                            onClick={() => handlePageChange(1)}
-                        >
-                            1
-                        </PaginationItem>
-                    )}
-
-                    {page > 3 && (
-                        <PaginationEllipsis className="px-4 py-2 rounded-[10px] select-none" />
-                    )}
-
-                    {page > 2 && (
-                        <PaginationItem
-                            className="px-4 py-2 rounded-[10px] select-none"
-                            onClick={() => handlePageChange(page - 1)}
-                        >
-                            {page - 1}
-                        </PaginationItem>
-                    )}
-
-                    <PaginationItem
-                        isActive={true}
-                        className="px-4 py-2 rounded-[10px] select-none"
-                    >
-                        {page}
-                    </PaginationItem>
-
-                    {page < totalPages - 1 && (
-                        <PaginationItem
-                            className="px-4 py-2 rounded-[10px] select-none"
-                            onClick={() => handlePageChange(page + 1)}
-                        >
-                            {page + 1}
-                        </PaginationItem>
-                    )}
-
-                    {page < totalPages - 2 && (
-                        <PaginationEllipsis className="px-4 py-2 rounded-[10px] select-none" />
-                    )}
-
-                    {page !== totalPages && (
-                        <PaginationItem
-                            className="px-4 py-2 rounded-[10px] select-none"
-                            onClick={() => handlePageChange(totalPages)}
-                        >
-                            {totalPages}
-                        </PaginationItem>
-                    )}
-
-                    {page < totalPages && (
-                        <PaginationNext
-                            className="px-4 py-2 rounded-[10px] select-none"
-                            onClick={() => handlePageChange(page + 1)}
-                        />
+                <PaginationContent className="flex items-center gap-2">
+                    {getPageNumbers().map((pageNumber, index) =>
+                        pageNumber === "..." ? (
+                            <PaginationEllipsis
+                                key={index}
+                                className="px-3 py-1 text-gray-500"
+                            >
+                                ...
+                            </PaginationEllipsis>
+                        ) : (
+                            <PaginationItem
+                                key={index}
+                                isActive={pageNumber === page}
+                                onClick={() =>
+                                    handlePageChange(Number(pageNumber))
+                                }
+                                className={`px-3 py-1 rounded-[10px] cursor-pointer transition-colors ${
+                                    pageNumber === page
+                                        ? "bg-primary text-white"
+                                        : "bg-gray-100 text-gray-700 hover:bg-blue-200"
+                                }`}
+                            >
+                                {pageNumber}
+                            </PaginationItem>
+                        )
                     )}
                 </PaginationContent>
+
+                <PaginationNext
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page === totalPages}
+                    className="px-3 py-1 mx-1 bg-gray-200 text-gray-700 rounded-[10px] ml-4 hover:bg-gray-300 disabled:opacity-50 cursor-pointer"
+                >
+                    Next
+                </PaginationNext>
             </Pagination>
 
             {openDialog && dialogType && dialogAppointmentId && (

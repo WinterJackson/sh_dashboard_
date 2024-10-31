@@ -113,7 +113,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
     
             // console.log(requestBody);
     
-            const response = await fetch(`/api/appointments/${appointmentId}`, {
+            const response = await fetch(`${process.env.API_URL}/appointments/${appointmentId}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",

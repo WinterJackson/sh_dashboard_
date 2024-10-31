@@ -5,7 +5,7 @@ type Props = {};
 
 function LearnMoreCard({}: Props) {
     return (
-        <div className="p-4 flex flex-col gap-6 bg-[#006FDBB2] text-white rounded-xl w-full">
+        <div className="p-4 flex flex-col gap-6 bg-[#006FDBB2] text-white rounded-xl w-full shadow-lg shadow-gray-300">
             <h1 className="font-semibold capitalize text-wrap text-center">
                 Snark health is now available in 10 African countries
             </h1>

@@ -13,7 +13,9 @@ export async function GET(
     const token = await getToken({ req });
     if (
         !token ||
-        ![Role.SUPER_ADMIN, Role.ADMIN, Role.DOCTOR].includes(token.role as Role)
+        ![Role.SUPER_ADMIN, Role.ADMIN, Role.DOCTOR].includes(
+            token.role as Role
+        )
     ) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -23,8 +25,17 @@ export async function GET(
     try {
         const doctor = await prisma.doctor.findUnique({
             where: { doctorId: parseInt(doctorId) },
-            include: { hospital: true, user: true },
+            include: {
+                hospital: true,
+                user: true,
+                specialization: {
+                    select: {
+                        name: true,
+                    },
+                }, 
+            },
         });
+
         if (!doctor) {
             return NextResponse.json(
                 { error: "Doctor not found" },

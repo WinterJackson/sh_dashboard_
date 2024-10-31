@@ -1,3 +1,5 @@
+/* src/styles/global.css */
+
 @tailwind base;
   @tailwind components;
   @tailwind utilities;
@@ -6,8 +8,8 @@
     overflow: hidden;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3; /* Number of lines to show */
-    line-clamp: 3; /* Number of lines to show */
+    -webkit-line-clamp: 3; /* Number of lines */
+    line-clamp: 3; /* Number of lines */
     
   }
 
@@ -18,14 +20,14 @@
 }
 
 .scrollbar-custom::-webkit-scrollbar {
-  width: 2px; /* Width of the vertical scrollbar */
-  height: 2px; /* Height of the horizontal scrollbar */
+  width: 2px; /* Width for vertical scrollbar */
+  height: 2px; /* Height for horizontal scrollbar */
   display: none;
 }
 
 .scrollbar-custom::-webkit-scrollbar-thumb {
   background-color: #8d8d8d7e; /* Scrollbar thumb (draggable part) color */
-  border-radius: 4px; /* Roundness of the scrollbar thumb */
+  border-radius: 4px; /* Roundness of scrollbar thumb */
 }
 
 .scrollbar-custom::-webkit-scrollbar-track {
@@ -37,6 +39,43 @@
   background-color: #8d8d8d7e; /* Scrollbar thumb color for horizontal axis */
   border-radius: 4px;
   width: 2px;
+}
+
+ /* Custom calender */
+
+.custom-datepicker {
+  padding: 5px;
+  margin-top: 5px;
+  margin-left: 10px;
+  border-radius: 10px !important;
+}
+
+ /* Customize header */
+.custom-datepicker .react-datepicker__header {
+  @apply bg-bluelight/10 text-black;
+}
+
+
+/* Style for selected day */
+.custom-datepicker .react-datepicker__day--selected,
+.custom-datepicker__day--keyboard-selected {
+  @apply bg-bluelight text-black;
+}
+
+
+/* Hover effect */
+.custom-datepicker .react-datepicker__day:hover {
+  @apply bg-primary text-white;
+}
+
+/* Month display style */
+.custom-datepicker .react-datepicker__current-month {
+  @apply font-bold text-lg text-gray-800;
+}
+
+/* Style for days outside the current month */
+.custom-datepicker .react-datepicker__day--outside-month {
+  @apply text-gray-400;
 }
 
   /* @layer base {
