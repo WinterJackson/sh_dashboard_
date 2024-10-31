@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Appointment } from "@/lib/definitions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/appointments/DatePicker";
@@ -387,6 +387,15 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         }
         return pages;
     };
+
+    useEffect(() => {
+        // Update typeText state with the current appointment types for the current page
+        const initialTypeText = appointments.reduce((acc, appointment) => {
+            acc[appointment.appointmentId] = appointment.type;
+            return acc;
+        }, {} as { [key: string]: string });
+        setTypeText(initialTypeText);
+    }, [appointments, page]);
 
     return (
         <div className="flex flex-col min-w-full">
