@@ -1,32 +1,30 @@
 // File: src/app/api/hospitals/[hospitalId]/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
-import { Role } from "@/lib/definitions";
 
 const prisma = require("@/lib/prisma");
 
+/**
+ * Handle GET requests to fetch a hospital by ID.
+ */
 export async function GET(
-    req: NextRequest,
+    req: Request,
     { params }: { params: { hospitalId: string } }
 ) {
-    const token = await getToken({ req });
-    if (!token || ![Role.SUPER_ADMIN, Role.ADMIN].includes(token.role as Role)) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { hospitalId } = params;
 
     try {
         const hospital = await prisma.hospital.findUnique({
             where: { hospitalId: parseInt(hospitalId) },
         });
+
         if (!hospital) {
             return NextResponse.json(
                 { error: "Hospital not found" },
                 { status: 404 }
             );
         }
+
         return NextResponse.json(hospital, { status: 200 });
     } catch (error) {
         console.error("Failed to fetch hospital details:", error);
@@ -37,12 +35,10 @@ export async function GET(
     }
 }
 
-export async function POST(req: NextRequest) {
-    const token = await getToken({ req });
-    if (!token || token.role !== Role.SUPER_ADMIN) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
+/**
+ * Handle POST requests to create a new hospital.
+ */
+export async function POST(req: Request) {
     const body = await req.json();
     const { name, address } = body;
 
@@ -60,15 +56,13 @@ export async function POST(req: NextRequest) {
     }
 }
 
+/**
+ * Handle PUT requests to update an existing hospital.
+ */
 export async function PUT(
-    req: NextRequest,
+    req: Request,
     { params }: { params: { hospitalId: string } }
 ) {
-    const token = await getToken({ req });
-    if (!token || token.role !== Role.SUPER_ADMIN) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { hospitalId } = params;
     const body = await req.json();
 
@@ -87,22 +81,23 @@ export async function PUT(
     }
 }
 
+/**
+ * Handle DELETE requests to remove a hospital by ID.
+ */
 export async function DELETE(
-    req: NextRequest,
+    req: Request,
     { params }: { params: { hospitalId: string } }
 ) {
-    const token = await getToken({ req });
-    if (!token || token.role !== Role.SUPER_ADMIN) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { hospitalId } = params;
 
     try {
         await prisma.hospital.delete({
             where: { hospitalId: parseInt(hospitalId) },
         });
-        return NextResponse.json({ message: "Hospital deleted successfully" }, { status: 200 });
+        return NextResponse.json(
+            { message: "Hospital deleted successfully" },
+            { status: 200 }
+        );
     } catch (error) {
         console.error("Error deleting hospital:", error);
         return NextResponse.json(

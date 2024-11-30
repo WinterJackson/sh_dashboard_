@@ -2,10 +2,22 @@
 
 import React from "react";
 import Image from "next/image";
+import { getSession } from "@/lib/session";
+import { redirect } from "next/navigation";
 
 type Props = {};
 
-export default function SettingsPage({}: Props) {
+export default async function SettingsPage({}: Props) {
+    const session = await getSession();
+
+    // Redirect unauthenticated users to the sign-in page
+    if (!session || !session.user) {
+        redirect("/sign-in");
+        return null;
+    }
+
+    const { user } = session;
+
     return (
         <div className="flex flex-col w-full h-full ">
             <form className="flex flex-col gap-4 ">

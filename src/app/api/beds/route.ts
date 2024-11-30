@@ -1,4 +1,4 @@
-// File: app/api/beds/route.ts
+// File: src/app/api/beds/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 // import prisma from "@/lib/prisma";
 
@@ -12,7 +12,6 @@ export async function GET(req: NextRequest) {
                 hospital: true,
             },
         });
-        // console.log(beds)
     
         return NextResponse.json(beds);
     } catch (error) {

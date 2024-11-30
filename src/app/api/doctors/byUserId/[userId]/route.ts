@@ -16,8 +16,6 @@ export async function GET(
         );
     }
 
-    console.log(params)
-
     const { userId } = params;
 
     try {

@@ -1,21 +1,14 @@
 // src/app/api/profile/[userId]/route.ts
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/authOptions";
 import { NextRequest, NextResponse } from 'next/server';
 const prisma = require("@/lib/prisma")
 
-export async function GET(req: NextRequest) {
+/**
+ * GET user profile by userId.
+ */
+export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
+    const userId = params.userId;
+
     try {
-        const session = await getServerSession({ req, ...authOptions });
-
-        if (!session?.user?.id) {
-            return NextResponse.json({ message: "Unauthorized" });
-        }
-
-        const userId = session.user.id;
-
-        // console.log(userId)
-
         const profile = await prisma.profile.findUnique({
             where: { userId },
             select: {
@@ -34,12 +27,12 @@ export async function GET(req: NextRequest) {
         });
 
         if (!profile) {
-            return NextResponse.json({ message: "Profile not found" });
+            return NextResponse.json({ message: "Profile not found" }, { status: 404 });
         }
 
         return NextResponse.json(profile);
     } catch (error) {
-        console.error('Error fetching profile:', error);
-        NextResponse.json({ message: 'Internal server error' });
+        console.error("Error fetching profile:", error);
+        return NextResponse.json({ message: "Internal server error" }, { status: 500 });
     }
 }

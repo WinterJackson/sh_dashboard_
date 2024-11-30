@@ -1,12 +1,21 @@
 // src/app/(auth)/dashboard/settings/support/page.tsx
 
+import { getSession } from "@/lib/session";
+import { redirect } from "next/navigation";
 import FAQ from "@/components/settings/FAQs/FAQ";
 import React from "react";
 import Image from "next/image";
 
-type Props = {};
+export default async function SupportPage() {
+    // Fetch session data
+    const session = await getSession();
 
-export default function SupportPage({}: Props) {
+    // Redirect unauthenticated users to the sign-in page
+    if (!session || !session.user) {
+        redirect("/sign-in");
+        return null;
+    }
+
     return (
         <div className="flex gap-10 h-full">
             {/* left */}

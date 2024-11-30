@@ -3,74 +3,59 @@
 import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import PatientsList from "@/components/patients/PatientsList";
-import { Patient, Role, Session } from "@/lib/definitions";
+import { Patient, Role } from "@/lib/definitions";
 import React from "react";
 
 const prisma = require("@/lib/prisma");
 
 // Fetch patients based on user role and hospital association
-async function fetchPatients(sessionUser: Session["user"]): Promise<Patient[]> {
-    if (sessionUser.role === Role.SUPER_ADMIN) {
+async function fetchPatients(user: { role: Role; hospitalId?: number | null }): Promise<Patient[]> {
+    if (user.role === "SUPER_ADMIN") {
         // Fetch all patients for SUPER_ADMIN
-        return await prisma.patient.findMany({
-            include: {
-                hospital: true,
-                appointments: true,
-            },
-        });
-    } else if (sessionUser.hospitalId) {
-        // Fetch patients for specific hospital for other roles
-        return await prisma.patient.findMany({
-            where: { hospitalId: sessionUser.hospitalId },
+        return prisma.patient.findMany({
             include: {
                 hospital: true,
                 appointments: true,
             },
         });
     }
+
+    if (user.hospitalId) {
+        // Fetch patients for specific hospital for other roles
+        return prisma.patient.findMany({
+            where: { hospitalId: user.hospitalId },
+            include: {
+                hospital: true,
+                appointments: true,
+            },
+        });
+    }
+
     return [];
 }
 
 export default async function PatientsPage() {
-    const authSession = await getSession();
+    // Get the session using the centralized `getSession` function
+    const session = await getSession();
 
     // Redirect to sign-in page if no valid session found
-    if (!authSession) {
+    if (!session || !session.user) {
         redirect("/sign-in");
         return null;
     }
 
-    // Define session structure and extract user details
-    const session: Session | null = authSession
-        ? {
-              userId: authSession.user?.id ?? "",
-              expires: new Date(authSession.expires),
-              createdAt: new Date(),
-              updatedAt: new Date(),
-              user: {
-                  id: authSession.user?.id ?? "",
-                  username: authSession.user?.name ?? "",
-                  role: authSession.user?.role as Role,
-                  hospitalId: authSession.user?.hospitalId ?? null,
-                  hospital: authSession.user?.hospital ?? null,
-              },
-          }
-        : null;
+    const { user } = session;
 
-    // Fetch patients based on session user role and hospital association
-    const allPatients = session?.user ? await fetchPatients(session.user) : [];
-    const totalPatients = allPatients.length;
-
-    // Fetch all hospitals for filtering and display
+    // Fetch patients and hospitals
+    const patients = await fetchPatients(user);
+    const totalPatients = patients.length;
     const hospitals = await prisma.hospital.findMany();
 
     return (
         <div className="flex flex-col gap-3 p-3">
-            <h1 className="text-xl font-bold bg-bluelight/5 p-2 rounded-[10px]">
-                Patients
-            </h1>
+            <h1 className="text-xl font-bold bg-bluelight/5 p-2 rounded-[10px]">Patients</h1>
             <PatientsList
-                patients={allPatients}
+                patients={patients}
                 totalPatients={totalPatients}
                 hospitals={hospitals}
                 session={session}

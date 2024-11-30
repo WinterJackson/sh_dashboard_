@@ -5,12 +5,14 @@ const prisma = require("@/lib/prisma");
 
 export async function GET(req: NextRequest) {
     try {
+        // Calculate date range
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
         const fourteenDaysAgo = new Date(today);
         fourteenDaysAgo.setDate(today.getDate() - 13);
 
+        // Fetch appointments from the last 14 days
         const appointments = await prisma.appointment.findMany({
             where: {
                 appointmentDate: {
@@ -38,6 +40,9 @@ export async function GET(req: NextRequest) {
         return NextResponse.json(appointments, { status: 200 });
     } catch (error) {
         console.error("Error fetching appointments for the last 14 days:", error);
-        return NextResponse.json({ error: 'Error fetching appointments for the last 14 days' }, { status: 500 });
+        return NextResponse.json(
+            { error: "Error fetching appointments for the last 14 days" },
+            { status: 500 }
+        );
     }
 }

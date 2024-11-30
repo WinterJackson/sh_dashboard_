@@ -22,15 +22,18 @@ interface HospitalsPageProps {
 }
 
 export default async function HospitalsPage({ searchParams }: HospitalsPageProps) {
+    // Fetch session
     const session = await getSession();
 
-    // Check for session and user role
-    if (!session || session?.user?.role !== Role.SUPER_ADMIN) {
+    // Redirect if session is invalid or user role isn't SUPER_ADMIN
+    if (!session || session.user.role !== Role.SUPER_ADMIN) {
         redirect("/sign-in");
         return null;
     }
 
     const page = parseInt(searchParams.page || "1");
+
+    // Fetch hospitals and total hospital count
     const [hospitals, totalHospitals] = await prisma.$transaction([
         prisma.hospital.findMany({
             skip: (page - 1) * ITEMS_PER_PAGE,
@@ -44,8 +47,16 @@ export default async function HospitalsPage({ searchParams }: HospitalsPageProps
             <h1 className="text-xl font-bold bg-bluelight/5 p-2 rounded-[10px]">
                 Hospitals
             </h1>
-            <HospitalsTable hospitals={hospitals} totalHospitals={totalHospitals} currentPage={page} />
-            <HospitalsPagination totalItems={totalHospitals} itemsPerPage={ITEMS_PER_PAGE} currentPage={page} />
+            <HospitalsTable 
+                hospitals={hospitals} 
+                totalHospitals={totalHospitals} 
+                currentPage={page} 
+            />
+            <HospitalsPagination 
+                totalItems={totalHospitals} 
+                itemsPerPage={ITEMS_PER_PAGE} 
+                currentPage={page} 
+            />
         </div>
     );
 }

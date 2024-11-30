@@ -38,15 +38,21 @@ const protectedRoutes = [
     { path: "/api/messages", roles: accessGroups.doctorNurse },
     { path: "/api/nurses", roles: accessGroups.nurseOnly },
     { path: "/api/patients", roles: accessGroups.allRoles },
+    { path: "/api/patients/byHospital", roles: accessGroups.allRoles },
+    { path: "/api/patients/byId", roles: accessGroups.allRoles },
     { path: "/api/payments", roles: accessGroups.superAdminAdmin },
     { path: "/api/profiles", roles: accessGroups.allRoles },
-    { path: "/api/referrals", roles: accessGroups.doctorOnly },
+    { path: "/api/referrals", roles: accessGroups.allRoles },
     { path: "/api/reset-password", roles: accessGroups.superAdminAdmin },
     { path: "/api/roles", roles: accessGroups.adminOnly },
     { path: "/api/specializations", roles: accessGroups.superAdminAdmin },
     { path: "/api/staff", roles: accessGroups.superAdminAdmin },
     { path: "/api/upload", roles: accessGroups.superAdminAdmin },
     { path: "/api/users", roles: accessGroups.superAdminAdmin },
+
+    { path: "/api-landing", roles: accessGroups.superAdminAdmin },
+    { path: "/api-viewer", roles: accessGroups.superAdminAdmin },
+
 ];
 
 export default async function middleware(req: NextRequest) {
@@ -74,5 +80,5 @@ export default async function middleware(req: NextRequest) {
 
 // Apply middleware to protected routes
 export const config = {
-    matcher: ["/dashboard/:path*", "/api/:path*"],
+    matcher: ["/dashboard/:path*", "/api/:path*", "/api-landing/:path*", "/api-viewer/:path*"],
 };

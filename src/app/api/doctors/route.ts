@@ -1,23 +1,12 @@
 // File: src/app/api/doctors/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { sendEmail } from "@/lib/email";
-import { Role } from "@/lib/definitions";
 import { Prisma } from "@prisma/client";
 
 const prisma = require("@/lib/prisma");
-
-/**
- * Middleware for checking authentication and authorization.
- * Ensures only `ADMIN` or `SUPER_ADMIN` can access the route.
- */
-async function isAuthorized(req: NextRequest) {
-    const token = await getToken({ req });
-    return token && (token.role === Role.ADMIN || token.role === Role.SUPER_ADMIN) ? token : false;
-}
 
 /**
  * GET: Retrieve the list of doctors.
@@ -72,14 +61,6 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
     try {
-        const token = await isAuthorized(req);
-        if (!token) {
-            return NextResponse.json(
-                { error: "Unauthorized" },
-                { status: 401 }
-            );
-        }
-
         const body = (await req.json()) as {
             firstName: string;
             lastName: string;
@@ -165,7 +146,7 @@ export async function POST(req: NextRequest) {
                         username: `${body.firstName}_${body.lastName}`,
                         email: body.email,
                         password: await bcrypt.hash(body.firstName, 10),
-                        role: Role.DOCTOR,
+                        role: "DOCTOR",
                         hospitalId: body.hospitalId,
                         mustResetPassword: true,
                         resetToken: hashedToken,

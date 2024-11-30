@@ -1,15 +1,14 @@
 // src/app/(auth)/sign-up/page.tsx
 
 import SignUpForm from "@/components/form/SignUpForm";
-import { authOptions } from "@/lib/authOptions";
-import { getServerSession } from "next-auth";
+import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import logo from "../../../../public/images/logo.png";
 import Image from "next/image";
 import AuthLayout from "../layout";
 
 const SignUpPage = async () => {
-    const session = await getServerSession(authOptions);
+    const session = await getSession();
 
     if (session) {
         redirect("/dashboard");

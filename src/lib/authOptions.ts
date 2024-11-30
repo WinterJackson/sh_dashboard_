@@ -1,6 +1,6 @@
 // src/lib/authOptions.ts
 
-import { NextAuthOptions, User } from "next-auth";
+import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcryptjs";
@@ -28,37 +28,31 @@ export const authOptions: NextAuthOptions = {
                     throw new Error("Please provide both email and password.");
                 }
 
-                try {
-                    // Fetch the user from the database
-                    const user = await prisma.user.findUnique({
-                        where: { email: credentials.email },
-                        select: {
-                            userId: true,
-                            password: true,
-                            username: true,
-                            email: true,
-                            role: true,
-                            hospital: { select: { hospitalId: true, name: true } },
-                        },
-                    });
+                // Fetch the user
+                const user = await prisma.user.findUnique({
+                    where: { email: credentials.email },
+                    select: {
+                        userId: true,
+                        password: true,
+                        username: true,
+                        email: true,
+                        role: true,
+                        hospital: { select: { hospitalId: true, name: true } },
+                    },
+                });
 
-                    if (!user || !(await bcrypt.compare(credentials.password, user.password))) {
-                        throw new Error("Invalid email or password.");
-                    }
-
-                    // Return user object for successful authentication
-                    return {
-                        id: user.userId,
-                        username: user.username,
-                        email: user.email,
-                        role: user.role as Role,
-                        hospitalId: user.hospital?.hospitalId || null,
-                        hospital: user.hospital?.name || null,
-                    } as User;
-                } catch (error) {
-                    console.error("Authorization error:", error);
-                    throw new Error("An error occurred during authorization.");
+                if (!user || !(await bcrypt.compare(credentials.password, user.password))) {
+                    throw new Error("Invalid email or password.");
                 }
+
+                return {
+                    id: user.userId,
+                    username: user.username,
+                    email: user.email,
+                    role: user.role as Role,
+                    hospitalId: user.hospital?.hospitalId || null,
+                    hospital: user.hospital?.name || null,
+                };
             },
         }),
     ],
@@ -72,74 +66,58 @@ export const authOptions: NextAuthOptions = {
     },
     callbacks: {
         async session({ session, token }) {
-            try {
-                if (token) {
-                    session.user = {
-                        id: token.id as string,
-                        username: token.username as string,
-                        role: token.role as Role,
-                        hospitalId: token.hospitalId as number | null,
-                        hospital: token.hospital as string | null,
-                    };
-                }
-                return session;
-            } catch (error) {
-                console.error("Error creating session:", error);
-                throw new Error("Session creation failed.");
+            if (token) {
+                session.user = {
+                    id: token.id as string,
+                    username: token.username as string,
+                    role: token.role as Role,
+                    hospitalId: token.hospitalId as number | null,
+                    hospital: token.hospital as string | null,
+                };
             }
+            return session;
         },
         async jwt({ token, user }) {
-            try {
-                if (user) {
-                    token.id = user.id;
-                    token.username = user.username;
-                    token.role = user.role as Role;
-                    token.hospitalId = user.hospitalId as number | null;
-                    token.hospital = user.hospital as string | null;
+            if (user) {
+                token.id = user.id;
+                token.username = user.username;
+                token.role = user.role as Role;
+                token.hospitalId = user.hospitalId as number | null;
+                token.hospital = user.hospital as string | null;
 
-                    token.sessionToken = token.sessionToken || crypto.randomUUID();
+                token.sessionToken = token.sessionToken || crypto.randomUUID();
 
-                    const existingSession = token.sessionToken
-                        ? await prisma.session.findUnique({
-                              where: { sessionToken: token.sessionToken },
-                          })
-                        : null;
+                const existingSession = await prisma.session.findUnique({
+                    where: { sessionToken: token.sessionToken },
+                });
 
-                    if (existingSession) {
-                        await prisma.session.update({
-                            where: { sessionToken: token.sessionToken },
-                            data: { expires: new Date(Date.now() + 10 * 60 * 1000) },
-                        });
-                    } else {
-                        await prisma.session.create({
-                            data: {
-                                sessionToken: token.sessionToken,
-                                userId: user.id,
-                                expires: new Date(Date.now() + 10 * 60 * 1000),
-                            },
-                        });
-                    }
+                if (existingSession) {
+                    await prisma.session.update({
+                        where: { sessionToken: token.sessionToken },
+                        data: { expires: new Date(Date.now() + 10 * 60 * 1000) },
+                    });
+                } else {
+                    await prisma.session.create({
+                        data: {
+                            sessionToken: token.sessionToken,
+                            userId: user.id,
+                            expires: new Date(Date.now() + 10 * 60 * 1000),
+                        },
+                    });
                 }
-
-                return token;
-            } catch (error) {
-                console.error("JWT callback error:", error);
-                throw new Error("JWT processing failed.");
             }
+
+            return token;
         },
     },
     events: {
         async signOut({ token }) {
-            try {
-                if (token.sessionToken) {
-                    await prisma.session.deleteMany({
-                        where: { sessionToken: token.sessionToken },
-                    });
-                }
-                clearSessionCache(); // Ensure cache is cleared
-            } catch (error) {
-                console.error("Error during sign out:", error);
+            if (token.sessionToken) {
+                await prisma.session.deleteMany({
+                    where: { sessionToken: token.sessionToken },
+                });
             }
+            clearSessionCache();
         },
     },
 };

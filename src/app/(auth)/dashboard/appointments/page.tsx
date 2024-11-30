@@ -9,36 +9,21 @@ import { fetchAllHospitals } from "@/lib/data";
 const prisma = require("@/lib/prisma");
 
 export default async function AppointmentsPage() {
-    const authSession = await getSession();
+    const session = await getSession();
 
-    if (!authSession) {
+    if (!session || !session.user) {
         redirect("/sign-in");
         return null;
     }
 
-    // session structure with required properties
-    const session: Session = {
-        userId: authSession.user?.id ?? "",
-        expires: new Date(authSession.expires),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        user: {
-            id: authSession.user?.id ?? "",
-            username: authSession.user?.name ?? "",
-            role: authSession.user?.role as Role ?? "DOCTOR",
-            hospitalId: authSession.user?.hospitalId ?? null,
-            hospital: authSession.user?.hospital ?? null,
-        },
-    };
-
-    const { role, hospitalId } = session.user || {};
+    const { role, hospitalId } = session.user;
 
     // Fetch appointments and total count based on role
     let appointments: Appointment[] = [];
     let totalAppointments = 0;
     let hospitals: Hospital[] = [];
 
-    if (role === "SUPER_ADMIN") {
+    if (role === Role.SUPER_ADMIN) {
         [appointments, totalAppointments] = await prisma.$transaction([
             prisma.appointment.findMany({
                 include: {

@@ -11,7 +11,7 @@ export async function GET(req: NextRequest, { params }: { params: { name: string
         const patient = await prisma.patient.findUnique({
             where: { name },
             include: {
-                hospital: true,  // Include hospital details in the response
+                hospital: true,
             },
         });
         if (!patient) {

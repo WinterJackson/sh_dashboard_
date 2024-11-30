@@ -3,13 +3,13 @@
 import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import DoctorsList from "@/components/doctors/DoctorsList";
-import { Doctor, Session, Hospital, Department, Role } from "@/lib/definitions";
+import { Doctor, Department, Hospital, Role } from "@/lib/definitions";
 import React from "react";
 
 const prisma = require("@/lib/prisma");
 
-async function fetchDoctors(sessionUser: Session["user"]): Promise<Doctor[]> {
-    if (sessionUser.role === "SUPER_ADMIN") {
+async function fetchDoctors(user: { role: Role; hospitalId: string | null }): Promise<Doctor[]> {
+    if (user.role === "SUPER_ADMIN") {
         return await prisma.doctor.findMany({
             include: {
                 hospital: true,
@@ -22,9 +22,9 @@ async function fetchDoctors(sessionUser: Session["user"]): Promise<Doctor[]> {
                 },
             },
         });
-    } else if (sessionUser.hospitalId) {
+    } else if (user.hospitalId) {
         return await prisma.doctor.findMany({
-            where: { hospitalId: sessionUser.hospitalId },
+            where: { hospitalId: user.hospitalId },
             include: {
                 hospital: true,
                 specialization: true,
@@ -40,17 +40,15 @@ async function fetchDoctors(sessionUser: Session["user"]): Promise<Doctor[]> {
     return [];
 }
 
-async function fetchDepartments(sessionUser: Session["user"]): Promise<Department[]> {
-    if (sessionUser.role === "SUPER_ADMIN") {
-        // Super Admin: Fetch all departments
+async function fetchDepartments(user: { role: Role; hospitalId: string | null }): Promise<Department[]> {
+    if (user.role === "SUPER_ADMIN") {
         return await prisma.department.findMany();
-    } else if (sessionUser.hospitalId) {
-        // Other roles: Fetch departments linked with the user hospital
+    } else if (user.hospitalId) {
         return await prisma.department.findMany({
             where: {
                 hospitals: {
                     some: {
-                        hospitalId: sessionUser.hospitalId,
+                        hospitalId: user.hospitalId,
                     },
                 },
             },
@@ -64,32 +62,18 @@ async function fetchHospitals(): Promise<Hospital[]> {
 }
 
 export default async function DoctorsPage() {
-    const authSession = await getSession();
+    const session = await getSession();
 
-    if (!authSession) {
+    if (!session || !session.user) {
         redirect("/sign-in");
         return null;
     }
 
-    const session: Session | null = authSession
-    ? {
-        userId: authSession.user?.id ?? "",
-        expires: new Date(authSession.expires),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        user: {
-            id: authSession.user?.id ?? "",
-            username: authSession.user?.name ?? "",
-            role: authSession.user?.role as Role ?? "DOCTOR",
-            hospitalId: authSession.user?.hospitalId ?? null,
-            hospital: authSession.user?.hospital ?? null,
-        },
-    }
-    : null;
+    const { user } = session;
 
-    const doctors = session ? await fetchDoctors(session.user) : [];
+    const doctors = await fetchDoctors(user);
     const hospitals = await fetchHospitals();
-    const departments = session ? await fetchDepartments(session.user) : [];
+    const departments = await fetchDepartments(user);
 
     return (
         <div className="flex flex-col gap-3 p-3">

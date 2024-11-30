@@ -25,6 +25,8 @@ import {
 } from "react-icons/fa";
 import Image from "next/image";
 import logo from "../../../public/images/logo.png";
+import { getSession } from "@/lib/session";
+import { redirect } from "next/navigation";
 
 const routeIcons: Record<string, React.JSX.Element> = {
     administrators: <FaUserShield />,
@@ -48,28 +50,35 @@ const routeIcons: Record<string, React.JSX.Element> = {
     users: <FaUsers />,
 };
 
-const ApiLandingPage = () => {
-    const apiRoutes = [
-        "administrators",
-        "appointments",
-        "auth",
-        "beds",
-        "departments",
-        "doctors",
-        "hospitals",
-        "messages",
-        "nurses",
-        "patients",
-        "payments",
-        "profiles",
-        "referrals",
-        "reset-password",
-        "roles",
-        "specializations",
-        "staff",
-        "upload",
-        "users",
-    ];
+const apiRoutes = [
+    "administrators",
+    "appointments",
+    "auth",
+    "beds",
+    "departments",
+    "doctors",
+    "hospitals",
+    "messages",
+    "nurses",
+    "patients",
+    "payments",
+    "profiles",
+    "referrals",
+    "reset-password",
+    "roles",
+    "specializations",
+    "staff",
+    "upload",
+    "users",
+];
+
+export default async function ApiLandingPage() {
+    const session = await getSession();
+
+    if (!session || !session.user) {
+        redirect("/sign-in");
+        return null;
+    }
 
     return (
         <div className="min-h-screen bg-gray-100 text-gray-800 flex flex-col items-center py-12">
@@ -130,6 +139,4 @@ const ApiLandingPage = () => {
             </div>
         </div>
     );
-};
-
-export default ApiLandingPage;
+}

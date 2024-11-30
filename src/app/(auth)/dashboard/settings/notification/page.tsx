@@ -1,11 +1,20 @@
 // src/app/(auth)/dashboard/settings/notification/page.tsx
 
+import { getSession } from "@/lib/session";
+import { redirect } from "next/navigation";
 import Toggle from "@/components/settings/toogle button/Toogle";
 import React from "react";
 
-type Props = {};
+export default async function NotificationSettingsPage() {
+    // Fetch session data
+    const session = await getSession();
 
-export default function NotificationSettingsPage({}: Props) {
+    // Redirect unauthenticated users to the sign-in page
+    if (!session || !session.user) {
+        redirect("/sign-in");
+        return null;
+    }
+
     return (
         <div className="flex flex-col w-full h-full gap-4">
             <div className="flex justify-between items-center gap-20">

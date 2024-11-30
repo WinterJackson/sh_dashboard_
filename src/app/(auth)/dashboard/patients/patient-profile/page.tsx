@@ -1,6 +1,8 @@
 // src/app/(auth)/dashboard/patients/patient-profile/page.tsx
 
 import React from "react";
+import { getSession } from "@/lib/session";
+import { redirect } from "next/navigation";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import MailOutlineRoundedIcon from "@mui/icons-material/MailOutlineRounded";
@@ -9,7 +11,18 @@ import Image from "next/image";
 
 type Props = {};
 
-export default function PatientProfilePage({}: Props) {
+export default async function PatientProfilePage({}: Props) {
+    // Fetch session data
+    const session = await getSession();
+
+    // Redirect to sign-in if session is not valid
+    if (!session || !session.user) {
+        redirect("/sign-in");
+        return null;
+    }
+
+    const { user } = session;
+
     return (
         <div className="flex flex-col gap-4 p-3">
             <div className="flex gap-5 items-center px-3">
