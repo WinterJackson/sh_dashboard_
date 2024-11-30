@@ -22,6 +22,12 @@ export async function GET(
                                 imageUrl: true,
                             },
                         },
+                        sessions: true,
+                        superAdmin: true,
+                        admin: true,
+                        nurse: true,
+                        staff: true,
+                        hospital: true,
                     },
                 },
                 hospital: true,
@@ -31,10 +37,30 @@ export async function GET(
                         name: true,
                     },
                 },
+                service: true,
+                appointments: {
+                    include: {
+                        patient: {
+                            include: {
+                                referrals: true,
+                                serviceUsages: true,
+                                currentBed: true,
+                                hospital: true,
+                            },
+                        },
+                        hospital: true,
+                        services: true,
+                        payments: true,
+                    },
+                },
+                docEarnings: true,
+                referrals: true,
             },
         });
+
         return NextResponse.json(doctors);
     } catch (error) {
+        console.error("Error fetching doctors:", error);
         return NextResponse.json(
             { message: "Internal server error" },
             { status: 500 }

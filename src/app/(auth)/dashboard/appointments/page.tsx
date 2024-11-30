@@ -1,114 +1,100 @@
-// File: src/app/(auth)/dashboard/appointments/page.tsx
+// src/app/(auth)/dashboard/appointments/page.tsx
 
-import React from "react";
-import dynamic from "next/dynamic";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
-import { Appointment } from "@/lib/definitions";
+import AppointmentList from "@/components/appointments/AppointmentList";
+import { Appointment, Session, Role, Hospital } from "@/lib/definitions";
+import { fetchAllHospitals } from "@/lib/data";
 
 const prisma = require("@/lib/prisma");
 
-const AppointmentsTable = dynamic<{
-  appointments: Appointment[];
-  totalAppointments: number;
-  currentPage: number;
-}>(
-  () => import("@/components/appointments/AppointmentsTable"),
-  {
-    ssr: false,
-  }
-);
+export default async function AppointmentsPage() {
+    const authSession = await getSession();
 
-const ITEMS_PER_PAGE = 15;
+    if (!authSession) {
+        redirect("/sign-in");
+        return null;
+    }
 
-interface SearchParams {
-  page?: string;
-}
-
-interface AppointmentsPageProps {
-  searchParams: SearchParams;
-}
-
-export default async function AppointmentsPage({
-  searchParams,
-}: AppointmentsPageProps) {
-  const session = await getServerSession(authOptions);
-
-  if (!session) {
-    redirect("/sign-in");
-    return null;
-  }
-
-  const { user } = session;
-  const { role, hospitalId } = user || {};
-  const page = parseInt(searchParams.page || "1");
-
-  let appointments = [];
-  let totalAppointments = 0;
-
-  // Role-based logic for fetching appointments
-  if (role === "SUPER_ADMIN") {
-    // Super Admin: fetch all appointments
-    [appointments, totalAppointments] = await prisma.$transaction([
-      prisma.appointment.findMany({
-        skip: (page - 1) * ITEMS_PER_PAGE,
-        take: ITEMS_PER_PAGE,
-        include: {
-          patient: true,
-          doctor: {
-            include: {
-              user: {
-                include: {
-                  profile: true,
-                },
-              },
-            },
-          },
+    // session structure with required properties
+    const session: Session = {
+        userId: authSession.user?.id ?? "",
+        expires: new Date(authSession.expires),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        user: {
+            id: authSession.user?.id ?? "",
+            username: authSession.user?.name ?? "",
+            role: authSession.user?.role as Role ?? "DOCTOR",
+            hospitalId: authSession.user?.hospitalId ?? null,
+            hospital: authSession.user?.hospital ?? null,
         },
-      }),
-      prisma.appointment.count(),
-    ]);
-  } else if (hospitalId) {
-    // Admin, Doctor, Nurse, Staff: fetch appointments by hospitalId
-    [appointments, totalAppointments] = await prisma.$transaction([
-      prisma.appointment.findMany({
-        where: { hospitalId: hospitalId },
-        skip: (page - 1) * ITEMS_PER_PAGE,
-        take: ITEMS_PER_PAGE,
-        include: {
-          patient: true,
-          doctor: {
-            include: {
-              user: {
-                include: {
-                  profile: true,
-                },
-              },
-            },
-          },
-        },
-      }),
-      prisma.appointment.count({
-        where: { hospitalId: hospitalId },
-      }),
-    ]);
-  }
+    };
 
-  return (
-    <div>
-      <div className="text-xl font-semibold p-4 pr-2">
-        <h1 className="text-xl min-w-full font-semibold">Appointments</h1>
-      </div>
-      <div className="p-4 pr-2 pt-7">
-        <div className="flex w-full flex-row justify-between items-center">
-          <AppointmentsTable
-            appointments={appointments}
-            totalAppointments={totalAppointments}
-            currentPage={page}
-          />
-        </div>
-      </div>
-    </div>
-  );
+    const { role, hospitalId } = session.user || {};
+
+    // Fetch appointments and total count based on role
+    let appointments: Appointment[] = [];
+    let totalAppointments = 0;
+    let hospitals: Hospital[] = [];
+
+    if (role === "SUPER_ADMIN") {
+        [appointments, totalAppointments] = await prisma.$transaction([
+            prisma.appointment.findMany({
+                include: {
+                    patient: true,
+                    doctor: {
+                        include: {
+                            user: {
+                                include: { profile: true },
+                            },
+                        },
+                    },
+                    hospital: true,
+                },
+                orderBy: {
+                    appointmentDate: 'desc',
+                },
+            }),
+            prisma.appointment.count(),
+        ]);
+        hospitals = await fetchAllHospitals();
+    } else if (hospitalId) {
+        [appointments, totalAppointments] = await prisma.$transaction([
+            prisma.appointment.findMany({
+                where: { hospitalId },
+                include: {
+                    patient: true,
+                    doctor: {
+                        include: {
+                            user: {
+                                include: { profile: true },
+                            },
+                        },
+                    },
+                    hospital: true,
+                },
+                orderBy: {
+                    appointmentDate: 'desc',
+                },
+            }),
+            prisma.appointment.count({ where: { hospitalId } }),
+        ]);
+    }
+
+    return (
+        <>
+            <h1 className="text-xl font-bold bg-bluelight/5 rounded-[10px] p-2 mx-4 mt-3">
+                Appointments
+            </h1>
+            <div className="p-4 pr-2 pt-4">
+                <AppointmentList
+                    appointments={appointments}
+                    totalAppointments={totalAppointments}
+                    session={session}
+                    hospitals={hospitals}
+                />
+            </div>
+        </>
+    );
 }

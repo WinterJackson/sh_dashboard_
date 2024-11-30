@@ -28,6 +28,9 @@ model User {
   hospitalId Int?
   isActive   Boolean     @default(true)
   lastLogin  DateTime?
+  mustResetPassword Boolean  @default(false)
+  resetToken       String?
+  resetTokenExpiry DateTime?
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   doctor     Doctor?
@@ -85,7 +88,7 @@ model Doctor {
   userId         String           @unique
   hospitalId     Int
   departmentId   Int
-  serviceId      Int
+  serviceId      Int?
   specializationId Int
   about          String?
   qualifications String?
@@ -93,6 +96,8 @@ model Doctor {
   phoneNo        String
   workingHours   String
   averageRating  Float
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
   appointments   Appointment[]
   specialization Specialization @relation(fields: [specializationId], references: [specializationId])
   department     Department       @relation(fields: [departmentId], references: [departmentId])
@@ -113,6 +118,8 @@ model Nurse {
   phoneNo        String
   workingHours   String
   averageRating  Float
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
   user           User       @relation(fields: [userId], references: [userId], onDelete: Cascade)
   hospital       Hospital   @relation(fields: [hospitalId], references: [hospitalId])
   department     Department @relation(fields: [departmentId], references: [departmentId])
@@ -129,6 +136,8 @@ model Staff {
   phoneNo        String
   workingHours   String
   averageRating  Float
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
   user           User       @relation(fields: [userId], references: [userId], onDelete: Cascade)
   hospital       Hospital   @relation(fields: [hospitalId], references: [hospitalId])
   department     Department @relation(fields: [departmentId], references: [departmentId])
@@ -150,7 +159,7 @@ model Patient {
   dischargeDate         DateTime?
   status                String // Inpatient or Outpatient
   createdAt             DateTime             @default(now())
-  updatedAt             DateTime             @default(now()) @updatedAt
+  updatedAt             DateTime             @updatedAt
   appointments          Appointment[]
   appointmentServices   AppointmentService[]
   currentBed            Bed[]

@@ -21,6 +21,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { fetchOnlineDoctors, fetchAllHospitals } from "@/lib/data";
 import { useSessionData } from "@/hooks/useSessionData";
 import { revalidatePath } from "next/cache";
+import { Doctor, Hospital, Role } from "@/lib/definitions";
 
 interface RescheduleDialogProps {
     appointmentId: string;
@@ -45,30 +46,35 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
     const [saved, setSaved] = useState<boolean>(false);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-    const [doctors, setDoctors] = useState([]);
-    const [hospitals, setHospitals] = useState([]);
+    const [doctors, setDoctors] = useState<Doctor[]>([]);
+    const [hospitals, setHospitals] = useState<Hospital[]>([]);
 
     const sessionData = useSessionData();
-    const userRole = sessionData?.user?.role;
+    const userRole = sessionData?.user?.role as Role;
     const hospitalId = sessionData?.user?.hospitalId;
     
     useEffect(() => {
         const fetchData = async () => {
-            let fetchedDoctors = await fetchOnlineDoctors();
+            try {
+                // Fetch online doctors
+                const fetchedDoctors = await fetchOnlineDoctors();
 
-            // If not a SUPER_ADMIN, filter doctors by hospitalId
-            if (userRole !== "SUPER_ADMIN" && hospitalId) {
-                fetchedDoctors = fetchedDoctors.filter(
-                    (doctor: { hospitalId: number }) => doctor.hospitalId === hospitalId
-                );
-            }
+                if (userRole !== "SUPER_ADMIN" && hospitalId) {
+                    const filteredDoctors = fetchedDoctors.filter(
+                        (doctor: { hospitalId: number }) => doctor.hospitalId === hospitalId
+                    );
+                    setDoctors(filteredDoctors);
+                } else {
+                    setDoctors(fetchedDoctors);
+                }
 
-            setDoctors(fetchedDoctors);
-
-            // Fetch hospitals if the user is a SUPER_ADMIN
-            if (userRole === "SUPER_ADMIN") {
-                const fetchedHospitals = await fetchAllHospitals();
-                setHospitals(fetchedHospitals);
+                // Fetch hospitals for SUPER_ADMIN
+                if (userRole === "SUPER_ADMIN") {
+                    const fetchedHospitals = await fetchAllHospitals();
+                    setHospitals(fetchedHospitals);
+                }
+            } catch (error) {
+                console.error("Failed to fetch data for rescheduling:", error);
             }
         };
 
@@ -285,8 +291,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                         value={doctor.doctorId}
                                         className="bg-white"
                                     >
-                                        Dr. {doctor.user.username} -{" "}
-                                        {doctor.specialization}
+                                        Dr. {doctor.user.username} - {doctor.specialization?.name || "No Specialization"}
                                     </option>
                                 ))}
                             </select>

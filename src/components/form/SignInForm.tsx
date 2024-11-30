@@ -50,10 +50,10 @@ const SignInForm = () => {
             redirect: false,
         });
 
-        setIsLoading(false);
-
         if (!response?.error) {
             router.push("/dashboard");
+
+        setIsLoading(false);
 
         } else {
             console.error("Login failed:", response.error);

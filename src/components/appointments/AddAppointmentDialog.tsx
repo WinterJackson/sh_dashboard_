@@ -77,13 +77,8 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                 } else if (role === "DOCTOR" && userId) {
                     const doctorData = await fetchDoctorIdByUserId(userId);
                     if (doctorData) {
-                        setValue("doctorId", doctorData.doctorId);
-                        console.log("Doctor ID from API:", doctorData.doctorId);
+                        setValue("doctorId", doctorData.doctorId.toString());
                     }
-
-                    console.log(userId)
-
-                    console.log(doctorData.doctorId)
                 }
             } catch (error) {
                 console.error("Failed to fetch data:", error);
@@ -91,7 +86,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
         };
 
         fetchData();
-    }, [role, hospitalId, patientDetails, doctor, setValue]);
+    }, [role, hospitalId, patientDetails, doctor, setValue, userId]);
 
     const fetchAndSetPatientDetails = async (name: string) => {
         const details = await fetchPatientDetails(name);
@@ -133,12 +128,13 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
             }
 
             if (!selectedHospitalId) {
+                setError("hospitalId", { message: "Hospital ID is missing" });
                 throw new Error("Hospital ID is missing");
             }
 
             const doctorId =
                 role === "DOCTOR" && userId
-                    ? await fetchDoctorIdByUserId(userId)
+                    ? (await fetchDoctorIdByUserId(userId))?.doctorId
                     : data.doctorId;
 
             if (!doctorId) {
@@ -164,7 +160,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
             setSaved(true);
             router.replace("/dashboard/appointments");
         } catch (error) {
-            console.error(error);
+            console.error("Failed to save appointment:", error);
         }
     };
 

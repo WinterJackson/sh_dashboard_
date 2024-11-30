@@ -2,8 +2,7 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { Role } from "@/lib/definitions";
 import HospitalsPagination from "@/components/hospitals/HospitalsPagination";
@@ -23,11 +22,11 @@ interface HospitalsPageProps {
 }
 
 export default async function HospitalsPage({ searchParams }: HospitalsPageProps) {
-    const session = await getServerSession(authOptions);
+    const session = await getSession();
 
-    // Check for session and user role with optional chaining
+    // Check for session and user role
     if (!session || session?.user?.role !== Role.SUPER_ADMIN) {
-        redirect("/unauthorized");
+        redirect("/sign-in");
         return null;
     }
 
@@ -42,7 +41,9 @@ export default async function HospitalsPage({ searchParams }: HospitalsPageProps
 
     return (
         <div className="flex flex-col h-full min-w-full p-4">
-            <h1 className="text-xl min-w-full font-semibold mb-1">Hospitals</h1>
+            <h1 className="text-xl font-bold bg-bluelight/5 p-2 rounded-[10px]">
+                Hospitals
+            </h1>
             <HospitalsTable hospitals={hospitals} totalHospitals={totalHospitals} currentPage={page} />
             <HospitalsPagination totalItems={totalHospitals} itemsPerPage={ITEMS_PER_PAGE} currentPage={page} />
         </div>

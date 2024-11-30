@@ -2,51 +2,37 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useSession } from "next-auth/react";
+import React, { createContext, useContext, useState, ReactNode } from "react";
 import { User } from "@/lib/definitions";
 
 interface UserContextType {
     user: User | null;
     hospitalId: number | null;
     error: string | null;
+    setUser: React.Dispatch<React.SetStateAction<User | null>>;
+    setHospitalId: React.Dispatch<React.SetStateAction<number | null>>;
+    setError: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-export const UserProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [hospitalId, setHospitalId] = useState<number | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const { data: session } = useSession();
-
-    useEffect(() => {
-        const fetchUser = async () => {
-            if (session?.user) {
-                const userId = session.user.id;
-
-                try {
-                    const response = await fetch(`/api/users/${userId}`);
-                    if (!response.ok) {
-                        throw new Error(`Failed to fetch user data: ${response.statusText}`);
-                    }
-                    const userData = await response.json();
-
-                    // console.log(userData)
-
-                    setUser(userData);
-                    setHospitalId(userData.hospitalId || null);
-                } catch (error) {
-                    setError('Error fetching user data.');
-                    console.error("Error fetching user data:", error);
-                }
-            }
-        };
-        fetchUser();
-    }, [session]);
+export const UserProvider = ({
+    children,
+    initialUser,
+    initialHospitalId,
+    initialError,
+}: {
+    children: ReactNode;
+    initialUser: User | null;
+    initialHospitalId: number | null;
+    initialError: string | null;
+}) => {
+    const [user, setUser] = useState<User | null>(initialUser);
+    const [hospitalId, setHospitalId] = useState<number | null>(initialHospitalId);
+    const [error, setError] = useState<string | null>(initialError);
 
     return (
-        <UserContext.Provider value={{ user, hospitalId, error }}>
+        <UserContext.Provider value={{ user, hospitalId, error, setUser, setHospitalId, setError }}>
             {children}
         </UserContext.Provider>
     );

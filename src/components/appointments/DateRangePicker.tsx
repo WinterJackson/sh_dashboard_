@@ -1,4 +1,5 @@
 // src/components/DateRangePicker.tsx
+
 "use client";
 
 import React from "react";
@@ -44,15 +45,15 @@ export function DateRangePicker({
                     id="date"
                     variant={"outline"}
                     className={cn(
-                        "w-[95px] justify-start text-left font-normal rounded-[10px] shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none",
+                        "w-[105px] h-[50px] justify-start text-left font-normal rounded-[10px] shadow-lg shadow-gray-400 hover:bg-primary hover:text-white hover:shadow-gray-400",
                         !dateRange && "text-muted-foreground"
                     )}
                 >
                     <CalendarRange className="pr-1 h-6 w-6" />
-                    <span>Range</span>
+                    <span className="font-bold">Range</span>
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="grid w-auto p-2 shadow-sm shadow-primary" align="end">
+            <PopoverContent className="grid w-auto p-2 mt-2 rounded-[10px] shadow-sm shadow-primary" align="end">
                 <div className="mb-2 mt-2 m-auto justify-center border p-2 rounded-[10px] bg-bluelight">
                     Selected Range:{" "}
                     <span className="font-bold">{formattedDateRange}</span>

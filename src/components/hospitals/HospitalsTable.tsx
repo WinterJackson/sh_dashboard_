@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Hospital } from "@/lib/definitions";
 import Image from 'next/image';
+import SHlogo from "../../../public/images/shlogo.png";
 
 interface HospitalsTableProps {
     hospitals: Hospital[];
@@ -39,37 +40,37 @@ const HospitalsTable: React.FC<HospitalsTableProps> = ({ hospitals, totalHospita
                         </th>
                         <th
                             scope="col"
-                            className="px-4 py-5 text-left text-sm font-bold text-black uppercase tracking-wider"
+                            className="px-4 py-5 text-center text-sm font-bold text-black uppercase tracking-wider"
                         >
                             Name
                         </th>
                         <th
                             scope="col"
-                            className="px-4 py-5 text-left text-sm font-bold text-black uppercase tracking-wider"
+                            className="px-4 py-5 text-center text-sm font-bold text-black uppercase tracking-wider"
                         >
                             Id
                         </th>
                         <th
                             scope="col"
-                            className="px-4 py-5 text-left text-sm font-bold text-black uppercase tracking-wider"
+                            className="px-4 py-5 text-center text-sm font-bold text-black uppercase tracking-wider"
                         >
                             Phone
                         </th>
                         <th
                             scope="col"
-                            className="px-4 py-5 text-left text-sm font-bold text-black uppercase tracking-wider"
+                            className="px-4 py-5 text-center text-sm font-bold text-black uppercase tracking-wider"
                         >
                             Country
                         </th>
                         <th
                             scope="col"
-                            className="px-4 py-5 text-left text-sm font-bold text-black uppercase tracking-wider"
+                            className="px-4 py-5 text-center text-sm font-bold text-black uppercase tracking-wider"
                         >
                             City
                         </th>
                         <th
                             scope="col"
-                            className="px-4 py-5 text-left text-sm font-bold text-black uppercase tracking-wider"
+                            className="px-4 py-5 text-center text-sm font-bold text-black uppercase tracking-wider"
                         >
                             Referral Code
                         </th>
@@ -92,26 +93,26 @@ const HospitalsTable: React.FC<HospitalsTableProps> = ({ hospitals, totalHospita
                                       handleRowClick(hospital.hospitalId)
                                   }
                               >
-                                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                      <Image src="/hospital-logo.jpg" alt="Hospital logo" width={150} height={150} />
+                                  <td className="px-4 py-4 whitespace-nowrap text-sm text-black">
+                                      <Image src={SHlogo} alt="Hospital logo" width={150} height={150} />
 
                                   </td>
-                                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  <td className="px-4 py-4 text-sm text-black">
                                       {hospital.name}
                                   </td>
-                                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  <td className="px-4 py-4 text-center whitespace-nowrap text-sm text-black">
                                       {hospital.hospitalId}
                                   </td>
-                                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  <td className="px-4 py-4 text-center whitespace-nowrap text-sm text-black">
                                       {hospital.phone}
                                   </td>
-                                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  <td className="px-4 py-4 text-center whitespace-nowrap text-sm text-black">
                                       {hospital.country}
                                   </td>
-                                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  <td className="px-4 py-4 whitespace-nowrap text-sm text-black">
                                       {hospital.city}
                                   </td>
-                                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  <td className="px-4 py-4 text-center whitespace-nowrap text-sm text-black">
                                       {hospital.referralCode}
                                   </td>
                               </tr>

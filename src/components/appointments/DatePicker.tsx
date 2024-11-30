@@ -63,15 +63,15 @@ export function DatePicker({
                 <Button
                     variant={"outline"}
                     className={cn(
-                        "w-[90px] justify-start text-left font-normal rounded-[10px] shadow-sm shadow-primary hover:bg-primary hover:text-white hover:shadow-none",
+                        "w-[90px] h-[50px] justify-start text-left font-normal rounded-[10px] shadow-lg shadow-gray-400 hover:bg-primary hover:text-white hover:shadow-gray-400",
                         !date && "text-muted-foreground"
                     )}
                 >
                     <CalendarCheck className="pr-1 h-6 w-6" />
-                    <span>Date</span>
+                    <span className="font-bold">Date</span>
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="flex w-auto flex-col space-y-2 p-2 shadow-sm shadow-primary">
+            <PopoverContent className="flex w-auto mt-2 rounded-[10px] flex-col space-y-2 p-2 shadow-sm shadow-primary">
                 <Select onValueChange={handleSelectDateChange}>
                     <SelectTrigger>
                         <SelectValue placeholder="Select" />

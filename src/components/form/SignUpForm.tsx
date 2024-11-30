@@ -84,10 +84,11 @@ const SignUpForm = () => {
             }),
         });
 
-        setIsLoading(false);
-
         if (response.ok) {
             router.push('/sign-in');
+
+        setIsLoading(false);
+
         } else {
             console.error('Registration failed');
         }

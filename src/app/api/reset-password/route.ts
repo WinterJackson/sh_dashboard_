@@ -1,7 +1,8 @@
-// app/api/reset-password/route.ts
+// src/app/api/reset-password/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { hash } from "bcrypt";
+import crypto from "crypto";
 
 const prisma = require("@/lib/prisma");
 
@@ -9,12 +10,20 @@ export async function POST(req: NextRequest) {
     try {
         const { token, newPassword } = await req.json();
 
-        // Find the user by the reset token and check if the token is still valid
+        // Validate input
+        if (!token || !newPassword) {
+            return NextResponse.json({ error: "Token and new password are required" }, { status: 400 });
+        }
+
+        // Hash incoming token to match stored hashed token
+        const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+        // Find user by hashed reset token and check if token is valid
         const user = await prisma.user.findFirst({
             where: {
-                resetToken: token,
+                resetToken: hashedToken,
                 resetTokenExpiry: {
-                    gt: new Date(),  // Ensure the token has not expired
+                    gt: new Date(), // Ensure token is not expired
                 },
             },
         });
@@ -23,17 +32,17 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Invalid or expired token" }, { status: 400 });
         }
 
-        // Hash the new password
+        // Hash new password
         const hashedPassword = await hash(newPassword, 10);
 
-        // Update the user's password and remove the reset token
+        // Update user's password, clear reset token
         await prisma.user.update({
             where: { userId: user.userId },
             data: {
                 password: hashedPassword,
-                resetToken: null,  // Clear the reset token
-                resetTokenExpiry: null,  // Clear the token expiry
-                needsPasswordChange: false,  // Mark the password change as complete
+                resetToken: null,
+                resetTokenExpiry: null,
+                mustResetPassword: false,
             },
         });
 

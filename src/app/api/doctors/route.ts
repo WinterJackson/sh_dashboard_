@@ -1,10 +1,27 @@
-// src/app/api/doctors/route.ts
+// File: src/app/api/doctors/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import { sendEmail } from "@/lib/email";
+import { Role } from "@/lib/definitions";
+import { Prisma } from "@prisma/client";
 
 const prisma = require("@/lib/prisma");
 
+/**
+ * Middleware for checking authentication and authorization.
+ * Ensures only `ADMIN` or `SUPER_ADMIN` can access the route.
+ */
+async function isAuthorized(req: NextRequest) {
+    const token = await getToken({ req });
+    return token && (token.role === Role.ADMIN || token.role === Role.SUPER_ADMIN) ? token : false;
+}
+
+/**
+ * GET: Retrieve the list of doctors.
+ */
 export async function GET(req: NextRequest) {
     try {
         const doctors = await prisma.doctor.findMany({
@@ -32,9 +49,10 @@ export async function GET(req: NextRequest) {
                 hospital: true,
                 department: true,
                 specialization: {
-                    select: {
-                        name: true,
-                    },
+                    select: { name: true },
+                },
+                service: {
+                    select: { serviceName: true },
                 },
             },
         });
@@ -43,131 +61,178 @@ export async function GET(req: NextRequest) {
     } catch (error) {
         console.error("Error fetching doctors:", error);
         return NextResponse.json(
-            { message: "Internal server error" },
+            { error: "Internal server error" },
             { status: 500 }
         );
     }
 }
 
+/**
+ * POST: Create a new doctor.
+ */
 export async function POST(req: NextRequest) {
-    const token = await getToken({ req });
-
-    if (!token) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     try {
-        const body = await req.json();
-        console.log("Received body:", body);
-
-        const {
-            bio,
-            contactInformation,
-            professionalInformation,
-            about,
-            selectedHospitalId,
-            specializationId,
-        } = body;
-
-        // Validate required fields
-        if (
-            !bio?.firstName ||
-            !bio?.lastName ||
-            !bio?.gender ||
-            !bio?.dateOfBirth ||
-            !contactInformation?.phoneNumber ||
-            !contactInformation?.city ||
-            !contactInformation?.state ||
-            !professionalInformation?.departmentId ||
-            !specializationId ||
-            !about
-        ) {
+        const token = await isAuthorized(req);
+        if (!token) {
             return NextResponse.json(
-                { error: "Missing required fields" },
+                { error: "Unauthorized" },
+                { status: 401 }
+            );
+        }
+
+        const body = (await req.json()) as {
+            firstName: string;
+            lastName: string;
+            email: string;
+            gender: string;
+            hospitalId: number;
+            departmentId: number;
+            specializationId: number;
+            serviceId?: number;
+            phoneNo: string;
+            dateOfBirth: string;
+            qualifications?: string;
+            about?: string;
+            status?: string;
+            profileImageUrl?: string;
+        };
+
+        // Validate email
+        if (!body.email || !body.email.includes("@")) {
+            return NextResponse.json(
+                { error: "Invalid email address provided" },
                 { status: 400 }
             );
         }
 
-        let hospitalId: number;
+        console.log("Received email:", body.email);
 
-        // Handle hospital selection based on role
-        if (token.role === "SUPER_ADMIN") {
-            if (!selectedHospitalId) {
-                return NextResponse.json(
-                    { error: "Hospital must be selected by Super Admin" },
-                    { status: 400 }
-                );
-            }
-            hospitalId = parseInt(selectedHospitalId, 10);
-        } else if (token.role === "ADMIN") {
-            if (!token.hospitalId) {
-                return NextResponse.json(
-                    { error: "Admin hospitalId is missing" },
-                    { status: 400 }
-                );
-            }
-            hospitalId = token.hospitalId;
-        } else {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-        }
+        // Validate foreign keys
+        const [hospitalExists, departmentExists, specializationExists, serviceExists] =
+            await prisma.$transaction([
+                prisma.hospital.findUnique({
+                    where: { hospitalId: body.hospitalId },
+                    select: { hospitalId: true },
+                }),
+                prisma.department.findUnique({
+                    where: { departmentId: body.departmentId },
+                    select: { departmentId: true },
+                }),
+                prisma.specialization.findUnique({
+                    where: { specializationId: body.specializationId },
+                    select: { specializationId: true },
+                }),
+                prisma.service.findUnique({
+                    where: { serviceId: body.serviceId || -1 },
+                    select: { serviceId: true },
+                }),
+            ]);
 
-        // Ensure departmentId and specializationId are integers
-        const departmentId = parseInt(professionalInformation.departmentId, 10);
-        const parsedSpecializationId = parseInt(specializationId, 10);
-
-        if (isNaN(departmentId) || isNaN(parsedSpecializationId)) {
+        if (!hospitalExists || !departmentExists || !specializationExists) {
             return NextResponse.json(
-                { error: "Invalid department or specialization ID" },
+                { error: "Invalid hospital, department, or specialization" },
                 { status: 400 }
             );
         }
 
-        // Transaction to create both user and doctor
-        const result = await prisma.$transaction(async () => {
-            const user = await prisma.user.create({
-                data: {
-                    role: "DOCTOR",
-                    profile: {
-                        create: {
-                            firstName: bio.firstName,
-                            lastName: bio.lastName,
-                            gender: bio.gender,
-                            dateOfBirth: new Date(bio.dateOfBirth),
-                            phoneNo: contactInformation.phoneNumber,
-                            city: contactInformation.city,
-                            state: contactInformation.state,
-                            imageUrl: "",
-                        },
-                    },
-                },
+        if (body.serviceId && !serviceExists) {
+            return NextResponse.json(
+                { error: "Invalid service selected" },
+                { status: 400 }
+            );
+        }
+
+        let user = null;
+        let doctor = null;
+        let resetToken = null;
+
+        // Transaction for user and doctor creation
+        await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+            const existingUser = await tx.user.findUnique({
+                where: { email: body.email },
             });
 
-            const doctor = await prisma.doctor.create({
+            if (!existingUser) {
+                resetToken = crypto.randomBytes(32).toString("hex");
+                const hashedToken = crypto
+                    .createHash("sha256")
+                    .update(resetToken)
+                    .digest("hex");
+                const expiryDate = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+                user = await tx.user.create({
+                    data: {
+                        username: `${body.firstName}_${body.lastName}`,
+                        email: body.email,
+                        password: await bcrypt.hash(body.firstName, 10),
+                        role: Role.DOCTOR,
+                        hospitalId: body.hospitalId,
+                        mustResetPassword: true,
+                        resetToken: hashedToken,
+                        resetTokenExpiry: expiryDate,
+                    },
+                });
+
+                await tx.profile.create({
+                    data: {
+                        userId: user.userId,
+                        firstName: body.firstName,
+                        lastName: body.lastName,
+                        gender: body.gender || null,
+                        phoneNo: body.phoneNo,
+                        dateOfBirth: new Date(body.dateOfBirth),
+                        imageUrl: body.profileImageUrl || null,
+                    },
+                });
+            } else {
+                user = existingUser;
+            }
+
+            doctor = await tx.doctor.create({
                 data: {
                     userId: user.userId,
-                    hospitalId: hospitalId,
-                    departmentId: departmentId,
-                    specializationId: parsedSpecializationId,
-                    qualifications: professionalInformation.qualifications,
-                    about,
-                    phoneNo: contactInformation.phoneNumber,
-                    status: "Online",
-                    workingHours: "9-5",
+                    hospitalId: body.hospitalId,
+                    departmentId: body.departmentId,
+                    specializationId: body.specializationId,
+                    serviceId: body.serviceId || undefined,
+                    qualifications: body.qualifications || null,
+                    about: body.about || null,
+                    status: body.status || "Offline",
+                    phoneNo: body.phoneNo,
+                    workingHours: "Mon-Fri: 9AM-5PM",
+                    averageRating: 0,
                 },
             });
-
-            return { user, doctor };
         });
 
-        return NextResponse.json(
-            { message: "Doctor created successfully", result },
-            { status: 201 }
-        );
-    } catch (error) {
+        // Send reset email
+        if (resetToken && user) {
+            const resetUrl = `${process.env.BASE_URL}/reset-password/${resetToken}`;
+            console.log("Sending reset email to:", body.email);
+
+            await sendEmail({
+                to: body.email,
+                subject: "Set Your Password",
+                text: `You have been added as a doctor. Click the link below to set your password. This link will expire in 1 hour: ${resetUrl}`,
+                html: `<p>You have been added as a doctor. Click the link below to set your password. This link will expire in 1 hour:</p>
+                       <a href="${resetUrl}">${resetUrl}</a>`,
+            });
+        }
+
+        return NextResponse.json(doctor, { status: 201 });
+    } catch (error: any) {
         console.error("Error creating doctor:", error);
+
+        if (error.code === "P2002" && error.meta?.target?.includes("email")) {
+            return NextResponse.json(
+                { error: "Duplicate email: Email address is already in use" },
+                { status: 409 }
+            );
+        }
+
         return NextResponse.json(
-            { message: "Error creating doctor" },
-            { status: 500 }
+            { error: "Failed to create doctor" },
+            { status: 400 }
         );
     }
 }

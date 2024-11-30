@@ -3,26 +3,27 @@
 import { Appointment, Role, Doctor, Patient } from "./definitions";
 
 // Fetch available doctors
-export async function fetchOnlineDoctors() {
+export async function fetchOnlineDoctors(): Promise<Doctor[]> {
     try {
         const response = await fetch(`${process.env.API_URL}/doctors`, {
             headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
             },
         });
-        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch doctors: ${response.status} ${response.statusText}`);
+        }
+
+        const data: Doctor[] = await response.json();
 
         // Filter the data for online doctors only
-        const onlineDoctors = data.filter(
-            (doctor: { status: string }) => doctor.status === "Online"
-        );
-
-        console.log(onlineDoctors);
+        const onlineDoctors = data.filter((doctor) => doctor.status === "Online");
 
         return onlineDoctors;
     } catch (error) {
         console.error("Failed to fetch doctors:", error);
-        return [];
+        return []; // Return an empty array on error
     }
 }
 
@@ -34,17 +35,24 @@ export async function fetchDoctorDetails(doctorId: string) {
                 'Content-Type': 'application/json',
             },
         });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch doctor details: ${response.status} ${response.statusText}`);
+        }
+
         const doctor = await response.json();
 
         return doctor;
     } catch (error) {
-        console.error("Failed to fetch doctor details:", error);
-        return [];
+        console.error(`Error fetching details for doctor ID ${doctorId}:`, error);
+        return null;
     }
 }
 
 // Fetch doctor by userId
-export const fetchDoctorIdByUserId = async (userId: string) => {
+export const fetchDoctorIdByUserId = async (
+    userId: string
+): Promise<{ doctorId: number } | null> => {
     if (!userId) {
         console.error("No userId provided to fetchDoctorIdByUserId");
         return null;
@@ -52,38 +60,48 @@ export const fetchDoctorIdByUserId = async (userId: string) => {
 
     try {
         const response = await fetch(`${process.env.API_URL}/doctors/byUserId/${userId}`, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { "Content-Type": "application/json" },
         });
 
         if (!response.ok) {
-            throw new Error("Failed to fetch doctor data");
+            throw new Error(`Failed to fetch doctor data: ${response.statusText}`);
         }
 
         const doctor = await response.json();
-        console.log("Doctor data received:", doctor);
 
-        return doctor.doctorId;
+        if (!doctor || typeof doctor.doctorId !== "number") {
+            console.warn("Doctor data is incomplete or doctorId is missing.");
+            return null;
+        }
+
+        return doctor; // Ensure the full doctor object is returned
     } catch (error) {
         console.error("Error fetching doctor data:", error);
-        return null;
+        return null; // Return null on failure
     }
-}
+};
 
 // Fetch all doctors
-export async function fetchAllDoctors() {
+export async function fetchAllDoctors(): Promise<Doctor[]> {
     try {
         const response = await fetch(`${process.env.API_URL}/doctors`, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
         });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch doctors: ${response.statusText}`);
+        }
+
         const data = await response.json();
+
+        if (!Array.isArray(data)) {
+            throw new TypeError("Expected an array of doctors");
+        }
+
         return data;
     } catch (error) {
-        console.error("Failed to fetch doctors:", error);
-        return [];
+        console.error("Failed to fetch all doctors:", error);
+        return []; // Return empty array on failure
     }
 }
 
@@ -114,11 +132,14 @@ export async function fetchPatientDetails(name: string) {
         });
 
         if (!response.ok) {
-            throw new Error("Patient not found");
+            if (response.status === 404) {
+                console.warn(`Patient '${name}' not found.`);
+                return null;
+            }
+            throw new Error(`Failed to fetch patient details: ${response.status} ${response.statusText}`);
         }
-        const data = await response.json();
 
-        console.log(data);
+        const data = await response.json();
 
         return data;
     } catch (error) {
@@ -135,13 +156,17 @@ export async function fetchAvailableBeds() {
                 'Content-Type': 'application/json',
             },
         });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch beds: ${response.status} ${response.statusText}`);
+        }
+
         const data = await response.json();
 
         const availableBeds = data.filter(
             (bed: any) => bed.availability === "Occupied"
         );
 
-        console.log(availableBeds);
         return availableBeds;
     } catch (error) {
         console.error("Failed to fetch beds:", error);
@@ -151,25 +176,36 @@ export async function fetchAvailableBeds() {
 
 // Fetch appointments
 export async function fetchAppointments(
+    role: string | null = null,
+    hospitalId: number | null = null,
     page: number = 1,
-    limit: number = 15
-): Promise<Appointment[]> {
+    pageSize: number = 15
+): Promise<{ appointments: Appointment[]; totalAppointments: number; page: number; pageSize: number }> {
     try {
-        const response = await fetch(`${process.env.API_URL}/appointments?page=${page}&limit=${limit}`, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
+        const queryParams = new URLSearchParams({
+            ...(role && { role }),
+            ...(hospitalId && { hospitalId: hospitalId.toString() }),
+            page: page.toString(),
+            pageSize: pageSize.toString(),
+        });
+
+        const response = await fetch(`${process.env.API_URL}/appointments?${queryParams}`, {
+            headers: { "Content-Type": "application/json" },
         });
 
         if (!response.ok) {
-            throw new Error(`Error: ${response.status}`);
+            throw new Error(`Failed to fetch appointments: ${response.status} ${response.statusText}`);
         }
 
-        const data = await response.json();
-        return data.appointments;
+        return await response.json();
     } catch (error) {
         console.error("Error fetching appointments:", error);
-        throw error;
+        return {
+            appointments: [],
+            totalAppointments: 0,
+            page,
+            pageSize,
+        };
     }
 }
 
@@ -199,6 +235,10 @@ export async function updateAppointmentStatus(
     appointmentId: string,
     updateData: { status: string; reason: string }
 ) {
+    if (!appointmentId || !updateData) {
+        throw new Error("Appointment ID and update data are required.");
+    }
+
     try {
         const response = await fetch(`${process.env.API_URL}/appointments/${appointmentId}`, {
             method: "PATCH",
@@ -215,8 +255,8 @@ export async function updateAppointmentStatus(
         const updatedAppointment = await response.json();
         return updatedAppointment;
     } catch (error) {
-        console.error("Error updating appointment:", error);
-        throw error;
+        console.error(`Error updating appointment ID ${appointmentId}:`, error);
+        return null;
     }
 }
 
@@ -325,31 +365,53 @@ export async function fetchPatientsByHospital(hospitalId: number): Promise<Patie
         const response = await fetch(`${process.env.API_URL}/patients/byHospital/${hospitalId}`, {
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.AUTH_TOKEN}`
             },
         });
 
+        // Check if response is successful
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+
         const data = await response.json();
+
+        // Ensure the data is an array before mapping
+        if (!Array.isArray(data)) {
+            throw new TypeError("Expected data to be an array of patients");
+        }
 
         return data.map((patient: any) => ({
             ...patient,
             appointments: patient.appointments || [],
         }));
     } catch (error) {
-        console.error('Failed to fetch patients by hospital:', error);
+        console.error("Failed to fetch patients by hospital:", error);
         return [];
     }
 }
 
 // Fetch patients based on user role
 export async function fetchPatientsByRole(user: any): Promise<Patient[]> {
-    if (user.role === 'SUPER_ADMIN') {
-        return await fetchAllPatients();
-    } else if (['ADMIN', 'DOCTOR', 'NURSE', 'STAFF'].includes(user.role)) {
-        if (user.hospitalId) {
+    try {
+        if (!user || !user.role) {
+            throw new Error("User object with a valid role is required.");
+        }
+
+        if (user.role === Role.SUPER_ADMIN) {
+            return await fetchAllPatients();
+        }
+
+        if (['ADMIN', 'DOCTOR', 'NURSE', 'STAFF'].includes(user.role) && user.hospitalId) {
             return await fetchPatientsByHospital(user.hospitalId);
         }
+
+        console.warn("User role lacks access to hospital data:", user.role);
+        return [];
+    } catch (error) {
+        console.error("Error fetching patients by role:", error);
+        return []; // Return empty array on failure
     }
-    return [];
 }
 
 // Fetch patients for the last 14 days
@@ -420,22 +482,29 @@ export async function fetchAllReferrals() {
 }
 
 // Fetch departments
-export async function fetchDepartments() {
+export async function fetchDepartments(hospitalId?: number): Promise<any[]> {
     try {
-        const response = await fetch(`${process.env.API_URL}/departments`, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
+        const endpoint = hospitalId
+            ? `${process.env.API_URL}/departments/byHospital/${hospitalId}`
+            : `${process.env.API_URL}/departments`;
+
+        const response = await fetch(endpoint, {
+            headers: { 'Content-Type': 'application/json' },
         });
 
         if (!response.ok) {
-            throw new Error("Failed to fetch departments");
+            throw new Error(`Failed to fetch departments: ${response.statusText}`);
         }
 
         const data = await response.json();
+
+        if (!Array.isArray(data)) {
+            throw new TypeError("Expected an array of departments");
+        }
+
         return data;
     } catch (error) {
         console.error("Error fetching departments:", error);
-        throw error;
+        return []; // Return empty array on failure
     }
 }

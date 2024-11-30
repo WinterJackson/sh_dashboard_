@@ -33,6 +33,13 @@ const {
     specializations,
 } = require("../lib/placeholder-data");
 
+// Helper function to generate random dates
+function randomPastDate(daysBack = 365) {
+    const pastDate = new Date();
+    pastDate.setDate(pastDate.getDate() - Math.floor(Math.random() * daysBack));
+    return pastDate;
+}
+
 async function seedSpecializations() {
     try {
         await prisma.specialization.createMany({
@@ -154,6 +161,11 @@ async function seedUsers() {
                     hospitalId: user.hospitalId,
                     isActive: user.isActive,
                     lastLogin: user.lastLogin,
+                    mustResetPassword: false,
+                    resetToken: null,
+                    resetTokenExpiry: null,
+                    createdAt: randomPastDate(730),
+                    updatedAt: randomPastDate(365)
                 }))
             ),
             skipDuplicates: true,
@@ -243,6 +255,8 @@ async function seedDoctors() {
                 phoneNo: doctor.phoneNo,
                 workingHours: doctor.workingHours,
                 averageRating: doctor.averageRating,
+                createdAt: randomPastDate(730),
+                updatedAt: randomPastDate(365)
             })),
             skipDuplicates: true,
         });
@@ -267,6 +281,8 @@ async function seedNurses() {
                 phoneNo: nurse.phoneNo,
                 workingHours: nurse.workingHours,
                 averageRating: nurse.averageRating,
+                createdAt: randomPastDate(730),
+                updatedAt: randomPastDate(365)
             })),
             skipDuplicates: true,
         });
@@ -290,6 +306,8 @@ async function seedStaff() {
                 phoneNo: staff.phoneNo,
                 workingHours: staff.workingHours,
                 averageRating: staff.averageRating,
+                createdAt: randomPastDate(730),
+                updatedAt: randomPastDate(365)
             })),
             skipDuplicates: true,
         });
@@ -315,6 +333,8 @@ async function seedPatients() {
                 admissionDate: patient.admissionDate,
                 dischargeDate: patient.dischargeDate,
                 status: patient.status,
+                createdAt: randomPastDate(730),
+                updatedAt: randomPastDate(365)
             })),
             skipDuplicates: true,
         });
@@ -370,6 +390,8 @@ async function seedAppointments() {
                 doctorAppointmentNotes: appointment.doctorAppointmentNotes,
                 patientAppointmentNotes: appointment.patientAppointmentNotes,
                 reasonForVisit: appointment.reasonForVisit,
+                createdAt: randomPastDate(730),
+                updatedAt: randomPastDate(365)
             })),
             skipDuplicates: true,
         });
@@ -423,6 +445,8 @@ async function seedReferrals() {
                 physicianSpecialty: referral.physicianSpecialty,
                 physicianEmail: referral.physicianEmail,
                 physicianPhoneNumber: referral.physicianPhoneNumber,
+                createdAt: randomPastDate(730),
+                updatedAt: randomPastDate(365)
             })),
             skipDuplicates: true,
         });
@@ -514,6 +538,8 @@ async function seedSessions() {
                 sessionToken: session.sessionToken,
                 userId: session.userId,
                 expires: session.expires,
+                createdAt: randomPastDate(730),
+                updatedAt: randomPastDate(365)
             })),
             skipDuplicates: true,
         });

@@ -1,4 +1,4 @@
-// File: app/api/hospitals/[hospitalId]/route.ts
+// File: src/app/api/hospitals/[hospitalId]/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";

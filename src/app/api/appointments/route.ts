@@ -8,36 +8,43 @@ const prisma = require("@/lib/prisma");
 export async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
-        const page = parseInt(searchParams.get('page') || '1');
-        const limit = parseInt(searchParams.get('limit') || '15');
-        const skip = (page - 1) * limit;
 
-        const totalAppointments = await prisma.appointment.count();
+        // Role and hospitalId
+        const role = searchParams.get('role') || '';
+        const hospitalIdString = searchParams.get('hospitalId');
+        const hospitalId = hospitalIdString ? parseInt(hospitalIdString, 10) : null;
 
-        const appointments = await prisma.appointment.findMany({
-            skip,
-            take: limit,
-            include: {
-                doctor: {
-                    include: {
-                        user: {
-                            include: {
-                                profile: true,
-                            },
-                        },
+        // Page and pageSize default values
+        const page = parseInt(searchParams.get('page') || '1', 10);
+        const pageSize = parseInt(searchParams.get('pageSize') || '15', 10);
+
+        // Role-specific filtering logic
+        const whereClause = role !== 'SUPER_ADMIN' && hospitalId ? { hospitalId } : {};
+
+        // Prisma queries
+        const [totalAppointments, appointments] = await Promise.all([
+            prisma.appointment.count({ where: whereClause }),
+            prisma.appointment.findMany({
+                where: whereClause,
+                include: {
+                    patient: { select: { name: true, patientId: true, dateOfBirth: true } },
+                    doctor: {
+                        select: { user: { select: { profile: { select: { firstName: true, lastName: true } } } } },
                     },
+                    hospital: { select: { name: true, hospitalId: true } },
                 },
-                patient: true,
-                hospital: true,
-                services: true,
-                payments: true,
-            },
-        });
+                orderBy: {
+                    appointmentDate: 'desc',
+                },
+                skip: (page - 1) * pageSize,
+                take: pageSize,
+            }),
+        ]);
 
-        // console.log(appointments)
-
-        return NextResponse.json({ appointments, totalAppointments });
+        // Return paginated response
+        return NextResponse.json({ appointments, totalAppointments, page, pageSize });
     } catch (error) {
+        console.error('Error fetching appointments:', error);
         return NextResponse.json({ error: 'Error fetching appointments' }, { status: 500 });
     }
 }
@@ -66,7 +73,7 @@ export async function POST(req: NextRequest) {
         let hospitalId = userHospitalId;
 
         if (!hospitalId && hospitalName) {
-            // Fetch hospitalId using hospitalName if not found in the user session (for SUPER_ADMIN)
+            // Fetch hospitalId using hospitalName if not found in user session (for SUPER_ADMIN)
             const hospital = await prisma.hospital.findUnique({
                 where: { name: hospitalName },
             });
@@ -118,7 +125,7 @@ export async function POST(req: NextRequest) {
                 appointmentEndAt,
                 type,
                 status: 'Pending',
-                consultationFee: 100.00, // Example fee, change as needed
+                consultationFee: 100.00,
                 isPaid: false,
                 completed: false,
                 isVideoStarted: false,

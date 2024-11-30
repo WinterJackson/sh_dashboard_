@@ -12,26 +12,37 @@ export async function GET(
 ) {
     const token = await getToken({ req });
 
-    if (
-        !token ||
-        ![Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.STAFF].includes(
-            token.role as Role
-        )
-    ) {
+    if (!token || ![Role.SUPER_ADMIN, Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.STAFF].includes(token.role as Role)) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { hospitalId } = params;
 
     try {
-        // Fetch patients where hospitalId matches
-        const patients = await prisma.patient.findMany({
-            where: { hospitalId: parseInt(hospitalId) },
-            include: {
-                hospital: true,
-                appointments: true,
-            },
-        });
+        let patients;
+        
+        if (token.role === Role.SUPER_ADMIN) {
+            // Fetch all patients for super admin
+            patients = await prisma.patient.findMany({
+                include: {
+                    hospital: true,
+                    appointments: true,
+                },
+            });
+        } else {
+            // For other roles, fetch patients by hospitalId
+            if (!hospitalId || token.hospitalId !== parseInt(hospitalId)) {
+                return NextResponse.json({ error: "Unauthorized access to hospital data" }, { status: 401 });
+            }
+            
+            patients = await prisma.patient.findMany({
+                where: { hospitalId: parseInt(hospitalId) },
+                include: {
+                    hospital: true,
+                    appointments: true,
+                },
+            });
+        }
 
         if (patients.length === 0) {
             return NextResponse.json(

@@ -15,11 +15,19 @@ const nextConfig = {
         API_URL: process.env.API_URL,
         PORT: process.env.PORT,
     },
+    images: {
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'files.edgestore.dev',
+            },
+        ],
+    },
     async redirects() {
         return [
             {
                 source: '/api',
-                destination: '/api-landing', // Redirect to custom API landing page
+                destination: '/api-landing',
                 permanent: true,
             },
         ];
@@ -27,3 +35,4 @@ const nextConfig = {
 };
 
 export default nextConfig;
+

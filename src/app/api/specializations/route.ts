@@ -1,4 +1,4 @@
-// /src/app/api/specializations/route.ts
+// src/app/api/specializations/route.ts
 
 import { NextResponse } from "next/server";
 
@@ -6,7 +6,14 @@ const prisma = require("@/lib/prisma");
 
 export async function GET() {
     try {
-        const specializations = await prisma.specialization.findMany();
+        // Fetch specializations
+        const specializations = await prisma.specialization.findMany({
+            select: {
+                specializationId: true,
+                name: true,
+            },
+        });
+
         return NextResponse.json(specializations, { status: 200 });
     } catch (error) {
         console.error("Error fetching specializations:", error);

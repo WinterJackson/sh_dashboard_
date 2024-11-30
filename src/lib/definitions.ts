@@ -1,22 +1,23 @@
 // src/lib/definitions.ts
 
-// Types for each data model
-
 export interface User {
     userId: string;
     username: string;
     email: string;
     password: string;
     role: Role;
-    hospitalId?: number;
+    hospitalId?: number | null;
     isActive?: boolean;
-    lastLogin?: Date;
+    lastLogin?: Date | null;
+    mustResetPassword?: boolean;
+    resetToken?: string | null;
+    resetTokenExpiry?: Date | null;
     createdAt: Date;
     updatedAt: Date;
     doctor?: Doctor;
     profile?: Profile;
     sessions?: Session[];
-    hospital?: Hospital;
+    hospital?: Hospital | null;
     superAdmin?: SuperAdmin;
     admin?: Admin;
     nurse?: Nurse;
@@ -39,7 +40,9 @@ export interface Profile {
     gender?: string;
     phoneNo?: string;
     address?: string;
-    dateOfBirth?: Date;
+    dateOfBirth?: Date | null;
+    city?: string;
+    state?: string;
     imageUrl?: string;
     nextOfKin?: string;
     nextOfKinPhoneNo?: string;
@@ -82,11 +85,13 @@ export interface Doctor {
     phoneNo: string;
     workingHours: string;
     averageRating: number;
+    createdAt: Date;
+    updatedAt: Date;
     appointments: Appointment[];
-    specialization?: Specialization;
+    specialization: Specialization;
     department: Department;
     hospital: Hospital;
-    service?: Service;
+    service?: Service | null;
     user: User;
     docEarnings?: DoctorEarning[];
     referrals?: DoctorReferral[];
@@ -103,6 +108,8 @@ export interface Nurse {
     phoneNo: string;
     workingHours: string;
     averageRating: number;
+    createdAt: Date;
+    updatedAt: Date;
     user: User;
     hospital: Hospital;
     department: Department;
@@ -119,6 +126,8 @@ export interface Staff {
     phoneNo: string;
     workingHours: string;
     averageRating: number;
+    createdAt: Date;
+    updatedAt: Date;
     user: User;
     hospital: Hospital;
     department: Department;
@@ -326,13 +335,19 @@ export interface AppointmentService {
 }
 
 export interface Session {
-    sessionId: string;
-    sessionToken: string;
+    sessionId?: string;
+    sessionToken?: string;
     userId: string;
     expires: Date;
     createdAt: Date;
     updatedAt: Date;
-    user: User;
+    user: {
+        id: string;
+        username: string;
+        role: Role;
+        hospitalId: number | null;
+        hospital: string | null;
+    };
 }
 
 export interface VerificationToken {
