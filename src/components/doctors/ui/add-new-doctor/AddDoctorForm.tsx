@@ -65,7 +65,7 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
         null
     );
     const [selectedHospital, setSelectedHospital] = useState<number | null>(
-        userRole === Role.ADMIN ? parseInt(userHospitalId || "", 10) : null
+        userRole === Role.ADMIN ? (userHospitalId ? parseInt(userHospitalId, 10) : null) : null
     );
     const [selectedService, setSelectedService] = useState<number | null>(null);
     const [selectedStatus, setSelectedStatus] = useState<string>("Offline");

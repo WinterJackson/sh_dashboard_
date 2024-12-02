@@ -2,22 +2,22 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useSearch } from "@/app/context/SearchContext";
-import { Patient, Hospital, Session } from "@/lib/definitions";
+import { Patient, Hospital, Role } from "@/lib/definitions";
 import PatientRow from "@/components/patients/ui/PatientRow";
 import PatientsPagination from "@/components/patients/ui/PatientsPagination";
-import Filters from "@/components/patients/ui/PatientsFilters";
+import PatientsFilters from "@/components/patients/ui/PatientsFilters";
+import { format } from "date-fns";
 // import { fetchPatientDetails, deletePatientById } from "@/lib/data";
-import { format } from 'date-fns';
 
-
-type PatientsListProps = {
+interface PatientsListProps {
     patients: Patient[];
     totalPatients: number;
     hospitals: Hospital[];
-    session: Session | null;
-};
+    userRole: Role;
+    hospitalId: number | null;
+}
 
 const ITEMS_PER_PAGE = 15;
 
@@ -25,7 +25,8 @@ export default function PatientsList({
     patients,
     totalPatients,
     hospitals,
-    session,
+    userRole,
+    hospitalId,
 }: PatientsListProps) {
     const [currentPage, setCurrentPage] = useState(1);
     const [filteredPatients, setFilteredPatients] = useState(patients);
@@ -103,10 +104,10 @@ export default function PatientsList({
 
     return (
         <div>
-            <Filters
+            <PatientsFilters
                 hospitals={hospitals}
-                session={session}
-                patients={patients}
+                userRole={userRole}
+                hospitalId={hospitalId}                patients={patients}
                 onFilterChange={onFilterChange}
                 onSetPatients={onSetPatients}
             />
@@ -136,8 +137,8 @@ export default function PatientsList({
                         <PatientRow
                             key={patient.patientId}
                             patient={patient}
-                            session={session}
-                            onEdit={() => onEdit(patient.patientId)}
+                            userRole={userRole}
+                            hospitalId={hospitalId}                            onEdit={() => onEdit(patient.patientId)}
                             onDelete={() => onDelete(patient.patientId)}
                         />
                     ))}

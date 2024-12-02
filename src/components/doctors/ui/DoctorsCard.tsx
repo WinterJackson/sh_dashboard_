@@ -54,7 +54,7 @@ const DoctorsCard: React.FC<DoctorsCardProps> = ({ doctor }) => {
                     <div className="w-1/2 flex justify-center items-center">
                         <Image
                             src={doctor.user?.profile?.imageUrl || "/images/doctor.svg"}
-                            alt={`Profile picture of ${doctor.user?.profile?.firstName || "Doctor"} ${doctor.user?.profile?.lastName || ""}`}
+                            alt={`Profile picture of Dr. ${doctor.user?.profile?.firstName || "Doctor"} ${doctor.user?.profile?.lastName || ""}`}
                             width={80}
                             height={80}
                             className="rounded-[50%] border-4 border-gray-300"

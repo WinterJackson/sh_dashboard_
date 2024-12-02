@@ -3,22 +3,23 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Doctor, Hospital, Department, Session } from "@/lib/definitions";
+import { Doctor, Hospital, Department, Role } from "@/lib/definitions";
 import DoctorsCard from "./ui/DoctorsCard";
 import DoctorsFilters from "./ui/DoctorsFilters";
 import DoctorsPagination from "./ui/DoctorsPagination";
 
 interface DoctorsListProps {
+    role: Role;
+    hospitalId: string | null;
     doctors: Doctor[];
-    hospitals: Hospital[];
     departments: Department[];
-    session: Session | null;
+    hospitals: Hospital[];
 }
 
 const ITEMS_PER_PAGE = 2;
 
 const DoctorsList: React.FC<DoctorsListProps> = React.memo(
-    ({ doctors, hospitals, departments, session }) => {
+    ({ role, hospitalId, doctors, hospitals, departments }) => {
         const [currentPage, setCurrentPage] = useState(1);
         const [filteredDoctors, setFilteredDoctors] = useState(doctors);
 
@@ -45,10 +46,11 @@ const DoctorsList: React.FC<DoctorsListProps> = React.memo(
         return (
             <>
                 <DoctorsFilters
+                    role={role}
+                    hospitalId={hospitalId}
                     doctors={doctors}
                     hospitals={hospitals}
                     departments={departments}
-                    session={session}
                     onFilterChange={onFilterChange}
                 />
                 <div className="flex bg-bluelight rounded-t-[20px] h-50 w-full p-4 pl-3">

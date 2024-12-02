@@ -1,6 +1,7 @@
 // src/app/(auth)/dashboard/settings/support/page.tsx
 
-import { getSession } from "@/lib/session";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import FAQ from "@/components/settings/FAQs/FAQ";
 import React from "react";
@@ -8,7 +9,7 @@ import Image from "next/image";
 
 export default async function SupportPage() {
     // Fetch session data
-    const session = await getSession();
+    const session = await getServerSession(authOptions);
 
     // Redirect unauthenticated users to the sign-in page
     if (!session || !session.user) {

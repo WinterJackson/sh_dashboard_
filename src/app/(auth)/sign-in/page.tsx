@@ -1,19 +1,21 @@
 // src/app/(auth)/sign-in/page.tsx
 
 import SignInForm from "@/components/form/SignInForm";
-import { getSession } from "@/lib/session";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import logo from "../../../../public/images/logo.png";
 import Image from "next/image";
 import AuthLayout from "../layout";
 
+export const dynamic = "force-dynamic";
+
 const SignInPage = async () => {
-    const session = await getSession();
+    const session = await getServerSession(authOptions);
 
     if (session) {
         redirect("/dashboard");
     }
-
     return (
         <AuthLayout>
             <div className="flex gap-10">

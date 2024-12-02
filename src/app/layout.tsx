@@ -2,13 +2,15 @@
 
 import "../styles/global.css";
 import type { Metadata } from "next";
-import { inter } from '@/components/ui/fonts';
+import { inter } from "@/components/ui/fonts";
 import SessionWrapper from "@/components/SessionWrapper";
 import { UserProvider } from "@/app/context/UserContext";
 import { LoadingProvider } from "@/app/context/LoadingContext";
 import { SearchProvider } from "@/app/context/SearchContext";
-import { getSession, getUserProfile } from "@/lib/session";
-import { EdgeStoreProvider } from "../lib/edgestore";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
+import { getUserProfile } from "@/lib/session";
+import { EdgeStoreProvider } from "@/lib/edgestore";
 
 export const metadata: Metadata = {
     title: "Hospital Dashboard",
@@ -21,7 +23,7 @@ export default async function RootLayout({
     children: React.ReactNode;
 }) {
     // Fetch session data and user profile
-    const session = await getSession();
+    const session = await getServerSession(authOptions);
     const userProfile = session?.user ? await getUserProfile(session.user.id) : null;
 
     const initialUser = userProfile || null;

@@ -1,13 +1,14 @@
 // src/app/(auth)/dashboard/settings/notification/page.tsx
 
-import { getSession } from "@/lib/session";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import Toggle from "@/components/settings/toogle button/Toogle";
 import React from "react";
 
 export default async function NotificationSettingsPage() {
     // Fetch session data
-    const session = await getSession();
+    const session = await getServerSession(authOptions);
 
     // Redirect unauthenticated users to the sign-in page
     if (!session || !session.user) {

@@ -13,7 +13,7 @@ import {
     DropdownMenuSubContent,
     DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
-import { Patient, Hospital, Session, Appointment } from "@/lib/definitions";
+import { Patient, Hospital, Session, Appointment, Role } from "@/lib/definitions";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useSearch } from "@/app/context/SearchContext";
@@ -28,7 +28,8 @@ import { SymbolIcon } from "@radix-ui/react-icons";
 interface PatientsFiltersProps {
     patients: Patient[];
     hospitals: Hospital[];
-    session: Session | null;
+    userRole: Role;
+    hospitalId: number | null;
     onFilterChange: (filteredPatients: Patient[]) => void;
     onSetPatients: (patients: Patient[]) => void;
 }
@@ -36,7 +37,8 @@ interface PatientsFiltersProps {
 const PatientsFilters: React.FC<PatientsFiltersProps> = ({
     patients,
     hospitals,
-    session,
+    userRole,
+    hospitalId,
     onFilterChange,
     onSetPatients,
 }) => {
@@ -54,7 +56,7 @@ const PatientsFilters: React.FC<PatientsFiltersProps> = ({
         useState(false);
     const [showOptions, setShowOptions] = useState(false);
 
-    const isSuperAdmin = session?.user.role === "SUPER_ADMIN";
+    const isSuperAdmin = userRole === "SUPER_ADMIN";
 
     // Helper function to sanitize input and phone numbers
     const sanitizeNumber = (input: string): string => input.replace(/\D/g, "");
@@ -176,8 +178,8 @@ const PatientsFilters: React.FC<PatientsFiltersProps> = ({
         setLatestAppointmentsActive(false);
 
         const reloadPatients = async () => {
-            if (session?.user) {
-                const fetchedPatients = await fetchPatientsByRole(session.user);
+            if (userRole && hospitalId !== null) {
+                const fetchedPatients = await fetchPatientsByRole({ role: userRole, hospitalId });
                 onSetPatients(fetchedPatients);
             }
         };

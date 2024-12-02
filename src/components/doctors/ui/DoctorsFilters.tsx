@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Doctor, Hospital, Department, Session } from "@/lib/definitions";
+import { Doctor, Hospital, Department, Session, Role } from "@/lib/definitions";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -25,18 +25,20 @@ import "react-datepicker/dist/react-datepicker.css";
 // import { fetchDepartments } from "@/lib/data";
 
 interface DoctorsFiltersProps {
+    role: Role;
+    hospitalId: string | null;
     doctors: Doctor[];
     hospitals: Hospital[];
     departments: Department[];
-    session: Session | null;
     onFilterChange: (filteredDoctors: Doctor[]) => void;
 }
 
 const DoctorsFilters: React.FC<DoctorsFiltersProps> = ({
+    role,
+    hospitalId,
     doctors,
     hospitals,
     departments,
-    session,
     onFilterChange,
 }) => {
     const [filters, setFilters] = useState({
@@ -46,6 +48,7 @@ const DoctorsFilters: React.FC<DoctorsFiltersProps> = ({
         hospital: "",
     });
 
+    const userRole = role
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     // Memoized filtered doctors
@@ -183,7 +186,7 @@ const DoctorsFilters: React.FC<DoctorsFiltersProps> = ({
                         <DropdownMenuSeparator />
 
                         {/* Hospital Filter (Visible Only to SUPER_ADMIN) */}
-                        {session?.user.role === "SUPER_ADMIN" && (
+                        {userRole === "SUPER_ADMIN" && (
                             <>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger className="rounded-[5px]">

@@ -1,7 +1,8 @@
 // src/app/(auth)/dashboard/patients/patient-profile/page.tsx
 
 import React from "react";
-import { getSession } from "@/lib/session";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
@@ -13,9 +14,8 @@ type Props = {};
 
 export default async function PatientProfilePage({}: Props) {
     // Fetch session data
-    const session = await getSession();
+    const session = await getServerSession(authOptions);
 
-    // Redirect to sign-in if session is not valid
     if (!session || !session.user) {
         redirect("/sign-in");
         return null;

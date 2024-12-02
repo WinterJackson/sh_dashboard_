@@ -7,19 +7,20 @@ import Link from "next/link";
 import Image from "next/image";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { Patient, Session } from "@/lib/definitions";
+import { Patient, Role } from "@/lib/definitions";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 type PatientRowProps = {
     patient: Patient;
-    session: Session | null;
+    userRole: Role;
+    hospitalId: number | null;
     onEdit: (patientId: number) => void;
     onDelete: (patientId: number) => void;
 };
 
-const PatientRow: React.FC<PatientRowProps> = ({ patient, session, onEdit, onDelete }) => {
+const PatientRow: React.FC<PatientRowProps> = ({ patient, userRole, hospitalId, onEdit, onDelete }) => {
     // Format appointments based on the patient's last and next appointment logic
     const getLastAppointment = (appointments: Patient["appointments"] | undefined) => {
         if (!appointments || appointments.length === 0) return null;

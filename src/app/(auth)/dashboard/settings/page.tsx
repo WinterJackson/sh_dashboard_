@@ -2,13 +2,14 @@
 
 import React from "react";
 import Image from "next/image";
-import { getSession } from "@/lib/session";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 
 type Props = {};
 
 export default async function SettingsPage({}: Props) {
-    const session = await getSession();
+    const session = await getServerSession(authOptions);
 
     // Redirect unauthenticated users to the sign-in page
     if (!session || !session.user) {

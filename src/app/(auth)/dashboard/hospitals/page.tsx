@@ -2,7 +2,8 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-import { getSession } from "@/lib/session";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import { Role } from "@/lib/definitions";
 import HospitalsPagination from "@/components/hospitals/HospitalsPagination";
@@ -23,10 +24,10 @@ interface HospitalsPageProps {
 
 export default async function HospitalsPage({ searchParams }: HospitalsPageProps) {
     // Fetch session
-    const session = await getSession();
+    const session = await getServerSession(authOptions);
 
     // Redirect if session is invalid or user role isn't SUPER_ADMIN
-    if (!session || session.user.role !== Role.SUPER_ADMIN) {
+    if (!session || session.user?.role !== Role.SUPER_ADMIN) {
         redirect("/sign-in");
         return null;
     }

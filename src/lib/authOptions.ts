@@ -6,7 +6,6 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { Role } from "@/lib/definitions";
-import { clearSessionCache } from "@/lib/session";
 
 const prisma = require("@/lib/prisma");
 
@@ -117,7 +116,6 @@ export const authOptions: NextAuthOptions = {
                     where: { sessionToken: token.sessionToken },
                 });
             }
-            clearSessionCache();
         },
     },
 };

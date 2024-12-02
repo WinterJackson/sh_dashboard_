@@ -1,16 +1,17 @@
 // src/pages/dashboard/doctors/add-new-doctor/page.tsx
 
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/session";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 import AddDoctorForm from "@/components/doctors/ui/add-new-doctor/AddDoctorForm";
 import { fetchSpecializations, fetchDepartments, fetchHospitals, fetchServices } from "@/components/doctors/ui/add-new-doctor/doctorAPI";
 import { Role } from "@/lib/definitions";
 
 export default async function AddNewDoctorPage() {
-    const session = await getSession();
+    const session = await getServerSession(authOptions);
 
     // Redirect unauthorized users
-    if (!session || (session.user.role !== Role.SUPER_ADMIN && session.user.role !== Role.ADMIN)) {
+    if (!session || (session.user?.role !== Role.SUPER_ADMIN && session.user?.role !== Role.ADMIN)) {
         redirect("/dashboard");
         return null;
     }
@@ -33,7 +34,11 @@ export default async function AddNewDoctorPage() {
                 hospitals={hospitals}
                 services={services}
                 userRole={session.user.role}
-                userHospitalId={session.user.hospitalId || null}
+                userHospitalId={
+                    session.user.hospitalId !== null
+                        ? session.user.hospitalId.toString()
+                        : null
+                }
             />
         </div>
     );

@@ -1,14 +1,17 @@
 // src/app/(auth)/sign-up/page.tsx
 
 import SignUpForm from "@/components/form/SignUpForm";
-import { getSession } from "@/lib/session";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import logo from "../../../../public/images/logo.png";
 import Image from "next/image";
 import AuthLayout from "../layout";
 
+export const dynamic = "force-dynamic";
+
 const SignUpPage = async () => {
-    const session = await getSession();
+    const session = await getServerSession(authOptions);
 
     if (session) {
         redirect("/dashboard");
@@ -18,7 +21,7 @@ const SignUpPage = async () => {
         <AuthLayout>
             <div className="flex gap-10">
                 <div className="flex items-center">
-                    <div className="p-8 my-auto bg-secondary rounded-2xl ">
+                    <div className="p-8 my-auto bg-secondary rounded-2xl">
                         <Image
                             src={logo}
                             alt="Hospital Logo"
@@ -29,9 +32,7 @@ const SignUpPage = async () => {
                         />
                     </div>
                 </div>
-
                 <div className="w-px h-auto bg-secondary"></div>
-
                 <div className="p-10 bg-secondary items-center rounded-2xl w-[450px]">
                     <SignUpForm />
                 </div>

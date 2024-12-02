@@ -1,27 +1,20 @@
-// src/components/sidebar/SidebarWrapper.tsx
+// File: src/components/sidebar/SidebarWrapper.tsx
 
-"use client";
+import React from "react";
+import Sidebar from "./ui/Sidebar";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 
-import { Profile, Session } from "@/lib/definitions";
-import { usePathname } from "next/navigation";
-import Sidebar from "./Sidebar";
 
-type SidebarWrapperProps = {
-    session: Session | null;
-    profileData: Profile;
+const SidebarWrapper: React.FC = async () => {
+    // Fetch the session
+    const session = await getServerSession(authOptions);
+
+    // Extract only required fields
+    const username = session?.user?.username || "Guest User";
+    const role = session?.user?.role || "Guest";
+
+    return <Sidebar username={username} role={role} />;
 };
 
-export default function SidebarWrapper({
-    session,
-    profileData,
-}: SidebarWrapperProps) {
-    const pathname = usePathname();
-
-    return (
-        <Sidebar
-            pathname={pathname}
-            session={session}
-            profileData={profileData}
-        />
-    );
-}
+export default SidebarWrapper;

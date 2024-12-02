@@ -1,6 +1,7 @@
 // src/app/(auth)/dashboard/doctors/page.tsx
 
-import { getSession } from "@/lib/session";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import DoctorsList from "@/components/doctors/DoctorsList";
 import { Doctor, Department, Hospital, Role } from "@/lib/definitions";
@@ -62,14 +63,17 @@ async function fetchHospitals(): Promise<Hospital[]> {
 }
 
 export default async function DoctorsPage() {
-    const session = await getSession();
+    const session = await getServerSession(authOptions);
 
     if (!session || !session.user) {
         redirect("/sign-in");
         return null;
     }
 
-    const { user } = session;
+    const user = {
+        role: session.user.role as Role,
+        hospitalId: session.user.hospitalId?.toString() || null,
+    };
 
     const doctors = await fetchDoctors(user);
     const hospitals = await fetchHospitals();
@@ -81,10 +85,11 @@ export default async function DoctorsPage() {
                 Doctors
             </h1>
             <DoctorsList
+                role={user.role}
+                hospitalId={user.hospitalId}
                 doctors={doctors}
                 hospitals={hospitals}
                 departments={departments}
-                session={session}
             />
         </div>
     );

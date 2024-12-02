@@ -1,6 +1,7 @@
 // src/app/(auth)/dashboard/patients/page.tsx
 
-import { getSession } from "@/lib/session";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import PatientsList from "@/components/patients/PatientsList";
 import { Patient, Role } from "@/lib/definitions";
@@ -11,7 +12,6 @@ const prisma = require("@/lib/prisma");
 // Fetch patients based on user role and hospital association
 async function fetchPatients(user: { role: Role; hospitalId?: number | null }): Promise<Patient[]> {
     if (user.role === "SUPER_ADMIN") {
-        // Fetch all patients for SUPER_ADMIN
         return prisma.patient.findMany({
             include: {
                 hospital: true,
@@ -21,7 +21,6 @@ async function fetchPatients(user: { role: Role; hospitalId?: number | null }): 
     }
 
     if (user.hospitalId) {
-        // Fetch patients for specific hospital for other roles
         return prisma.patient.findMany({
             where: { hospitalId: user.hospitalId },
             include: {
@@ -35,19 +34,18 @@ async function fetchPatients(user: { role: Role; hospitalId?: number | null }): 
 }
 
 export default async function PatientsPage() {
-    // Get the session using the centralized `getSession` function
-    const session = await getSession();
+    const session = await getServerSession(authOptions);
 
-    // Redirect to sign-in page if no valid session found
     if (!session || !session.user) {
         redirect("/sign-in");
         return null;
     }
 
-    const { user } = session;
+    // Separate role and hospitalId for clarity
+    const role = session.user.role as Role;
+    const hospitalId = session.user.hospitalId;
 
-    // Fetch patients and hospitals
-    const patients = await fetchPatients(user);
+    const patients = await fetchPatients({ role, hospitalId });
     const totalPatients = patients.length;
     const hospitals = await prisma.hospital.findMany();
 
@@ -58,7 +56,8 @@ export default async function PatientsPage() {
                 patients={patients}
                 totalPatients={totalPatients}
                 hospitals={hospitals}
-                session={session}
+                userRole={role}
+                hospitalId={hospitalId}
             />
         </div>
     );

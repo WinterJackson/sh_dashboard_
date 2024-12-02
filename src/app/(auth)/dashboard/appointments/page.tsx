@@ -1,16 +1,18 @@
 // src/app/(auth)/dashboard/appointments/page.tsx
 
-import { getSession } from "@/lib/session";
-import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 import AppointmentList from "@/components/appointments/AppointmentList";
-import { Appointment, Session, Role, Hospital } from "@/lib/definitions";
 import { fetchAllHospitals } from "@/lib/data";
+import { Role, Appointment, Session, Hospital } from "@/lib/definitions";
+import { redirect } from "next/navigation";
 
 const prisma = require("@/lib/prisma");
 
 export default async function AppointmentsPage() {
-    const session = await getSession();
+    const session: Session | null = await getServerSession(authOptions);
 
+    // Redirect if no session
     if (!session || !session.user) {
         redirect("/sign-in");
         return null;
@@ -18,9 +20,9 @@ export default async function AppointmentsPage() {
 
     const { role, hospitalId } = session.user;
 
-    // Fetch appointments and total count based on role
+    // Fetch appointments and hospitals based on role
     let appointments: Appointment[] = [];
-    let totalAppointments = 0;
+    let totalAppointments: number = 0;
     let hospitals: Hospital[] = [];
 
     if (role === Role.SUPER_ADMIN) {
@@ -29,17 +31,11 @@ export default async function AppointmentsPage() {
                 include: {
                     patient: true,
                     doctor: {
-                        include: {
-                            user: {
-                                include: { profile: true },
-                            },
-                        },
+                        include: { user: { include: { profile: true } } },
                     },
                     hospital: true,
                 },
-                orderBy: {
-                    appointmentDate: 'desc',
-                },
+                orderBy: { appointmentDate: "desc" },
             }),
             prisma.appointment.count(),
         ]);
@@ -51,22 +47,17 @@ export default async function AppointmentsPage() {
                 include: {
                     patient: true,
                     doctor: {
-                        include: {
-                            user: {
-                                include: { profile: true },
-                            },
-                        },
+                        include: { user: { include: { profile: true } } },
                     },
                     hospital: true,
                 },
-                orderBy: {
-                    appointmentDate: 'desc',
-                },
+                orderBy: { appointmentDate: "desc" },
             }),
             prisma.appointment.count({ where: { hospitalId } }),
         ]);
     }
 
+    // Render the appointments list
     return (
         <>
             <h1 className="text-xl font-bold bg-bluelight/5 rounded-[10px] p-2 mx-4 mt-3">

@@ -1,7 +1,8 @@
 // src/app/(auth)/dashboard/page.tsx
 
 import React from "react";
-import { getSession } from "@/lib/session";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import SuperAdminDashboard from "@/components/dashboard/super-admin-dashboard/SuperAdminDashboard";
 import AdminDashboard from "@/components/dashboard/admin-dashboard/AdminDashboard";
@@ -10,7 +11,8 @@ import NurseDashboard from "@/components/dashboard/nurse-dashboard/NurseDashboar
 import StaffDashboard from "@/components/dashboard/staff-dashboard/StaffDashboard";
 
 export default async function DashboardPage() {
-    const session = await getSession();
+    // Fetch session using NextAuth's getServerSession
+    const session = await getServerSession(authOptions);
 
     if (!session || !session.user) {
         redirect("/sign-in");
@@ -19,18 +21,27 @@ export default async function DashboardPage() {
 
     const { user } = session;
 
+    // Extract only the necessary data
+    const filteredSession = {
+        user: {
+            username: user.username,
+            role: user.role,
+            hospitalId: user.hospitalId || null,
+        },
+    };
+
     return (
         <div className="h-full">
             {user.role === "SUPER_ADMIN" ? (
-                <SuperAdminDashboard session={session} />
+                <SuperAdminDashboard session={filteredSession} />
             ) : user.role === "ADMIN" ? (
-                <AdminDashboard session={session} />
+                <AdminDashboard session={filteredSession} />
             ) : user.role === "DOCTOR" ? (
-                <DoctorDashboard session={session} />
+                <DoctorDashboard session={filteredSession} />
             ) : user.role === "NURSE" ? (
-                <NurseDashboard session={session} />
+                <NurseDashboard session={filteredSession} />
             ) : (
-                <StaffDashboard session={session} />
+                <StaffDashboard session={filteredSession} />
             )}
         </div>
     );
