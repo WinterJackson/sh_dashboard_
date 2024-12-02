@@ -12,6 +12,8 @@ import PatientsTodayCard from "../ui/PatientsTodayCard";
 import TopDoctorsCard from "../ui/TopDoctorsCard";
 // import { fetchAppointments } from "@/lib/data";
 
+const prisma = require("@/lib/prisma");
+
 interface NurseDashboardProps {
     session: {
         user: {
