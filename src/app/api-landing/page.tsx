@@ -25,7 +25,8 @@ import {
 } from "react-icons/fa";
 import Image from "next/image";
 import logo from "../../../public/images/logo.png";
-import { getSession } from "@/lib/session";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 
 const routeIcons: Record<string, React.JSX.Element> = {
@@ -73,7 +74,7 @@ const apiRoutes = [
 ];
 
 export default async function ApiLandingPage() {
-    const session = await getSession();
+    const session = await getServerSession(authOptions);
 
     if (!session || !session.user) {
         redirect("/sign-in");
