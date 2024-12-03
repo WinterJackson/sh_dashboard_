@@ -1,5 +1,6 @@
 // src/lib/data.ts
 
+import * as Sentry from "@sentry/nextjs";
 import { Appointment, Role, Doctor, Patient } from "./definitions";
 
 // Fetch available doctors
@@ -22,8 +23,9 @@ export async function fetchOnlineDoctors(): Promise<Doctor[]> {
 
         return onlineDoctors;
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Failed to fetch doctors:", error);
-        return []; // Return an empty array on error
+        return [];
     }
 }
 
@@ -44,6 +46,7 @@ export async function fetchDoctorDetails(doctorId: string) {
 
         return doctor;
     } catch (error) {
+        Sentry.captureException(error);
         console.error(`Error fetching details for doctor ID ${doctorId}:`, error);
         return null;
     }
@@ -76,8 +79,9 @@ export const fetchDoctorIdByUserId = async (
 
         return doctor; // Ensure the full doctor object is returned
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Error fetching doctor data:", error);
-        return null; // Return null on failure
+        return null;
     }
 };
 
@@ -100,8 +104,9 @@ export async function fetchAllDoctors(): Promise<Doctor[]> {
 
         return data;
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Failed to fetch all doctors:", error);
-        return []; // Return empty array on failure
+        return [];
     }
 }
 
@@ -117,6 +122,7 @@ export async function fetchAllHospitals() {
 
         return data;
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Failed to fetch hospitals:", error);
         return [];
     }
@@ -143,6 +149,7 @@ export async function fetchPatientDetails(name: string) {
 
         return data;
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Failed to fetch patient details:", error);
         return null;
     }
@@ -169,6 +176,7 @@ export async function fetchAvailableBeds() {
 
         return availableBeds;
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Failed to fetch beds:", error);
         return [];
     }
@@ -199,6 +207,7 @@ export async function fetchAppointments(
 
         return await response.json();
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Error fetching appointments:", error);
         return {
             appointments: [],
@@ -225,6 +234,7 @@ export const fetchAppointmentsByHospital = async (hospitalId: number) => {
         const data = await response.json();
         return data;
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Failed to fetch appointments by hospital:", error);
         return [];
     }
@@ -255,6 +265,7 @@ export async function updateAppointmentStatus(
         const updatedAppointment = await response.json();
         return updatedAppointment;
     } catch (error) {
+        Sentry.captureException(error);
         console.error(`Error updating appointment ID ${appointmentId}:`, error);
         return null;
     }
@@ -281,6 +292,7 @@ export async function updateAppointmentType(
         const updatedAppointment = await response.json();
         return { success: true, updatedType: updatedAppointment.type };
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Failed to update appointment type:", error);
         return { success: false };
     }
@@ -299,6 +311,7 @@ export async function fetchTodayAppointments() {
         const data = await response.json();
         return data;
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Failed to fetch today's appointments:", error);
         return 0;
     }
@@ -316,6 +329,7 @@ export async function fetchAppointmentsForLast14Days() {
         const data = await response.json();
         return data;
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Failed to fetch appointments for the last 14 days:", error);
         return [];
     }
@@ -333,6 +347,7 @@ export async function fetchPatientsToday() {
         const data = await response.json();
         return data;
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Failed to fetch today's patients:", error);
         return 0;
     }
@@ -354,6 +369,7 @@ export async function fetchAllPatients(): Promise<Patient[]> {
             appointments: patient.appointments || [],
         }));
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Failed to fetch patients:", error);
         return [];
     }
@@ -386,6 +402,7 @@ export async function fetchPatientsByHospital(hospitalId: number): Promise<Patie
             appointments: patient.appointments || [],
         }));
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Failed to fetch patients by hospital:", error);
         return [];
     }
@@ -409,8 +426,9 @@ export async function fetchPatientsByRole(user: any): Promise<Patient[]> {
         console.warn("User role lacks access to hospital data:", user.role);
         return [];
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Error fetching patients by role:", error);
-        return []; // Return empty array on failure
+        return [];
     }
 }
 
@@ -442,6 +460,7 @@ export async function fetchPatientsForLast14Days() {
 
         return uniquePatients;
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Error fetching patients for the last 14 days:", error);
         return [];
     }
@@ -459,6 +478,7 @@ export async function fetchDoctorsByHospital(hospitalId: number) {
         const data = await response.json();
         return data;
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Failed to fetch doctors:", error);
         return [];
     }
@@ -476,6 +496,7 @@ export async function fetchAllReferrals() {
         const data = await response.json();
         return data;
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Failed to fetch referrals:", error);
         return [];
     }
@@ -504,7 +525,8 @@ export async function fetchDepartments(hospitalId?: number): Promise<any[]> {
 
         return data;
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Error fetching departments:", error);
-        return []; // Return empty array on failure
+        return [];
     }
 }

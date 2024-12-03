@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { Role } from "@/lib/definitions";
 import { NextRequest } from "next/server";
+import * as Sentry from "@sentry/nextjs";
+
 
 // Define role-based access groups
 const accessGroups = {
@@ -56,29 +58,29 @@ const protectedRoutes = [
 ];
 
 export default async function middleware(req: NextRequest) {
-    const token = await getToken({ req });
+    try {
+        const token = await getToken({ req });
 
-    // Redirect to login if no token is found
-    if (!token) {
-        return NextResponse.redirect(new URL("/sign-in", req.url));
+        if (!token) {
+            return NextResponse.redirect(new URL("/sign-in", req.url));
+        }
+
+        const role = token.role as Role;
+        const pathname = req.nextUrl.pathname;
+
+        const routeConfig = protectedRoutes.find(({ path }) => pathname.startsWith(path));
+        if (routeConfig && !routeConfig.roles.includes(role)) {
+            return NextResponse.redirect(new URL("/unauthorized", req.url));
+        }
+
+        return NextResponse.next();
+    } catch (error) {
+        Sentry.captureException(error); // Log errors with Sentry
+        console.error("Error in middleware:", error);
+        return NextResponse.redirect(new URL("/error", req.url));
     }
-
-    const role = token.role as Role;
-
-    const pathname = req.nextUrl.pathname;
-
-    // Optimized role-based access control
-    const routeConfig = protectedRoutes.find(({ path }) => pathname.startsWith(path));
-    
-    if (routeConfig && !routeConfig.roles.includes(role)) {
-        // Redirect to unauthorized page if role is not allowed
-        return NextResponse.redirect(new URL("/unauthorized", req.url));
-    }
-
-    return NextResponse.next();
 }
 
-// Apply middleware to protected routes
 export const config = {
     matcher: ["/dashboard/:path*", "/api/:path*", "/api-landing/:path*", "/api-viewer/:path*"],
 };

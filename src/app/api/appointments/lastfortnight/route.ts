@@ -1,6 +1,7 @@
 // src/app/api/appointments/lastfortnight/route.ts
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 const prisma = require("@/lib/prisma");
 
 export async function GET(req: NextRequest) {
@@ -30,15 +31,13 @@ export async function GET(req: NextRequest) {
                         },
                     },
                 },
-                hospital: true,
                 patient: true,
-                services: true,
-                payments: true,
             },
         });
 
         return NextResponse.json(appointments, { status: 200 });
     } catch (error) {
+        Sentry.captureException(error); // Log the error to Sentry
         console.error("Error fetching appointments for the last 14 days:", error);
         return NextResponse.json(
             { error: "Error fetching appointments for the last 14 days" },
