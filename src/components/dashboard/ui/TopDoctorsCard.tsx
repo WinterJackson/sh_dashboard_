@@ -2,113 +2,60 @@
 
 "use client";
 
-import React, { useEffect, useState } from "react";
-import Image from "next/image";
 import { Rating } from "@mui/material";
-import { fetchAllDoctors } from "@/lib/data";
-import { Doctor } from "@/lib/definitions";
-import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
+import React from "react";
 
-interface TopDoctorsCardProps {
-    session: {
-        user: {
-            role: string;
-            hospitalId: number | null;
-        };
-    };
+interface TopDoctor {
+    doctorId: number;
+    imageUrl: string;
+    name: string;
+    rating: number;
+    specialization: string;
 }
 
-const TopDoctorsCard: React.FC<TopDoctorsCardProps> = ({ session }) => {
-    const [topDoctors, setTopDoctors] = useState<Doctor[]>([]);
-    const [loading, setLoading] = useState(true);
+interface TopDoctorsCardProps {
+    topDoctors: TopDoctor[];
+}
 
-    const { role, hospitalId } = session.user;
-
-    // Fetch top doctors based on user role and hospitalId
-    const fetchTopDoctors = async () => {
-        try {
-            const allDoctors = await fetchAllDoctors();
-            let doctorsData: Doctor[] = [];
-
-            if (role === "SUPER_ADMIN") {
-                // Top 5 doctors across all hospitals
-                doctorsData = allDoctors
-                    .sort(
-                        (a: { averageRating: number }, b: { averageRating: number }) =>
-                            b.averageRating - a.averageRating
-                    )
-                    .slice(0, 5);
-            } else if (
-                hospitalId &&
-                role &&
-                ["ADMIN", "DOCTOR", "NURSE", "STAFF"].includes(role)
-            ) {
-                // Top 5 doctors from same hospital as user
-                doctorsData = allDoctors
-                    .filter((doctor: { hospitalId: number }) => doctor.hospitalId === hospitalId)
-                    .sort(
-                        (a: { averageRating: number }, b: { averageRating: number }) =>
-                            b.averageRating - a.averageRating
-                    )
-                    .slice(0, 5);
-            }
-
-            setTopDoctors(doctorsData);
-            setLoading(false);
-        } catch (error) {
-            console.error("Failed to fetch top doctors:", error);
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        if (role) {
-            fetchTopDoctors();
-        }
-    }, [role, hospitalId]);
+const TopDoctorsCard: React.FC<TopDoctorsCardProps> = ({ topDoctors = [] }) => {
 
     return (
-        <div className="p-6 h-[550px] flex flex-col gap-4 shadow-lg shadow-gray-300 rounded-[20px] bg-slate-100 w-full mb-8">
-            <h1 className="text-base font-semibold capitalize whitespace-nowrap">Top Doctors</h1>
+        <div className="p-6 h-[510px] flex flex-col gap-4 shadow-lg shadow-gray-300 rounded-[20px] bg-slate-100 w-full mb-8">
+            <h1 className="text-base font-semibold capitalize whitespace-nowrap">
+                Top Doctors
+            </h1>
             <div className="flex flex-col h-[550px] gap-5 w-full overflow-x-auto whitespace-nowrap py-3">
-                {loading ? (
-                    Array.from({ length: 5 }).map((_, index) => (
-                        <div key={index} className="flex gap-3">
-                            <Skeleton className="w-[50px] h-[50px] rounded-full bg-gray-200" />
-                            <div className="flex w-full items-center justify-between gap-4">
-                                <div className="flex-shrink-0 flex flex-col gap-2 min-w-[400px]">
-                                    <Skeleton className="w-full h-[15px] bg-gray-200" />
-                                    <Skeleton className="w-2/3 h-[15px] bg-gray-200" />
-                                </div>
-                                <div className="flex-shrink-0 flex flex-col gap-2 items-end min-w-[100px]">
-                                    <Skeleton className="w-[80px] h-[15px] bg-gray-200" />
-                                    <Skeleton className="w-[50px] h-[15px] bg-gray-200" />
-                                </div>
-                            </div>
-                        </div>
-                    ))
+                {topDoctors?.length === 0 ? (
+                    <p className="text-gray-500">No top doctors found.</p>
                 ) : (
                     topDoctors.map((doctor) => (
                         <div key={doctor.doctorId} className="flex gap-3">
                             <Image
-                                src={doctor.user.profile?.imageUrl || "/default-profile.png"}
-                                alt={`${doctor.user.profile?.firstName} ${doctor.user.profile?.lastName}`}
-                                width={50}
-                                height={50}
-                                className="object-cover rounded-full"
+                                src={doctor.imageUrl}
+                                alt={doctor.name}
+                                width={55}
+                                height={55}
+                                className="object-cover rounded-full border-4 border-gray-300"
                             />
                             <div className="flex w-full items-center justify-between gap-4">
-                                <div className="flex-shrink-0 flex flex-col gap-2 min-w-[400px]">
-                                    <h1 className="font-semibold text-base capitalize whitespace-nowrap">
-                                        Dr. {doctor.user.profile?.firstName} {doctor.user.profile?.lastName}
+                                <div className="flex-shrink-0 flex flex-col gap-1 min-w-[400px]">
+                                    <h1 className="font-semibold text-base capitalize whitespace-nowrap px-1 rounded-[5px]">
+                                        {doctor.name}
                                     </h1>
-                                    <p className="text-accent capitalize whitespace-nowrap">
-                                        {doctor.specialization?.name}
+                                    <p className="text-accent capitalize whitespace-nowrap px-1">
+                                        {doctor.specialization}
                                     </p>
                                 </div>
                                 <div className="flex-shrink-0 flex flex-col gap-2 items-end min-w-[100px]">
-                                    <Rating value={doctor.averageRating} precision={0.1} readOnly />
-                                    <p className="whitespace-nowrap">{doctor.averageRating.toFixed(1)} / 5</p>
+                                    <Rating
+                                        value={doctor.rating}
+                                        precision={0.1}
+                                        readOnly
+                                    />
+                                    <p className="whitespace-nowrap">
+                                        {doctor.rating.toFixed(1)} / 5
+                                    </p>
                                 </div>
                             </div>
                         </div>

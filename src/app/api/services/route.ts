@@ -1,11 +1,10 @@
 // src/app/api/services/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 
 const prisma = require("@/lib/prisma");
 
-/**
- * GET: Fetch all services in the database.
- */
 export async function GET(req: NextRequest) {
     try {
         const services = await prisma.service.findMany({
@@ -21,7 +20,11 @@ export async function GET(req: NextRequest) {
                                 hospitals: {
                                     select: {
                                         hospitalId: true,
-                                        hospital: { select: { name: true } },
+                                        hospital: {
+                                            select: {
+                                                name: true,
+                                            },
+                                        },
                                     },
                                 },
                             },
@@ -33,9 +36,10 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json(services, { status: 200 });
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Error fetching services:", error);
         return NextResponse.json(
-            { error: "Internal server error" },
+            { error: "Failed to fetch services" },
             { status: 500 }
         );
     }

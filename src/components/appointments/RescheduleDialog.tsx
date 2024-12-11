@@ -2,36 +2,41 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
     Dialog,
-    DialogTrigger,
-    DialogContent,
-    DialogTitle,
-    DialogDescription,
     DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { IconButton } from "@mui/material";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import { fetchOnlineDoctors, fetchAllHospitals } from "@/lib/data";
 import { useSessionData } from "@/hooks/useSessionData";
-import { revalidatePath } from "next/cache";
+import { fetchHospitals } from "@/lib/data-access/hospitals/data";
+import { fetchOnlineDoctors } from "@/lib/data-access/doctors/data";
 import { Doctor, Hospital, Role } from "@/lib/definitions";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import { IconButton } from "@mui/material";
+import { revalidatePath } from "next/cache";
+import React, { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { updateAppointmentDetails } from "@/lib/data-access/appointments/data";
+
 
 interface RescheduleDialogProps {
     appointmentId: string;
     onClose: () => void;
+    onRescheduleSuccess: (updatedAppointment: any) => void;
     handleActionChange: (appointmentId: string, action: string) => void;
 }
 
 const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
     appointmentId,
     onClose,
+    onRescheduleSuccess,
     handleActionChange,
 }) => {
     const {
@@ -41,106 +46,96 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
         setValue,
         formState: { errors },
     } = useForm({
-        mode: "onBlur", // Validate on blur to provide feedback as user types
+        mode: "onBlur",
     });
-    const [saved, setSaved] = useState<boolean>(false);
-    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+        undefined
+    );
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [doctors, setDoctors] = useState<Doctor[]>([]);
     const [hospitals, setHospitals] = useState<Hospital[]>([]);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saved, setSaved] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const sessionData = useSessionData();
     const userRole = sessionData?.user?.role as Role;
-    const hospitalId = sessionData?.user?.hospitalId;
-    
+    const hospitalId = sessionData?.user?.hospitalId ?? null;
+
+    // Fetch doctors and hospitals based on user role
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Fetch online doctors
-                const fetchedDoctors = await fetchOnlineDoctors();
+                const fetchedDoctors = await fetchOnlineDoctors(hospitalId, userRole);
 
                 if (userRole !== "SUPER_ADMIN" && hospitalId) {
                     const filteredDoctors = fetchedDoctors.filter(
-                        (doctor: { hospitalId: number }) => doctor.hospitalId === hospitalId
+                        (doctor: { hospitalId: number; }) => doctor.hospitalId === hospitalId
                     );
                     setDoctors(filteredDoctors);
                 } else {
                     setDoctors(fetchedDoctors);
                 }
 
-                // Fetch hospitals for SUPER_ADMIN
                 if (userRole === "SUPER_ADMIN") {
-                    const fetchedHospitals = await fetchAllHospitals();
+                    const fetchedHospitals = await fetchHospitals();
                     setHospitals(fetchedHospitals);
                 }
             } catch (error) {
-                console.error("Failed to fetch data for rescheduling:", error);
+                console.error("Failed to fetch doctors or hospitals:", error);
             }
         };
 
         fetchData();
     }, [userRole, hospitalId]);
 
-    const fetchAndSetDoctorHospital = async (doctorId: number) => {
-        try {
-            const onlineDoctors = await fetchOnlineDoctors();
-            const selectedDoctor = onlineDoctors.find(
-                (doctor: { doctorId: number }) => doctor.doctorId === doctorId
-            );
-
-            if (selectedDoctor) {
-                setValue("hospitalId", selectedDoctor.hospitalId);
-            } else {
-                setValue("hospitalId", "");
-            }
-        } catch (error) {
-            console.error("Failed to fetch and set doctor hospital:", error);
-        }
-    };
-
-    const handleDoctorChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    // Handle doctor change to fetch associated hospital
+    const handleDoctorChange = async (
+        event: React.ChangeEvent<HTMLSelectElement>
+    ) => {
         const doctorId = parseInt(event.target.value, 10);
-
         if (userRole === "SUPER_ADMIN" && doctorId) {
-            await fetchAndSetDoctorHospital(doctorId);
+            const selectedDoctor = doctors.find(
+                (doctor) => doctor.doctorId === doctorId
+            );
+            setValue("hospitalId", selectedDoctor?.hospitalId || "");
         }
     };
 
     const onSubmit = async (data: any) => {
-        handleActionChange(appointmentId, "Rescheduled");
-    
+        setIsSaving(true);
+        setError(null);
+
         try {
             const requestBody = {
                 ...data,
                 date: selectedDate?.toISOString(),
-                hospitalId: userRole === "SUPER_ADMIN" ? data.hospitalId : hospitalId,
+                hospitalId: userRole === "SUPER_ADMIN" ? parseInt(data.hospitalId, 10) : hospitalId, // Convert to Int
                 doctorId: parseInt(data.doctorId, 10),
+                type: data.type,
+                status: "Rescheduled",
             };
-    
-            // console.log(requestBody);
-    
-            const response = await fetch(`${process.env.API_URL}/appointments/${appointmentId}`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(requestBody),
-            });
-    
-            if (!response.ok) {
-                throw new Error("Failed to reschedule appointment");
-            }
-    
-            setSaved(true);
-            revalidatePath("/dashboard/appointments");
-        } catch (error) {
-            console.error("Error:", error);
-        }
-    };
-    
 
-    const handleClose = () => {
-        onClose();
+            const updatedAppointment = await updateAppointmentDetails(
+                appointmentId,
+                requestBody
+            );
+
+            if (!updatedAppointment) {
+                throw new Error("Failed to reschedule appointment.");
+            }
+
+            setSaved(true);
+            handleActionChange(appointmentId, "Rescheduled");
+            onRescheduleSuccess(updatedAppointment);
+            onClose();
+        } catch (error) {
+            console.error("Error rescheduling appointment:", error);
+            setError("Failed to reschedule appointment. Please try again.");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleDateChange = (date: Date | undefined) => {
@@ -149,7 +144,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
     };
 
     return (
-        <Dialog open={true} onOpenChange={handleClose}>
+        <Dialog open={true} onOpenChange={onClose}>
             <DialogTrigger asChild>
                 <button className="hidden"></button>
             </DialogTrigger>
@@ -291,7 +286,9 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                         value={doctor.doctorId}
                                         className="bg-white"
                                     >
-                                        Dr. {doctor.user.username} - {doctor.specialization?.name || "No Specialization"}
+                                        Dr. {doctor.user.username} -{" "}
+                                        {doctor.specialization?.name ||
+                                            "No Specialization"}
                                     </option>
                                 ))}
                             </select>
@@ -381,7 +378,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                         </Button>
                     </div>
                 </form>
-                <DialogClose onClick={handleClose} />
+                <DialogClose onClick={onClose} />
             </DialogContent>
         </Dialog>
     );

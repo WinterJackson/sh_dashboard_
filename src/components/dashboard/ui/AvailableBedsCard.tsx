@@ -2,41 +2,15 @@
 
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { fetchAvailableBeds } from "@/lib/data";
+import React from "react";
 import icon from "../../../../public/images/bed.svg";
 import Image from "next/image";
 
 interface AvailableBedsCardProps {
-    session: {
-        user: {
-            role: string;
-            hospitalId: number | null;
-        };
-    };
+    availableBeds: []
 }
 
-const AvailableBedsCard: React.FC<AvailableBedsCardProps> = ({ session }) => {
-    const [availableBeds, setAvailableBeds] = useState(0);
-
-    useEffect(() => {
-        const fetchBeds = async () => {
-            const beds = await fetchAvailableBeds();
-
-            // Filter beds based on user role and hospitalId
-            const filteredBeds =
-                session.user.role === "SUPER_ADMIN"
-                    ? beds
-                    : beds.filter(
-                          (bed: { hospitalId: number }) =>
-                              bed.hospitalId === session.user.hospitalId
-                      );
-
-            setAvailableBeds(filteredBeds.length);
-        };
-
-        fetchBeds();
-    }, [session]);
+const AvailableBedsCard: React.FC<AvailableBedsCardProps> = ({ availableBeds }) => {
 
     const getFontSizeClass = (numDigits: number) => {
         if (numDigits <= 3) return "text-4xl xl:text-6xl";

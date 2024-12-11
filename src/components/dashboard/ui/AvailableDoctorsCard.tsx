@@ -2,46 +2,26 @@
 
 "use client";
 
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
-import { fetchOnlineDoctors } from "@/lib/data";
+import { Role } from "@/lib/definitions";
 import Image from "next/image";
+import Link from "next/link";
+import React from "react";
 import icon from "../../../../public/images/doctor.svg";
 
 interface AvailableDoctorsCardProps {
     session: {
         user: {
-            role: string;
+            role: Role;
             hospitalId: number | null;
         };
     };
+    onlineDoctors:[]
 }
 
-const AvailableDoctorsCard: React.FC<AvailableDoctorsCardProps> = ({ session }) => {
-    const [availableDoctors, setAvailableDoctors] = useState(0);
-
-    useEffect(() => {
-        const fetchDoctors = async () => {
-            try {
-                const doctors = await fetchOnlineDoctors();
-
-                // Filter doctors based on role and hospitalId
-                const filteredDoctors =
-                    session.user.role === "SUPER_ADMIN"
-                        ? doctors
-                        : doctors.filter(
-                              (doctor: { hospitalId: number }) =>
-                                  doctor.hospitalId === session.user.hospitalId
-                          );
-
-                setAvailableDoctors(filteredDoctors.length);
-            } catch (error) {
-                console.error("Error fetching online doctors:", error);
-            }
-        };
-
-        fetchDoctors();
-    }, [session]);
+const AvailableDoctorsCard: React.FC<AvailableDoctorsCardProps> = ({
+    session,
+    onlineDoctors,
+}) => {
 
     const getFontSizeClass = (numDigits: number) => {
         if (numDigits <= 3) return "text-4xl xl:text-6xl";
@@ -63,10 +43,10 @@ const AvailableDoctorsCard: React.FC<AvailableDoctorsCardProps> = ({ session }) 
                 <div>
                     <span
                         className={`font-bold p-1 rounded-[10px] bg-slate-200 ${getFontSizeClass(
-                            availableDoctors.toString().length
+                            onlineDoctors.toString().length
                         )}`}
                     >
-                        {availableDoctors}
+                        {onlineDoctors}
                     </span>
                 </div>
                 <div className="flex w-1/3 items-center justify-end h-3/4 relative">

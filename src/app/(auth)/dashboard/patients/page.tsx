@@ -4,34 +4,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import PatientsList from "@/components/patients/PatientsList";
-import { Patient, Role } from "@/lib/definitions";
-import React from "react";
-
-const prisma = require("@/lib/prisma");
-
-// Fetch patients based on user role and hospital association
-async function fetchPatients(user: { role: Role; hospitalId?: number | null }): Promise<Patient[]> {
-    if (user.role === "SUPER_ADMIN") {
-        return prisma.patient.findMany({
-            include: {
-                hospital: true,
-                appointments: true,
-            },
-        });
-    }
-
-    if (user.hospitalId) {
-        return prisma.patient.findMany({
-            where: { hospitalId: user.hospitalId },
-            include: {
-                hospital: true,
-                appointments: true,
-            },
-        });
-    }
-
-    return [];
-}
+import { fetchPatients } from "@/lib/data-access/patients/data";
+import { fetchHospitals } from "@/lib/data-access/hospitals/data";
+import { Role } from "@/lib/definitions";
 
 export default async function PatientsPage() {
     const session = await getServerSession(authOptions);
@@ -41,16 +16,25 @@ export default async function PatientsPage() {
         return null;
     }
 
-    // Separate role and hospitalId for clarity
-    const role = session.user.role as Role;
-    const hospitalId = session.user.hospitalId;
+    const userId = session.user.id;
+    const role = session.user.role as Role
+    const hospitalId = session.user.hospitalId
 
-    const patients = await fetchPatients({ role, hospitalId });
-    const totalPatients = patients.length;
-    const hospitals = await prisma.hospital.findMany();
+    // Fetch patients and total count
+    const { patients, totalPatients } = await fetchPatients({
+        role,
+        hospitalId,
+        userId,
+    });
+
+    // Fetch all hospitals if the user is a SUPER_ADMIN
+    const hospitals =
+        role === "SUPER_ADMIN"
+            ? await fetchHospitals()
+            : [];
 
     return (
-        <div className="flex flex-col gap-3 p-3">
+        <div className="flex flex-col gap-3 p-3 pt-0">
             <h1 className="text-xl font-bold bg-bluelight/5 p-2 rounded-[10px]">Patients</h1>
             <PatientsList
                 patients={patients}

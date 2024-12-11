@@ -1,11 +1,15 @@
-// src/pages/dashboard/doctors/add-new-doctor/page.tsx
+// src/app/(auth)/dashboard/doctors/add-new-doctor/page.tsx
 
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import AddDoctorForm from "@/components/doctors/ui/add-new-doctor/AddDoctorForm";
-import { fetchSpecializations, fetchDepartments, fetchHospitals, fetchServices } from "@/components/doctors/ui/add-new-doctor/doctorAPI";
+import { fetchSpecializations } from "@/lib/data-access/specializations/data";
+import { fetchDepartments } from "@/lib/data-access/departments/data";
+import { fetchHospitals } from "@/lib/data-access/hospitals/data";
+import { fetchServices, filteredServices } from "@/lib/data-access/services/data";
 import { Role } from "@/lib/definitions";
+
 
 export default async function AddNewDoctorPage() {
     const session = await getServerSession(authOptions);
@@ -16,23 +20,42 @@ export default async function AddNewDoctorPage() {
         return null;
     }
 
+    const user = {
+        role: session.user.role as Role,
+        hospitalId: session.user.hospitalId?.toString() || null,
+    };
+
+    // Handle promises individually
     const [specializations, departments, hospitals, services] = await Promise.all([
-        fetchSpecializations(),
-        fetchDepartments(),
-        fetchHospitals(),
-        fetchServices(session.user.role, session.user.hospitalId || null),
+        fetchSpecializations().catch((error) => {
+            console.error("Error fetching specializations:", error);
+            return []; // Fallback
+        }),
+        fetchDepartments(user).catch((error) => {
+            console.error("Error fetching departments:", error);
+            return [];
+        }),
+        fetchHospitals().catch((error) => {
+            console.error("Error fetching hospitals:", error);
+            return [];
+        }),
+        fetchServices(session.user.role, session.user.hospitalId || null).catch((error) => {
+            console.error("Error fetching services:", error);
+            return [];
+        }),
     ]);
 
     return (
-        <div className="p-6 px-2 pt-4">
-            <h1 className="mx-2 mb-4 text-xl font-bold bg-bluelight/5 p-2 pl-4 rounded-[10px]">
-            Add New Doctor
+        <div className="p-6 px-2 pt-0">
+            <h1 className="mx-2 mb-5 text-xl font-bold bg-bluelight/5 p-2 pl-4 rounded-[10px]">
+                Add New Doctor
             </h1>
             <AddDoctorForm
                 specialties={specializations}
                 departments={departments}
                 hospitals={hospitals}
                 services={services}
+                filteredServices={filteredServices}
                 userRole={session.user.role}
                 userHospitalId={
                     session.user.hospitalId !== null

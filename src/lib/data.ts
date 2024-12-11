@@ -3,130 +3,130 @@
 import * as Sentry from "@sentry/nextjs";
 import { Appointment, Role, Doctor, Patient } from "./definitions";
 
-// Fetch available doctors
-export async function fetchOnlineDoctors(): Promise<Doctor[]> {
-    try {
-        const response = await fetch(`${process.env.API_URL}/doctors`, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+// // Fetch available doctors
+// export async function fetchOnlineDoctors(): Promise<Doctor[]> {
+//     try {
+//         const response = await fetch(`${process.env.API_URL}/doctors`, {
+//             headers: {
+//                 "Content-Type": "application/json",
+//             },
+//         });
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch doctors: ${response.status} ${response.statusText}`);
-        }
+//         if (!response.ok) {
+//             throw new Error(`Failed to fetch doctors: ${response.status} ${response.statusText}`);
+//         }
 
-        const data: Doctor[] = await response.json();
+//         const data: Doctor[] = await response.json();
 
-        // Filter the data for online doctors only
-        const onlineDoctors = data.filter((doctor) => doctor.status === "Online");
+//         // Filter the data for online doctors only
+//         const onlineDoctors = data.filter((doctor) => doctor.status === "Online");
 
-        return onlineDoctors;
-    } catch (error) {
-        Sentry.captureException(error);
-        console.error("Failed to fetch doctors:", error);
-        return [];
-    }
-}
+//         return onlineDoctors;
+//     } catch (error) {
+//         Sentry.captureException(error);
+//         console.error("Failed to fetch doctors:", error);
+//         return [];
+//     }
+// }
 
-// Fetch doctor details
-export async function fetchDoctorDetails(doctorId: string) {
-    try {
-        const response = await fetch(`${process.env.API_URL}/doctors/${doctorId}`, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+// // Fetch doctor details
+// export async function fetchDoctorDetails(doctorId: string) {
+//     try {
+//         const response = await fetch(`${process.env.API_URL}/doctors/${doctorId}`, {
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//         });
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch doctor details: ${response.status} ${response.statusText}`);
-        }
+//         if (!response.ok) {
+//             throw new Error(`Failed to fetch doctor details: ${response.status} ${response.statusText}`);
+//         }
 
-        const doctor = await response.json();
+//         const doctor = await response.json();
 
-        return doctor;
-    } catch (error) {
-        Sentry.captureException(error);
-        console.error(`Error fetching details for doctor ID ${doctorId}:`, error);
-        return null;
-    }
-}
+//         return doctor;
+//     } catch (error) {
+//         Sentry.captureException(error);
+//         console.error(`Error fetching details for doctor ID ${doctorId}:`, error);
+//         return null;
+//     }
+// }
 
-// Fetch doctor by userId
-export const fetchDoctorIdByUserId = async (
-    userId: string
-): Promise<{ doctorId: number } | null> => {
-    if (!userId) {
-        console.error("No userId provided to fetchDoctorIdByUserId");
-        return null;
-    }
+// // Fetch doctor by userId
+// export const fetchDoctorIdByUserId = async (
+//     userId: string
+// ): Promise<{ doctorId: number } | null> => {
+//     if (!userId) {
+//         console.error("No userId provided to fetchDoctorIdByUserId");
+//         return null;
+//     }
 
-    try {
-        const response = await fetch(`${process.env.API_URL}/doctors/byUserId/${userId}`, {
-            headers: { "Content-Type": "application/json" },
-        });
+//     try {
+//         const response = await fetch(`${process.env.API_URL}/doctors/byUserId/${userId}`, {
+//             headers: { "Content-Type": "application/json" },
+//         });
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch doctor data: ${response.statusText}`);
-        }
+//         if (!response.ok) {
+//             throw new Error(`Failed to fetch doctor data: ${response.statusText}`);
+//         }
 
-        const doctor = await response.json();
+//         const doctor = await response.json();
 
-        if (!doctor || typeof doctor.doctorId !== "number") {
-            console.warn("Doctor data is incomplete or doctorId is missing.");
-            return null;
-        }
+//         if (!doctor || typeof doctor.doctorId !== "number") {
+//             console.warn("Doctor data is incomplete or doctorId is missing.");
+//             return null;
+//         }
 
-        return doctor; // Ensure the full doctor object is returned
-    } catch (error) {
-        Sentry.captureException(error);
-        console.error("Error fetching doctor data:", error);
-        return null;
-    }
-};
+//         return doctor; // Ensure the full doctor object is returned
+//     } catch (error) {
+//         Sentry.captureException(error);
+//         console.error("Error fetching doctor data:", error);
+//         return null;
+//     }
+// };
 
-// Fetch all doctors
-export async function fetchAllDoctors(): Promise<Doctor[]> {
-    try {
-        const response = await fetch(`${process.env.API_URL}/doctors`, {
-            headers: { 'Content-Type': 'application/json' },
-        });
+// // Fetch all doctors
+// export async function fetchAllDoctors(): Promise<Doctor[]> {
+//     try {
+//         const response = await fetch(`${process.env.API_URL}/doctors`, {
+//             headers: { 'Content-Type': 'application/json' },
+//         });
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch doctors: ${response.statusText}`);
-        }
+//         if (!response.ok) {
+//             throw new Error(`Failed to fetch doctors: ${response.statusText}`);
+//         }
 
-        const data = await response.json();
+//         const data = await response.json();
 
-        if (!Array.isArray(data)) {
-            throw new TypeError("Expected an array of doctors");
-        }
+//         if (!Array.isArray(data)) {
+//             throw new TypeError("Expected an array of doctors");
+//         }
 
-        return data;
-    } catch (error) {
-        Sentry.captureException(error);
-        console.error("Failed to fetch all doctors:", error);
-        return [];
-    }
-}
+//         return data;
+//     } catch (error) {
+//         Sentry.captureException(error);
+//         console.error("Failed to fetch all doctors:", error);
+//         return [];
+//     }
+// }
 
-// Fetch all hospitals
-export async function fetchAllHospitals() {
-    try {
-        const response = await fetch(`${process.env.API_URL}/hospitals`, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-        const data = await response.json();
+// // Fetch all hospitals
+// export async function fetchAllHospitals() {
+//     try {
+//         const response = await fetch(`${process.env.API_URL}/hospitals`, {
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//         });
+//         const data = await response.json();
 
-        return data;
-    } catch (error) {
-        Sentry.captureException(error);
-        console.error("Failed to fetch hospitals:", error);
-        return [];
-    }
-}
+//         return data;
+//     } catch (error) {
+//         Sentry.captureException(error);
+//         console.error("Failed to fetch hospitals:", error);
+//         return [];
+//     }
+// }
 
 // Fetch patient details by name
 export async function fetchPatientDetails(name: string) {
@@ -155,68 +155,68 @@ export async function fetchPatientDetails(name: string) {
     }
 }
 
-// Fetch available beds
-export async function fetchAvailableBeds() {
-    try {
-        const response = await fetch(`${process.env.API_URL}/beds`, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+// // Fetch available beds
+// export async function fetchAvailableBeds() {
+//     try {
+//         const response = await fetch(`${process.env.API_URL}/beds`, {
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//         });
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch beds: ${response.status} ${response.statusText}`);
-        }
+//         if (!response.ok) {
+//             throw new Error(`Failed to fetch beds: ${response.status} ${response.statusText}`);
+//         }
 
-        const data = await response.json();
+//         const data = await response.json();
 
-        const availableBeds = data.filter(
-            (bed: any) => bed.availability === "Occupied"
-        );
+//         const availableBeds = data.filter(
+//             (bed: any) => bed.availability === "Available"
+//         );
 
-        return availableBeds;
-    } catch (error) {
-        Sentry.captureException(error);
-        console.error("Failed to fetch beds:", error);
-        return [];
-    }
-}
+//         return availableBeds;
+//     } catch (error) {
+//         Sentry.captureException(error);
+//         console.error("Failed to fetch beds:", error);
+//         return [];
+//     }
+// }
 
-// Fetch appointments
-export async function fetchAppointments(
-    role: string | null = null,
-    hospitalId: number | null = null,
-    page: number = 1,
-    pageSize: number = 15
-): Promise<{ appointments: Appointment[]; totalAppointments: number; page: number; pageSize: number }> {
-    try {
-        const queryParams = new URLSearchParams({
-            ...(role && { role }),
-            ...(hospitalId && { hospitalId: hospitalId.toString() }),
-            page: page.toString(),
-            pageSize: pageSize.toString(),
-        });
+// // Fetch appointments
+// export async function fetchAppointments(
+//     role: string | null = null,
+//     hospitalId: number | null = null,
+//     page: number = 1,
+//     pageSize: number = 15
+// ): Promise<{ appointments: Appointment[]; totalAppointments: number; page: number; pageSize: number }> {
+//     try {
+//         const queryParams = new URLSearchParams({
+//             ...(role && { role }),
+//             ...(hospitalId && { hospitalId: hospitalId.toString() }),
+//             page: page.toString(),
+//             pageSize: pageSize.toString(),
+//         });
 
-        const response = await fetch(`${process.env.API_URL}/appointments?${queryParams}`, {
-            headers: { "Content-Type": "application/json" },
-        });
+//         const response = await fetch(`${process.env.API_URL}/appointments?${queryParams}`, {
+//             headers: { "Content-Type": "application/json" },
+//         });
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch appointments: ${response.status} ${response.statusText}`);
-        }
+//         if (!response.ok) {
+//             throw new Error(`Failed to fetch appointments: ${response.status} ${response.statusText}`);
+//         }
 
-        return await response.json();
-    } catch (error) {
-        Sentry.captureException(error);
-        console.error("Error fetching appointments:", error);
-        return {
-            appointments: [],
-            totalAppointments: 0,
-            page,
-            pageSize,
-        };
-    }
-}
+//         return await response.json();
+//     } catch (error) {
+//         Sentry.captureException(error);
+//         console.error("Error fetching appointments:", error);
+//         return {
+//             appointments: [],
+//             totalAppointments: 0,
+//             page,
+//             pageSize,
+//         };
+//     }
+// }
 
 // Function to fetch appointments by hospitalId
 export const fetchAppointmentsByHospital = async (hospitalId: number) => {
@@ -240,100 +240,100 @@ export const fetchAppointmentsByHospital = async (hospitalId: number) => {
     }
 }
 
-// Update appointment status
-export async function updateAppointmentStatus(
-    appointmentId: string,
-    updateData: { status: string; reason: string }
-) {
-    if (!appointmentId || !updateData) {
-        throw new Error("Appointment ID and update data are required.");
-    }
+// // Update appointment status
+// export async function updateAppointmentStatus(
+//     appointmentId: string,
+//     updateData: { status: string; reason: string }
+// ) {
+//     if (!appointmentId || !updateData) {
+//         throw new Error("Appointment ID and update data are required.");
+//     }
 
-    try {
-        const response = await fetch(`${process.env.API_URL}/appointments/${appointmentId}`, {
-            method: "PATCH",
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(updateData),
-        });
+//     try {
+//         const response = await fetch(`${process.env.API_URL}/appointments/${appointmentId}`, {
+//             method: "PATCH",
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//             body: JSON.stringify(updateData),
+//         });
 
-        if (!response.ok) {
-            throw new Error(`Failed to update appointment: ${response.statusText}`);
-        }
+//         if (!response.ok) {
+//             throw new Error(`Failed to update appointment: ${response.statusText}`);
+//         }
 
-        const updatedAppointment = await response.json();
-        return updatedAppointment;
-    } catch (error) {
-        Sentry.captureException(error);
-        console.error(`Error updating appointment ID ${appointmentId}:`, error);
-        return null;
-    }
-}
+//         const updatedAppointment = await response.json();
+//         return updatedAppointment;
+//     } catch (error) {
+//         Sentry.captureException(error);
+//         console.error(`Error updating appointment ID ${appointmentId}:`, error);
+//         return null;
+//     }
+// }
 
-// Update appointment type
-export async function updateAppointmentType(
-    appointmentId: string,
-    newType: string
-): Promise<{ success: boolean; updatedType?: string }> {
-    try {
-        const response = await fetch(`${process.env.API_URL}/appointments/${appointmentId}`, {
-            method: "PATCH",
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ type: newType }),
-        });
+// // Update appointment type
+// export async function updateAppointmentType(
+//     appointmentId: string,
+//     newType: string
+// ): Promise<{ success: boolean; updatedType?: string }> {
+//     try {
+//         const response = await fetch(`${process.env.API_URL}/appointments/${appointmentId}`, {
+//             method: "PATCH",
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//             body: JSON.stringify({ type: newType }),
+//         });
 
-        if (!response.ok) {
-            throw new Error(`Error updating appointment type: ${response.statusText}`);
-        }
+//         if (!response.ok) {
+//             throw new Error(`Error updating appointment type: ${response.statusText}`);
+//         }
 
-        const updatedAppointment = await response.json();
-        return { success: true, updatedType: updatedAppointment.type };
-    } catch (error) {
-        Sentry.captureException(error);
-        console.error("Failed to update appointment type:", error);
-        return { success: false };
-    }
-}
+//         const updatedAppointment = await response.json();
+//         return { success: true, updatedType: updatedAppointment.type };
+//     } catch (error) {
+//         Sentry.captureException(error);
+//         console.error("Failed to update appointment type:", error);
+//         return { success: false };
+//     }
+// }
 
 
-// Fetch today's appointments count
-export async function fetchTodayAppointments() {
-    try {
-        const response = await fetch(`${process.env.API_URL}/appointments/today`, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+// // Fetch today's appointments count
+// export async function fetchTodayAppointments() {
+//     try {
+//         const response = await fetch(`${process.env.API_URL}/appointments/today`, {
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//         });
 
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        Sentry.captureException(error);
-        console.error("Failed to fetch today's appointments:", error);
-        return 0;
-    }
-}
+//         const data = await response.json();
+//         return data;
+//     } catch (error) {
+//         Sentry.captureException(error);
+//         console.error("Failed to fetch today's appointments:", error);
+//         return 0;
+//     }
+// }
 
-// Fetch appointments for the last 14 days
-export async function fetchAppointmentsForLast14Days() {
-    try {
-        const response = await fetch(`${process.env.API_URL}/appointments/lastfortnight`, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+// // Fetch appointments for the last 14 days
+// export async function fetchAppointmentsForLast14Days() {
+//     try {
+//         const response = await fetch(`${process.env.API_URL}/appointments/lastfortnight`, {
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//         });
 
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        Sentry.captureException(error);
-        console.error("Failed to fetch appointments for the last 14 days:", error);
-        return [];
-    }
-}
+//         const data = await response.json();
+//         return data;
+//     } catch (error) {
+//         Sentry.captureException(error);
+//         console.error("Failed to fetch appointments for the last 14 days:", error);
+//         return [];
+//     }
+// }
 
 // Fetch today's patients count
 export async function fetchPatientsToday() {

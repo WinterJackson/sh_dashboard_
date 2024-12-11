@@ -2,101 +2,56 @@
 
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { fetchPatientsForLast14Days, fetchPatientsToday } from "@/lib/data";
+import React from "react";
 import icon from "../../../../public/images/patient.svg";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowTopRightIcon, ArrowBottomRightIcon } from "@radix-ui/react-icons";
+import { Patient } from "@/lib/definitions";
 
 interface PatientsTodayCardProps {
-    session: {
-        user: {
-            role: string;
-            hospitalId: number | null;
-        };
-    };
+    uniquePatientsTodayCount: number;
+    currentWeekPatients: Patient[];
+    previousWeekPatients: Patient[];
 }
 
-const PatientsTodayCard: React.FC<PatientsTodayCardProps> = ({ session }) => {
-    const [patientsToday, setPatientsToday] = useState(0);
-    const [percentageChange, setPercentageChange] = useState<number>(0);
+const PatientsTodayCard: React.FC<PatientsTodayCardProps> = ({
+    uniquePatientsTodayCount,
+    currentWeekPatients,
+    previousWeekPatients,
+}) => {
+    // Calculate current and previous week counts
+    const currentWeekCount = currentWeekPatients.length;
+    const previousWeekCount = previousWeekPatients.length;
 
-    const role = session.user.role;
-    const hospitalId = session.user.hospitalId;
+    let percentageChange = 0;
+    let isPositive = true; // Determine the icon and color
 
-    useEffect(() => {
-        const fetchPatientsData = async () => {
-            try {
-                const patientsLastFortnight = await fetchPatientsForLast14Days();
-                const todayPatients = await fetchPatientsToday();
+    if (previousWeekCount > 0) {
+        const change = currentWeekCount - previousWeekCount;
+        percentageChange = (change / previousWeekCount) * 100;
+        isPositive = change >= 0;
+    } else if (currentWeekCount > 0) {
+        // No patients in the previous week but patients in the current week
+        percentageChange = 100; // 100% increase
+        isPositive = true;
+    } else if (currentWeekCount === 0 && previousWeekCount > 0) {
+        // Patients in the previous week but none in the current week
+        percentageChange = -100; // 100% decrease
+        isPositive = false;
+    } else {
+        // No patients in both weeks
+        percentageChange = 0;
+    }
 
-                // Filter patients based on the user's role and hospitalId
-                const filteredTodayPatients =
-                    role === "SUPER_ADMIN"
-                        ? todayPatients
-                        : todayPatients.filter(
-                              (patient: any) =>
-                                  patient.hospitalId === hospitalId
-                          );
-
-                const filteredPatientsLastFortnight =
-                    role === "SUPER_ADMIN"
-                        ? patientsLastFortnight
-                        : patientsLastFortnight.filter(
-                              (patient: any) =>
-                                  patient.hospitalId === hospitalId
-                          );
-
-                setPatientsToday(filteredTodayPatients.length);
-
-                // Get current date set to midnight
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-
-                const patientCounts = Array(14).fill(0);
-
-                filteredPatientsLastFortnight.forEach((patient: any) => {
-                    const date = new Date(patient.updatedAt);
-                    const diff =
-                        (today.getTime() - date.getTime()) / (1000 * 3600 * 24);
-                    const dayIndex = Math.floor(diff);
-                    if (dayIndex >= 0 && dayIndex < 14) {
-                        patientCounts[dayIndex]++;
-                    }
-                });
-
-                const currentWeekCount = patientCounts
-                    .slice(0, 7)
-                    .reduce((sum, count) => sum + count, 0);
-                const previousWeekCount = patientCounts
-                    .slice(7, 14)
-                    .reduce((sum, count) => sum + count, 0);
-
-                let percentage = 0;
-                if (previousWeekCount > 0) {
-                    const change = currentWeekCount - previousWeekCount;
-                    percentage = (change / previousWeekCount) * 100;
-                }
-                setPercentageChange(percentage);
-            } catch (error) {
-                console.error("Error fetching patients data:", error);
-            }
-        };
-
-        // Fetch data only when session data is available
-        if (role) {
-            fetchPatientsData();
-        }
-    }, [role, hospitalId]);
-
+    // Helper to dynamically set font size based on the number of digits
     const getFontSizeClass = (numDigits: number) => {
         if (numDigits <= 3) return "text-4xl xl:text-6xl";
-        else if (numDigits <= 4) return "text-3xl xl:text-6xl";
-        else if (numDigits <= 5) return "text-2xl xl:text-5xl";
-        else if (numDigits <= 6) return "text-xl xl:text-5xl";
-        else if (numDigits <= 7) return "text-l xl:text-5xl";
-        else return "text-base";
+        if (numDigits <= 4) return "text-3xl xl:text-6xl";
+        if (numDigits <= 5) return "text-2xl xl:text-5xl";
+        if (numDigits <= 6) return "text-xl xl:text-5xl";
+        if (numDigits <= 7) return "text-l xl:text-5xl";
+        return "text-base";
     };
 
     return (
@@ -108,10 +63,10 @@ const PatientsTodayCard: React.FC<PatientsTodayCardProps> = ({ session }) => {
                 <div className="">
                     <span
                         className={`font-bold p-1 rounded-[10px] bg-slate-200 ${getFontSizeClass(
-                            patientsToday.toString().length
+                            uniquePatientsTodayCount.toString().length
                         )}`}
                     >
-                        {patientsToday}
+                        {uniquePatientsTodayCount}
                     </span>
                 </div>
                 <div className="flex w-1/3 items-center justify-end h-3/4 relative">
@@ -127,13 +82,10 @@ const PatientsTodayCard: React.FC<PatientsTodayCardProps> = ({ session }) => {
             <div>
                 <div
                     className={`flex items-center ${
-                        percentageChange >= 0
-                            ? "text-green-500"
-                            : "text-red-500"
+                        isPositive ? "text-green-500" : "text-red-500"
                     }`}
                 >
-                    {percentageChange > 0 && <ArrowTopRightIcon />}
-                    {percentageChange < 0 && <ArrowBottomRightIcon />}
+                    {isPositive ? <ArrowTopRightIcon /> : <ArrowBottomRightIcon />}
                     <span className="text-md xl:text-xl">
                         {percentageChange.toFixed(1)}%
                     </span>

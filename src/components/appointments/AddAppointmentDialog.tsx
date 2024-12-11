@@ -2,30 +2,30 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
     Dialog,
-    DialogTrigger,
     DialogContent,
-    DialogTitle,
     DialogDescription,
+    DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { useRouter } from "next/navigation";
-import { IconButton } from "@mui/material";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import { useSessionData } from "@/hooks/useSessionData";
 import {
     fetchDoctorsByHospital,
     fetchPatientDetails,
-    fetchDoctorIdByUserId,
-    fetchAllHospitals,
 } from "@/lib/data";
-import { useSessionData } from "@/hooks/useSessionData";
+import { fetchHospitals } from "@/lib/data-access/hospitals/data";
+import { fetchDoctorIdByUserId } from "@/lib/data-access/doctors/data";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import { IconButton } from "@mui/material";
 import { differenceInYears } from "date-fns";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 
 interface AddAppointmentDialogProps {
     onClose: () => void;
@@ -51,7 +51,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
     const hospitalId = sessionData?.user?.hospitalId;
     const userId = sessionData?.user?.id;
 
-    console.log(userId)
+    console.log(userId);
 
     useEffect(() => {
         if (doctor) {
@@ -67,12 +67,19 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
         const fetchData = async () => {
             try {
                 if (role === "SUPER_ADMIN" && patientDetails) {
-                    const fetchedDoctors = await fetchDoctorsByHospital(patientDetails.hospitalId);
+                    const fetchedDoctors = await fetchDoctorsByHospital(
+                        patientDetails.hospitalId
+                    );
                     setDoctors(fetchedDoctors);
-                    const fetchedHospitals = await fetchAllHospitals();
+                    const fetchedHospitals = await fetchHospitals();
                     setHospitals(fetchedHospitals);
-                } else if ((role === "ADMIN" || role === "NURSE") && hospitalId) {
-                    const fetchedDoctors = await fetchDoctorsByHospital(hospitalId);
+                } else if (
+                    (role === "ADMIN" || role === "NURSE") &&
+                    hospitalId
+                ) {
+                    const fetchedDoctors = await fetchDoctorsByHospital(
+                        hospitalId
+                    );
                     setDoctors(fetchedDoctors);
                 } else if (role === "DOCTOR" && userId) {
                     const doctorData = await fetchDoctorIdByUserId(userId);
@@ -142,16 +149,19 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                 throw new Error("Doctor ID is missing");
             }
 
-            const response = await fetch(`${process.env.API_URL}/appointments`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    ...data,
-                    date: selectedDate?.toISOString(),
-                    hospitalId: selectedHospitalId,
-                    doctorId,
-                }),
-            });
+            const response = await fetch(
+                `${process.env.API_URL}/appointments`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        ...data,
+                        date: selectedDate?.toISOString(),
+                        hospitalId: selectedHospitalId,
+                        doctorId,
+                    }),
+                }
+            );
 
             if (!response.ok) {
                 throw new Error("Failed to add appointment");

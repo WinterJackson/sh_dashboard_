@@ -1,33 +1,31 @@
 // src/app/api/departments/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
+import { fetchDepartments } from "@/lib/data-access/departments/data";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
+import { Role } from "@/lib/definitions";
 
-const prisma = require("@/lib/prisma");
 
 export async function GET(request: NextRequest) {
+
+    const session = await getServerSession(authOptions);
+
+    const user = {
+        role: session?.user?.role as Role,
+        hospitalId: session?.user?.hospitalId?.toString() || null,
+    };
+
     try {
-        // Fetch all departments including linked hospitals
-        const departments = await prisma.department.findMany({
-            select: {
-                departmentId: true,
-                name: true,
-                hospitals: {
-                    select: {
-                        hospitalId: true,
-                        hospital: {
-                            select: {
-                                name: true,
-                            },
-                        },
-                    },
-                },
-            },
-        });
-
-        return NextResponse.json(departments);
-
+        const departments = await fetchDepartments(user);
+        return NextResponse.json(departments, { status: 200 });
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Error fetching departments:", error);
-        return new NextResponse("Error fetching departments", { status: 500 });
+        return NextResponse.json(
+            { error: "Failed to fetch departments" },
+            { status: 500 }
+        );
     }
 }

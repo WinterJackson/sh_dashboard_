@@ -3,64 +3,38 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import AppointmentList from "@/components/appointments/AppointmentList";
-import { fetchAllHospitals } from "@/lib/data";
-import { Role, Appointment, Session, Hospital } from "@/lib/definitions";
+import { fetchAppointments } from "@/lib/data-access/appointments/data";
+import { fetchHospitals } from "@/lib/data-access/hospitals/data";
+import { Role, Session, Hospital } from "@/lib/definitions";
 import { redirect } from "next/navigation";
-
-const prisma = require("@/lib/prisma");
 
 export default async function AppointmentsPage() {
     const session: Session | null = await getServerSession(authOptions);
 
-    // Redirect if no session
     if (!session || !session.user) {
         redirect("/sign-in");
         return null;
     }
 
-    const { role, hospitalId } = session.user;
+    const role = session.user.role;
+    const hospitalId = session.user.hospitalId;
+    const userId = session.user.id;
 
-    // Fetch appointments and hospitals based on role
-    let appointments: Appointment[] = [];
-    let totalAppointments: number = 0;
+    const user = {
+        role,
+        hospitalId: hospitalId || null,
+        userId
+    };
+
+    const { appointments, totalAppointments } = await fetchAppointments(user);
     let hospitals: Hospital[] = [];
-
     if (role === Role.SUPER_ADMIN) {
-        [appointments, totalAppointments] = await prisma.$transaction([
-            prisma.appointment.findMany({
-                include: {
-                    patient: true,
-                    doctor: {
-                        include: { user: { include: { profile: true } } },
-                    },
-                    hospital: true,
-                },
-                orderBy: { appointmentDate: "desc" },
-            }),
-            prisma.appointment.count(),
-        ]);
-        hospitals = await fetchAllHospitals();
-    } else if (hospitalId) {
-        [appointments, totalAppointments] = await prisma.$transaction([
-            prisma.appointment.findMany({
-                where: { hospitalId },
-                include: {
-                    patient: true,
-                    doctor: {
-                        include: { user: { include: { profile: true } } },
-                    },
-                    hospital: true,
-                },
-                orderBy: { appointmentDate: "desc" },
-            }),
-            prisma.appointment.count({ where: { hospitalId } }),
-        ]);
+        hospitals = await fetchHospitals();
     }
 
-    // Render the appointments list
     return (
         <>
-            <h1 className="text-xl font-bold bg-bluelight/5 rounded-[10px] p-2 mx-4 mt-3">
+            <h1 className="text-xl font-bold bg-bluelight/5 rounded-[10px] p-2 mx-4">
                 Appointments
             </h1>
             <div className="p-4 pr-2 pt-4">

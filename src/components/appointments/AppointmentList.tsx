@@ -9,8 +9,8 @@ import AppointmentRow from "./../appointments/ui/AppointmentRow";
 import AppointmentsPagination from "./../appointments/ui/AppointmentsPagination";
 import RescheduleDialog from "@/components/appointments/RescheduleDialog";
 import CancelDialog from "@/components/appointments/CancelDialog";
-import ActionDialog from "@/components/appointments/PendingDialog";
-import { updateAppointmentStatus, updateAppointmentType } from "@/lib/data";
+import PendingDialog from "@/components/appointments/PendingDialog";
+import { updateAppointmentStatus, updateAppointmentType } from "@/lib/data-access/appointments/data";
 
 const ITEMS_PER_PAGE = 15;
 
@@ -81,49 +81,44 @@ export default function AppointmentList({
         setOpenDialog(false);
     };
 
-    // Handler for cancel save operation
-    const handleCancelSave = async (appointmentId: string, reason: string) => {
-        await updateAppointmentStatus(appointmentId, { status: "Cancelled", reason });
-        handleActionChange(appointmentId, "Cancelled");
-    };
-
-    // Handler for pending save operation
-    const handlePendingSave = async (appointmentId: string, reason: string) => {
-        await updateAppointmentStatus(appointmentId, { status: "Pending", reason });
-        handleActionChange(appointmentId, "Pending");
-    };
-
     // Handler to update appointment status
-    const handleUpdateStatus = async (appointmentId: string, status: string) => {
+    const handleUpdateStatus = async (appointmentId: string, status: string, reason?: string) => {
         try {
-            const response = await fetch(`${process.env.API_URL}/appointments/${appointmentId}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status }),
+            const updatedAppointment = await updateAppointmentStatus(appointmentId, {
+                status,
+                reason: reason || "",
             });
-
-            if (!response.ok)
-                throw new Error(`Error updating appointment: ${response.statusText}`);
-
-            handleActionChange(appointmentId, status);
+            if (updatedAppointment) {
+                handleActionChange(appointmentId, status);
+            }
         } catch (error) {
-            console.error("Failed to update appointment status:", error);
+            console.error(`Failed to update status for ${appointmentId}:`, error);
         }
     };
 
     // Handle action change for dropdown actions
     const handleActionChange = (appointmentId: string, action: string) => {
         setActionText((prev) => ({ ...prev, [appointmentId]: action }));
+    
+        // Update the background for the 'Cancelled' option
+        setFilteredAppointments((prevAppointments) =>
+            prevAppointments.map((appointment) =>
+                appointment.appointmentId === appointmentId
+                    ? { ...appointment, status: action }
+                    : appointment
+            )
+        );
     };
 
     // Filtered appointments based on search term
     const searchFilteredAppointments = useMemo(() => {
         const term = searchTerm.toLowerCase();
-        return filteredAppointments.filter(
-            (appointment) =>
-                appointment.patient.name.toLowerCase().includes(term) ||
-                appointment.doctor.user.username.toLowerCase().includes(term)
-        );
+        return filteredAppointments.filter((appointment) => {
+            const patientName = appointment.patient?.name?.toLowerCase() || ""; // Optional chaining for patient.name
+            const doctorUsername =
+                appointment.doctor?.user?.username?.toLowerCase() || ""; // Optional chaining for doctor.user.username
+            return patientName.includes(term) || doctorUsername.includes(term);
+        });
     }, [searchTerm, filteredAppointments]);
 
     // Paginated appointments
@@ -196,18 +191,18 @@ export default function AppointmentList({
                                 }
                                 handleDialogOpen={handleDialogOpen}
                                 handleUpdateStatus={handleUpdateStatus}
+                                handleActionChange={handleActionChange}
                             />
                         ))}
                     </tbody>
                 </table>
-
             </div>
 
             <AppointmentsPagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                    />
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+            />
 
             {/* Render dialog modals */}
             {openDialog && dialogType && dialogAppointmentId && (
@@ -216,26 +211,47 @@ export default function AppointmentList({
                         <RescheduleDialog
                             appointmentId={dialogAppointmentId}
                             onClose={handleDialogClose}
+                            onRescheduleSuccess={(updatedAppointment) =>
+                                setFilteredAppointments((prevAppointments) =>
+                                    prevAppointments.map((appointment) =>
+                                        appointment.appointmentId ===
+                                        updatedAppointment.appointmentId
+                                            ? updatedAppointment
+                                            : appointment
+                                    )
+                                )
+                            }
                             handleActionChange={handleActionChange}
                         />
                     )}
+
                     {dialogType === "Cancel" && (
                         <CancelDialog
                             appointmentId={dialogAppointmentId}
-                            onSave={(reason) =>
-                                handleCancelSave(dialogAppointmentId, reason)
-                            }
                             onClose={handleDialogClose}
+                            onSave={(reason: string) =>
+                                handleUpdateStatus(
+                                    dialogAppointmentId,
+                                    "Cancelled",
+                                    reason
+                                )
+                            }
+                            handleActionChange={handleActionChange}
                         />
                     )}
+
                     {dialogType === "Pending" && (
-                        <ActionDialog
+                        <PendingDialog
                             appointmentId={dialogAppointmentId}
-                            action="Pending"
-                            onSave={(reason) =>
-                                handlePendingSave(dialogAppointmentId, reason)
-                            }
                             onClose={handleDialogClose}
+                            onSave={(reason: string | undefined) =>
+                                handleUpdateStatus(
+                                    dialogAppointmentId,
+                                    "Pending",
+                                    reason
+                                )
+                            }
+                            handleActionChange={handleActionChange}
                         />
                     )}
                 </>

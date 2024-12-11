@@ -2,76 +2,43 @@
 
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { fetchAppointmentsForLast14Days, fetchTodayAppointments } from "@/lib/data";
+import React, { useMemo } from "react";
 import icon from "../../../../public/images/appointment.svg";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowTopRightIcon, ArrowBottomRightIcon } from '@radix-ui/react-icons';
 
 interface AppointmentsTodayCardProps {
-    session: {
-        user: {
-            role: string;
-            hospitalId: number | null;
-        };
-    };
+    appointmentsTodayCount: number;
+    last14DaysAppointments: { appointmentDate: Date }[];
 }
 
-const AppointmentsTodayCard: React.FC<AppointmentsTodayCardProps> = ({ session }) => {
-    const [appointmentsToday, setAppointmentsToday] = useState(0);
-    const [percentageChange, setPercentageChange] = useState<number>(0);
+const AppointmentsTodayCard: React.FC<AppointmentsTodayCardProps> = ({
+    appointmentsTodayCount,
+    last14DaysAppointments,
+}) => {
+    const percentageChange = useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-    useEffect(() => {
-        const fetchAppointmentsData = async () => {
-            const appointments = await fetchAppointmentsForLast14Days();
-            const todayAppointments = await fetchTodayAppointments();
+        const appointmentCounts = Array(14).fill(0);
 
-            // Filter today's appointments based on user role
-            const filteredTodayAppointments =
-                session.user.role === "SUPER_ADMIN"
-                    ? todayAppointments
-                    : todayAppointments.filter(
-                          (appointment: { hospitalId: number }) =>
-                              appointment.hospitalId === session.user.hospitalId
-                      );
+        last14DaysAppointments.forEach((appointment) => {
+            const date = new Date(appointment.appointmentDate);
+            const diff = (today.getTime() - date.getTime()) / (1000 * 3600 * 24);
+            const dayIndex = Math.floor(diff);
+            if (dayIndex >= 0 && dayIndex < 14) {
+                appointmentCounts[dayIndex]++;
+            }
+        });
 
-            setAppointmentsToday(filteredTodayAppointments.length);
+        const currentWeekCount = appointmentCounts.slice(0, 7).reduce((sum, count) => sum + count, 0);
+        const previousWeekCount = appointmentCounts.slice(7, 14).reduce((sum, count) => sum + count, 0);
 
-            // Calculate percentage change
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            const appointmentCounts = Array(14).fill(0);
-            const filteredAppointments =
-                session.user.role === "SUPER_ADMIN"
-                    ? appointments
-                    : appointments.filter(
-                          (appointment: { hospitalId: number }) =>
-                              appointment.hospitalId === session.user.hospitalId
-                      );
-
-            filteredAppointments.forEach((appointment: { appointmentDate: string | number | Date }) => {
-                const date = new Date(appointment.appointmentDate);
-                const diff = (today.getTime() - date.getTime()) / (1000 * 3600 * 24);
-                const dayIndex = Math.floor(diff);
-                if (dayIndex >= 0 && dayIndex < 14) {
-                    appointmentCounts[dayIndex]++;
-                }
-            });
-
-            const currentWeekCount = appointmentCounts.slice(0, 7).reduce((sum, count) => sum + count, 0);
-            const previousWeekCount = appointmentCounts.slice(7, 14).reduce((sum, count) => sum + count, 0);
-
-            setPercentageChange(
-                previousWeekCount > 0
-                    ? ((currentWeekCount - previousWeekCount) / previousWeekCount) * 100
-                    : 0
-            );
-        };
-
-        fetchAppointmentsData();
-    }, [session]);
+        return previousWeekCount > 0
+            ? ((currentWeekCount - previousWeekCount) / previousWeekCount) * 100
+            : 0;
+    }, [last14DaysAppointments]);
 
     const getFontSizeClass = (numDigits: number) => {
         if (numDigits <= 3) return "text-4xl xl:text-6xl";
@@ -89,10 +56,10 @@ const AppointmentsTodayCard: React.FC<AppointmentsTodayCardProps> = ({ session }
                 <div>
                     <span
                         className={`font-bold p-1 rounded-[10px] bg-slate-200 ${getFontSizeClass(
-                            appointmentsToday.toString().length
+                            appointmentsTodayCount.toString().length
                         )}`}
                     >
-                        {appointmentsToday}
+                        {appointmentsTodayCount}
                     </span>
                 </div>
                 <div className="flex w-1/3 items-center justify-end h-3/4 relative">

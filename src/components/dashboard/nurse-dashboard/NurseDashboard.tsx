@@ -1,6 +1,6 @@
 // src/components/dashboard/nurse-dashboard/NurseDashboard.tsx
 
-import DashboardAppointments from "@/components/dashboard/ui/DashboardAppointments"; 
+import DashboardAppointments from "@/components/dashboard/ui/DashboardAppointments";
 import AppointmentsTodayCard from "../ui/AppointmentsTodayCard";
 import AvailableBedsCard from "../ui/AvailableBedsCard";
 import AvailableDoctorsCard from "../ui/AvailableDoctorsCard";
@@ -10,7 +10,12 @@ import OutwardReferralsCard from "../ui/OutwardReferralsCard";
 import PatientsGraphCard from "../ui/PatientsGraphCard";
 import PatientsTodayCard from "../ui/PatientsTodayCard";
 import TopDoctorsCard from "../ui/TopDoctorsCard";
-// import { fetchAppointments } from "@/lib/data";
+import { fetchAppointments, fetchAppointmentsForLast14Days, fetchAppointmentsTodayCount } from "@/lib/data-access/appointments/data";
+import { Role } from "@/lib/definitions";
+import { fetchAvailableBedsCount } from "@/lib/data-access/beds/data";
+import { fetchOnlineDoctorsCount, fetchTopDoctors } from "@/lib/data-access/doctors/data";
+import { fetchInwardReferrals, fetchOutwardReferrals } from "@/lib/data-access/referrals/data";
+import { fetchPatientsForLast14Days, fetchPatientsTodayCount } from "@/lib/data-access/patients/data";
 
 const prisma = require("@/lib/prisma");
 
@@ -18,7 +23,7 @@ interface NurseDashboardProps {
     session: {
         user: {
             username: string;
-            role: string;
+            role: Role;
             hospitalId: number | null;
         };
     };
@@ -27,23 +32,68 @@ interface NurseDashboardProps {
 const NurseDashboard: React.FC<NurseDashboardProps> = async ({ session }) => {
     const firstName = session.user.username.split(" ")[0] || "Super Admin";
 
-    // Fetch appointments using Prisma with role and hospitalId filtering
-    const whereClause = 
-        session.user.role === "SUPER_ADMIN" 
-            ? {} // SUPER_ADMIN sees all appointments
-            : { hospitalId: session.user.hospitalId };
+    const { appointments, totalAppointments } = await fetchAppointments({
+        role: session.user.role as Role,
+        hospitalId: session.user.hospitalId,
+        userId: null,
+    });
 
-    const totalAppointments = await prisma.appointment.count({ where: whereClause });
-    const appointments = await prisma.appointment.findMany({
-        where: whereClause,
-        include: {
-            patient: { select: { name: true, patientId: true, dateOfBirth: true } },
-            doctor: {
-                select: { user: { select: { profile: { select: { firstName: true, lastName: true } } } } },
-            },
-            hospital: { select: { name: true, hospitalId: true } },
-        },
+    // Fetch available beds count
+    const availableBedsCount = await fetchAvailableBedsCount(
+        session.user.role,
+        session.user.hospitalId
+    );
 
+    // Fetch available doctors count
+    const onlineDoctorsCount = await fetchOnlineDoctorsCount(
+        session.user.role,
+        session.user.hospitalId
+    );
+
+    // Fetch inward referrals
+    const inwardReferrals = await fetchInwardReferrals(
+        session.user.role,
+        session.user.hospitalId
+    );
+
+    // Fetch outward referrals
+    const outwardReferrals = await fetchOutwardReferrals(
+        session.user.role,
+        session.user.hospitalId
+    );
+
+    // Fetch today's appointments count
+    const appointmentsTodayCount = await fetchAppointmentsTodayCount({
+        role: session.user.role as Role,
+        hospitalId: session.user.hospitalId,
+        userId: null,
+    });
+
+    // Fetch appointments for last 14 days
+    const last14DaysAppointments = await fetchAppointmentsForLast14Days({
+        role: session.user.role as Role,
+        hospitalId: session.user.hospitalId,
+        userId: null,
+    });
+
+    // Fetch unique patients today
+    const uniquePatientsTodayCount = await fetchPatientsTodayCount({
+        role: session.user.role as Role,
+        hospitalId: session.user.hospitalId,
+        userId: null,
+    });
+
+    // Fetch unique patients for last 14 days
+    const { currentWeekPatients, previousWeekPatients } = await fetchPatientsForLast14Days({
+        role: session.user.role as Role,
+        hospitalId: session.user.hospitalId,
+        userId: null,
+    });
+
+    // Fetch top doctors based on role and hospital ID
+    const topDoctors = await fetchTopDoctors({
+        role: session.user.role,
+        hospitalId: session.user.hospitalId,
     });
 
     // Transform appointments to match the required type
@@ -69,18 +119,25 @@ const NurseDashboard: React.FC<NurseDashboardProps> = async ({ session }) => {
             <div className="flex">
                 <div className="grid w-full">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-                        <AvailableDoctorsCard session={session} />
-                        <AvailableBedsCard session={session} />
+                        <AvailableDoctorsCard session={session} onlineDoctors={onlineDoctorsCount} />
+                        <AvailableBedsCard availableBeds={availableBedsCount} />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-                        <AppointmentsTodayCard session={session} />
-                        <PatientsTodayCard session={session} />
+                        <AppointmentsTodayCard
+                            appointmentsTodayCount={appointmentsTodayCount}
+                            last14DaysAppointments={last14DaysAppointments.appointments}
+                        />
+                        <PatientsTodayCard
+                            uniquePatientsTodayCount={uniquePatientsTodayCount}
+                            currentWeekPatients={currentWeekPatients}
+                            previousWeekPatients={previousWeekPatients}
+                        />
                     </div>
                 </div>
                 <div className="grid w-full">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-                        <OutwardReferralsCard session={session} />
-                        <InwardReferralsCard session={session} />
+                        <OutwardReferralsCard outwardReferrals={outwardReferrals} />
+                        <InwardReferralsCard inwardReferrals={inwardReferrals} />
                     </div>
                 </div>
             </div>
@@ -100,34 +157,14 @@ const NurseDashboard: React.FC<NurseDashboardProps> = async ({ session }) => {
             </div>
             <div className="flex w-full">
                 <div className="w-2/3 p-4">
-
-                    {/* Fetch appointments using API route with pagination */}
-                    {/* Uncomment below to use API-based fetching instead */}
-                    {/* 
-                    const { appointments, totalAppointments, page, pageSize } = await fetchAppointments(
-                        session.user.role,
-                        session.user.hospitalId
-                    );
-
                     <DashboardAppointments
-                        session={session}
-                        appointments={appointments}
-                        totalAppointments={totalAppointments}
-                        page={page}
-                        pageSize={pageSize}
-                    /> 
-                    */}
-
-                    {/* Fetched using Prisma */}
-                    <DashboardAppointments
-                        session={session}
                         appointments={appointments}
                         totalAppointments={totalAppointments}
                     />
                 </div>
                 <div className="w-1/3 p-2 h-full">
                     <div className="h-1/2">
-                        <TopDoctorsCard session={session} />
+                        <TopDoctorsCard topDoctors={topDoctors || []} />
                     </div>
                     <div className="h-1/2">
                         <LearnMoreCard />

@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,6 +37,10 @@ interface AddDoctorFormProps {
     departments: Department[];
     hospitals: Hospital[];
     services: Service[];
+    filteredServices: (
+        selectedDepartmentId: number,
+        currentHospitalId: number
+    ) => Promise<Service[]>;
     userRole: Role;
     userHospitalId: string | null;
 }
@@ -46,15 +50,21 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
     departments,
     hospitals,
     services,
+    filteredServices,
     userRole,
     userHospitalId,
 }) => {
     const { edgestore } = useEdgeStore();
 
-    const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+    const [message, setMessage] = useState<{
+        text: string;
+        type: "success" | "error";
+    } | null>(null);
     const [profileImage, setProfileImage] = useState<File | null>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
-    const [profileImageData, setProfileImageData] = useState<string | null>(null); // Store base64 string
+    const [profileImageData, setProfileImageData] = useState<string | null>(
+        null
+    ); // Store base64 string
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -65,11 +75,17 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
         null
     );
     const [selectedHospital, setSelectedHospital] = useState<number | null>(
-        userRole === Role.ADMIN ? (userHospitalId ? parseInt(userHospitalId, 10) : null) : null
+        userRole === Role.ADMIN
+            ? userHospitalId
+                ? parseInt(userHospitalId, 10)
+                : null
+            : null
     );
     const [selectedService, setSelectedService] = useState<number | null>(null);
     const [selectedStatus, setSelectedStatus] = useState<string>("Offline");
     const [selectedGender, setSelectedGender] = useState<string | null>(null);
+
+    const [servicesList, setServicesList] = useState<Service[]>([]);
 
     const [isDropdownOpen, setIsDropdownOpen] = useState({
         hospital: false,
@@ -120,31 +136,39 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
         return departments;
     }, [userRole, userHospitalId, departments]);
 
-    // Memoized filtered services
-    const filteredServices = useMemo(() => {
-        if (!selectedDepartment) return [];
+    // filtered services
+    const handleFetchServices = async () => {
+        if (!selectedDepartment) {
+            setServicesList([]);
+            return;
+        }
+
         const currentHospitalId =
             userRole === Role.SUPER_ADMIN
                 ? selectedHospital
-                : parseInt(userHospitalId || "", 10);
+                : parseInt(userHospitalId || "0", 10);
 
-        return services.filter((service) =>
-            service.departments.some(
-                (deptRel) =>
-                    deptRel.departmentId === selectedDepartment &&
-                    deptRel.department.hospitals.some(
-                        (hospitalRel) =>
-                            hospitalRel.hospitalId === currentHospitalId
-                    )
-            )
-        );
-    }, [
-        selectedDepartment,
-        selectedHospital,
-        services,
-        userRole,
-        userHospitalId,
-    ]);
+        // Ensure `currentHospitalId` is not null
+        if (currentHospitalId === null) {
+            console.error("Hospital ID is required to fetch services");
+            return;
+        }
+
+        try {
+            const fetchedServices = await filteredServices(
+                selectedDepartment,
+                currentHospitalId
+            );
+            setServicesList(fetchedServices);
+        } catch (error) {
+            console.error("Failed to fetch services:", error);
+            setServicesList([]);
+        }
+    };
+
+    useEffect(() => {
+        handleFetchServices();
+    }, [selectedDepartment, selectedHospital, userRole, userHospitalId]);
 
     const handleProfileImageChange = async (
         event: React.ChangeEvent<HTMLInputElement>
@@ -153,10 +177,10 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
         if (file) {
             const img = new Image();
             const reader = new FileReader();
-    
+
             reader.onload = () => {
                 img.src = reader.result as string;
-    
+
                 img.onload = () => {
                     const canvas = document.createElement("canvas");
                     const ctx = canvas.getContext("2d");
@@ -164,7 +188,7 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
                         const size = Math.min(img.width, img.height); // Shortest side
                         canvas.width = size;
                         canvas.height = size;
-    
+
                         // Draw the image centered
                         ctx.drawImage(
                             img,
@@ -177,10 +201,10 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
                             size,
                             size
                         );
-    
+
                         // Get the base64 image data
                         const resizedImage = canvas.toDataURL("image/jpeg");
-    
+
                         // Update state with resized image
                         setProfileImageData(resizedImage); // holds the base64 image
                         setPreviewImage(resizedImage);
@@ -210,7 +234,7 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
                 const file = base64ToFile(profileImageData, "profileImage.jpg");
 
                 const uploadResponse = await edgestore.doctorImages.upload({
-                    file
+                    file,
                 });
                 profileImageUrl = uploadResponse.url;
             } catch (error) {
@@ -240,10 +264,10 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
         try {
             await addDoctorAPI(processedData);
             setMessage({ text: "Doctor added successfully!", type: "success" });
-    
+
             // Reset form fields
             methods.reset();
-    
+
             // Reset dropdown states
             setSelectedSpecialization(null);
             setSelectedDepartment(null);
@@ -251,13 +275,16 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
             setSelectedService(null);
             setSelectedGender(null);
             setSelectedStatus("Offline");
-    
+
             // Clear profile image
             setProfileImage(null);
             setPreviewImage(null);
         } catch (error: any) {
             console.error("Failed to add doctor:", error);
-            setMessage({ text: "Failed to add doctor. Please try again.", type: "error" });
+            setMessage({
+                text: "Failed to add doctor. Please try again.",
+                type: "error",
+            });
         } finally {
             setIsSubmitting(false);
         }
@@ -268,7 +295,7 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
     };
 
     return (
-        <div className="bg-bluelight/5 m-2 rounded-[5px]">
+        <div className="bg-bluelight/5 m-2 rounded-[10px]">
             <FormProvider {...methods}>
                 <form
                     onSubmit={methods.handleSubmit(onSubmit)}
@@ -634,8 +661,8 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
                                         <DropdownMenuTrigger asChild>
                                             <button className="flex bg-white items-center justify-between gap-3 p-3 border-gray-300 shadow-lg shadow-gray-300 rounded-[5px] h-[45px] w-full text-black text-sm focus:outline-none focus:ring-1 focus:ring-primary">
                                                 <span className="truncate max-w-[70%]">
-                                                    {filteredServices.find(
-                                                        (s) =>
+                                                    {servicesList.find(
+                                                        (s: Service) =>
                                                             s.serviceId ===
                                                             selectedService
                                                     )?.serviceName ||
@@ -651,7 +678,7 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
                                             </button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="p-1 max-h-[200px] mt-1 overflow-y-auto rounded-[10px] shadow-md bg-white">
-                                            {filteredServices.map((s) => (
+                                            {servicesList.map((s: Service) => (
                                                 <DropdownMenuItem
                                                     key={s.serviceId}
                                                     onClick={() =>

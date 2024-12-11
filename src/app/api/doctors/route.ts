@@ -1,52 +1,59 @@
 // File: src/app/api/doctors/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import crypto from "crypto";
-import { sendEmail } from "@/lib/email";
-import { Prisma } from "@prisma/client";
-
-const prisma = require("@/lib/prisma");
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
+import {
+    addDoctorAPI,
+    fetchAllDoctors,
+    fetchDoctorDetails,
+    fetchOnlineDoctors,
+} from "@/lib/data-access/doctors/data";
+import { Role } from "@/lib/definitions";
+import * as Sentry from "@sentry/nextjs";
 
 /**
  * GET: Retrieve the list of doctors.
  */
 export async function GET(req: NextRequest) {
     try {
-        const doctors = await prisma.doctor.findMany({
-            include: {
-                user: {
-                    include: {
-                        profile: {
-                            select: {
-                                firstName: true,
-                                lastName: true,
-                                imageUrl: true,
-                                gender: true,
-                                dateOfBirth: true,
-                                phoneNo: true,
-                                address: true,
-                                city: true,
-                                state: true,
-                                nextOfKin: true,
-                                nextOfKinPhoneNo: true,
-                                emergencyContact: true,
-                            },
-                        },
-                    },
-                },
-                hospital: true,
-                department: true,
-                specialization: {
-                    select: { name: true },
-                },
-                service: {
-                    select: { serviceName: true },
-                },
-            },
-        });
+        const session = await getServerSession(authOptions);
 
-        return NextResponse.json(doctors, { status: 200 });
+        if (!session || !session.user) {
+            return NextResponse.json(
+                { error: "Unauthorized" },
+                { status: 401 }
+            );
+        }
+
+        const { role, hospitalId } = session.user;
+
+        const { searchParams } = new URL(req.url);
+        const filter = searchParams.get("filter"); // e.g., "online", "all", or specific doctorId
+        const doctorId = searchParams.get("doctorId");
+
+        let response;
+
+        if (filter === "online") {
+            response = await fetchOnlineDoctors(hospitalId, role as Role);
+        } else if (doctorId) {
+            const doctorIdNumber = parseInt(doctorId, 10);
+            if (isNaN(doctorIdNumber)) {
+                return NextResponse.json(
+                    { error: "Invalid doctorId" },
+                    { status: 400 }
+                );
+            }
+            response = await fetchDoctorDetails(
+                doctorIdNumber,
+                hospitalId,
+                role as Role
+            );
+        } else {
+            response = await fetchAllDoctors(hospitalId, role as Role);
+        }
+
+        return NextResponse.json(response, { status: 200 });
     } catch (error) {
         console.error("Error fetching doctors:", error);
         return NextResponse.json(
@@ -61,159 +68,25 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
     try {
-        const body = (await req.json()) as {
-            firstName: string;
-            lastName: string;
-            email: string;
-            gender: string;
-            hospitalId: number;
-            departmentId: number;
-            specializationId: number;
-            serviceId?: number;
-            phoneNo: string;
-            dateOfBirth: string;
-            qualifications?: string;
-            about?: string;
-            status?: string;
-            profileImageUrl?: string;
-        };
-
-        // Validate email
-        if (!body.email || !body.email.includes("@")) {
-            return NextResponse.json(
-                { error: "Invalid email address provided" },
-                { status: 400 }
-            );
-        }
-
-        console.log("Received email:", body.email);
-
-        // Validate foreign keys
-        const [hospitalExists, departmentExists, specializationExists, serviceExists] =
-            await prisma.$transaction([
-                prisma.hospital.findUnique({
-                    where: { hospitalId: body.hospitalId },
-                    select: { hospitalId: true },
-                }),
-                prisma.department.findUnique({
-                    where: { departmentId: body.departmentId },
-                    select: { departmentId: true },
-                }),
-                prisma.specialization.findUnique({
-                    where: { specializationId: body.specializationId },
-                    select: { specializationId: true },
-                }),
-                prisma.service.findUnique({
-                    where: { serviceId: body.serviceId || -1 },
-                    select: { serviceId: true },
-                }),
-            ]);
-
-        if (!hospitalExists || !departmentExists || !specializationExists) {
-            return NextResponse.json(
-                { error: "Invalid hospital, department, or specialization" },
-                { status: 400 }
-            );
-        }
-
-        if (body.serviceId && !serviceExists) {
-            return NextResponse.json(
-                { error: "Invalid service selected" },
-                { status: 400 }
-            );
-        }
-
-        let user = null;
-        let doctor = null;
-        let resetToken = null;
-
-        // Transaction for user and doctor creation
-        await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-            const existingUser = await tx.user.findUnique({
-                where: { email: body.email },
-            });
-
-            if (!existingUser) {
-                resetToken = crypto.randomBytes(32).toString("hex");
-                const hashedToken = crypto
-                    .createHash("sha256")
-                    .update(resetToken)
-                    .digest("hex");
-                const expiryDate = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-
-                user = await tx.user.create({
-                    data: {
-                        username: `${body.firstName}_${body.lastName}`,
-                        email: body.email,
-                        password: await bcrypt.hash(body.firstName, 10),
-                        role: "DOCTOR",
-                        hospitalId: body.hospitalId,
-                        mustResetPassword: true,
-                        resetToken: hashedToken,
-                        resetTokenExpiry: expiryDate,
-                    },
-                });
-
-                await tx.profile.create({
-                    data: {
-                        userId: user.userId,
-                        firstName: body.firstName,
-                        lastName: body.lastName,
-                        gender: body.gender || null,
-                        phoneNo: body.phoneNo,
-                        dateOfBirth: new Date(body.dateOfBirth),
-                        imageUrl: body.profileImageUrl || null,
-                    },
-                });
-            } else {
-                user = existingUser;
-            }
-
-            doctor = await tx.doctor.create({
-                data: {
-                    userId: user.userId,
-                    hospitalId: body.hospitalId,
-                    departmentId: body.departmentId,
-                    specializationId: body.specializationId,
-                    serviceId: body.serviceId || undefined,
-                    qualifications: body.qualifications || null,
-                    about: body.about || null,
-                    status: body.status || "Offline",
-                    phoneNo: body.phoneNo,
-                    workingHours: "Mon-Fri: 9AM-5PM",
-                    averageRating: 0,
-                },
-            });
-        });
-
-        // Send reset email
-        if (resetToken && user) {
-            const resetUrl = `${process.env.BASE_URL}/reset-password/${resetToken}`;
-            console.log("Sending reset email to:", body.email);
-
-            await sendEmail({
-                to: body.email,
-                subject: "Set Your Password",
-                text: `You have been added as a doctor. Click the link below to set your password. This link will expire in 1 hour: ${resetUrl}`,
-                html: `<p>You have been added as a doctor. Click the link below to set your password. This link will expire in 1 hour:</p>
-                       <a href="${resetUrl}">${resetUrl}</a>`,
-            });
-        }
-
+        const doctorData = await req.json();
+        const doctor = await addDoctorAPI(doctorData);
         return NextResponse.json(doctor, { status: 201 });
     } catch (error: any) {
+        // Capture the exception in Sentry
+        Sentry.captureException(error);
+
         console.error("Error creating doctor:", error);
 
-        if (error.code === "P2002" && error.meta?.target?.includes("email")) {
+        if (error.message.includes("Duplicate email")) {
             return NextResponse.json(
-                { error: "Duplicate email: Email address is already in use" },
+                { error: "Email address is already in use" },
                 { status: 409 }
             );
         }
 
         return NextResponse.json(
-            { error: "Failed to create doctor" },
-            { status: 400 }
+            { error: error.message || "Failed to create doctor" },
+            { status: 500 }
         );
     }
 }

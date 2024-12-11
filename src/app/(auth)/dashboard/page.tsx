@@ -9,6 +9,7 @@ import AdminDashboard from "@/components/dashboard/admin-dashboard/AdminDashboar
 import DoctorDashboard from "@/components/dashboard/doc-dashboard/DoctorDashboard";
 import NurseDashboard from "@/components/dashboard/nurse-dashboard/NurseDashboard";
 import StaffDashboard from "@/components/dashboard/staff-dashboard/StaffDashboard";
+import { Role } from "@/lib/definitions";
 
 export default async function DashboardPage() {
     // Fetch session using NextAuth's getServerSession
@@ -21,14 +22,15 @@ export default async function DashboardPage() {
 
     const { user } = session;
 
-    // Extract only the necessary data
+    // Filter the session data for each role
     const filteredSession = {
         user: {
+            userId: user.id,
             username: user.username,
-            role: user.role,
+            role: user.role as Role,
             hospitalId: user.hospitalId || null,
         },
-    };
+    }
 
     return (
         <div className="h-full">

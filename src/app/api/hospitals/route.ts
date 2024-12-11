@@ -1,17 +1,20 @@
 // File: app/api/hospitals/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-// import prisma from "@/lib/prisma";
+import * as Sentry from "@sentry/nextjs";
+import { fetchHospitals } from "@/lib/data-access/hospitals/data";
 
 const prisma = require("@/lib/prisma");
 
 export async function GET(req: NextRequest) {
     try {
-        const hospitals = await prisma.hospital.findMany();
-        return NextResponse.json(hospitals);
+        const hospitals = await fetchHospitals();
+        return NextResponse.json(hospitals, { status: 200 });
     } catch (error) {
+        Sentry.captureException(error);
+        console.error("Error fetching hospitals:", error);
         return NextResponse.json(
-            { message: "Internal server error" },
+            { error: "Failed to fetch hospitals" },
             { status: 500 }
         );
     }
@@ -45,9 +48,10 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(newHospital, { status: 201 });
     } catch (error) {
+        Sentry.captureException(error);
         console.error("Error adding hospital:", error);
         return NextResponse.json(
-            { error: "Error adding hospital" },
+            { error: "Failed to add hospital" },
             { status: 500 }
         );
     }

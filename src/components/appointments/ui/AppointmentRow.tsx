@@ -21,6 +21,7 @@ interface AppointmentRowProps {
     handleUpdateAppointmentType: (appointmentId: string, type: string) => void;
     handleDialogOpen: (type: string, appointmentId: string) => void;
     handleUpdateStatus: (appointmentId: string, status: string) => void;
+    handleActionChange: (appointmentId: string, action: string) => void;
 }
 
 const AppointmentRow: React.FC<AppointmentRowProps> = ({
@@ -30,16 +31,19 @@ const AppointmentRow: React.FC<AppointmentRowProps> = ({
     handleUpdateAppointmentType,
     handleDialogOpen,
     handleUpdateStatus,
+    handleActionChange,
 }) => {
     const { appointmentId, patient, doctor, type, appointmentDate, status } =
         appointment;
 
-    // Determine if appointment is cancelled
-    const isCancelled = status === "Cancelled";
-    const rowClass = isCancelled ? "bg-red-100" : "bg-white";
+    // Determine if the appointment is cancelled
+    const rowClass =
+        actionText[appointmentId] === "Cancelled" || status === "Cancelled"
+            ? "bg-red-100"
+            : "bg-white";
 
     // Compute age if dateOfBirth exists
-    const age = patient.dateOfBirth
+    const age = patient?.dateOfBirth
         ? differenceInYears(new Date(), new Date(patient.dateOfBirth))
         : "N/A";
 
@@ -53,13 +57,13 @@ const AppointmentRow: React.FC<AppointmentRowProps> = ({
     return (
         <tr className={`text-center ${rowClass}`}>
             <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-left">
-                {patient.name}
+                {patient?.name}
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {age}
             </td>
             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                {patient.patientId}
+                {patient?.patientId}
             </td>
             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                 {formattedTime}
@@ -68,7 +72,7 @@ const AppointmentRow: React.FC<AppointmentRowProps> = ({
                 {formattedDate}
             </td>
             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                {doctor.user.profile
+                {doctor?.user?.profile
                     ? `Dr. ${doctor.user.profile.firstName} ${doctor.user.profile.lastName}`
                     : "N/A"}
             </td>
@@ -130,28 +134,28 @@ const AppointmentRow: React.FC<AppointmentRowProps> = ({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="rounded-[10px] shadow-md p-2">
                             <DropdownMenuItem
-                                onSelect={() =>
-                                    handleDialogOpen(
-                                        "Reschedule",
-                                        appointmentId
-                                    )
-                                }
+                                onSelect={() => {
+                                    handleActionChange(appointmentId, "Rescheduled");
+                                    handleDialogOpen("Reschedule", appointmentId);
+                                }}
                                 className="p-2 rounded-[5px]"
                             >
                                 Reschedule
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onSelect={() =>
-                                    handleDialogOpen("Cancel", appointmentId)
-                                }
+                                onSelect={() => {
+                                    handleActionChange(appointmentId, "Cancelled");
+                                    handleDialogOpen("Cancel", appointmentId);
+                                }}
                                 className="p-2 rounded-[5px]"
                             >
                                 Cancel
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onSelect={() =>
-                                    handleDialogOpen("Pending", appointmentId)
-                                }
+                                onSelect={() => {
+                                    handleActionChange(appointmentId, "Pending");
+                                    handleDialogOpen("Pending", appointmentId);
+                                }}
                                 className="p-2 rounded-[5px]"
                             >
                                 Pending

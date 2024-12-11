@@ -1,66 +1,13 @@
 // src/app/(auth)/dashboard/doctors/page.tsx
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
-import { redirect } from "next/navigation";
 import DoctorsList from "@/components/doctors/DoctorsList";
-import { Doctor, Department, Hospital, Role } from "@/lib/definitions";
-import React from "react";
-
-const prisma = require("@/lib/prisma");
-
-async function fetchDoctors(user: { role: Role; hospitalId: string | null }): Promise<Doctor[]> {
-    if (user.role === "SUPER_ADMIN") {
-        return await prisma.doctor.findMany({
-            include: {
-                hospital: true,
-                specialization: true,
-                department: true,
-                user: {
-                    include: {
-                        profile: true,
-                    },
-                },
-            },
-        });
-    } else if (user.hospitalId) {
-        return await prisma.doctor.findMany({
-            where: { hospitalId: user.hospitalId },
-            include: {
-                hospital: true,
-                specialization: true,
-                department: true,
-                user: {
-                    include: {
-                        profile: true,
-                    },
-                },
-            },
-        });
-    }
-    return [];
-}
-
-async function fetchDepartments(user: { role: Role; hospitalId: string | null }): Promise<Department[]> {
-    if (user.role === "SUPER_ADMIN") {
-        return await prisma.department.findMany();
-    } else if (user.hospitalId) {
-        return await prisma.department.findMany({
-            where: {
-                hospitals: {
-                    some: {
-                        hospitalId: user.hospitalId,
-                    },
-                },
-            },
-        });
-    }
-    return [];
-}
-
-async function fetchHospitals(): Promise<Hospital[]> {
-    return await prisma.hospital.findMany();
-}
+import { authOptions } from "@/lib/authOptions";
+import { Role } from "@/lib/definitions";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+import { fetchHospitals } from "@/lib/data-access/hospitals/data";
+import { fetchDoctors } from "@/lib/data-access/doctors/data";
+import { fetchDepartments } from "@/lib/data-access/departments/data";
 
 export default async function DoctorsPage() {
     const session = await getServerSession(authOptions);
@@ -80,7 +27,7 @@ export default async function DoctorsPage() {
     const departments = await fetchDepartments(user);
 
     return (
-        <div className="flex flex-col gap-3 p-3">
+        <div className="flex flex-col gap-3 p-3 pt-0">
             <h1 className="text-xl font-bold bg-bluelight/5 p-2 rounded-[10px]">
                 Doctors
             </h1>

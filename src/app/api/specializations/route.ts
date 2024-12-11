@@ -1,24 +1,23 @@
 // src/app/api/specializations/route.ts
 
 import { NextResponse } from "next/server";
+import { fetchSpecializations } from "@/lib/data-access/specializations/data";
+import * as Sentry from "@sentry/nextjs";
 
-const prisma = require("@/lib/prisma");
-
+/**
+ * GET: Fetches the list of specializations.
+ */
 export async function GET() {
     try {
-        // Fetch specializations
-        const specializations = await prisma.specialization.findMany({
-            select: {
-                specializationId: true,
-                name: true,
-            },
-        });
-
+        const specializations = await fetchSpecializations();
         return NextResponse.json(specializations, { status: 200 });
     } catch (error) {
+        // Capture the exception in Sentry
+        Sentry.captureException(error);
         console.error("Error fetching specializations:", error);
+
         return NextResponse.json(
-            { message: "Error fetching specializations" },
+            { error: "Failed to fetch specializations" },
             { status: 500 }
         );
     }

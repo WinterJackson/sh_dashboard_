@@ -23,10 +23,10 @@ export default async function DashboardLayout({
         <div className="flex relative w-full flex-col min-h-screen bg-gray-100 overflow-hidden">
             <HeaderWrapper />
             <div className="flex flex-grow pt-20 min-h-screen">
-                <aside className="fixed mt-0 ml-2 top-[120px] left-0 w-64 h-[1010px] bg-gray-100 z-5 shadow-lg">
+                <aside className="fixed  ml-2 top-[80px] left-0 w-64 h-[1010px] mt-10 ">
                     <SidebarWrapper />
                 </aside>
-                <main className="ml-64 w-full h-[calc(100vh-100px)] overflow-y-auto p-4 pt-11 bg-gray-100 scrollbar-custom">
+                <main className="ml-64 w-full h-[100vh] overflow-y-auto p-4 mt-10 bg-gray-100 scrollbar-custom">
                     {children}
                 </main>
             </div>

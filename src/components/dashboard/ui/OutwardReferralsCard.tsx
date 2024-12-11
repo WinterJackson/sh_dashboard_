@@ -2,133 +2,92 @@
 
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { fetchAllReferrals } from "@/lib/data";
+import React, { useMemo } from "react";
 import { ArrowBottomRightIcon, ArrowTopRightIcon } from "@radix-ui/react-icons";
 
 interface OutwardReferralsCardProps {
-    session: {
-        user: {
-            role: string;
-            hospitalId: number | null;
-        };
-    };
+    outwardReferrals: {
+        effectiveDate: string;
+        patientId: string;
+    }[];
 }
 
-const OutwardReferralsCard: React.FC<OutwardReferralsCardProps> = ({ session }) => {
-    const role = session.user.role;
-    const [outwardReferrals, setOutwardReferrals] = useState(0);
-    const [percentageChange, setPercentageChange] = useState<number>(0);
-    const [patientChangeText, setPatientChangeText] = useState<string>("");
+// Define the return type for useMemo
+interface ReferralStats {
+    currentWeekCount: number;
+    previousWeekCount: number;
+    percentageChange: number;
+    patientChangeText: string;
+}
 
-    useEffect(() => {
-        const fetchReferrals = async () => {
-            try {
-                const referrals = await fetchAllReferrals();
+const OutwardReferralsCard: React.FC<OutwardReferralsCardProps> = ({
+    outwardReferrals,
+}) => {
+    // Memoize calculations to avoid unnecessary re-renders
+    const {
+        currentWeekCount,
+        percentageChange,
+        patientChangeText,
+    }: ReferralStats = useMemo((): ReferralStats => {
+        const today = new Date();
 
-                // Filter the referrals based on the role
-                let filteredReferrals: any[] = [];
+        // Separate current and previous week referrals
+        const currentWeekReferrals = outwardReferrals.filter((referral) => {
+            const diff =
+                (today.getTime() - new Date(referral.effectiveDate).getTime()) /
+                (1000 * 3600 * 24);
+            return diff >= 0 && diff < 7; // Current week: 0-6 days ago
+        });
 
-                if (referrals) {
-                    filteredReferrals = referrals.filter(
-                        (referral: { type: string }) =>
-                            referral.type === "External"
-                    );
-                }
+        const previousWeekReferrals = outwardReferrals.filter((referral) => {
+            const diff =
+                (today.getTime() - new Date(referral.effectiveDate).getTime()) /
+                (1000 * 3600 * 24);
+            return diff >= 7 && diff < 14; // Previous week: 7-13 days ago
+        });
 
-                if (role !== "SUPER_ADMIN") {
-                    const hospitalId = session.user.hospitalId;
-                    filteredReferrals = filteredReferrals.filter(
-                        (referral: { hospitalId: number }) =>
-                            referral.hospitalId === hospitalId
-                    );
-                }
-
-                setOutwardReferrals(filteredReferrals.length);
-
-                // Separate referrals into current week and previous week
-                const today = new Date();
-                const currentWeekReferrals: any[] = [];
-                const previousWeekReferrals: any[] = [];
-
-                filteredReferrals.forEach(
-                    (referral: { effectiveDate: string | number | Date }) => {
-                        const date = new Date(referral.effectiveDate);
-                        const diff =
-                            (today.getTime() - date.getTime()) /
-                            (1000 * 3600 * 24);
-                        const dayIndex = Math.floor(diff);
-
-                        if (dayIndex >= 0 && dayIndex < 7) {
-                            currentWeekReferrals.push(referral);
-                        } else if (dayIndex >= 7 && dayIndex < 14) {
-                            previousWeekReferrals.push(referral);
-                        }
-                    }
-                );
-
-                const getUniquePatientCount = (referralsArray: any[]) => {
-                    const uniquePatients = new Set();
-                    referralsArray.forEach((referral) => {
-                        uniquePatients.add(referral.patientId);
-                    });
-                    return uniquePatients.size;
-                };
-
-                const currentWeekPatientsCount =
-                    getUniquePatientCount(currentWeekReferrals);
-                const previousWeekPatientsCount = getUniquePatientCount(
-                    previousWeekReferrals
-                );
-
-                const patientChange =
-                    currentWeekPatientsCount - previousWeekPatientsCount;
-
-                // Calculate percentage change
-                let percentage = 0;
-                if (
-                    previousWeekReferrals.length === 0 &&
-                    currentWeekReferrals.length > 0
-                ) {
-                    percentage = 100;
-                } else if (
-                    currentWeekReferrals.length === 0 &&
-                    previousWeekReferrals.length > 0
-                ) {
-                    percentage = -100;
-                } else if (previousWeekReferrals.length > 0) {
-                    const referralChange =
-                        currentWeekReferrals.length -
-                        previousWeekReferrals.length;
-                    percentage =
-                        (referralChange / previousWeekReferrals.length) * 100;
-                }
-
-                setPercentageChange(percentage);
-
-                // Set text for patient change
-                if (patientChange > 0) {
-                    setPatientChangeText(
-                        `Increased In Data By ${patientChange} \nPatient(s) In The Last 7 Days.`
-                    );
-                } else if (patientChange < 0) {
-                    setPatientChangeText(
-                        `Decreased In Data By ${Math.abs(
-                            patientChange
-                        )} \nPatient(s) In The Last 7 Days.`
-                    );
-                } else {
-                    setPatientChangeText(
-                        "No Change In Patient Referrals \nIn The Last 7 Days!"
-                    );
-                }
-            } catch (error) {
-                console.error("Error fetching referrals:", error);
-            }
+        // Unique patient count for current and previous weeks
+        const getUniquePatientCount = (referrals: { patientId: string }[]) => {
+            const uniquePatients = new Set(
+                referrals.map((ref) => ref.patientId)
+            );
+            return uniquePatients.size;
         };
 
-        fetchReferrals();
-    }, [role, session]);
+        const currentPatientCount = getUniquePatientCount(currentWeekReferrals);
+        const previousPatientCount = getUniquePatientCount(
+            previousWeekReferrals
+        );
+
+        // Calculate percentage change
+        const calculatedPercentageChange =
+            previousPatientCount === 0
+                ? currentPatientCount > 0
+                    ? 100 // 100% increase if no referrals in previous week
+                    : 0 // No change if no referrals in both weeks
+                : ((currentPatientCount - previousPatientCount) /
+                      previousPatientCount) *
+                  100;
+
+        // Generate patient change text
+        const dynamicPatientChangeText =
+            currentPatientCount > previousPatientCount
+                ? `Increased by ${
+                      currentPatientCount - previousPatientCount
+                  } patient(s) this week.`
+                : currentPatientCount < previousPatientCount
+                ? `Decreased by ${
+                      previousPatientCount - currentPatientCount
+                  } patient(s) this week.`
+                : "No change in patient referrals this week.";
+
+        return {
+            currentWeekCount: currentWeekReferrals.length,
+            previousWeekCount: previousWeekReferrals.length,
+            percentageChange: calculatedPercentageChange,
+            patientChangeText: dynamicPatientChangeText,
+        };
+    }, [outwardReferrals]);
 
     const getFontSizeClass = (numDigits: number) => {
         if (numDigits <= 3) return "text-4xl xl:text-6xl";
@@ -161,10 +120,10 @@ const OutwardReferralsCard: React.FC<OutwardReferralsCardProps> = ({ session }) 
             <div className="mb-4">
                 <span
                     className={`font-bold text-6xl ${getFontSizeClass(
-                        outwardReferrals.toString().length
+                        currentWeekCount.toString().length
                     )} text-white`}
                 >
-                    {outwardReferrals}
+                    {currentWeekCount}
                 </span>
             </div>
 

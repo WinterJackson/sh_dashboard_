@@ -245,6 +245,7 @@ export interface Hospital {
 }
 
 export interface Department {
+    hospitalDepartments: any;
     departmentId: number;
     name: string;
     description: string;

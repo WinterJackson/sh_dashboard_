@@ -1,11 +1,13 @@
-import {withSentryConfig} from '@sentry/nextjs';
 // next.config.mjs
 
+
+import {withSentryConfig} from '@sentry/nextjs';
 import 'dotenv/config';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
+    productionBrowserSourceMaps: true,
     env: {
         POSTGRES_PRISMA_URL: process.env.POSTGRES_PRISMA_URL,
         NEXTAUTH_URL: process.env.NEXTAUTH_URL,
