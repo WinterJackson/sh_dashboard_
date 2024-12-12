@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { fetchHospitals } from "@/lib/data-access/hospitals/data";
 
-const prisma = require("@/lib/prisma");
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
     try {

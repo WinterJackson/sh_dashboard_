@@ -7,6 +7,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { Role } from "@/lib/definitions";
 
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
 

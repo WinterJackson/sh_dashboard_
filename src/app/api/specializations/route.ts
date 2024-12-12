@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import { fetchSpecializations } from "@/lib/data-access/specializations/data";
 import * as Sentry from "@sentry/nextjs";
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET: Fetches the list of specializations.
  */

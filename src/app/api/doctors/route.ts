@@ -12,6 +12,8 @@ import {
 import { Role } from "@/lib/definitions";
 import * as Sentry from "@sentry/nextjs";
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET: Retrieve the list of doctors.
  */
