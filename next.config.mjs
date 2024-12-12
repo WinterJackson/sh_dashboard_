@@ -45,7 +45,7 @@ org: "snarkhealth-a4",
 project: "snarkhealth",
 
 // Only print logs for uploading source maps in CI
-silent: !process.env.CI,
+silent: true, // Suppress Sentry Webpack Plugin logs
 
 // For all available options, see:
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
@@ -65,7 +65,7 @@ enabled: true,
 tunnelRoute: "/monitoring",
 
 // Hides source maps from generated client bundles
-hideSourceMaps: true,
+hideSourceMaps: false, // Ensure source maps are not hidden from Sentry
 
 // Automatically tree-shake Sentry logger statements to reduce bundle size
 disableLogger: true,

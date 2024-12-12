@@ -2,10 +2,9 @@
 
 "use client";
 
-import { ReactNode } from "react";
 import { ErrorBoundary } from "@sentry/react";
 
-export default function ErrorBoundaryWrapper({ children }: { children: ReactNode }) {
+export default function ErrorBoundaryWrapper({ children }: { children: React.ReactNode }) {
     return (
         <ErrorBoundary
             fallback={
