@@ -17,7 +17,7 @@ export async function fetchSpecializations() {
     
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
         return [];
     }

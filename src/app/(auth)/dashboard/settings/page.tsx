@@ -12,12 +12,12 @@ export default async function SettingsPage({}: Props) {
     const session = await getServerSession(authOptions);
 
     // Redirect unauthenticated users to the sign-in page
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
         return null;
     }
 
-    const { user } = session;
+    const user = session?.user;
 
     return (
         <div className="flex flex-col w-full h-full ">

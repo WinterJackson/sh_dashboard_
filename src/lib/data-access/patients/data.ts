@@ -19,7 +19,7 @@ export async function fetchPatientsToday(user: {
 }): Promise<{ patients: Patient[] }> {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
     }
 
@@ -105,7 +105,7 @@ export async function fetchPatientsTodayCount(user: {
 }): Promise<number> {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
     }
 
@@ -196,7 +196,7 @@ export async function fetchPatientsForLast14Days(user: {
 }): Promise<{ currentWeekPatients: Patient[]; previousWeekPatients: Patient[] }> {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
     }
 
@@ -308,7 +308,7 @@ export async function fetchPatients(user: { role: Role; hospitalId?: number | nu
     try {
         const session = await getServerSession(authOptions);
 
-        if (!session || !session.user) {
+        if (!session || !session?.user) {
             redirect("/sign-in");
             return { patients: [], totalPatients: 0 };
         }

@@ -15,14 +15,14 @@ export default async function AddNewDoctorPage() {
     const session = await getServerSession(authOptions);
 
     // Redirect unauthorized users
-    if (!session || (session.user?.role !== Role.SUPER_ADMIN && session.user?.role !== Role.ADMIN)) {
+    if (!session || (session?.user?.role !== Role.SUPER_ADMIN && session.user?.role !== Role.ADMIN)) {
         redirect("/dashboard");
         return null;
     }
 
     const user = {
-        role: session.user.role as Role,
-        hospitalId: session.user.hospitalId?.toString() || null,
+        role: session?.user?.role as Role,
+        hospitalId: session?.user?.hospitalId?.toString() || null,
     };
 
     // Handle promises individually

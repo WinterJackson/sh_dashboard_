@@ -12,14 +12,14 @@ import { fetchDepartments } from "@/lib/data-access/departments/data";
 export default async function DoctorsPage() {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
         return null;
     }
 
     const user = {
-        role: session.user.role as Role,
-        hospitalId: session.user.hospitalId?.toString() || null,
+        role: session?.user?.role as Role,
+        hospitalId: session?.user?.hospitalId?.toString() || null,
     };
 
     const doctors = await fetchDoctors(user);

@@ -11,14 +11,14 @@ import { Role } from "@/lib/definitions";
 export default async function PatientsPage() {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
         return null;
     }
 
-    const userId = session.user.id;
-    const role = session.user.role as Role
-    const hospitalId = session.user.hospitalId
+    const userId = session?.user?.id;
+    const role = session?.user?.role as Role
+    const hospitalId = session?.user?.hospitalId
 
     // Fetch patients and total count
     const { patients, totalPatients } = await fetchPatients({

@@ -40,7 +40,7 @@ export default function AppointmentsFilters({
     const [filterType, setFilterType] = useState<string>("");
     const [selectedHospital, setSelectedHospital] = useState<number | null>(null);
     const [selectedHospitalName, setSelectedHospitalName] = useState<string | null>(null);
-    const isSuperAdmin = session?.user.role === Role.SUPER_ADMIN;
+    const isSuperAdmin = session?.user?.role === Role.SUPER_ADMIN;
     const [showOptions, setShowOptions] = useState(false);
     const [appointmentTypeFilter, setAppointmentTypeFilter] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState<string[]>([]);
@@ -78,12 +78,12 @@ export default function AppointmentsFilters({
             if (searchTerm) {
                 switch (filterType) {
                     case "Patient Name":
-                        filterMatch = appointment.patient.name
+                        filterMatch = appointment.patient?.name
                             .toLowerCase()
                             .includes(searchTextLower);
                         break;
                     case "Age":
-                        if (appointment.patient.dateOfBirth) {
+                        if (appointment.patient?.dateOfBirth) {
                             const age = differenceInYears(
                                 new Date(),
                                 new Date(appointment.patient.dateOfBirth)
@@ -92,12 +92,12 @@ export default function AppointmentsFilters({
                         }
                         break;
                     case "Patient ID":
-                        filterMatch = appointment.patient.patientId
+                        filterMatch = appointment.patient?.patientId
                             .toString()
                             .includes(searchTextLower);
                         break;
                     case "Doctor":
-                        filterMatch = appointment.doctor.user.username
+                        filterMatch = appointment.doctor?.user.username
                             .toLowerCase()
                             .includes(searchTextLower);
                         break;
@@ -119,23 +119,22 @@ export default function AppointmentsFilters({
                         }
                         break;
                     default:
-                        const isNameMatch = appointment.patient.name
+                        const isNameMatch = appointment.patient?.name
                             .toLowerCase()
                             .includes(searchTextLower);
-                        const isAgeMatch = appointment.patient.dateOfBirth
+                        const isAgeMatch = appointment.patient?.dateOfBirth
                             ? differenceInYears(new Date(), new Date(appointment.patient.dateOfBirth))
                                   .toString()
                                   .includes(searchTextLower)
                             : false;
-                        const isIdMatch = appointment.patient.patientId.toString().includes(searchTextLower);
+                        const isIdMatch = appointment.patient?.patientId.toString().includes(searchTextLower);
                         const isDateMatch = new Date(appointment.appointmentDate)
                             .toLocaleDateString()
                             .includes(searchTextLower);
-                        const isDoctorMatch = appointment.doctor.user.username
+                        const isDoctorMatch = appointment.doctor?.user?.username
                             .toLowerCase()
                             .includes(searchTextLower);
-                        const isTypeMatch = appointment.type
-                            .toLowerCase()
+                        const isTypeMatch = appointment.type?.toLowerCase()
                             .includes(searchTextLower);
                         const isHospitalMatch = appointment.hospital?.name
                             ? appointment.hospital.name
@@ -143,8 +142,7 @@ export default function AppointmentsFilters({
                                   .includes(searchTextLower)
                             : false;
                         const isStatusMatch = appointment.status
-                            ? appointment.status
-                                  .toLowerCase()
+                            ? appointment.status?.toLowerCase()
                                   .includes(searchTextLower)
                             : false;
 
@@ -317,10 +315,10 @@ export default function AppointmentsFilters({
                                                     key={hospital.hospitalId}
                                                     onSelect={() => {
                                                         setSelectedHospital(
-                                                            hospital.hospitalId
+                                                            hospital?.hospitalId
                                                         );
                                                         setSelectedHospitalName(
-                                                            hospital.name
+                                                            hospital?.name
                                                         );
                                                         setFilterType(
                                                             "Hospital"
@@ -328,7 +326,7 @@ export default function AppointmentsFilters({
                                                     }}
                                                     className="p-2 rounded-[5px]"
                                                 >
-                                                    {hospital.name}
+                                                    {hospital?.name}
                                                 </DropdownMenuItem>
                                             ))}
                                         </DropdownMenuSubContent>

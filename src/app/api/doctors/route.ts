@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
             );
         }
 
-        const { role, hospitalId } = session.user;
+        const { role, hospitalId } = session?.user || {};
 
         const { searchParams } = new URL(req.url);
         const filter = searchParams.get("filter"); // e.g., "online", "all", or specific doctorId

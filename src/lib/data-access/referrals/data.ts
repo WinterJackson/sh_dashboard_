@@ -16,7 +16,7 @@ export const fetchInwardReferrals = async (
 ) => {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         console.warn("Session is missing or invalid.");
         redirect("/sign-in");
         return [];
@@ -65,7 +65,7 @@ export const fetchInwardReferralsCount = async (
 ) => {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         console.warn("Session is missing or invalid.");
         redirect("/sign-in");
         return [];
@@ -106,7 +106,7 @@ export const fetchOutwardReferrals = async (
 ) => {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         console.warn("Session is missing or invalid.");
         redirect("/sign-in");
         return [];
@@ -155,7 +155,7 @@ export const fetchOutwardReferralsCount = async (
 ) => {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         console.warn("Session is missing or invalid.");
         redirect("/sign-in");
         return [];

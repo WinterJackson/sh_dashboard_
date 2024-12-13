@@ -27,7 +27,7 @@ export default async function HospitalsPage({ searchParams }: HospitalsPageProps
     const session = await getServerSession(authOptions);
 
     // Redirect if session is invalid or user role isn't SUPER_ADMIN
-    if (!session || session.user?.role !== Role.SUPER_ADMIN) {
+    if (!session || session?.user?.role !== Role.SUPER_ADMIN) {
         redirect("/sign-in");
         return null;
     }

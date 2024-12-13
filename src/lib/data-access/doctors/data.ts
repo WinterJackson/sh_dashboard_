@@ -109,7 +109,7 @@ export async function fetchOnlineDoctors(
 ) {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
         return null;
     }
@@ -167,7 +167,7 @@ export async function fetchOnlineDoctors(
 export async function fetchOnlineDoctorsCount(role: Role, hospitalId: number | null) {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
         return 0;
     }
@@ -207,7 +207,7 @@ export async function fetchDoctorDetails(
 ) {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
         return null;
     }
@@ -266,7 +266,7 @@ export async function fetchDoctorIdByUserId(
 ): Promise<{ doctorId: number } | null> {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
         return null;
     }
@@ -298,7 +298,7 @@ export async function fetchDoctorIdByUserId(
 export async function fetchAllDoctors(hospitalId: number | null, role: Role) {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
         return null;
     }
@@ -356,7 +356,7 @@ export async function fetchDoctors(user: {
 }): Promise<Doctor[]> {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
         return [];
     }
@@ -403,7 +403,7 @@ export async function fetchDoctors(user: {
 export async function fetchDoctorsByHospital(hospitalId: number, role: Role) {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
         return null;
     }
@@ -477,7 +477,7 @@ export async function addDoctorAPI(doctorData: {
 
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
         return [];
     }
@@ -606,7 +606,7 @@ export async function getDoctorsBySpecialization(
 ) {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
         return null;
     }

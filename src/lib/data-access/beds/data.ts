@@ -21,7 +21,7 @@ export async function fetchAvailableBeds() {
         redirect("/sign-in");
     }
 
-    const { role, hospitalId } = session.user;
+    const { role, hospitalId } = session?.user || {};
 
     try {
         if (role === "SUPER_ADMIN") {
@@ -101,7 +101,7 @@ export async function fetchOccupiedBeds() {
         redirect("/sign-in");
     }
 
-    const { role, hospitalId } = session.user;
+    const { role, hospitalId } = session?.user || {};
 
     try {
         if (role === "SUPER_ADMIN") {
@@ -145,7 +145,7 @@ export async function fetchOccupiedBedsCount() {
         redirect("/sign-in");
     }
 
-    const { role, hospitalId } = session.user;
+    const { role, hospitalId } = session?.user || {};
 
     try {
         if (role === "SUPER_ADMIN") {
@@ -183,7 +183,7 @@ export async function fetchAllBeds() {
         redirect("/sign-in");
     }
 
-    const { role, hospitalId } = session.user;
+    const { role, hospitalId } = session?.user || {};
 
     try {
         if (role === "SUPER_ADMIN") {
@@ -221,11 +221,11 @@ export async function fetchAllBedsCount() {
     const session = await getServerSession(authOptions);
 
     // Redirect unauthenticated users
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
     }
 
-    const { role, hospitalId } = session.user;
+    const { role, hospitalId } = session?.user || {};
 
     try {
         if (role === "SUPER_ADMIN") {

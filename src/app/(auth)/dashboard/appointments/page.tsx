@@ -11,14 +11,14 @@ import { redirect } from "next/navigation";
 export default async function AppointmentsPage() {
     const session: Session | null = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
         return null;
     }
 
-    const role = session.user.role;
-    const hospitalId = session.user.hospitalId;
-    const userId = session.user.id;
+    const role = session?.user?.role;
+    const hospitalId = session?.user?.hospitalId;
+    const userId = session?.user?.id;
 
     const user = {
         role,

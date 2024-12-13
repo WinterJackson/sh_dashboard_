@@ -15,7 +15,7 @@ export default async function DashboardPage() {
     // Fetch session using NextAuth's getServerSession
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
         return null;
     }

@@ -57,8 +57,8 @@ const mockAppointmentsData: Record<number, PatientCountPerMonth[]> = {
 };
 
 const PatientsGraphCard: React.FC<PatientsGraphCardProps> = ({ session, appointments }) => {
-    const role = session.user.role;
-    const hospitalId = session.user.hospitalId;
+    const role = session?.user?.role;
+    const hospitalId = session?.user?.hospitalId;
 
     const [appointmentsData, setAppointmentsData] = useState<PatientCountPerMonth[]>(mockAppointmentsData["2023"]); // test code
     const [year, setYear] = useState<number>(new Date().getFullYear());

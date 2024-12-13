@@ -17,7 +17,7 @@ export async function fetchAppointments(user: {
 }): Promise<{ appointments: Appointment[]; totalAppointments: number }> {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
     }
 
@@ -167,7 +167,7 @@ export async function updateAppointmentStatus(
 
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
     }
 
@@ -203,7 +203,7 @@ export async function updateAppointmentType(
 
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
     }
 
@@ -233,7 +233,7 @@ export async function fetchAppointmentsToday(user: {
 }): Promise<{ appointments: Appointment[]; }> {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
     }
 
@@ -319,7 +319,7 @@ export async function fetchAppointmentsTodayCount(user: {
 }): Promise<number> {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
     }
 
@@ -396,7 +396,7 @@ export async function fetchAppointmentsForLast14Days(user: {
 }): Promise<{ appointments: Appointment[]; }> {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
     }
 
@@ -485,7 +485,7 @@ export async function fetchAppointmentsForLast14DaysCount(user: {
 }): Promise<{ count: number; }> {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
     }
 

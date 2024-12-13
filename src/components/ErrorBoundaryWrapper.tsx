@@ -9,7 +9,7 @@ export default function ErrorBoundaryWrapper({ children }: { children: React.Rea
         <ErrorBoundary
             fallback={
                 <div className="flex items-center justify-center h-screen">
-                    <h1>Something went wrong. Please try again later.</h1>
+                    <h1>Unexpected error occurred. Please try again later or contact support.</h1>
                 </div>
             }
             showDialog

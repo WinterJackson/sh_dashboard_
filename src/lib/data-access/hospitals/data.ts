@@ -18,7 +18,7 @@ export async function fetchHospitals() {
     
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         console.warn("Session is missing or invalid.");
         redirect("/sign-in");
         return [];

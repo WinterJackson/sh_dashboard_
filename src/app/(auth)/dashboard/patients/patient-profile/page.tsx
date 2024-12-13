@@ -16,12 +16,12 @@ export default async function PatientProfilePage({}: Props) {
     // Fetch session data
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
         return null;
     }
 
-    const { user } = session;
+    const user = session?.user;
 
     return (
         <div className="flex flex-col gap-4 p-3">

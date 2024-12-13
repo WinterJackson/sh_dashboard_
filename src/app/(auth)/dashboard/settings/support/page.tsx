@@ -12,7 +12,7 @@ export default async function SupportPage() {
     const session = await getServerSession(authOptions);
 
     // Redirect unauthenticated users to the sign-in page
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
         return null;
     }

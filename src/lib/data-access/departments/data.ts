@@ -19,7 +19,7 @@ export async function fetchDepartments(user: {
 }): Promise<Department[]> {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
         redirect("/sign-in");
         return [];
     }

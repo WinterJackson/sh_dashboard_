@@ -1,14 +1,13 @@
 // src/components/SessionWrapper.tsx
 
-"use client"
+"use client";
 
-import { SessionProvider } from "next-auth/react"
-import React from "react"
+import { SessionProvider } from "next-auth/react";
 
-const SessionWrapper = ({ children }: { children: React.ReactNode }) => {
+export default function SessionWrapper({ children }: { children: React.ReactNode }) {
     return (
-        <SessionProvider>{ children }</SessionProvider>
-    )
-};
-
-export default SessionWrapper;
+        <SessionProvider>
+            {children}
+        </SessionProvider>
+    );
+}
