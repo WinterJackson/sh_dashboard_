@@ -10,9 +10,10 @@ import { redirect } from "next/navigation";
 
 const prisma = require("@/lib/prisma");
 
-
-export const fetchInwardReferrals = async (role: string, hospitalId: number | null) => {
-    
+export const fetchInwardReferrals = async (
+    role: string,
+    hospitalId: number | null
+) => {
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user) {
@@ -20,7 +21,7 @@ export const fetchInwardReferrals = async (role: string, hospitalId: number | nu
         redirect("/sign-in");
         return [];
     }
-    
+
     try {
         // Filter based on role and hospitalId
         if (role === "SUPER_ADMIN") {
@@ -58,8 +59,10 @@ export const fetchInwardReferrals = async (role: string, hospitalId: number | nu
     }
 };
 
-export const fetchInwardReferralsCount = async (role: string, hospitalId: number | null) => {
-    
+export const fetchInwardReferralsCount = async (
+    role: string,
+    hospitalId: number | null
+) => {
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user) {
@@ -67,7 +70,7 @@ export const fetchInwardReferralsCount = async (role: string, hospitalId: number
         redirect("/sign-in");
         return [];
     }
-    
+
     try {
         // Filter based on role and hospitalId
         if (role === "SUPER_ADMIN") {
@@ -75,7 +78,7 @@ export const fetchInwardReferralsCount = async (role: string, hospitalId: number
             return await prisma.referral.count({
                 where: {
                     type: "Internal",
-                }
+                },
             });
         } else if (hospitalId !== null) {
             // Fetch referrals for other roles filtered by hospitalId
@@ -83,7 +86,7 @@ export const fetchInwardReferralsCount = async (role: string, hospitalId: number
                 where: {
                     type: "Internal",
                     hospitalId: hospitalId,
-                }
+                },
             });
         }
 
@@ -97,8 +100,10 @@ export const fetchInwardReferralsCount = async (role: string, hospitalId: number
     }
 };
 
-export const fetchOutwardReferrals = async (role: string, hospitalId: number | null) => {
-    
+export const fetchOutwardReferrals = async (
+    role: string,
+    hospitalId: number | null
+) => {
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user) {
@@ -106,7 +111,7 @@ export const fetchOutwardReferrals = async (role: string, hospitalId: number | n
         redirect("/sign-in");
         return [];
     }
-    
+
     try {
         // Filter based on role and hospitalId
         if (role === "SUPER_ADMIN") {
@@ -144,8 +149,10 @@ export const fetchOutwardReferrals = async (role: string, hospitalId: number | n
     }
 };
 
-export const fetchOutwardReferralsCount = async (role: string, hospitalId: number | null) => {
-    
+export const fetchOutwardReferralsCount = async (
+    role: string,
+    hospitalId: number | null
+) => {
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user) {
@@ -153,7 +160,7 @@ export const fetchOutwardReferralsCount = async (role: string, hospitalId: numbe
         redirect("/sign-in");
         return [];
     }
-    
+
     try {
         // Filter based on role and hospitalId
         if (role === "SUPER_ADMIN") {
@@ -161,7 +168,7 @@ export const fetchOutwardReferralsCount = async (role: string, hospitalId: numbe
             return await prisma.referral.count({
                 where: {
                     type: "External",
-                }
+                },
             });
         } else if (hospitalId !== null) {
             // Fetch referrals for other roles filtered by hospitalId
@@ -169,7 +176,7 @@ export const fetchOutwardReferralsCount = async (role: string, hospitalId: numbe
                 where: {
                     type: "External",
                     hospitalId: hospitalId,
-                }
+                },
             });
         }
 
@@ -182,3 +189,119 @@ export const fetchOutwardReferralsCount = async (role: string, hospitalId: numbe
         throw new Error("Failed to fetch outward referrals count.");
     }
 };
+
+/**
+ * Create a new referral
+ * @param data - The referral data to be persisted.
+ * @returns The created referral.
+ */
+export async function createReferral(data: {
+    patientId: number;
+    patientName: string;
+    gender: string;
+    dateOfBirth: string;
+    homeAddress?: string;
+    state?: string;
+    phoneNo: string;
+    email: string;
+    physicianName: string;
+    physicianDepartment: string;
+    physicianSpecialty: string;
+    physicianEmail: string;
+    physicianPhoneNumber: string;
+    hospitalName: string;
+    type: string;
+    primaryCareProvider: string;
+    referralAddress: string;
+    referralPhone: string;
+    reasonForConsultation: string;
+    diagnosis: string;
+    status: string;
+}) {
+    try {
+        // Find the hospital by name
+        const hospital = await prisma.hospital.findUnique({
+            where: { name: data.hospitalName },
+        });
+
+        if (!hospital) {
+            throw new Error(
+                `Hospital with name '${data.hospitalName}' not found.`
+            );
+        }
+
+        const hospitalId = hospital.hospitalId;
+
+        // Upsert the patient
+        const patient = await prisma.patient.upsert({
+            where: { patientId: data.patientId },
+            update: {
+                name: data.patientName,
+                gender: data.gender,
+                dateOfBirth: new Date(data.dateOfBirth),
+                homeAddress: data.homeAddress,
+                state: data.state,
+                phoneNo: data.phoneNo,
+                email: data.email,
+                reasonForConsultation: data.reasonForConsultation,
+                status: data.status,
+            },
+            create: {
+                name: data.patientName,
+                gender: data.gender,
+                dateOfBirth: new Date(data.dateOfBirth),
+                homeAddress: data.homeAddress,
+                state: data.state,
+                phoneNo: data.phoneNo,
+                email: data.email,
+                reasonForConsultation: data.reasonForConsultation,
+                status: data.status,
+                hospitalId,
+            },
+        });
+
+        // Check for existing referral on the same day
+        const referralDate = new Date();
+        const existingReferral = await prisma.referral.findFirst({
+            where: {
+                patientId: patient.patientId,
+                hospitalId,
+                type: data.type,
+                effectiveDate: {
+                    gte: new Date(referralDate.setHours(0, 0, 0, 0)),
+                    lt: new Date(referralDate.setHours(23, 59, 59, 999)),
+                },
+            },
+        });
+
+        if (existingReferral) {
+            throw new Error("Referral already exists for today.");
+        }
+
+        // Create the referral
+        const newReferral = await prisma.referral.create({
+            data: {
+                patientId: patient.patientId,
+                hospitalId,
+                effectiveDate: new Date(),
+                type: data.type,
+                primaryCareProvider: data.primaryCareProvider,
+                referralAddress: data.referralAddress,
+                referralPhone: data.referralPhone,
+                reasonForConsultation: data.reasonForConsultation,
+                diagnosis: data.diagnosis,
+                physicianName: data.physicianName,
+                physicianDepartment: data.physicianDepartment,
+                physicianSpecialty: data.physicianSpecialty,
+                physicianEmail: data.physicianEmail,
+                physicianPhoneNumber: data.physicianPhoneNumber,
+            },
+        });
+
+        return newReferral;
+    } catch (error) {
+        Sentry.captureException(error);
+        console.error("Error creating referral:", error);
+        throw new Error("Failed to create referral.");
+    }
+}

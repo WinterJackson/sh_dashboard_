@@ -425,3 +425,27 @@ export async function fetchPatients(user: { role: Role; hospitalId?: number | nu
         throw new Error(`Failed to fetch patients: ${error}`);
     }
 }
+
+
+// Fetch patients details using the patient name
+export async function fetchPatientDetails(name: string) {
+    try {
+        const patient = await prisma.patient.findUnique({
+            where: { name },
+            include: {
+                hospital: true,
+            },
+        });
+
+        if (!patient) {
+            console.warn(`Patient '${name}' not found.`);
+            return null;
+        }
+
+        return patient;
+    } catch (error) {
+        Sentry.captureException(error);
+        console.error("Failed to fetch patient details:", error);
+        throw new Error("Failed to fetch patient details.");
+    }
+}

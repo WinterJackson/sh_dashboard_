@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { fetchPatientDetails } from "@/lib/data";
+import { fetchPatientDetails } from "@/lib/data-access/patients/data";
 import { useUser } from "@/app/context/UserContext";
 
 interface ReferPatientDialogProps {
@@ -33,10 +33,12 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
     const fetchAndSetPatientDetails = async (name: string) => {
         const details = await fetchPatientDetails(name);
 
+        console.log(details)
+
         if (details) {
             setValue("patientId", details.patientId);
             setValue("gender", details.gender);
-            setValue("dateOfBirth", details.dateOfBirth.split('T')[0]); // Date format 'YYYY-MM-DD'
+            setValue("dateOfBirth", details.dateOfBirth ? new Date(details.dateOfBirth).toISOString().split('T')[0] : ""); // Date format 'YYYY-MM-DD'
             setValue("homeAddress", details.homeAddress);
             setValue("state", details.state);
             setValue("phoneNo", details.phoneNo);
