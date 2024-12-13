@@ -8,8 +8,6 @@ import logo from "../../../../public/images/logo.png";
 import Image from "next/image";
 import AuthLayout from "../layout";
 
-export const dynamic = "force-dynamic";
-
 const SignInPage = async () => {
     const session = await getServerSession(authOptions);
 

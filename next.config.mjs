@@ -45,7 +45,7 @@ org: "snarkhealth-a4",
 project: "snarkhealth",
 
 // Only print logs for uploading source maps in CI
-silent: true, // Suppress Sentry Webpack Plugin logs
+silent: false, // Displays useful logs during development
 
 // For all available options, see:
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
