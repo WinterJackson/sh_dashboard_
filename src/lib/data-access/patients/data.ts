@@ -7,6 +7,7 @@ import * as Sentry from "@sentry/nextjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
+import { getErrorMessage } from "@/hooks/getErrorMessage";
 
 const prisma = require("@/lib/prisma");
 
@@ -21,11 +22,12 @@ export async function fetchPatientsToday(user: {
 
     if (!session || !session?.user) {
         redirect("/sign-in");
+        return { patients: [] }
     }
 
-    try {
-        const { role, hospitalId, userId } = user;
+    const { role, hospitalId, userId } = user;
 
+    try {
         // Define the filter clause based on the user role
         let whereClause: Record<string, any> = {};
 
@@ -35,31 +37,36 @@ export async function fetchPatientsToday(user: {
                 break;
             case "ADMIN":
                 if (hospitalId === null) {
-                    throw new Error("Admins must have an associated hospital ID.");
+                    console.error("Admins must have an associated hospital ID.");
+                    return { patients: [] };
                 }
                 whereClause = { hospitalId };
                 break;
             case "DOCTOR":
                 if (!userId) {
-                    throw new Error("Doctors must have a valid user ID.");
+                    console.error("Doctors must have a valid user ID.");
+                    return { patients: [] };
                 }
                 const doctor = await prisma.doctor.findUnique({
                     where: { userId },
                 });
                 if (!doctor) {
-                    throw new Error("Doctor not found for the given user ID.");
+                    console.error("Doctor not found for the given user ID.");
+                    return { patients: [] };
                 }
                 whereClause = { doctorId: doctor.doctorId };
                 break;
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
-                    throw new Error(`${role}s must have an associated hospital ID.`);
+                    console.error(`${role}s must have an associated hospital ID.`);
+                    return { patients: [] };
                 }
                 whereClause = { hospitalId };
                 break;
             default:
-                throw new Error("Invalid role provided.");
+                console.error("Invalid role provided.");
+                return { patients: [] };
         }
 
         // Date filters for "today"
@@ -91,8 +98,10 @@ export async function fetchPatientsToday(user: {
 
         return { patients: uniquePatients };
     } catch (error) {
-        Sentry.captureException(error);
-        throw new Error(`Failed to fetch patients: ${error}`);
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Failed to fetch patients:", errorMessage);
+        return { patients: [] };
     }
 }
 
@@ -107,54 +116,55 @@ export async function fetchPatientsTodayCount(user: {
 
     if (!session || !session?.user) {
         redirect("/sign-in");
+        return 0;
     }
 
-    try {
-        const { role, hospitalId, userId } = user;
+    const { role, hospitalId, userId } = user;
 
+    try {
         // Define the filter clause based on the user role
         let whereClause = {};
 
         switch (role) {
             case "SUPER_ADMIN":
-                // No filtering for SUPER_ADMIN
                 whereClause = {};
                 break;
 
             case "ADMIN":
                 if (hospitalId === null) {
-                    throw new Error("Admins must have an associated hospital ID.");
+                    console.error("Admins must have an associated hospital ID.");
+                    return 0;
                 }
-                // Admins count patients for their associated hospital
                 whereClause = { hospitalId };
                 break;
 
             case "DOCTOR":
                 if (!userId) {
-                    throw new Error("Doctors must have a valid user ID.");
+                    console.error("Doctors must have a valid user ID.");
+                    return 0;
                 }
-                // Fetch the `doctorId` associated with the `userId`
                 const doctor = await prisma.doctor.findUnique({
                     where: { userId },
                 });
                 if (!doctor) {
-                    throw new Error("Doctor not found for the given user ID.");
+                    console.error("Doctor not found for the given user ID.");
+                    return 0;
                 }
-                // Doctors count only their own patients
                 whereClause = { doctorId: doctor.doctorId };
                 break;
 
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
-                    throw new Error(`${role}s must have an associated hospital ID.`);
+                    console.error(`${role}s must have an associated hospital ID.`);
+                    return 0;
                 }
-                // Nurses and Staff count patients for their associated hospital
                 whereClause = { hospitalId };
                 break;
 
             default:
-                throw new Error("Invalid role provided.");
+                console.error("Invalid role provided.");
+                return 0;
         }
 
         // Date filters for "today"
@@ -182,8 +192,10 @@ export async function fetchPatientsTodayCount(user: {
 
         return uniquePatientCount;
     } catch (error) {
-        Sentry.captureException(error);
-        throw new Error(`Failed to fetch patients count: ${error}`);
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Failed to fetch patients count:", errorMessage);
+        return 0;
     }
 }
 
@@ -198,11 +210,12 @@ export async function fetchPatientsForLast14Days(user: {
 
     if (!session || !session?.user) {
         redirect("/sign-in");
+        return { currentWeekPatients: [], previousWeekPatients: [] };
     }
 
-    try {
-        const { role, hospitalId, userId } = user;
+    const { role, hospitalId, userId } = user;
 
+    try {
         let whereClause: Record<string, any> = {};
 
         switch (role) {
@@ -211,31 +224,36 @@ export async function fetchPatientsForLast14Days(user: {
                 break;
             case "ADMIN":
                 if (hospitalId === null) {
-                    throw new Error("Admins must have an associated hospital ID.");
+                    console.error("Admins must have an associated hospital ID.");
+                    return { currentWeekPatients: [], previousWeekPatients: [] };
                 }
                 whereClause = { hospitalId };
                 break;
             case "DOCTOR":
                 if (!userId) {
-                    throw new Error("Doctors must have a valid user ID.");
+                    console.error("Doctors must have a valid user ID.");
+                    return { currentWeekPatients: [], previousWeekPatients: [] };
                 }
                 const doctor = await prisma.doctor.findUnique({
                     where: { userId },
                 });
                 if (!doctor) {
-                    throw new Error("Doctor not found for the given user ID.");
+                    console.error("Doctor not found for the given user ID.");
+                    return { currentWeekPatients: [], previousWeekPatients: [] };
                 }
                 whereClause = { doctorId: doctor.doctorId };
                 break;
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
-                    throw new Error(`${role}s must have an associated hospital ID.`);
+                    console.error(`${role}s must have an associated hospital ID.`);
+                    return { currentWeekPatients: [], previousWeekPatients: [] };
                 }
                 whereClause = { hospitalId };
                 break;
             default:
-                throw new Error("Invalid role provided.");
+                console.error("Invalid role provided.");
+                return { currentWeekPatients: [], previousWeekPatients: [] };
         }
 
         const today = new Date();
@@ -293,8 +311,10 @@ export async function fetchPatientsForLast14Days(user: {
             previousWeekPatients,
         };
     } catch (error) {
-        Sentry.captureException(error);
-        throw new Error(`Failed to fetch patients for the last 14 days: ${error}`);
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Failed to fetch patients for the last 14 days:", errorMessage);
+        return { currentWeekPatients: [], previousWeekPatients: [] };
     }
 }
 
@@ -339,7 +359,8 @@ export async function fetchPatients(user: { role: Role; hospitalId?: number | nu
             case "NURSE":
             case "STAFF":
                 if (!hospitalId) {
-                    throw new Error(`${role} must have a valid hospital ID.`);
+                    console.error(`${role} must have a valid hospital ID.`);
+                    return { patients: [], totalPatients: 0 };
                 }
 
                 // Fetch patients associated with the specific hospital
@@ -362,7 +383,8 @@ export async function fetchPatients(user: { role: Role; hospitalId?: number | nu
 
             case "DOCTOR":
                 if (!hospitalId || !userId) {
-                    throw new Error("Doctors must have a valid hospital ID and user ID.");
+                    console.error("Doctors must have a valid hospital ID and user ID.");
+                    return { patients: [], totalPatients: 0 };
                 }
 
                 // Fetch patients associated with the doctor
@@ -407,7 +429,8 @@ export async function fetchPatients(user: { role: Role; hospitalId?: number | nu
                 break;
 
             default:
-                throw new Error("Invalid role provided.");
+                console.error("Invalid role provided.");
+                return { patients: [], totalPatients: 0 };
         }
 
         // Sort patients by their latest appointment date manually
@@ -419,16 +442,24 @@ export async function fetchPatients(user: { role: Role; hospitalId?: number | nu
 
         return { patients: sortedPatients, totalPatients };
     } catch (error) {
-        // Log the error with Sentry and rethrow
-        Sentry.captureException(error);
-        console.error(`Error fetching patients: ${error}`);
-        throw new Error(`Failed to fetch patients: ${error}`);
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Error fetching patients:", errorMessage);
+        return { patients: [], totalPatients: 0 };
     }
 }
 
 
 // Fetch patients details using the patient name
 export async function fetchPatientDetails(name: string) {
+
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session?.user) {
+        redirect("/sign-in");
+        return null;
+    }
+
     try {
         const patient = await prisma.patient.findUnique({
             where: { name },
@@ -444,8 +475,9 @@ export async function fetchPatientDetails(name: string) {
 
         return patient;
     } catch (error) {
-        Sentry.captureException(error);
-        console.error("Failed to fetch patient details:", error);
-        throw new Error("Failed to fetch patient details.");
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Failed to fetch patient details:", errorMessage);
+        return null;
     }
 }

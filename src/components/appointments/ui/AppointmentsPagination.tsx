@@ -1,5 +1,7 @@
 // src/components/appointments/ui/AppointmentsPagination.tsx
 
+"use client"
+
 import React from "react";
 import {
     Pagination,

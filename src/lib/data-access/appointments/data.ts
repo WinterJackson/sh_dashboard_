@@ -7,6 +7,7 @@ import * as Sentry from "@sentry/nextjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
+import { getErrorMessage } from "@/hooks/getErrorMessage";
 
 const prisma = require("@/lib/prisma");
 
@@ -19,10 +20,12 @@ export async function fetchAppointments(user: {
 
     if (!session || !session?.user) {
         redirect("/sign-in");
+        return { appointments: [], totalAppointments: 0 };
     }
 
+    const { role, hospitalId, userId } = user;
+
     try {
-        const { role, hospitalId, userId } = user;
 
         // Define the filter clause based on the user role
         let whereClause = {};
@@ -89,8 +92,10 @@ export async function fetchAppointments(user: {
 
         return { appointments, totalAppointments };
     } catch (error) {
-        Sentry.captureException(error);
-        throw new Error(`Failed to fetch appointments: ${error}`);
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Failed to fetch appointments:", errorMessage);
+        return { appointments: [], totalAppointments: 0 };
     }
 }
 
@@ -111,12 +116,19 @@ export async function updateAppointmentDetails(
         status?: string;
     }
 ): Promise<Appointment | null> {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session?.user) {
+        redirect("/sign-in");
+        return null;
+    }
+
+    const updateFields: any = {};
+
     try {
         if (!appointmentId || !updateData) {
             throw new Error("Appointment ID and update data are required.");
         }
-
-        const updateFields: any = {};
 
         // Handle rescheduling logic
         if (updateData.date && updateData.timeFrom && updateData.timeTo) {
@@ -153,8 +165,9 @@ export async function updateAppointmentDetails(
 
         return updatedAppointment;
     } catch (error) {
-        Sentry.captureException(error);
-        console.error("Error updating appointment details:", error);
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Error updating appointment details:", errorMessage);
         return null;
     }
 }
@@ -169,10 +182,12 @@ export async function updateAppointmentStatus(
 
     if (!session || !session?.user) {
         redirect("/sign-in");
+        return null;
     }
 
     if (!appointmentId || !updateData) {
-        throw new Error("Appointment ID and update data are required.");
+        console.error("Appointment ID and update data are required.");
+        return null;
     }
 
     try {
@@ -189,8 +204,9 @@ export async function updateAppointmentStatus(
 
         return updatedAppointment;
     } catch (error) {
-        Sentry.captureException(error);
-        console.error(`Error updating appointment status for ${appointmentId}:`, error);
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error(`Error updating appointment status for ${appointmentId}:`, errorMessage);
         return null;
     }
 }
@@ -205,10 +221,12 @@ export async function updateAppointmentType(
 
     if (!session || !session?.user) {
         redirect("/sign-in");
+        return { success: false };
     }
 
     if (!appointmentId || !newType) {
-        throw new Error("Appointment ID and new type are required.");
+        console.error("Appointment ID and new type are required.");
+        return { success: false };
     }
 
     try {
@@ -219,8 +237,9 @@ export async function updateAppointmentType(
 
         return { success: true, updatedType: updatedAppointment.type };
     } catch (error) {
-        Sentry.captureException(error);
-        console.error(`Error updating appointment type for ${appointmentId}:`, error);
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error(`Error updating appointment type for ${appointmentId}:`, errorMessage);
         return { success: false };
     }
 }
@@ -235,10 +254,12 @@ export async function fetchAppointmentsToday(user: {
 
     if (!session || !session?.user) {
         redirect("/sign-in");
+        return { appointments: [] };
     }
 
+    const { role, hospitalId, userId } = user;
+
     try {
-        const { role, hospitalId, userId } = user;
 
         // Define the filter clause based on the user role
         let whereClause = {};
@@ -306,8 +327,10 @@ export async function fetchAppointmentsToday(user: {
 
         return { appointments };
     } catch (error) {
-        Sentry.captureException(error);
-        throw new Error(`Failed to fetch appointments: ${error}`);
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error(`Failed to fetch appointments:`, errorMessage);
+        return { appointments: [] };
     }
 }
 
@@ -321,10 +344,12 @@ export async function fetchAppointmentsTodayCount(user: {
 
     if (!session || !session?.user) {
         redirect("/sign-in");
+        return 0;
     }
 
+    const { role, hospitalId, userId } = user;
+
     try {
-        const { role, hospitalId, userId } = user;
 
         // Define the filter clause based on the user role
         let whereClause = {};
@@ -383,8 +408,10 @@ export async function fetchAppointmentsTodayCount(user: {
 
         return appointmentsTodayCount;
     } catch (error) {
-        Sentry.captureException(error);
-        throw new Error(`Failed to fetch appointment count for today: ${error}`);
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error(`Failed to fetch appointment count for today:`, errorMessage);
+        return 0;
     }
 }
 
@@ -398,11 +425,12 @@ export async function fetchAppointmentsForLast14Days(user: {
 
     if (!session || !session?.user) {
         redirect("/sign-in");
+        return { appointments: [] };
     }
 
-    try {
-        const { role, hospitalId, userId } = user;
+    const { role, hospitalId, userId } = user;
 
+    try {
         // Define the filter clause based on the user role
         let whereClause: any = {};
 
@@ -472,8 +500,10 @@ export async function fetchAppointmentsForLast14Days(user: {
 
         return { appointments };
     } catch (error) {
-        Sentry.captureException(error);
-        throw new Error(`"Error fetching appointments for the last 14 days: ${error}`);
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error(`Error fetching appointments for the last 14 days:`, errorMessage);
+        return { appointments: [] };
     }
 }
 
@@ -487,11 +517,12 @@ export async function fetchAppointmentsForLast14DaysCount(user: {
 
     if (!session || !session?.user) {
         redirect("/sign-in");
+        return { count: 0 };
     }
 
-    try {
-        const { role, hospitalId, userId } = user;
+    const { role, hospitalId, userId } = user;
 
+    try {
         // Define the filter clause based on the user role
         let whereClause: any = {};
 
@@ -549,7 +580,9 @@ export async function fetchAppointmentsForLast14DaysCount(user: {
 
         return { count };
     } catch (error) {
-        Sentry.captureException(error);
-        throw new Error(`Failed to fetch appointment count for the last 14 days: ${error}`);
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error(`Failed to fetch appointment count for the last 14 days:`, errorMessage);
+        return { count: 0 };
     }
 }

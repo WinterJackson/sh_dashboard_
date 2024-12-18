@@ -4,7 +4,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import FAQ from "@/components/settings/FAQs/FAQ";
-import React from "react";
 import Image from "next/image";
 
 export default async function SupportPage() {

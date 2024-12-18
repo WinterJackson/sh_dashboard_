@@ -17,8 +17,6 @@ import { fetchInwardReferrals, fetchOutwardReferrals } from "@/lib/data-access/r
 import { Role } from "@/lib/definitions";
 import { fetchPatientsForLast14Days, fetchPatientsTodayCount } from "@/lib/data-access/patients/data";
 
-const prisma = require("@/lib/prisma");
-
 interface StaffDashboardProps {
     session: {
         user: {

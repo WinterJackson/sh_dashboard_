@@ -1,5 +1,7 @@
 // src/app/components/doctors/UI components/PercentageBar.tsx
 
+"use client"
+
 import React from "react";
 
 type Props = {

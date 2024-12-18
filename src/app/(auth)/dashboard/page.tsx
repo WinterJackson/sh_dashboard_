@@ -1,6 +1,5 @@
 // src/app/(auth)/dashboard/page.tsx
 
-import React from "react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";

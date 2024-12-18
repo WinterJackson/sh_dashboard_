@@ -18,8 +18,13 @@ prisma.$use(async (params, next) => {
         return await next(params);
     } catch (error) {
         Sentry.captureException(error);
+        await prisma.$disconnect(); // Close the prisma instance
         throw error;
     }
+});
+
+process.on("SIGTERM", async () => {
+    await prisma.$disconnect(); // Close the prisma instance
 });
 
 module.exports = prisma;

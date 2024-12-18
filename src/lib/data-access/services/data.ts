@@ -8,6 +8,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
+import { getErrorMessage } from "@/hooks/getErrorMessage";
 
 const prisma = require("@/lib/prisma");
 
@@ -22,14 +23,15 @@ export async function fetchServices(
     userHospitalId: number | null,
     selectedDepartmentId?: number
 ): Promise<Service[]> {
+
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session?.user) {
+        redirect("/sign-in");
+        return [];
+    }
+
     try {
-        const session = await getServerSession(authOptions);
-
-        if (!session || !session?.user) {
-            redirect("/sign-in");
-            return [];
-        }
-
         // Construct dynamic `where` clause based on role and filters
         const whereClause: Prisma.ServiceWhereInput = {
             departments: {
@@ -53,8 +55,10 @@ export async function fetchServices(
 
         return services;
     } catch (error) {
-        Sentry.captureException(error);
-        throw new Error("Failed to fetch services");
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Failed to fetch services:", errorMessage);
+        return [];
     }
 }
 
@@ -72,6 +76,13 @@ export async function filteredServices(
     selectedDepartmentId: number,
     currentHospitalId: number
 ): Promise<Service[]> {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session?.user) {
+        redirect("/sign-in");
+        return [];
+    }
+
     try {
         const services = await prisma.service.findMany({
             where: {
@@ -91,7 +102,9 @@ export async function filteredServices(
 
         return services;
     } catch (error) {
-        Sentry.captureException(error);
-        throw new Error("Failed to fetch filtered services");
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Failed to fetch filtered services:", errorMessage);
+        return [];
     }
 }

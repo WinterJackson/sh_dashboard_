@@ -7,6 +7,7 @@ import * as Sentry from "@sentry/nextjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
+import { getErrorMessage } from "@/hooks/getErrorMessage";
 
 const prisma = require("@/lib/prisma");
 
@@ -21,13 +22,15 @@ export async function fetchDepartments(user: {
 
     if (!session || !session?.user) {
         redirect("/sign-in");
-        return [];
+        return []
     }
 
     try {
+        let departments = [];
+
         if (user.role === "SUPER_ADMIN") {
             // SUPER_ADMIN gets access to all departments
-            return await prisma.department.findMany({
+            departments = await prisma.department.findMany({
                 select: {
                     departmentId: true,
                     name: true,
@@ -45,7 +48,7 @@ export async function fetchDepartments(user: {
             });
         } else if (user.hospitalId) {
             // Other roles get access to departments tied to their hospital
-            return await prisma.department.findMany({
+            departments = await prisma.department.findMany({
                 where: {
                     hospitals: {
                         some: {
@@ -69,9 +72,11 @@ export async function fetchDepartments(user: {
                 },
             });
         }
-        return [];
+        return departments;
     } catch (error) {
-        Sentry.captureException(error);
-        throw new Error("Failed to fetch departments by user");
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Failed to fetch departments by user:", errorMessage);
+        return [];
     }
 }

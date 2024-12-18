@@ -1,4 +1,4 @@
-// src/components/ui/loading.tsx
+// src/app/(auth)/sign-up/loading.tsx
 
 "use client"
 

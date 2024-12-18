@@ -1,6 +1,7 @@
 // src/components/doctors/ui/DoctorBio.tsx
 
 "use client";
+
 import React, { useState } from "react";
 import PercentageBar from "./PercentageBar";
 import CloseIcon from "@mui/icons-material/Close";

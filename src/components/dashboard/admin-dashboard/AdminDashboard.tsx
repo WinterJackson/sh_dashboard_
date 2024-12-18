@@ -17,8 +17,6 @@ import { fetchOnlineDoctorsCount, fetchTopDoctors } from "@/lib/data-access/doct
 import { fetchInwardReferrals, fetchOutwardReferrals } from "@/lib/data-access/referrals/data";
 import { fetchPatientsForLast14Days, fetchPatientsTodayCount } from "@/lib/data-access/patients/data";
 
-const prisma = require("@/lib/prisma");
-
 interface AdminDashboardProps {
     session: {
         user: {

@@ -1,6 +1,5 @@
 // src/app/(auth)/dashboard/settings/page.tsx
 
-import React from "react";
 import Image from "next/image";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";

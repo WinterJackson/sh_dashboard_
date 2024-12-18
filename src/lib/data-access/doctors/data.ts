@@ -11,6 +11,7 @@ import { sendEmail } from "@/lib/email";
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { getErrorMessage } from "@/hooks/getErrorMessage";
 
 const prisma = require("@/lib/prisma");
 
@@ -20,7 +21,23 @@ const prisma = require("@/lib/prisma");
 export async function fetchTopDoctors(user: {
     role: Role;
     hospitalId: number | null;
-}): Promise<{ doctorId: number; imageUrl: string; name: string; rating: number; specialization: string }[]> {
+}): Promise<
+    {
+        doctorId: number;
+        imageUrl: string;
+        name: string;
+        rating: number;
+        specialization: string;
+    }[]
+> {
+
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session?.user) {
+        redirect("/sign-in");
+        return [];
+    }
+
     const { role, hospitalId } = user;
 
     // Define the base filter based on role
@@ -37,89 +54,98 @@ export async function fetchTopDoctors(user: {
         case "NURSE":
         case "STAFF":
             if (!hospitalId) {
-                throw new Error(`${role}s must have a valid hospital ID.`);
+                console.error(`${role}s must have a valid hospital ID.`);
+                return []; // Return an empty array instead of throwing an error
             }
             // Restrict results to the specified hospital
             whereClause = { hospitalId };
             break;
 
         default:
-            throw new Error("Invalid role for fetching top doctors.");
+            console.error("Invalid role for fetching top doctors.");
+            return []; // Return an empty array instead of throwing an error
     }
 
-    // Query top doctors based on the average rating
-    const topDoctors = await prisma.doctor.findMany({
-        where: whereClause,
-        orderBy: {
-            averageRating: "desc", // Sort by highest average rating
-        },
-        take: 5, // Limit to the top 5 doctors
-        select: {
-            doctorId: true,
-            averageRating: true,
-            specialization: {
-                select: {
-                    name: true,
-                },
+    try {
+        // Query top doctors based on the average rating
+        const topDoctors = await prisma.doctor.findMany({
+            where: whereClause,
+            orderBy: {
+                averageRating: "desc", // Sort by highest average rating
             },
-            user: {
-                select: {
-                    profile: {
-                        select: {
-                            firstName: true,
-                            lastName: true,
-                            imageUrl: true,
+            take: 5, // Limit to the top 5 doctors
+            select: {
+                doctorId: true,
+                averageRating: true,
+                specialization: {
+                    select: {
+                        name: true,
+                    },
+                },
+                user: {
+                    select: {
+                        profile: {
+                            select: {
+                                firstName: true,
+                                lastName: true,
+                                imageUrl: true,
+                            },
                         },
                     },
                 },
             },
-        },
-    });
+        });
 
-    // Map and format the results
-    return topDoctors.map((
-    doctor: {
-        doctorId: number;
-        averageRating: number;
-        specialization: { name: string } | null;
-        user: {
-            profile: {
-                firstName: string;
-                lastName: string;
-                imageUrl: string;
-            } | null;
-        } | null;
-    }) => ({
-        doctorId: doctor.doctorId,
-        imageUrl: doctor.user?.profile?.imageUrl || "/default-profile.png", // Fallback to default image
-        name: `Dr. ${doctor.user?.profile?.firstName || "Unknown"} ${
-            doctor.user?.profile?.lastName || "Name"
-        }`,
-        rating: doctor.averageRating,
-        specialization: doctor.specialization?.name || "General",
-    }));
+        // Map and format the results
+        return topDoctors.map(
+            (doctor: {
+                doctorId: number;
+                averageRating: number;
+                specialization: { name: string } | null;
+                user: {
+                    profile: {
+                        firstName: string;
+                        lastName: string;
+                        imageUrl: string;
+                    } | null;
+                } | null;
+            }) => ({
+                doctorId: doctor.doctorId,
+                imageUrl:
+                    doctor.user?.profile?.imageUrl || "/default-profile.png", // Fallback to default image
+                name: `Dr. ${doctor.user?.profile?.firstName || "Unknown"} ${
+                    doctor.user?.profile?.lastName || "Name"
+                }`,
+                rating: doctor.averageRating,
+                specialization: doctor.specialization?.name || "General",
+            })
+        );
+    } catch (error) {
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Failed to fetch top doctors:", errorMessage);
+        return [];
+    }
 }
 
 /**
  * Fetch all online doctors.
  */
-export async function fetchOnlineDoctors(
-    hospitalId: number | null,
-    role: Role
-) {
+export async function fetchOnlineDoctors(hospitalId: number | null, role: Role): Promise<Doctor[]> {
     const session = await getServerSession(authOptions);
 
     if (!session || !session?.user) {
         redirect("/sign-in");
-        return null;
+        return [];
     }
 
     try {
         if (role !== "SUPER_ADMIN" && !hospitalId) {
-            throw new Error("Unauthorized access: Hospital ID is required.");
+            console.error("Unauthorized access: Hospital ID is required.");
+            return [];
         }
 
-        return await prisma.doctor.findMany({
+        const onlineDoctors = await prisma.doctor.findMany({
             where: {
                 status: "Online",
                 ...(hospitalId && { hospitalId }),
@@ -155,16 +181,20 @@ export async function fetchOnlineDoctors(
                 },
             },
         });
+
+        return onlineDoctors
     } catch (error) {
+        const errorMessage = getErrorMessage(error);
         Sentry.captureException(error);
-        throw new Error(`Failed to fetch online doctors: ${error}`);
+        console.error("Failed to fetch online doctors:", errorMessage);
+        return [];
     }
 }
 
 /**
  * Fetch count of online doctors based on user's role and hospitalId.
  */
-export async function fetchOnlineDoctorsCount(role: Role, hospitalId: number | null) {
+export async function fetchOnlineDoctorsCount(role: Role, hospitalId: number | null): Promise<number> {
     const session = await getServerSession(authOptions);
 
     if (!session || !session?.user) {
@@ -173,14 +203,16 @@ export async function fetchOnlineDoctorsCount(role: Role, hospitalId: number | n
     }
 
     try {
+        let onlineDoctorsCount = 0;
+
         if (role === "SUPER_ADMIN") {
             // Count all online doctors for SUPER_ADMIN
-            return await prisma.doctor.count({
+            onlineDoctorsCount = await prisma.doctor.count({
                 where: { status: "Online" },
             });
         } else if (hospitalId) {
             // Count online doctors for other roles based on hospitalId
-            return await prisma.doctor.count({
+            onlineDoctorsCount = await prisma.doctor.count({
                 where: {
                     status: "Online",
                     hospitalId: hospitalId,
@@ -188,23 +220,20 @@ export async function fetchOnlineDoctorsCount(role: Role, hospitalId: number | n
             });
         }
 
-        // If role or hospitalId is invalid, return 0
-        return 0;
+        return onlineDoctorsCount;
     } catch (error) {
+        const errorMessage = getErrorMessage(error);
         Sentry.captureException(error);
-        console.error("Error fetching online doctors count:", error);
-        throw new Error("Failed to fetch online doctors count.");
+        console.error("Error fetching online doctors count:", errorMessage);
+        return 0;
     }
 }
 
 /**
  * Fetch details of a specific doctor by doctorId.
  */
-export async function fetchDoctorDetails(
-    doctorId: number,
-    hospitalId: number | null,
-    role: Role
-) {
+export async function fetchDoctorDetails(doctorId: number, hospitalId: number | null, role: Role): Promise<Doctor | null> {
+
     const session = await getServerSession(authOptions);
 
     if (!session || !session?.user) {
@@ -214,10 +243,11 @@ export async function fetchDoctorDetails(
 
     try {
         if (role !== "SUPER_ADMIN" && (!hospitalId || role !== "ADMIN")) {
-            throw new Error("Unauthorized access");
+            console.error("Unauthorized access");
+            return null;
         }
 
-        return await prisma.doctor.findUnique({
+        const doctorDetails = await prisma.doctor.findUnique({
             where: { doctorId },
             include: {
                 user: {
@@ -250,9 +280,13 @@ export async function fetchDoctorDetails(
                 },
             },
         });
+
+        return doctorDetails
     } catch (error) {
+        const errorMessage = getErrorMessage(error);
         Sentry.captureException(error);
-        throw new Error(`Failed to fetch doctor details: ${error}`);
+        console.error("Failed to fetch doctor details:", errorMessage);
+        return null;
     }
 }
 
@@ -261,9 +295,8 @@ export async function fetchDoctorDetails(
  * @param userId - The user ID of the doctor.
  * @returns An object containing the doctorId or null if not found.
  */
-export async function fetchDoctorIdByUserId(
-    userId: string
-): Promise<{ doctorId: number } | null> {
+export async function fetchDoctorIdByUserId(userId: string): Promise<{ doctorId: number } | null> {
+
     const session = await getServerSession(authOptions);
 
     if (!session || !session?.user) {
@@ -273,7 +306,8 @@ export async function fetchDoctorIdByUserId(
 
     try {
         if (!userId) {
-            throw new Error("User ID is required");
+            console.error("User ID is required");
+            return null;
         }
 
         const doctor = await prisma.doctor.findUnique({
@@ -287,28 +321,31 @@ export async function fetchDoctorIdByUserId(
 
         return doctor; // Return the doctorId
     } catch (error) {
+        const errorMessage = getErrorMessage(error);
         Sentry.captureException(error);
-        throw new Error(`Failed to fetch doctor ID by user ID: ${error}`);
+        console.error("Failed to fetch doctor ID by user ID:", errorMessage);
+        return null;
     }
 }
 
 /**
  * Fetch all doctors with optional filtering by hospitalId.
  */
-export async function fetchAllDoctors(hospitalId: number | null, role: Role) {
+export async function fetchAllDoctors(hospitalId: number | null, role: Role): Promise<Doctor[]> {
     const session = await getServerSession(authOptions);
 
     if (!session || !session?.user) {
         redirect("/sign-in");
-        return null;
+        return [];
     }
 
     try {
         if (role !== "SUPER_ADMIN" && !hospitalId) {
-            throw new Error("Unauthorized access");
+            console.error("Unauthorized access");
+            return [];
         }
 
-        return await prisma.doctor.findMany({
+        const doctors = await prisma.doctor.findMany({
             where: hospitalId ? { hospitalId } : undefined,
             include: {
                 user: {
@@ -341,9 +378,13 @@ export async function fetchAllDoctors(hospitalId: number | null, role: Role) {
                 },
             },
         });
+
+        return doctors
     } catch (error) {
+        const errorMessage = getErrorMessage(error);
         Sentry.captureException(error);
-        throw new Error(`Failed to fetch all doctors: ${error}`);
+        console.error("Failed to fetch all doctors:", errorMessage);
+        return [];
     }
 }
 
@@ -362,8 +403,10 @@ export async function fetchDoctors(user: {
     }
 
     try {
+        let doctors = []
+
         if (user.role === "SUPER_ADMIN") {
-            return await prisma.doctor.findMany({
+            doctors = await prisma.doctor.findMany({
                 include: {
                     hospital: true,
                     specialization: true,
@@ -376,7 +419,7 @@ export async function fetchDoctors(user: {
                 },
             });
         } else if (user.hospitalId) {
-            return await prisma.doctor.findMany({
+            doctors = await prisma.doctor.findMany({
                 where: { hospitalId: parseInt(user.hospitalId, 10) },
                 include: {
                     hospital: true,
@@ -390,30 +433,34 @@ export async function fetchDoctors(user: {
                 },
             });
         }
-        return [];
+
+        return doctors;
     } catch (error) {
+        const errorMessage = getErrorMessage(error);
         Sentry.captureException(error);
-        throw new Error(`Failed to fetch doctors: ${error}`);
+        console.error("Failed to fetch doctors:", errorMessage);
+        return [];
     }
 }
 
 /**
  * Fetch doctors by hospital ID.
  */
-export async function fetchDoctorsByHospital(hospitalId: number, role: Role) {
+export async function fetchDoctorsByHospital(hospitalId: number, role: Role): Promise<Doctor[]> {
     const session = await getServerSession(authOptions);
 
     if (!session || !session?.user) {
         redirect("/sign-in");
-        return null;
+        return [];
     }
 
     try {
         if (!hospitalId || role !== "ADMIN") {
-            throw new Error("Unauthorized access");
+            console.error("Unauthorized access");
+            return [];
         }
 
-        return await prisma.doctor.findMany({
+        const doctors = await prisma.doctor.findMany({
             where: { hospitalId },
             include: {
                 user: {
@@ -446,13 +493,15 @@ export async function fetchDoctorsByHospital(hospitalId: number, role: Role) {
                 },
             },
         });
+
+        return doctors
     } catch (error) {
+        const errorMessage = getErrorMessage(error);
         Sentry.captureException(error);
-        throw new Error(`Failed to fetch doctors by hospital: ${error}`);
+        console.error("Failed to fetch doctors by hospital:", errorMessage);
+        return [];
     }
 }
-
-
 
 /**
  * Adds a new doctor to the system.
@@ -473,43 +522,49 @@ export async function addDoctorAPI(doctorData: {
     about?: string;
     status?: string;
     profileImageUrl?: string;
-}) {
+}): Promise<any> {
 
     const session = await getServerSession(authOptions);
 
     if (!session || !session?.user) {
         redirect("/sign-in");
-        return [];
+        return null;
     }
 
     try {
         // Validate foreign keys
-        const [hospitalExists, departmentExists, specializationExists, serviceExists] =
-            await prisma.$transaction([
-                prisma.hospital.findUnique({
-                    where: { hospitalId: doctorData.hospitalId },
-                    select: { hospitalId: true },
-                }),
-                prisma.department.findUnique({
-                    where: { departmentId: doctorData.departmentId },
-                    select: { departmentId: true },
-                }),
-                prisma.specialization.findUnique({
-                    where: { specializationId: doctorData.specializationId },
-                    select: { specializationId: true },
-                }),
-                prisma.service.findUnique({
-                    where: { serviceId: doctorData.serviceId || -1 },
-                    select: { serviceId: true },
-                }),
-            ]);
+        const [
+            hospitalExists,
+            departmentExists,
+            specializationExists,
+            serviceExists,
+        ] = await prisma.$transaction([
+            prisma.hospital.findUnique({
+                where: { hospitalId: doctorData.hospitalId },
+                select: { hospitalId: true },
+            }),
+            prisma.department.findUnique({
+                where: { departmentId: doctorData.departmentId },
+                select: { departmentId: true },
+            }),
+            prisma.specialization.findUnique({
+                where: { specializationId: doctorData.specializationId },
+                select: { specializationId: true },
+            }),
+            prisma.service.findUnique({
+                where: { serviceId: doctorData.serviceId || -1 },
+                select: { serviceId: true },
+            }),
+        ]);
 
         if (!hospitalExists || !departmentExists || !specializationExists) {
-            throw new Error("Invalid hospital, department, or specialization");
+            console.error("Invalid hospital, department, or specialization");
+            return null;
         }
 
         if (doctorData.serviceId && !serviceExists) {
-            throw new Error("Invalid service selected");
+            console.error("Invalid service selected");
+            return null;
         }
 
         let user = null;
@@ -524,7 +579,10 @@ export async function addDoctorAPI(doctorData: {
 
             if (!existingUser) {
                 resetToken = crypto.randomBytes(32).toString("hex");
-                const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+                const hashedToken = crypto
+                    .createHash("sha256")
+                    .update(resetToken)
+                    .digest("hex");
                 const expiryDate = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
                 user = await tx.user.create({
@@ -587,9 +645,10 @@ export async function addDoctorAPI(doctorData: {
 
         return doctor;
     } catch (error) {
+        const errorMessage = getErrorMessage(error);
         Sentry.captureException(error);
-        console.error("Error adding doctor:", error);
-        throw new Error(`Failed to add doctor: ${error}`);
+        console.error("Error adding doctor:", errorMessage);
+        return null;
     }
 }
 
@@ -603,20 +662,21 @@ export async function getDoctorsBySpecialization(
     specializationId: number,
     hospitalId: number | null,
     role: Role
-) {
+): Promise<Doctor[]> {
     const session = await getServerSession(authOptions);
 
     if (!session || !session?.user) {
         redirect("/sign-in");
-        return null;
+        return [];
     }
 
     try {
         if (role !== "SUPER_ADMIN" && (!hospitalId || role !== "ADMIN")) {
-            throw new Error("Unauthorized access");
+            console.error("Unauthorized access");
+            return []
         }
 
-        return await prisma.doctor.findMany({
+        const doctors = await prisma.doctor.findMany({
             where: {
                 specializationId,
                 ...(hospitalId ? { hospitalId } : {}),
@@ -652,8 +712,12 @@ export async function getDoctorsBySpecialization(
                 },
             },
         });
+
+        return doctors
     } catch (error) {
+        const errorMessage = getErrorMessage(error);
         Sentry.captureException(error);
-        throw new Error(`Failed to fetch doctors by specialization: ${error}`);
+        console.error("Failed to fetch doctors by specialization:", errorMessage);
+        return [];
     }
 }

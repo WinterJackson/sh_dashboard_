@@ -2,31 +2,35 @@
 
 "use server";
 
-import { Role } from "@/lib/definitions";
+import { Bed, Role } from "@/lib/definitions";
 import * as Sentry from "@sentry/nextjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
+import { getErrorMessage } from "@/hooks/getErrorMessage";
 
 const prisma = require("@/lib/prisma");
 
 /**
  * Fetch available beds based on user's role and hospitalId.
  */
-export async function fetchAvailableBeds() {
+export async function fetchAvailableBeds(): Promise<{ beds: Bed[] }> {
     const session = await getServerSession(authOptions);
 
     // Redirect unauthenticated users
     if (!session || !session.user) {
         redirect("/sign-in");
+        return { beds: [] }
     }
 
     const { role, hospitalId } = session?.user || {};
 
     try {
+        let beds = [];
+
         if (role === "SUPER_ADMIN") {
             // Fetch all available beds for SUPER_ADMIN
-            return await prisma.bed.findMany({
+            beds = await prisma.bed.findMany({
                 where: { availability: "Available" },
                 include: {
                     hospital: { select: { name: true, hospitalId: true } },
@@ -34,7 +38,7 @@ export async function fetchAvailableBeds() {
             });
         } else if (hospitalId) {
             // Fetch available beds for other roles based on hospitalId
-            return await prisma.bed.findMany({
+            beds = await prisma.bed.findMany({
                 where: {
                     availability: "Available",
                     hospitalId: hospitalId,
@@ -45,35 +49,37 @@ export async function fetchAvailableBeds() {
             });
         }
 
-        // If role or hospitalId is invalid, return empty array
-        return [];
+        return { beds };
     } catch (error) {
-        Sentry.captureException(error);
-        console.error("Error fetching available beds:", error);
-        throw new Error("Failed to fetch available beds.");
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Error fetching available beds:", errorMessage);
+        return { beds: [] };
     }
 }
 
 /**
  * Fetch count of available beds based on user's role and hospitalId.
  */
-export async function fetchAvailableBedsCount(role: Role, hospitalId: number | null) {
+export async function fetchAvailableBedsCount(role: Role, hospitalId: number | null): Promise<number> {
     const session = await getServerSession(authOptions);
 
     // Redirect unauthenticated users
     if (!session || !session.user) {
         redirect("/sign-in");
+        return 0;
     }
 
     try {
+        let availableBedsCount = 0;
         if (role === "SUPER_ADMIN") {
             // Count all available beds for SUPER_ADMIN
-            return await prisma.bed.count({
+            availableBedsCount = await prisma.bed.count({
                 where: { availability: "Available" },
             });
         } else if (hospitalId) {
             // Count available beds for other roles based on hospitalId
-            return await prisma.bed.count({
+            availableBedsCount = await prisma.bed.count({
                 where: {
                     availability: "Available",
                     hospitalId: hospitalId,
@@ -81,40 +87,43 @@ export async function fetchAvailableBedsCount(role: Role, hospitalId: number | n
             });
         }
 
-        // If role or hospitalId is invalid, return 0
-        return 0;
+        return availableBedsCount;
     } catch (error) {
-        Sentry.captureException(error);
-        console.error("Error fetching available beds count:", error);
-        throw new Error("Failed to fetch available beds count.");
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Error fetching available beds count:", errorMessage);
+        return 0;
     }
 }
+
 
 /**
  * Fetch occupied beds based on user's role and hospitalId.
  */
-export async function fetchOccupiedBeds() {
+export async function fetchOccupiedBeds(): Promise<{ beds: Bed[] }> {
     const session = await getServerSession(authOptions);
 
     // Redirect unauthenticated users
     if (!session || !session.user) {
         redirect("/sign-in");
+        return { beds: [] };
     }
 
     const { role, hospitalId } = session?.user || {};
 
     try {
+        let beds = [];
         if (role === "SUPER_ADMIN") {
-            // Fetch all Occupied beds for SUPER_ADMIN
-            return await prisma.bed.findMany({
+            // Fetch all occupied beds for SUPER_ADMIN
+            beds = await prisma.bed.findMany({
                 where: { availability: "Occupied" },
                 include: {
                     hospital: { select: { name: true, hospitalId: true } },
                 },
             });
         } else if (hospitalId) {
-            // Fetch Occupied beds for other roles based on hospitalId
-            return await prisma.bed.findMany({
+            // Fetch occupied beds for other roles based on hospitalId
+            beds = await prisma.bed.findMany({
                 where: {
                     availability: "Occupied",
                     hospitalId: hospitalId,
@@ -125,37 +134,39 @@ export async function fetchOccupiedBeds() {
             });
         }
 
-        // If role or hospitalId is invalid, return empty array
-        return [];
+        return { beds };
     } catch (error) {
-        Sentry.captureException(error);
-        console.error("Error fetching occupied beds:", error);
-        throw new Error("Failed to fetch occupied beds.");
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Error fetching occupied beds:", errorMessage);
+        return { beds: [] };
     }
 }
 
 /**
  * Fetch count of occupied beds based on user's role and hospitalId.
  */
-export async function fetchOccupiedBedsCount() {
+export async function fetchOccupiedBedsCount(): Promise<number> {
     const session = await getServerSession(authOptions);
 
     // Redirect unauthenticated users
     if (!session || !session.user) {
         redirect("/sign-in");
+        return 0;
     }
 
     const { role, hospitalId } = session?.user || {};
 
     try {
+        let occupiedBedsCount = 0;
         if (role === "SUPER_ADMIN") {
             // Count all occupied beds for SUPER_ADMIN
-            return await prisma.bed.count({
+            occupiedBedsCount = await prisma.bed.count({
                 where: { availability: "Occupied" },
             });
         } else if (hospitalId) {
             // Count occupied beds for other roles based on hospitalId
-            return await prisma.bed.count({
+            occupiedBedsCount = await prisma.bed.count({
                 where: {
                     availability: "Occupied",
                     hospitalId: hospitalId,
@@ -163,39 +174,41 @@ export async function fetchOccupiedBedsCount() {
             });
         }
 
-        // If role or hospitalId is invalid, return 0
-        return 0;
+        return occupiedBedsCount;
     } catch (error) {
-        Sentry.captureException(error);
-        console.error("Error fetching occupied beds count:", error);
-        throw new Error("Failed to fetch occupied beds count.");
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Error fetching occupied beds count:", errorMessage);
+        return 0;
     }
 }
 
 /**
  * Fetch all beds based on user's role and hospitalId.
  */
-export async function fetchAllBeds() {
+export async function fetchAllBeds(): Promise<{ beds: Bed[] }> {
     const session = await getServerSession(authOptions);
 
     // Redirect unauthenticated users
     if (!session || !session.user) {
         redirect("/sign-in");
+        return { beds: [] };
     }
 
     const { role, hospitalId } = session?.user || {};
 
     try {
+        let beds = [];
         if (role === "SUPER_ADMIN") {
             // Fetch all beds for SUPER_ADMIN
-            return await prisma.bed.findMany({
+            beds = await prisma.bed.findMany({
                 include: {
                     hospital: { select: { name: true, hospitalId: true } },
                 },
             });
         } else if (hospitalId) {
             // Fetch all beds for other roles based on hospitalId
-            return await prisma.bed.findMany({
+            beds = await prisma.bed.findMany({
                 where: {
                     hospitalId: hospitalId,
                 },
@@ -205,46 +218,49 @@ export async function fetchAllBeds() {
             });
         }
 
-        // If role or hospitalId is invalid, return empty array
-        return [];
+        return { beds };
     } catch (error) {
-        Sentry.captureException(error);
-        console.error("Error fetching all beds:", error);
-        throw new Error("Failed to fetch all beds.");
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Error fetching all beds:", errorMessage);
+        return { beds: [] };
     }
 }
 
 /**
  * Fetch count of all beds based on user's role and hospitalId.
  */
-export async function fetchAllBedsCount() {
+export async function fetchAllBedsCount(): Promise<{ count: number }> {
     const session = await getServerSession(authOptions);
 
     // Redirect unauthenticated users
     if (!session || !session?.user) {
         redirect("/sign-in");
+        return { count: 0 };
     }
 
     const { role, hospitalId } = session?.user || {};
 
     try {
+        let count = 0;
+
         if (role === "SUPER_ADMIN") {
             // Count all beds for SUPER_ADMIN
-            return await prisma.bed.count();
+            count = await prisma.bed.count();
         } else if (hospitalId) {
             // Count all beds for other roles based on hospitalId
-            return await prisma.bed.count({
+            count = await prisma.bed.count({
                 where: {
                     hospitalId: hospitalId,
                 },
             });
         }
 
-        // If role or hospitalId is invalid, return 0
-        return 0;
+        return { count };
     } catch (error) {
-        Sentry.captureException(error);
-        console.error("Error fetching occupied beds count:", error);
-        throw new Error("Failed to fetch occupied beds count.");
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Error fetching all beds count:", errorMessage);
+        return { count: 0 };
     }
 }

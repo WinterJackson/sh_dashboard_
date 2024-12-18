@@ -4,7 +4,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import Toggle from "@/components/settings/toogle button/Toogle";
-import React from "react";
 
 export default async function NotificationSettingsPage() {
     // Fetch session data

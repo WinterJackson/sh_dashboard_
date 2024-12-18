@@ -2,31 +2,33 @@
 
 "use server";
 
-import { Role } from "@/lib/definitions";
+import { Referral, Role } from "@/lib/definitions";
 import * as Sentry from "@sentry/nextjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
+import { getErrorMessage } from "@/hooks/getErrorMessage";
 
 const prisma = require("@/lib/prisma");
 
 export const fetchInwardReferrals = async (
     role: string,
     hospitalId: number | null
-) => {
+): Promise< Referral[] > => {
     const session = await getServerSession(authOptions);
 
     if (!session || !session?.user) {
-        console.warn("Session is missing or invalid.");
         redirect("/sign-in");
         return [];
     }
 
     try {
+        let inwardReferrals = []
+
         // Filter based on role and hospitalId
         if (role === "SUPER_ADMIN") {
             // Fetch all internal referrals for SUPER_ADMIN
-            return await prisma.referral.findMany({
+            inwardReferrals = await prisma.referral.findMany({
                 where: {
                     type: "Internal",
                 },
@@ -37,7 +39,7 @@ export const fetchInwardReferrals = async (
             });
         } else if (hospitalId !== null) {
             // Fetch referrals for other roles filtered by hospitalId
-            return await prisma.referral.findMany({
+            inwardReferrals = await prisma.referral.findMany({
                 where: {
                     type: "Internal",
                     hospitalId: hospitalId,
@@ -49,40 +51,40 @@ export const fetchInwardReferrals = async (
             });
         }
 
-        // Return empty array if role or hospitalId is invalid
-        return [];
+        return inwardReferrals
     } catch (error) {
-        Sentry.captureException(error);
-        console.error("Error fetching inward referrals:", error);
-
-        throw new Error("Failed to fetch inward referrals.");
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Error fetching inward referrals:", errorMessage);
+        return [];
     }
 };
 
 export const fetchInwardReferralsCount = async (
     role: string,
     hospitalId: number | null
-) => {
+): Promise<number> => {
     const session = await getServerSession(authOptions);
 
     if (!session || !session?.user) {
-        console.warn("Session is missing or invalid.");
         redirect("/sign-in");
-        return [];
+        return 0;
     }
 
     try {
+        let inwardReferralsCount = 0
+
         // Filter based on role and hospitalId
         if (role === "SUPER_ADMIN") {
             // Fetch all internal referrals for SUPER_ADMIN
-            return await prisma.referral.count({
+            inwardReferralsCount = await prisma.referral.count({
                 where: {
                     type: "Internal",
                 },
             });
         } else if (hospitalId !== null) {
             // Fetch referrals for other roles filtered by hospitalId
-            return await prisma.referral.count({
+            inwardReferralsCount = await prisma.referral.count({
                 where: {
                     type: "Internal",
                     hospitalId: hospitalId,
@@ -90,33 +92,33 @@ export const fetchInwardReferralsCount = async (
             });
         }
 
-        // Return zero if role or hospitalId is invalid
-        return 0;
+        return inwardReferralsCount;
     } catch (error) {
-        Sentry.captureException(error);
-        console.error("Error fetching inward referrals count:", error);
-
-        throw new Error("Failed to fetch inward referrals count.");
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Error fetching inward referrals count:", errorMessage);
+        return 0;
     }
 };
 
 export const fetchOutwardReferrals = async (
     role: string,
     hospitalId: number | null
-) => {
+): Promise< Referral[] > => {
     const session = await getServerSession(authOptions);
 
     if (!session || !session?.user) {
-        console.warn("Session is missing or invalid.");
         redirect("/sign-in");
         return [];
     }
 
     try {
+        let outwardReferrals = []
+
         // Filter based on role and hospitalId
         if (role === "SUPER_ADMIN") {
             // Fetch all external referrals for SUPER_ADMIN
-            return await prisma.referral.findMany({
+            outwardReferrals = await prisma.referral.findMany({
                 where: {
                     type: "External",
                 },
@@ -127,7 +129,7 @@ export const fetchOutwardReferrals = async (
             });
         } else if (hospitalId !== null) {
             // Fetch referrals for other roles filtered by hospitalId
-            return await prisma.referral.findMany({
+            outwardReferrals = await prisma.referral.findMany({
                 where: {
                     type: "External",
                     hospitalId: hospitalId,
@@ -139,40 +141,40 @@ export const fetchOutwardReferrals = async (
             });
         }
 
-        // Return empty array if role or hospitalId is invalid
-        return [];
+        return outwardReferrals
     } catch (error) {
-        Sentry.captureException(error);
-        console.error("Error fetching outward referrals:", error);
-
-        throw new Error("Failed to fetch outward referrals.");
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Error fetching outward referrals:", errorMessage);
+        return [];
     }
 };
 
 export const fetchOutwardReferralsCount = async (
     role: string,
     hospitalId: number | null
-) => {
+): Promise<number> => {
     const session = await getServerSession(authOptions);
 
     if (!session || !session?.user) {
-        console.warn("Session is missing or invalid.");
         redirect("/sign-in");
-        return [];
+        return 0;
     }
 
     try {
+        let outwardReferralsCount = 0
+
         // Filter based on role and hospitalId
         if (role === "SUPER_ADMIN") {
             // Fetch all external referrals for SUPER_ADMIN
-            return await prisma.referral.count({
+            outwardReferralsCount = await prisma.referral.count({
                 where: {
                     type: "External",
                 },
             });
         } else if (hospitalId !== null) {
             // Fetch referrals for other roles filtered by hospitalId
-            return await prisma.referral.count({
+            outwardReferralsCount = await prisma.referral.count({
                 where: {
                     type: "External",
                     hospitalId: hospitalId,
@@ -180,13 +182,12 @@ export const fetchOutwardReferralsCount = async (
             });
         }
 
-        // Return zero if role or hospitalId is invalid
-        return 0;
+        return outwardReferralsCount;
     } catch (error) {
-        Sentry.captureException(error);
-        console.error("Error fetching outward referrals count:", error);
-
-        throw new Error("Failed to fetch outward referrals count.");
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Error fetching outward referrals count:", errorMessage);
+        return 0;
     }
 };
 
@@ -217,7 +218,14 @@ export async function createReferral(data: {
     reasonForConsultation: string;
     diagnosis: string;
     status: string;
-}) {
+}): Promise<any> {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session?.user) {
+        redirect("/sign-in");
+        return null;
+    }
+
     try {
         // Find the hospital by name
         const hospital = await prisma.hospital.findUnique({
@@ -225,9 +233,8 @@ export async function createReferral(data: {
         });
 
         if (!hospital) {
-            throw new Error(
-                `Hospital with name '${data.hospitalName}' not found.`
-            );
+            console.error(`Hospital with name '${data.hospitalName}' not found.`);
+            return null;
         }
 
         const hospitalId = hospital.hospitalId;
@@ -275,7 +282,8 @@ export async function createReferral(data: {
         });
 
         if (existingReferral) {
-            throw new Error("Referral already exists for today.");
+            console.error("Referral already exists for today.");
+            return null;
         }
 
         // Create the referral
@@ -300,8 +308,9 @@ export async function createReferral(data: {
 
         return newReferral;
     } catch (error) {
-        Sentry.captureException(error);
-        console.error("Error creating referral:", error);
-        throw new Error("Failed to create referral.");
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Error creating referral:", errorMessage);
+        return null;
     }
 }

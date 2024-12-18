@@ -5,10 +5,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { Role } from "../lib/definitions";
+import { Role } from "'lib/definitions"' (see below for file content);
 import * as Sentry from "@sentry/nextjs";
 
-const prisma = require("../lib/prisma");
+const prisma = require("'lib/prisma")' (see below for file content);
 
 if (!process.env.NEXTAUTH_SECRET) {
     throw new Error("NEXTAUTH_SECRET environment variable is not set");
@@ -17,7 +17,13 @@ if (!process.env.NEXTAUTH_SECRET) {
 export const authOptions: NextAuthOptions = {
     adapter: PrismaAdapter(prisma),
     session: {
-        strategy: "jwt",
+        strategy: "session",
+        cookie: {
+            name: "__Secure-next-auth.session-token",
+            secure: true,
+            httpOnly: true,
+            sameSite: "strict",
+        },
     },
     providers: [
         CredentialsProvider({
