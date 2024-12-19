@@ -15,7 +15,7 @@ const HomePage = () => {
                         alt="Hospital Logo"
                         width={500}
                         height={200}
-                        priority
+                        loading="lazy"
                     />
                 </div>
                 <div className="mt-8 flex flex-row justify-center space-x-4">

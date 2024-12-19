@@ -89,6 +89,7 @@ const ApiViewerContent = () => {
                             width={120}
                             height={80}
                             className="cursor-pointer mb-4"
+                            loading="lazy"
                         />
                     </Link>
                 </div>

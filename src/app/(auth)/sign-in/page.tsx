@@ -25,7 +25,7 @@ const SignInPage = async () => {
                             width={300}
                             height={300}
                             className="p-1"
-                            priority
+                            loading="lazy"
                         />
                     </div>
                 </div>
