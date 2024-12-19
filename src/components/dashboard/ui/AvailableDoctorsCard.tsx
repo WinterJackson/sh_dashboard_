@@ -24,16 +24,16 @@ const AvailableDoctorsCard: React.FC<AvailableDoctorsCardProps> = ({
 }) => {
 
     const getFontSizeClass = (numDigits: number) => {
-        if (numDigits <= 3) return "text-4xl xl:text-6xl";
-        if (numDigits <= 4) return "text-3xl xl:text-6xl";
+        if (numDigits <= 4) return "text-3xl xl:text-5xl";
         if (numDigits <= 5) return "text-2xl xl:text-5xl";
-        if (numDigits <= 6) return "text-xl xl:text-5xl";
-        if (numDigits <= 7) return "text-l xl:text-5xl";
+        if (numDigits <= 6) return "text-xl xl:text-4xl";
+        if (numDigits <= 7) return "text-lg xl:text-4xl";
+        if (numDigits <= 8) return "text-base xl:text-4xl";
         return "text-base";
     };
 
     return (
-        <div className="grid p-4 rounded-2xl xl:pb-5 bg-slate-100 shadow-lg shadow-gray-300">
+        <div className="grid p-4 rounded-2xl text- xl:pb-5 bg-slate-100 shadow-lg shadow-gray-300">
             <div className="flex">
                 <h3 className="text-sm pl-1 xl:text-base font-semibold mb-6">
                     Available Doctors
@@ -41,13 +41,13 @@ const AvailableDoctorsCard: React.FC<AvailableDoctorsCardProps> = ({
             </div>
             <div className="flex items-center justify-between gap-6">
                 <div>
-                    <span
+                    <div
                         className={`font-bold p-1 rounded-[10px] bg-slate-200 ${getFontSizeClass(
-                            onlineDoctorsCount
+                            onlineDoctorsCount.toString().length
                         )}`}
                     >
                         {onlineDoctorsCount}
-                    </span>
+                    </div>
                 </div>
                 <div className="flex w-1/3 items-center justify-end h-3/4 relative">
                     <Image

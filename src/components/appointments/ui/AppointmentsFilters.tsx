@@ -30,13 +30,13 @@ interface AppointmentsFiltersProps {
     onSetAppointments: (updatedAppointments: Appointment[]) => void;
 }
 
-export default function AppointmentsFilters({
+const AppointmentsFilters: React.FC<AppointmentsFiltersProps> = ({
     appointments,
-    session,
     hospitals,
+    session,
     onFilterChange,
     onSetAppointments,
-}: AppointmentsFiltersProps) {
+}) => {
     const [filterType, setFilterType] = useState<string>("");
     const [selectedHospital, setSelectedHospital] = useState<number | null>(null);
     const [selectedHospitalName, setSelectedHospitalName] = useState<string | null>(null);
@@ -44,7 +44,7 @@ export default function AppointmentsFilters({
     const [showOptions, setShowOptions] = useState(false);
     const [appointmentTypeFilter, setAppointmentTypeFilter] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState<string[]>([]);
-    const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null); // New state for status dropdown
+    const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
     const [dateFilter, setDateFilter] = useState<Date | null>(null);
     const [dateRangeFilter, setDateRangeFilter] = useState<DateRange | null>(null);
     const { searchTerm, clearSearchTerm } = useSearch();
@@ -453,4 +453,6 @@ export default function AppointmentsFilters({
             </div>
         </div>
     );
-}
+};
+
+export default AppointmentsFilters;

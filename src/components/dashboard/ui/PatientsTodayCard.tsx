@@ -46,11 +46,11 @@ const PatientsTodayCard: React.FC<PatientsTodayCardProps> = ({
 
     // Helper to dynamically set font size based on the number of digits
     const getFontSizeClass = (numDigits: number) => {
-        if (numDigits <= 3) return "text-4xl xl:text-6xl";
-        if (numDigits <= 4) return "text-3xl xl:text-6xl";
+        if (numDigits <= 4) return "text-3xl xl:text-5xl";
         if (numDigits <= 5) return "text-2xl xl:text-5xl";
-        if (numDigits <= 6) return "text-xl xl:text-5xl";
-        if (numDigits <= 7) return "text-l xl:text-5xl";
+        if (numDigits <= 6) return "text-xl xl:text-4xl";
+        if (numDigits <= 7) return "text-lg xl:text-4xl";
+        if (numDigits <= 8) return "text-base xl:text-4xl";
         return "text-base";
     };
 

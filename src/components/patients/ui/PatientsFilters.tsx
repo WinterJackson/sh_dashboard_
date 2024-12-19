@@ -13,7 +13,7 @@ import {
     DropdownMenuSubContent,
     DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
-import { Patient, Hospital, Session, Appointment, Role } from "@/lib/definitions";
+import { Patient, Hospital, Role } from "@/lib/definitions";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useSearch } from "@/app/context/SearchContext";
