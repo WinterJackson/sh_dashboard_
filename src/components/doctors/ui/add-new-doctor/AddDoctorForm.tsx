@@ -29,7 +29,7 @@ import {
     Service,
     Role,
 } from "@/lib/definitions";
-import { addDoctorAPI } from "./doctorAPI";
+import { addDoctorAPI } from "@/lib/data-access/doctors/data";
 import { ChevronRight } from "lucide-react";
 
 interface AddDoctorFormProps {
