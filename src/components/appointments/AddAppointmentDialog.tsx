@@ -14,16 +14,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSessionData } from "@/hooks/useSessionData";
-import { fetchPatientDetails } from "@/lib/data-access/patients/data";
+import {
+    fetchDoctorIdByUserId,
+    fetchDoctorsByHospital,
+} from "@/lib/data-access/doctors/data";
 import { fetchHospitals } from "@/lib/data-access/hospitals/data";
-import { fetchDoctorIdByUserId, fetchDoctorsByHospital } from "@/lib/data-access/doctors/data";
+import { fetchPatientDetails } from "@/lib/data-access/patients/data";
+import { Doctor, Hospital, Role } from "@/lib/definitions";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { IconButton } from "@mui/material";
 import { differenceInYears } from "date-fns";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Doctor, Hospital, Role } from "@/lib/definitions";
 
 interface AddAppointmentDialogProps {
     onClose: () => void;
@@ -136,7 +139,11 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                 selectedHospitalId = patientDetails.hospitalId;
             }
 
-            if (!selectedHospitalId || (role !== "SUPER_ADMIN" && patientDetails.hospitalId !== hospitalId)) {
+            if (
+                !selectedHospitalId ||
+                (role !== "SUPER_ADMIN" &&
+                    patientDetails.hospitalId !== hospitalId)
+            ) {
                 setError("hospitalId", { message: "Hospital ID mismatch" });
                 throw new Error("Hospital ID mismatch");
             }

@@ -21,7 +21,10 @@ import {
 } from "@/lib/data-access/appointments/data";
 import { fetchAvailableBedsCount } from "@/lib/data-access/beds/data";
 import { fetchOnlineDoctorsCount } from "@/lib/data-access/doctors/data";
-import { fetchPatientsForLast14Days, fetchPatientsTodayCount } from "@/lib/data-access/patients/data";
+import {
+    fetchPatientsForLast14Days,
+    fetchPatientsTodayCount,
+} from "@/lib/data-access/patients/data";
 import { fetchTopDoctors } from "@/lib/data-access/doctors/data";
 import { Role } from "@/lib/definitions";
 
@@ -93,11 +96,12 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = async ({
     });
 
     // Fetch unique patients for last 14 days
-    const { currentWeekPatients, previousWeekPatients } = await fetchPatientsForLast14Days({
-        role: session?.user?.role as Role,
-        hospitalId: null,
-        userId: null,
-    });
+    const { currentWeekPatients, previousWeekPatients } =
+        await fetchPatientsForLast14Days({
+            role: session?.user?.role as Role,
+            hospitalId: null,
+            userId: null,
+        });
 
     // Fetch top doctors based on role and hospital ID
     const topDoctors = await fetchTopDoctors({
@@ -130,9 +134,11 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = async ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                         <AvailableDoctorsCard
                             session={session}
-                            onlineDoctors={onlineDoctorsCount}
+                            onlineDoctorsCount={onlineDoctorsCount}
                         />
-                        <AvailableBedsCard availableBeds={availableBedsCount} />
+                        <AvailableBedsCard
+                            availableBedsCount={availableBedsCount}
+                        />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                         <AppointmentsTodayCard

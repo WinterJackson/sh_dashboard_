@@ -15,12 +15,12 @@ interface AvailableDoctorsCardProps {
             hospitalId: number | null;
         };
     };
-    onlineDoctors:[]
+    onlineDoctorsCount: number
 }
 
 const AvailableDoctorsCard: React.FC<AvailableDoctorsCardProps> = ({
     session,
-    onlineDoctors,
+    onlineDoctorsCount,
 }) => {
 
     const getFontSizeClass = (numDigits: number) => {
@@ -43,10 +43,10 @@ const AvailableDoctorsCard: React.FC<AvailableDoctorsCardProps> = ({
                 <div>
                     <span
                         className={`font-bold p-1 rounded-[10px] bg-slate-200 ${getFontSizeClass(
-                            onlineDoctors.toString().length
+                            onlineDoctorsCount
                         )}`}
                     >
-                        {onlineDoctors}
+                        {onlineDoctorsCount}
                     </span>
                 </div>
                 <div className="flex w-1/3 items-center justify-end h-3/4 relative">

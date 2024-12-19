@@ -7,10 +7,10 @@ import icon from "../../../../public/images/bed.svg";
 import Image from "next/image";
 
 interface AvailableBedsCardProps {
-    availableBeds: []
+    availableBedsCount: number
 }
 
-const AvailableBedsCard: React.FC<AvailableBedsCardProps> = ({ availableBeds }) => {
+const AvailableBedsCard: React.FC<AvailableBedsCardProps> = ({ availableBedsCount }) => {
 
     const getFontSizeClass = (numDigits: number) => {
         if (numDigits <= 3) return "text-4xl xl:text-6xl";
@@ -33,10 +33,10 @@ const AvailableBedsCard: React.FC<AvailableBedsCardProps> = ({ availableBeds }) 
                 <div>
                     <span
                         className={`font-bold p-1 rounded-[10px] bg-slate-200 ${getFontSizeClass(
-                            availableBeds.toString().length
+                            availableBedsCount
                         )}`}
                     >
-                        {availableBeds}
+                        {availableBedsCount}
                     </span>
                 </div>
                 <div className="flex w-1/3 items-center justify-end h-3/4 relative">

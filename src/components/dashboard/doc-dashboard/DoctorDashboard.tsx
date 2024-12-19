@@ -10,12 +10,25 @@ import OutwardReferralsCard from "../ui/OutwardReferralsCard";
 import PatientsGraphCard from "../ui/PatientsGraphCard";
 import PatientsTodayCard from "../ui/PatientsTodayCard";
 import TopDoctorsCard from "../ui/TopDoctorsCard";
-import { fetchAppointments, fetchAppointmentsForLast14Days, fetchAppointmentsTodayCount } from "@/lib/data-access/appointments/data";
+import {
+    fetchAppointments,
+    fetchAppointmentsForLast14Days,
+    fetchAppointmentsTodayCount,
+} from "@/lib/data-access/appointments/data";
 import { Role } from "@/lib/definitions";
 import { fetchAvailableBedsCount } from "@/lib/data-access/beds/data";
-import { fetchOnlineDoctorsCount, fetchTopDoctors } from "@/lib/data-access/doctors/data";
-import { fetchInwardReferrals, fetchOutwardReferrals } from "@/lib/data-access/referrals/data";
-import { fetchPatientsForLast14Days, fetchPatientsTodayCount } from "@/lib/data-access/patients/data";
+import {
+    fetchOnlineDoctorsCount,
+    fetchTopDoctors,
+} from "@/lib/data-access/doctors/data";
+import {
+    fetchInwardReferrals,
+    fetchOutwardReferrals,
+} from "@/lib/data-access/referrals/data";
+import {
+    fetchPatientsForLast14Days,
+    fetchPatientsTodayCount,
+} from "@/lib/data-access/patients/data";
 
 interface DoctorDashboardProps {
     session: {
@@ -83,11 +96,12 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = async ({ session }) => {
     });
 
     // Fetch unique patients for last 14 days
-    const { currentWeekPatients, previousWeekPatients } = await fetchPatientsForLast14Days({
-        role: session?.user?.role as Role,
-        hospitalId: null,
-        userId: session?.user?.userId,
-    });
+    const { currentWeekPatients, previousWeekPatients } =
+        await fetchPatientsForLast14Days({
+            role: session?.user?.role as Role,
+            hospitalId: null,
+            userId: session?.user?.userId,
+        });
 
     // Fetch top doctors based on role and hospital ID
     const topDoctors = await fetchTopDoctors({
@@ -118,13 +132,20 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = async ({ session }) => {
             <div className="flex">
                 <div className="grid w-full">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-                        <AvailableDoctorsCard session={session} onlineDoctors={onlineDoctorsCount} />
-                        <AvailableBedsCard availableBeds={availableBedsCount} />
+                        <AvailableDoctorsCard
+                            session={session}
+                            onlineDoctorsCount={onlineDoctorsCount}
+                        />
+                        <AvailableBedsCard
+                            availableBedsCount={availableBedsCount}
+                        />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                         <AppointmentsTodayCard
                             appointmentsTodayCount={appointmentsTodayCount}
-                            last14DaysAppointments={last14DaysAppointments.appointments}
+                            last14DaysAppointments={
+                                last14DaysAppointments.appointments
+                            }
                         />
                         <PatientsTodayCard
                             uniquePatientsTodayCount={uniquePatientsTodayCount}
@@ -135,8 +156,12 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = async ({ session }) => {
                 </div>
                 <div className="grid w-full">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-                        <OutwardReferralsCard outwardReferrals={outwardReferrals} />
-                        <InwardReferralsCard inwardReferrals={inwardReferrals} />
+                        <OutwardReferralsCard
+                            outwardReferrals={outwardReferrals}
+                        />
+                        <InwardReferralsCard
+                            inwardReferrals={inwardReferrals}
+                        />
                     </div>
                 </div>
             </div>

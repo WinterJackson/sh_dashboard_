@@ -7,8 +7,8 @@ import { ArrowTopRightIcon, ArrowBottomRightIcon } from "@radix-ui/react-icons";
 
 interface InwardReferralsCardProps {
     inwardReferrals: {
-        effectiveDate: string;
-        patientId: string;
+        effectiveDate: Date;
+        patientId: number;
     }[];
 }
 
@@ -47,7 +47,7 @@ const InwardReferralsCard: React.FC<InwardReferralsCardProps> = ({
         });
 
         // Unique patient count for current and previous weeks
-        const getUniquePatientCount = (referrals: { patientId: string }[]) => {
+        const getUniquePatientCount = (referrals: { patientId: number }[]) => {
             const uniquePatients = new Set(
                 referrals.map((ref) => ref.patientId)
             );
