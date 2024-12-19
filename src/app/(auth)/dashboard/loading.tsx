@@ -1,9 +1,13 @@
 // File: src/app/(auth)/dashboard/loading.tsx
 
+"use client"
+
+import { BeatLoader } from "react-spinners";
 
 export default function Loading() {
-    // Or a custom loading skeleton component
-    return <p className="bg-pink-300 flex items-center justify-center">
-        Loading...
-        </p>
-  }
+    return (
+        <div className="flex items-center justify-center h-screen">
+            <BeatLoader color="rgb(1, 107, 210, 0.2)" size={20} />
+        </div>
+    );
+}

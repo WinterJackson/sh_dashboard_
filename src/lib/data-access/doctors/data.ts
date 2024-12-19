@@ -455,10 +455,10 @@ export async function fetchDoctorsByHospital(hospitalId: number, role: Role): Pr
     }
 
     try {
-        if (!hospitalId || role !== "ADMIN") {
-            console.error("Unauthorized access");
-            return [];
-        }
+        // if (!hospitalId || role !== "ADMIN") {
+        //     console.error("Unauthorized access");
+        //     return [];
+        // }
 
         const doctors = await prisma.doctor.findMany({
             where: { hospitalId },

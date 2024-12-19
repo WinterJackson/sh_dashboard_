@@ -14,18 +14,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSessionData } from "@/hooks/useSessionData";
-import {
-    fetchDoctorsByHospital,
-    fetchPatientDetails,
-} from "@/lib/data";
+import { fetchPatientDetails } from "@/lib/data-access/patients/data";
 import { fetchHospitals } from "@/lib/data-access/hospitals/data";
-import { fetchDoctorIdByUserId } from "@/lib/data-access/doctors/data";
+import { fetchDoctorIdByUserId, fetchDoctorsByHospital } from "@/lib/data-access/doctors/data";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { IconButton } from "@mui/material";
 import { differenceInYears } from "date-fns";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { Doctor, Hospital, Role } from "@/lib/definitions";
 
 interface AddAppointmentDialogProps {
     onClose: () => void;
@@ -42,58 +40,16 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
         undefined
     );
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-    const [doctors, setDoctors] = useState([]);
-    const [hospitals, setHospitals] = useState([]);
+    const [doctors, setDoctors] = useState<Doctor[]>([]);
+    const [hospitals, setHospitals] = useState<Hospital[]>([]);
     const [patientDetails, setPatientDetails] = useState<any | null>(null);
     const router = useRouter();
     const sessionData = useSessionData();
-    const role = sessionData?.user?.role;
+    const role = sessionData?.user?.role as Role;
     const hospitalId = sessionData?.user?.hospitalId;
     const userId = sessionData?.user?.id;
 
     console.log(userId);
-
-    useEffect(() => {
-        if (doctor) {
-            // Pre-fill doctor and hospital fields if doctor prop is passed
-            setValue(
-                "doctorName",
-                `${doctor.user.profile.firstName} ${doctor.user.profile.lastName}`
-            );
-            setValue("hospitalName", doctor.hospital.name);
-            setValue("doctorId", doctor.doctorId);
-        }
-
-        const fetchData = async () => {
-            try {
-                if (role === "SUPER_ADMIN" && patientDetails) {
-                    const fetchedDoctors = await fetchDoctorsByHospital(
-                        patientDetails.hospitalId
-                    );
-                    setDoctors(fetchedDoctors);
-                    const fetchedHospitals = await fetchHospitals();
-                    setHospitals(fetchedHospitals);
-                } else if (
-                    (role === "ADMIN" || role === "NURSE") &&
-                    hospitalId
-                ) {
-                    const fetchedDoctors = await fetchDoctorsByHospital(
-                        hospitalId
-                    );
-                    setDoctors(fetchedDoctors);
-                } else if (role === "DOCTOR" && userId) {
-                    const doctorData = await fetchDoctorIdByUserId(userId);
-                    if (doctorData) {
-                        setValue("doctorId", doctorData.doctorId.toString());
-                    }
-                }
-            } catch (error) {
-                console.error("Failed to fetch data:", error);
-            }
-        };
-
-        fetchData();
-    }, [role, hospitalId, patientDetails, doctor, setValue, userId]);
 
     const fetchAndSetPatientDetails = async (name: string) => {
         const details = await fetchPatientDetails(name);
@@ -126,6 +82,52 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
         }
     };
 
+    useEffect(() => {
+        if (doctor) {
+            // Pre-fill doctor and hospital fields if doctor prop is passed
+            setValue(
+                "doctorName",
+                `${doctor.user.profile.firstName} ${doctor.user.profile.lastName}`
+            );
+            setValue("hospitalName", doctor.hospital.name);
+            setValue("doctorId", doctor.doctorId);
+        }
+
+        const fetchData = async () => {
+            try {
+                if (role === "SUPER_ADMIN" && patientDetails) {
+                    const fetchedDoctors = await fetchDoctorsByHospital(
+                        patientDetails.hospitalId,
+                        role
+                    );
+                    setDoctors(fetchedDoctors);
+                    const fetchedHospitals = await fetchHospitals();
+                    setHospitals(fetchedHospitals);
+                    setValue("hospitalName", patientDetails.hospital.name);
+                    setValue("hospitalId", patientDetails.hospitalId);
+                } else if (
+                    (role === "ADMIN" || role === "NURSE") &&
+                    hospitalId
+                ) {
+                    const fetchedDoctors = await fetchDoctorsByHospital(
+                        hospitalId,
+                        role
+                    );
+                    setDoctors(fetchedDoctors);
+                } else if (role === "DOCTOR" && userId) {
+                    const doctorData = await fetchDoctorIdByUserId(userId);
+                    if (doctorData) {
+                        setValue("doctorId", doctorData.doctorId.toString());
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch data:", error);
+            }
+        };
+
+        fetchData();
+    }, [role, hospitalId, patientDetails, doctor, setValue, userId]);
+
     const onSubmit = async (data: any) => {
         try {
             let selectedHospitalId = hospitalId;
@@ -134,9 +136,9 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                 selectedHospitalId = patientDetails.hospitalId;
             }
 
-            if (!selectedHospitalId) {
-                setError("hospitalId", { message: "Hospital ID is missing" });
-                throw new Error("Hospital ID is missing");
+            if (!selectedHospitalId || (role !== "SUPER_ADMIN" && patientDetails.hospitalId !== hospitalId)) {
+                setError("hospitalId", { message: "Hospital ID mismatch" });
+                throw new Error("Hospital ID mismatch");
             }
 
             const doctorId =
