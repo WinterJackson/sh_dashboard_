@@ -27,10 +27,14 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" },
             },
             async authorize(credentials) {
+                console.log("Authorization started...");
+
                 try {
                     if (!credentials?.email || !credentials.password) {
                         throw new Error("Please provide both email and password.");
                     }
+
+                    console.log("Credentials received. Attempting to find user...");
 
                     const user = await prisma.user.findUnique({
                         where: { email: credentials.email },
@@ -44,9 +48,13 @@ export const authOptions: NextAuthOptions = {
                         },
                     });
 
+                    console.log("User fetched:", user);
+
                     if (!user || !(await bcrypt.compare(credentials.password, user.password))) {
                         throw new Error("Invalid email or password.");
                     }
+
+                    console.log("User authenticated successfully.");
 
                     return {
                         id: user.userId,
@@ -57,7 +65,8 @@ export const authOptions: NextAuthOptions = {
                         hospital: user.hospital?.name || null,
                     };
                 } catch (error) {
-                    Sentry.captureException(error); // Log authentication errors to Sentry
+                    console.error("Error during authentication:", error);
+                    Sentry.captureException(error);
                     throw error;
                 }
             },
@@ -85,7 +94,7 @@ export const authOptions: NextAuthOptions = {
             } catch (error) {
                 Sentry.captureException(error);
                 throw error;
-            }
+            } 
         },
         async jwt({ token, user }) {
             try {
