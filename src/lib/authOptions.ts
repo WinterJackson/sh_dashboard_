@@ -8,7 +8,7 @@ import crypto from "crypto";
 import { Role } from "../lib/definitions";
 import * as Sentry from "@sentry/nextjs";
 
-const prisma = require("../lib/prisma");
+const prisma = require("@/lib/prisma");
 
 if (!process.env.NEXTAUTH_SECRET) {
     throw new Error("NEXTAUTH_SECRET environment variable is not set");
