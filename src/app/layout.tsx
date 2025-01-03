@@ -24,28 +24,13 @@ export default async function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
-    // Fetch session data and user profile
-    const session = await getServerSession(authOptions);
-    const userProfile = session?.user
-        ? await getUserProfile(session.user.id)
-        : null;
-
-    const initialUser = userProfile || null;
-    const initialHospitalId = userProfile?.hospitalId || null;
-    const initialError = session
-        ? null
-        : "User session could not be fetched or profile could not be retrieved.";
 
     return (
         <NotFoundBoundary>
             <html lang="en">
                 <body className={`${inter.className} antialiased`}>
                     <SessionWrapper>
-                        <UserProvider
-                            initialUser={initialUser}
-                            initialHospitalId={initialHospitalId}
-                            initialError={initialError}
-                        >
+                        <UserProvider>
                             <LoadingProvider>
                                 <SearchProvider>
                                     <EdgeStoreProvider>

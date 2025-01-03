@@ -24,10 +24,10 @@ export default async function DashboardPage() {
     // Filter the session data for each role
     const filteredSession = {
         user: {
-            userId: user.id,
-            username: user.username,
-            role: user.role as Role,
-            hospitalId: user.hospitalId || null,
+            userId: user?.id,
+            username: user?.username,
+            role: user?.role as Role,
+            hospitalId: user?.hospitalId || null,
         },
     }
 

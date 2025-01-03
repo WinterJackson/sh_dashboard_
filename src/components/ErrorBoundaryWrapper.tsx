@@ -4,12 +4,21 @@
 
 import { ErrorBoundary } from "@sentry/react";
 
-export default function ErrorBoundaryWrapper({ children }: { children: React.ReactNode }) {
+export default function ErrorBoundaryWrapper({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
     return (
         <ErrorBoundary
             fallback={
                 <div className="flex items-center justify-center h-screen">
-                    <h1>Unexpected error occurred. Please try again later or contact support.</h1>
+                    <h1>
+                        An unexpected error occurred. Please try again later.
+                    </h1>
+                    <button onClick={() => window.location.reload()}>
+                        Retry
+                    </button>
                 </div>
             }
             showDialog

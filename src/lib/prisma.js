@@ -6,11 +6,16 @@ const Sentry = require("@sentry/nextjs");
 let prisma;
 
 if (process.env.NODE_ENV === "production") {
-    prisma = new PrismaClient();
+    prisma = new PrismaClient({
+        log: ["query", "info", "warn", "error"],
+    });
 } else {
     global.prisma = global.prisma || new PrismaClient();
     prisma = global.prisma;
 }
+
+module.exports = prisma;
+
 
 // // Wrap Prisma operations
 // prisma.$use(async (params, next) => {

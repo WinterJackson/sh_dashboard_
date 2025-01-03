@@ -2,9 +2,6 @@
 
 import HeaderWrapper from "@/components/header/HeaderWrapper";
 import SidebarWrapper from "@/components/sidebar/SidebarWrapper";
-import { authOptions } from "@/lib/authOptions";
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
 import RedirectBoundary from "@/components/RedirectBoundary";
 import React from "react";
 
@@ -13,12 +10,6 @@ export default async function DashboardLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const session = await getServerSession(authOptions);
-
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return null;
-    }
 
     return (
         <RedirectBoundary>

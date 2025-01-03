@@ -2,34 +2,45 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
-import { User } from "@/lib/definitions";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useSession } from "next-auth/react";
+import { fetchUserProfile, UserProfile } from "@/lib/data-access/user/data";
 
 interface UserContextType {
-    user: User | null;
+    user: UserProfile | null;
     hospitalId: number | null;
     error: string | null;
-    setUser: React.Dispatch<React.SetStateAction<User | null>>;
+    setUser: React.Dispatch<React.SetStateAction<UserProfile | null>>;
     setHospitalId: React.Dispatch<React.SetStateAction<number | null>>;
     setError: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-export const UserProvider = ({
-    children,
-    initialUser,
-    initialHospitalId,
-    initialError,
-}: {
-    children: ReactNode;
-    initialUser: User | null;
-    initialHospitalId: number | null;
-    initialError: string | null;
-}) => {
-    const [user, setUser] = useState<User | null>(initialUser);
-    const [hospitalId, setHospitalId] = useState<number | null>(initialHospitalId);
-    const [error, setError] = useState<string | null>(initialError);
+export const UserProvider = ({ children }: { children: ReactNode }) => {
+    const { data: session } = useSession();
+    const [user, setUser] = useState<UserProfile | null>(null);
+    const [hospitalId, setHospitalId] = useState<number | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const loadUserProfile = async () => {
+            try {
+                if (session?.user) {
+                    const profile = await fetchUserProfile(session.user.id);
+                    setUser(profile);
+                    setHospitalId(profile.hospitalId || null);
+                } else {
+                    setError("User session is missing.");
+                }
+            } catch (err) {
+                console.error("Error fetching user profile:", err);
+                setError("An error occurred while fetching user profile.");
+            }
+        };
+
+        loadUserProfile();
+    }, [session]);
 
     return (
         <UserContext.Provider value={{ user, hospitalId, error, setUser, setHospitalId, setError }}>
@@ -45,3 +56,4 @@ export const useUser = (): UserContextType => {
     }
     return context;
 };
+
