@@ -26,7 +26,7 @@ interface PatientsGraphCardProps {
 
 // Corrected mock data with number keys
 const mockAppointmentsData: Record<number, PatientCountPerMonth[]> = {
-    2023: [
+    2024: [
         { month: "Feb", count: 30 },
         { month: "Mar", count: 25 },
         { month: "Jan", count: 20 },
@@ -40,7 +40,7 @@ const mockAppointmentsData: Record<number, PatientCountPerMonth[]> = {
         { month: "Nov", count: 33 },
         { month: "Dec", count: 37 },
     ],
-    2024: [
+    2025: [
         { month: "Jan", count: 32 },
         { month: "Feb", count: 28 },
         { month: "Mar", count: 35 },
@@ -60,7 +60,7 @@ const PatientsGraphCard: React.FC<PatientsGraphCardProps> = ({ session, appointm
     const role = session?.user?.role;
     const hospitalId = session?.user?.hospitalId;
 
-    const [appointmentsData, setAppointmentsData] = useState<PatientCountPerMonth[]>(mockAppointmentsData["2023"]); // test code
+    const [appointmentsData, setAppointmentsData] = useState<PatientCountPerMonth[]>(mockAppointmentsData["2024"]); // test code
     const [year, setYear] = useState<number>(new Date().getFullYear());
 
     useEffect(() => {
