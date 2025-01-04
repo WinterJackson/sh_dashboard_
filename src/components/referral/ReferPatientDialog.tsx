@@ -30,6 +30,8 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
     const router = useRouter();
     const { user } = useUser();
 
+    console.log(user)
+
     const fetchAndSetPatientDetails = async (name: string) => {
         const details = await fetchPatientDetails(name);
 
@@ -58,28 +60,35 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
 
     console.log(user)
 
-   // Function to auto-fill referring physician details
-   const autoFillPhysicianDetails = useCallback(() => {
-       if (user?.role === "DOCTOR" || user?.role === "NURSE") {
-           const prefix = user.role === "DOCTOR" ? "Dr." : "Nurse";
-           const fullName = `${prefix} ${user.profile?.firstName} ${user.profile?.lastName}`;
+// Function to auto-fill referring physician details
+const autoFillPhysicianDetails = useCallback(() => {
+    if (user?.role === "DOCTOR" || user?.role === "NURSE") {
+        // Determine prefix based on role
+        const prefix = user.role === "DOCTOR" ? "Dr." : "Nurse";
 
-           const departmentName =
-               user?.doctor?.department?.name ||
-               user?.nurse?.department?.name ||
-               "";
-           const specialization =
-               user?.doctor?.specialization ||
-               user?.nurse?.specialization ||
-               "";
+        // Construct the full name using optional chaining
+        const fullName = `${prefix} ${user.profile?.firstName || ""} ${user.profile?.lastName || ""}`;
 
-           setValue("physicianName", fullName);
-           setValue("physicianDepartment", departmentName);
-           setValue("physicianSpecialty", specialization);
-           setValue("physicianEmail", user?.email || "");
-           setValue("physicianPhoneNumber", user?.profile?.phoneNo || "");
-       }
-   }, [user, setValue]);
+        // Fetch department name based on user role
+        const departmentName =
+            user?.doctor?.department?.name ||
+            user?.nurse?.department?.name ||
+            "";
+
+        // Fetch specialization based on user role
+        const specialization =
+            user?.doctor?.specialization ||
+            user?.nurse?.specialization ||
+            "";
+
+        // Auto-fill the form fields
+        setValue("physicianName", fullName);
+        setValue("physicianDepartment", departmentName);
+        setValue("physicianSpecialty", specialization);
+        setValue("physicianEmail", user?.email || "");
+        setValue("physicianPhoneNumber", user.profile?.phoneNo || "");
+    }
+}, [user, setValue]);
 
 useEffect(() => {
     autoFillPhysicianDetails();
