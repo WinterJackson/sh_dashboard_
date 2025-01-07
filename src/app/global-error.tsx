@@ -1,33 +1,33 @@
-
 // src/app/global-error.tsx
 
-'use client'
+'use client';
 
 import * as Sentry from "@sentry/nextjs";
 import { getErrorMessage } from "@/hooks/getErrorMessage";
+import { useEffect } from "react";
 
-export default function GlobalError({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string }
-  reset: () => void
-}) {
+type GlobalErrorProps = {
+  error: Error & { digest?: string };
+  reset: () => void;
+};
+
+export default function GlobalError({ error, reset }: GlobalErrorProps) {
   // Get a descriptive error message
   const errorMessage = getErrorMessage(error);
 
-  // Log the error to Sentry with the descriptive message
-  Sentry.captureException(error, {
-    extra: { errorMessage }
-  });
+  useEffect(() => {
+    Sentry.captureException(error, {
+      extra: { errorMessage },
+    });
+  }, [error]);
 
   return (
     <html>
       <body>
         <h2>Something went wrong!</h2>
         <p>{errorMessage}</p>
-        <button onClick={() => reset()}>Try again</button>
+        <button onClick={reset}>Try again</button>
       </body>
     </html>
-  )
+  );
 }
