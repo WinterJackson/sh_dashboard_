@@ -14,15 +14,22 @@ const prisma = require("@/lib/prisma");
 /**
  * Fetches a list of departments based on the user's role and hospital association.
  */
-export async function fetchDepartments(user: {
-    role: Role;
-    hospitalId: string | null;
-}): Promise<Department[]> {
-    const session = await getServerSession(authOptions);
+export async function fetchDepartments(
+    user?: { role: Role; hospitalId: string | null }
+): Promise<Department[]> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return []
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return [];
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId ? session.user.hospitalId.toString() : null,
+        };
     }
 
     try {

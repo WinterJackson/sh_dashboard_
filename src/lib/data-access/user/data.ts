@@ -4,6 +4,8 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { getErrorMessage } from "@/hooks/getErrorMessage";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 
 const prisma = require("@/lib/prisma");
 
@@ -31,11 +33,36 @@ export type UserProfile = {
 };
 
 /**
- * Fetch user profile by user ID.
- * @param userId - The ID of the user to fetch the profile for.
+ * Fetch user profile by user ID with hybrid validation.
+ * @param userId - The ID of the user to fetch the profile for (optional).
  */
-export async function fetchUserProfile(userId: string): Promise<UserProfile> {
+export async function fetchUserProfile(userId?: string): Promise<UserProfile> {
     try {
+        if (!userId) {
+            const session = await getServerSession(authOptions);
+
+            if (!session || !session?.user) {
+                console.error("Session fetch failed or user not authenticated.");
+                return {
+                    id: "",
+                    username: "",
+                    role: "",
+                    email: "",
+                    profile: {
+                        firstName: "",
+                        lastName: "",
+                        phoneNo: "",
+                    },
+                    doctor: undefined,
+                    nurse: undefined,
+                    hospitalId: null,
+                    hospital: null,
+                };
+            }
+
+            userId = session.user.id;
+        }
+
         const userProfile = await prisma.user.findUnique({
             where: { userId },
             include: {
@@ -110,7 +137,7 @@ export async function fetchUserProfile(userId: string): Promise<UserProfile> {
         const errorMessage = getErrorMessage(error);
         Sentry.captureException(error, { extra: { userId, errorMessage } });
         console.error(`Error fetching user profile for userId=${userId}:`, errorMessage);
-        
+
         // Return empty UserProfile object
         return {
             id: "",

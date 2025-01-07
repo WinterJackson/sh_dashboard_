@@ -52,62 +52,97 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = async ({
 
     // Fetch available beds count
     const availableBedsCount = await fetchAvailableBedsCount(
-        session?.user?.role,
-        session?.user?.hospitalId
+        session?.user
+            ?   {
+                    role: session.user.role as Role,
+                    hospitalId: session.user.hospitalId,
+                }
+            : undefined
     );
 
     // Fetch available doctors count
     const onlineDoctorsCount = await fetchOnlineDoctorsCount(
-        session?.user?.role,
-        session?.user?.hospitalId
+        session?.user
+            ?   {
+                    role: session.user.role as Role,
+                    hospitalId: session.user.hospitalId,
+                }
+            : undefined
     );
 
     // Fetch inward referrals
     const inwardReferrals = await fetchInwardReferrals(
-        session?.user?.role,
-        session?.user?.hospitalId
+        session?.user
+            ?   {
+                    role: session.user.role as Role,
+                    hospitalId: session.user.hospitalId,
+                }
+            : undefined
     );
 
     // Fetch outward referrals
     const outwardReferrals = await fetchOutwardReferrals(
-        session?.user?.role,
-        session?.user?.hospitalId
+        session?.user
+            ?   {
+                    role: session.user.role as Role,
+                    hospitalId: session.user.hospitalId,
+                }
+            : undefined
     );
 
     // Fetch today's appointments count
-    const appointmentsTodayCount = await fetchAppointmentsTodayCount({
-        role: session?.user?.role as Role,
-        hospitalId: null,
-        userId: null,
-    });
+    const appointmentsTodayCount = await fetchAppointmentsTodayCount(
+        session?.user
+            ?   {
+                    role: session.user.role as Role,
+                    hospitalId: null,
+                    userId: null,
+                }
+            : undefined
+    );
 
     // Fetch appointments for last 14 days
-    const last14DaysAppointments = await fetchAppointmentsForLast14Days({
-        role: session?.user?.role as Role,
-        hospitalId: null,
-        userId: null,
-    });
+    const last14DaysAppointments = await fetchAppointmentsForLast14Days(
+        session?.user
+            ?   {
+                    role: session.user.role as Role,
+                    hospitalId: null,
+                    userId: null,
+                }
+            : undefined
+    );
 
     // Fetch unique patients today
-    const uniquePatientsTodayCount = await fetchPatientsTodayCount({
-        role: session?.user?.role as Role,
-        hospitalId: null,
-        userId: null,
-    });
+    const uniquePatientsTodayCount = await fetchPatientsTodayCount(
+        session?.user
+            ?   {
+                    role: session.user.role as Role,
+                    hospitalId: null,
+                    userId: null,
+                }
+            : undefined
+    );
 
     // Fetch unique patients for last 14 days
-    const { currentWeekPatients, previousWeekPatients } =
-        await fetchPatientsForLast14Days({
-            role: session?.user?.role as Role,
-            hospitalId: null,
-            userId: null,
-        });
+    const { currentWeekPatients, previousWeekPatients } = await fetchPatientsForLast14Days(
+        session?.user
+            ?   {
+                    role: session.user.role as Role,
+                    hospitalId: null,
+                    userId: null,
+                }
+            : undefined
+    );
 
     // Fetch top doctors based on role and hospital ID
-    const topDoctors = await fetchTopDoctors({
-        role: session?.user?.role,
-        hospitalId: null,
-    });
+    const topDoctors = await fetchTopDoctors(
+        session?.user
+            ?   {
+                    role: session.user.role as Role,
+                    hospitalId: null,
+                }
+            : undefined
+    );
 
     // Transform the appointments to match the required type
     const transformedAppointments = appointments.map(

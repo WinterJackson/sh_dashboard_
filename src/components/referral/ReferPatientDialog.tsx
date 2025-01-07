@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { fetchPatientDetails } from "@/lib/data-access/patients/data";
 import { useUser } from "@/app/context/UserContext";
+import { Role } from "@/lib/definitions";
 
 interface ReferPatientDialogProps {
     onClose: () => void;
@@ -30,11 +31,19 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
     const router = useRouter();
     const { user } = useUser();
 
+    const role = user?.role as Role;
+    const hospitalId = user?.hospitalId;
+    const userId = user?.id;
+
     console.log(user)
 
     const fetchAndSetPatientDetails = async (name: string) => {
-        const details = await fetchPatientDetails(name);
-
+        const details = await fetchPatientDetails(name, {
+            role,
+            hospitalId: hospitalId ?? null,
+            userId: userId ?? null,
+        });
+        
         console.log(details)
 
         if (details) {

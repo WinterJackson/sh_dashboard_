@@ -18,13 +18,27 @@ export default async function DoctorsPage() {
     }
 
     const user = {
-        role: session?.user?.role as Role,
-        hospitalId: session?.user?.hospitalId?.toString() || null,
+        role: session.user.role as Role,
+        hospitalId: session.user.hospitalId?.toString() || null,
+        userId: session.user.id,
     };
 
     const doctors = await fetchDoctors(user);
-    const hospitals = await fetchHospitals();
-    const departments = await fetchDepartments(user);
+    const hospitals = await fetchHospitals({
+        role: session.user.role as Role,
+        hospitalId: session.user.hospitalId ?? null,
+        userId: session.user.id,
+    });
+    const departments = await fetchDepartments(
+        session?.user
+            ?   {
+                    role: session.user.role as Role,
+                    hospitalId: session.user.hospitalId
+                        ? session.user.hospitalId.toString()
+                        : null,
+                }
+            : undefined
+    );
 
     return (
         <div className="flex flex-col gap-3 p-3 pt-0">

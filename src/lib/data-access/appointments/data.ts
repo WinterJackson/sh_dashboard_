@@ -11,16 +11,26 @@ import { getErrorMessage } from "@/hooks/getErrorMessage";
 
 const prisma = require("@/lib/prisma");
 
-export async function fetchAppointments(user: {
+export async function fetchAppointments(user?: {
     role: Role;
     hospitalId: number | null;
     userId: string | null;
 }): Promise<{ appointments: Appointment[]; totalAppointments: number }> {
-    const session = await getServerSession(authOptions);
+    
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return { appointments: [], totalAppointments: 0 };
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return { appointments: [], totalAppointments: 0 };
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
     }
 
     const { role, hospitalId, userId } = user;
@@ -114,21 +124,27 @@ export async function updateAppointmentDetails(
         hospitalId?: number;
         type?: string;
         status?: string;
-    }
+    },
+    user?: { role: Role; hospitalId: number | null; userId: string | null }
 ): Promise<Appointment | null> {
-    const session = await getServerSession(authOptions);
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return null;
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return null;
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
     }
-
-    const updateFields: any = {};
 
     try {
-        if (!appointmentId || !updateData) {
-            throw new Error("Appointment ID and update data are required.");
-        }
+        const updateFields: any = {};
 
         // Handle rescheduling logic
         if (updateData.date && updateData.timeFrom && updateData.timeTo) {
@@ -175,14 +191,24 @@ export async function updateAppointmentDetails(
 // Update appointment status
 export async function updateAppointmentStatus(
     appointmentId: string,
-    updateData: { status: string; reason: string }
+    updateData: { status: string; reason: string },
+    user?: { role: Role; hospitalId: number | null; userId: string | null }
 ): Promise<Appointment | null> {
 
-    const session = await getServerSession(authOptions);
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return null;
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return null;
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
     }
 
     if (!appointmentId || !updateData) {
@@ -214,14 +240,24 @@ export async function updateAppointmentStatus(
 // Update appointment type
 export async function updateAppointmentType(
     appointmentId: string,
-    newType: string
+    newType: string,
+    user?: { role: Role; hospitalId: number | null; userId: string | null }
 ): Promise<{ success: boolean; updatedType?: string }> {
 
-    const session = await getServerSession(authOptions);
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return { success: false };
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return { success: false };
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
     }
 
     if (!appointmentId || !newType) {
@@ -245,16 +281,23 @@ export async function updateAppointmentType(
 }
 
 
-export async function fetchAppointmentsToday(user: {
-    role: Role;
-    hospitalId: number | null;
-    userId: string | null;
-}): Promise<{ appointments: Appointment[]; }> {
-    const session = await getServerSession(authOptions);
+export async function fetchAppointmentsToday(
+    user?: { role: Role; hospitalId: number | null; userId: string | null }
+): Promise<{ appointments: Appointment[] }> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return { appointments: [] };
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return { appointments: [] };
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
     }
 
     const { role, hospitalId, userId } = user;
@@ -335,16 +378,24 @@ export async function fetchAppointmentsToday(user: {
 }
 
 
-export async function fetchAppointmentsTodayCount(user: {
-    role: Role;
-    hospitalId: number | null;
-    userId: string | null;
-}): Promise<number> {
-    const session = await getServerSession(authOptions);
+export async function fetchAppointmentsTodayCount(
+    user?: { role: Role; hospitalId: number | null; userId: string | null }
+): Promise<number> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return 0;
+        if (!session || !session.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return 0;
+        }
+
+        // Ensure the `user` object matches the expected type
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId ?? null,
+            userId: session.user.id ?? null,
+        };
     }
 
     const { role, hospitalId, userId } = user;
@@ -416,16 +467,23 @@ export async function fetchAppointmentsTodayCount(user: {
 }
 
 
-export async function fetchAppointmentsForLast14Days(user: {
-    role: Role;
-    hospitalId: number | null;
-    userId: string | null;
-}): Promise<{ appointments: Appointment[]; }> {
-    const session = await getServerSession(authOptions);
+export async function fetchAppointmentsForLast14Days(
+    user?: { role: Role; hospitalId: number | null; userId: string | null }
+): Promise<{ appointments: Appointment[] }> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return { appointments: [] };
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return { appointments: [] };
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
     }
 
     const { role, hospitalId, userId } = user;
@@ -508,49 +566,50 @@ export async function fetchAppointmentsForLast14Days(user: {
 }
 
 
-export async function fetchAppointmentsForLast14DaysCount(user: {
-    role: Role;
-    hospitalId: number | null;
-    userId: string | null;
-}): Promise<{ count: number; }> {
-    const session = await getServerSession(authOptions);
+export async function fetchAppointmentsForLast14DaysCount(
+    user?: { role: Role; hospitalId: number | null; userId: string | null }
+): Promise<{ count: number }> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return { count: 0 };
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return { count: 0 };
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
     }
 
     const { role, hospitalId, userId } = user;
 
     try {
-        // Define the filter clause based on the user role
         let whereClause: any = {};
 
         switch (role) {
             case "SUPER_ADMIN":
                 whereClause = {};
                 break;
-
             case "ADMIN":
                 if (hospitalId === null) {
                     throw new Error("Admins must have an associated hospital ID.");
                 }
                 whereClause = { hospitalId };
                 break;
-
             case "DOCTOR":
                 if (!userId) {
                     throw new Error("Doctors must have a valid user ID.");
                 }
-                const doctor = await prisma.doctor.findUnique({
-                    where: { userId },
-                });
+                const doctor = await prisma.doctor.findUnique({ where: { userId } });
                 if (!doctor) {
                     throw new Error("Doctor not found for the given user ID.");
                 }
                 whereClause = { doctorId: doctor.doctorId };
                 break;
-
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
@@ -558,13 +617,13 @@ export async function fetchAppointmentsForLast14DaysCount(user: {
                 }
                 whereClause = { hospitalId };
                 break;
-
             default:
                 throw new Error("Invalid role provided.");
         }
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+
         const fourteenDaysAgo = new Date(today);
         fourteenDaysAgo.setDate(today.getDate() - 13);
 
@@ -582,7 +641,7 @@ export async function fetchAppointmentsForLast14DaysCount(user: {
     } catch (error) {
         const errorMessage = getErrorMessage(error);
         Sentry.captureException(error, { extra: { errorMessage } });
-        console.error(`Failed to fetch appointment count for the last 14 days:`, errorMessage);
+        console.error("Failed to fetch appointment count for the last 14 days:", errorMessage);
         return { count: 0 };
     }
 }

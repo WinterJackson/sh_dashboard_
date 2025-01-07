@@ -67,11 +67,15 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const fetchedDoctors = await fetchOnlineDoctors(hospitalId, userRole);
+                const fetchedDoctors = await fetchOnlineDoctors({
+                    role: userRole,
+                    hospitalId: hospitalId,
+                });
 
                 if (userRole !== "SUPER_ADMIN" && hospitalId) {
                     const filteredDoctors = fetchedDoctors.filter(
-                        (doctor: { hospitalId: number; }) => doctor.hospitalId === hospitalId
+                        (doctor: { hospitalId: number }) =>
+                            doctor.hospitalId === hospitalId
                     );
                     setDoctors(filteredDoctors);
                 } else {
@@ -79,7 +83,15 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                 }
 
                 if (userRole === "SUPER_ADMIN") {
-                    const fetchedHospitals = await fetchHospitals();
+                    const fetchedHospitals = await fetchHospitals(
+                        sessionData?.user
+                            ?   {
+                                    role: userRole,
+                                    hospitalId,
+                                    userId: sessionData.user.id,
+                                }
+                            : undefined
+                    );
                     setHospitals(fetchedHospitals);
                 }
             } catch (error) {
@@ -119,7 +131,12 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
 
             const updatedAppointment = await updateAppointmentDetails(
                 appointmentId,
-                requestBody
+                requestBody,
+                {
+                    role: userRole,
+                    hospitalId: hospitalId,
+                    userId: sessionData?.user?.id || null,
+                }
             );
 
             if (!updatedAppointment) {

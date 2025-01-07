@@ -31,7 +31,8 @@ export const authOptions: NextAuthOptions = {
 
                 try {
                     if (!credentials?.email || !credentials.password) {
-                        throw new Error("Please provide both email and password.");
+                        console.warn("Authorization failed: Missing email or password.");
+                        return null; // Return null to indicate authorization failure
                     }
 
                     console.log("Credentials received. Attempting to find user...");
@@ -51,7 +52,8 @@ export const authOptions: NextAuthOptions = {
                     console.log("User fetched:", user);
 
                     if (!user || !(await bcrypt.compare(credentials.password, user.password))) {
-                        throw new Error("Invalid email or password.");
+                        console.warn("Authorization failed: Invalid email or password.");
+                        return null;
                     }
 
                     console.log("User authenticated successfully.");
@@ -67,7 +69,7 @@ export const authOptions: NextAuthOptions = {
                 } catch (error) {
                     console.error("Error during authentication:", error);
                     Sentry.captureException(error);
-                    throw error;
+                    return null;
                 }
             },
         }),
@@ -93,8 +95,9 @@ export const authOptions: NextAuthOptions = {
                 return session;
             } catch (error) {
                 Sentry.captureException(error);
-                throw error;
-            } 
+                console.error("Error in session callback:", error);
+                return session;
+            }
         },
         async jwt({ token, user }) {
             try {
@@ -129,7 +132,8 @@ export const authOptions: NextAuthOptions = {
                 return token;
             } catch (error) {
                 Sentry.captureException(error);
-                throw error;
+                console.error("Error in JWT callback:", error);
+                return token;
             }
         },
     },
@@ -143,7 +147,7 @@ export const authOptions: NextAuthOptions = {
                 }
             } catch (error) {
                 Sentry.captureException(error);
-                throw error;
+                console.error("Error during sign-out:", error);
             }
         },
     },

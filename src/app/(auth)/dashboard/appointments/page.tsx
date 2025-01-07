@@ -16,7 +16,7 @@ export default async function AppointmentsPage() {
         return null;
     }
 
-    const role = session?.user?.role;
+    const role = session?.user?.role as Role;
     const hospitalId = session?.user?.hospitalId;
     const userId = session?.user?.id;
 
@@ -29,7 +29,11 @@ export default async function AppointmentsPage() {
     const { appointments, totalAppointments } = await fetchAppointments(user);
     let hospitals: Hospital[] = [];
     if (role === Role.SUPER_ADMIN) {
-        hospitals = await fetchHospitals();
+        hospitals = await fetchHospitals({
+            role,
+            hospitalId: hospitalId ?? null,
+            userId,
+        });
     }
 
     return (

@@ -13,16 +13,23 @@ const prisma = require("@/lib/prisma");
 
 
 // Fetch today's patients
-export async function fetchPatientsToday(user: {
-    role: Role;
-    hospitalId: number | null;
-    userId: string | null;
-}): Promise<{ patients: Patient[] }> {
-    const session = await getServerSession(authOptions);
+export async function fetchPatientsToday(
+    user?: { role: Role; hospitalId: number | null; userId: string | null }
+): Promise<{ patients: Patient[] }> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return { patients: [] }
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return { patients: [] };
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
     }
 
     const { role, hospitalId, userId } = user;
@@ -107,16 +114,23 @@ export async function fetchPatientsToday(user: {
 
 
 // Fetch today's patients count
-export async function fetchPatientsTodayCount(user: {
-    role: Role;
-    hospitalId: number | null;
-    userId: string | null;
-}): Promise<number> {
-    const session = await getServerSession(authOptions);
+export async function fetchPatientsTodayCount(
+    user?: { role: Role; hospitalId: number | null; userId: string | null }
+): Promise<number> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return 0;
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return 0;
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
     }
 
     const { role, hospitalId, userId } = user;
@@ -201,16 +215,23 @@ export async function fetchPatientsTodayCount(user: {
 
 
 // Fetch patients for the last 14 days
-export async function fetchPatientsForLast14Days(user: {
-    role: Role;
-    hospitalId: number | null;
-    userId: string | null;
-}): Promise<{ currentWeekPatients: Patient[]; previousWeekPatients: Patient[] }> {
-    const session = await getServerSession(authOptions);
+export async function fetchPatientsForLast14Days(
+    user?: { role: Role; hospitalId: number | null; userId: string | null }
+): Promise<{ currentWeekPatients: Patient[]; previousWeekPatients: Patient[] }> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return { currentWeekPatients: [], previousWeekPatients: [] };
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return { currentWeekPatients: [], previousWeekPatients: [] };
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
     }
 
     const { role, hospitalId, userId } = user;
@@ -324,34 +345,39 @@ export async function fetchPatientsForLast14Days(user: {
  * @param user - User's role, hospital ID, and user ID.
  * @returns Patients and total count.
  */
-export async function fetchPatients(user: { role: Role; hospitalId?: number | null; userId?: string | null }): Promise<{ patients: Patient[]; totalPatients: number }> {
-    try {
+export async function fetchPatients(
+    user?: { role: Role; hospitalId?: number | null; userId?: string | null }
+): Promise<{ patients: Patient[]; totalPatients: number }> {
+    if (!user) {
         const session = await getServerSession(authOptions);
 
         if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
             redirect("/sign-in");
             return { patients: [], totalPatients: 0 };
         }
 
-        const { role, hospitalId, userId } = user;
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
+    }
 
+    const { role, hospitalId, userId } = user;
+
+    try {
         let patients: Patient[] = [];
         let totalPatients: number = 0;
 
         switch (role) {
             case "SUPER_ADMIN":
-                // Fetch all patients for super admin
                 patients = await prisma.patient.findMany({
                     include: {
                         hospital: true,
-                        appointments: {
-                            orderBy: {
-                                appointmentDate: "desc", // Sort appointments within each patient
-                            },
-                        },
+                        appointments: { orderBy: { appointmentDate: "desc" } },
                     },
                 });
-
                 totalPatients = await prisma.patient.count();
                 break;
 
@@ -363,22 +389,15 @@ export async function fetchPatients(user: { role: Role; hospitalId?: number | nu
                     return { patients: [], totalPatients: 0 };
                 }
 
-                // Fetch patients associated with the specific hospital
                 patients = await prisma.patient.findMany({
                     where: { hospitalId },
                     include: {
                         hospital: true,
-                        appointments: {
-                            orderBy: {
-                                appointmentDate: "desc", // Sort appointments within each patient
-                            },
-                        },
+                        appointments: { orderBy: { appointmentDate: "desc" } },
                     },
                 });
 
-                totalPatients = await prisma.patient.count({
-                    where: { hospitalId },
-                });
+                totalPatients = await prisma.patient.count({ where: { hospitalId } });
                 break;
 
             case "DOCTOR":
@@ -387,29 +406,16 @@ export async function fetchPatients(user: { role: Role; hospitalId?: number | nu
                     return { patients: [], totalPatients: 0 };
                 }
 
-                // Fetch patients associated with the doctor
                 patients = await prisma.patient.findMany({
                     where: {
                         hospitalId,
-                        appointments: {
-                            some: {
-                                doctor: {
-                                    userId,
-                                },
-                            },
-                        },
+                        appointments: { some: { doctor: { userId } } },
                     },
                     include: {
                         hospital: true,
                         appointments: {
-                            where: {
-                                doctor: {
-                                    userId, // Filter appointments to the doctor
-                                },
-                            },
-                            orderBy: {
-                                appointmentDate: "desc", // Sort appointments within each patient
-                            },
+                            where: { doctor: { userId } },
+                            orderBy: { appointmentDate: "desc" },
                         },
                     },
                 });
@@ -417,13 +423,7 @@ export async function fetchPatients(user: { role: Role; hospitalId?: number | nu
                 totalPatients = await prisma.patient.count({
                     where: {
                         hospitalId,
-                        appointments: {
-                            some: {
-                                doctor: {
-                                    userId,
-                                },
-                            },
-                        },
+                        appointments: { some: { doctor: { userId } } },
                     },
                 });
                 break;
@@ -433,7 +433,6 @@ export async function fetchPatients(user: { role: Role; hospitalId?: number | nu
                 return { patients: [], totalPatients: 0 };
         }
 
-        // Sort patients by their latest appointment date manually
         const sortedPatients = patients.sort((a, b) => {
             const aLatestAppointment = a.appointments[0]?.appointmentDate ?? 0;
             const bLatestAppointment = b.appointments[0]?.appointmentDate ?? 0;
@@ -451,21 +450,56 @@ export async function fetchPatients(user: { role: Role; hospitalId?: number | nu
 
 
 // Fetch patients details using the patient name
-export async function fetchPatientDetails(name: string) {
+export async function fetchPatientDetails(
+    name: string,
+    user?: { role: Role; hospitalId: number | null; userId: string | null }
+): Promise<Patient | null> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    const session = await getServerSession(authOptions);
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return null;
+        }
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return null;
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
     }
 
+    const { role, hospitalId } = user;
+
     try {
-        const patient = await prisma.patient.findUnique({
-            where: { name },
-            include: {
-                hospital: true,
-            },
+        let whereClause: Record<string, any> = { name };
+
+        // Apply role-based restrictions if necessary
+        switch (role) {
+            case "SUPER_ADMIN":
+                // No additional restrictions for SUPER_ADMIN
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (!hospitalId) {
+                    console.error(`${role}s must have an associated hospital ID.`);
+                    return null;
+                }
+                whereClause.hospitalId = hospitalId;
+                break;
+
+            default:
+                console.error("Invalid role provided.");
+                return null;
+        }
+
+        const patient = await prisma.patient.findFirst({
+            where: whereClause,
+            include: { hospital: true },
         });
 
         if (!patient) {

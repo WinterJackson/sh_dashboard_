@@ -13,16 +13,27 @@ const prisma = require("@/lib/prisma");
 
 /**
  * Fetches a list of specializations.
+ * @param user - Optional user object with role and hospitalId for validation.
+ * @returns List of specializations.
  */
-export async function fetchSpecializations(): Promise<Specialization[]> {
-    
-    const session = await getServerSession(authOptions);
+export async function fetchSpecializations(
+    user?: { role: string; hospitalId: number | null }
+): Promise<Specialization[]> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return [];
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return [];
+        }
+
+        user = {
+            role: session.user.role,
+            hospitalId: session.user.hospitalId,
+        };
     }
-    
+
     try {
         return await prisma.specialization.findMany({
             select: {
@@ -32,7 +43,7 @@ export async function fetchSpecializations(): Promise<Specialization[]> {
         });
     } catch (error) {
         const errorMessage = getErrorMessage(error);
-        Sentry.captureException(error, { extra: { errorMessage } });
+        Sentry.captureException(error, { extra: { errorMessage, user } });
         console.error("Failed to fetch specializations:", errorMessage);
         return [];
     }

@@ -22,7 +22,6 @@ import {
 import { SymbolIcon } from "@radix-ui/react-icons";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-// import { fetchDepartments } from "@/lib/data";
 
 interface DoctorsFiltersProps {
     role: Role;

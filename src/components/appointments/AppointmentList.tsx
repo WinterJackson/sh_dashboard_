@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { Appointment, Session, Hospital } from "@/lib/definitions";
+import { Appointment, Session, Hospital, Role } from "@/lib/definitions";
 import AppointmentFilters from "./../appointments/ui/AppointmentsFilters";
 import AppointmentRow from "./../appointments/ui/AppointmentRow";
 import AppointmentsPagination from "./../appointments/ui/AppointmentsPagination";
@@ -48,8 +48,18 @@ export default function AppointmentList({
     const handleUpdateAppointmentType = async (appointmentId: string, newType: string) => {
         setTypeText((prev) => ({ ...prev, [appointmentId]: newType }));
 
-        const { success, updatedType } = await updateAppointmentType(appointmentId, newType);
-
+        const { success, updatedType } = await updateAppointmentType(
+            appointmentId,
+            newType,
+            session?.user
+                ? {
+                      role: session.user.role as Role,
+                      hospitalId: session.user.hospitalId,
+                      userId: session.user.id,
+                  }
+                : undefined
+        );
+        
         if (!success) {
             console.error("Failed to update appointment type");
             setTypeText((prev) => ({
@@ -84,10 +94,18 @@ export default function AppointmentList({
     // Handler to update appointment status
     const handleUpdateStatus = async (appointmentId: string, status: string, reason?: string) => {
         try {
-            const updatedAppointment = await updateAppointmentStatus(appointmentId, {
-                status,
-                reason: reason || "",
-            });
+            const updatedAppointment = await updateAppointmentStatus(
+                appointmentId,
+                { status, reason: reason || "" },
+                session?.user
+                    ? {
+                          role: session.user.role as Role,
+                          hospitalId: session.user.hospitalId,
+                          userId: session.user.id,
+                      }
+                    : undefined
+            );
+            
             if (updatedAppointment) {
                 handleActionChange(appointmentId, status);
             }

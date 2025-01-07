@@ -19,8 +19,15 @@ export async function GET(request: NextRequest) {
     };
 
     try {
-        const departments = await fetchDepartments(user);
-        return NextResponse.json(departments, { status: 200 });
+        const departments = await fetchDepartments(
+            session?.user
+                ?   {
+                        role: session.user.role as Role,
+                        hospitalId: session.user.hospitalId ? session.user.hospitalId.toString() : null,
+                    }
+                : undefined
+        );
+                return NextResponse.json(departments, { status: 200 });
     } catch (error) {
         Sentry.captureException(error);
         console.error("Error fetching departments:", error);

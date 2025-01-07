@@ -9,7 +9,6 @@ import PatientRow from "@/components/patients/ui/PatientRow";
 import PatientsPagination from "@/components/patients/ui/PatientsPagination";
 import PatientsFilters from "@/components/patients/ui/PatientsFilters";
 import { format } from "date-fns";
-// import { fetchPatientDetails, deletePatientById } from "@/lib/data";
 
 interface PatientsListProps {
     patients: Patient[];

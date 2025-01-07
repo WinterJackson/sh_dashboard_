@@ -22,24 +22,35 @@ export default async function AddNewDoctorPage() {
 
     const user = {
         role: session?.user?.role as Role,
-        hospitalId: session?.user?.hospitalId?.toString() || null,
+        hospitalId: session?.user?.hospitalId ? parseInt(session.user.hospitalId.toString(), 10) : null,
+        userId: session?.user?.id || null,
     };
 
     // Handle promises individually
     const [specializations, departments, hospitals, services] = await Promise.all([
-        fetchSpecializations().catch((error) => {
+        fetchSpecializations(user).catch((error) => {
             console.error("Error fetching specializations:", error);
-            return []; // Fallback
+            return [];
         }),
-        fetchDepartments(user).catch((error) => {
+
+        fetchDepartments(
+            session?.user
+                ?   {
+                        role: session.user.role as Role,
+                        hospitalId: session.user.hospitalId ? session.user.hospitalId.toString() : null,
+                    }
+                : undefined
+        ).catch((error) => {
             console.error("Error fetching departments:", error);
             return [];
         }),
-        fetchHospitals().catch((error) => {
+        
+        fetchHospitals(user).catch((error) => {
             console.error("Error fetching hospitals:", error);
             return [];
         }),
-        fetchServices(session.user.role, session.user.hospitalId || null).catch((error) => {
+
+        fetchServices(user).catch((error) => {
             console.error("Error fetching services:", error);
             return [];
         }),
@@ -56,12 +67,9 @@ export default async function AddNewDoctorPage() {
                 hospitals={hospitals}
                 services={services}
                 filteredServices={filteredServices}
-                userRole={session.user.role}
-                userHospitalId={
-                    session.user.hospitalId !== null
-                        ? session.user.hospitalId.toString()
-                        : null
-                }
+                userRole={user.role}
+                userHospitalId={user.hospitalId?.toString() || null}
+                sessionUser={user}
             />
         </div>
     );

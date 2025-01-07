@@ -23,15 +23,20 @@ export default async function PatientsPage() {
     // Fetch patients and total count
     const { patients, totalPatients } = await fetchPatients({
         role,
-        hospitalId,
+        hospitalId: hospitalId ?? null,
         userId,
     });
 
     // Fetch all hospitals if the user is a SUPER_ADMIN
     const hospitals =
-        role === "SUPER_ADMIN"
-            ? await fetchHospitals()
-            : [];
+    role === "SUPER_ADMIN"
+        ? await fetchHospitals({
+                role,
+                hospitalId: hospitalId ?? null,
+                userId,
+            })
+        : [];
+
 
     return (
         <div className="flex flex-col gap-3 p-3 pt-0">

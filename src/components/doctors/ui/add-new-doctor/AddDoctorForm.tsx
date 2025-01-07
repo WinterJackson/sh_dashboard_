@@ -39,10 +39,16 @@ interface AddDoctorFormProps {
     services: Service[];
     filteredServices: (
         selectedDepartmentId: number,
-        currentHospitalId: number
+        currentHospitalId: number,
+        user?: { role: Role; hospitalId: number | null }
     ) => Promise<Service[]>;
     userRole: Role;
     userHospitalId: string | null;
+    sessionUser: {
+        role: Role;
+        hospitalId: number | null;
+        userId: string | null;
+    };
 }
 
 const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
@@ -53,6 +59,7 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
     filteredServices,
     userRole,
     userHospitalId,
+    sessionUser,
 }) => {
     const { edgestore } = useEdgeStore();
 
@@ -155,9 +162,13 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
         }
 
         try {
+            // Destructure sessionUser to pass only role and hospitalId
+            const { role, hospitalId } = sessionUser;
+
             const fetchedServices = await filteredServices(
                 selectedDepartment,
-                currentHospitalId
+                currentHospitalId,
+                { role, hospitalId }
             );
             setServicesList(fetchedServices);
         } catch (error) {
@@ -262,7 +273,7 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
         };
 
         try {
-            await addDoctorAPI(processedData);
+            await addDoctorAPI(processedData, sessionUser);
             setMessage({ text: "Doctor added successfully!", type: "success" });
 
             // Reset form fields

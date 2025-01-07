@@ -28,8 +28,9 @@ export async function GET(req: NextRequest) {
             );
         }
 
-        const { role, hospitalId } = session?.user || {};
-
+        const { role, hospitalId, id } = session.user;
+        const userId = id || null;
+        
         const { searchParams } = new URL(req.url);
         const filter = searchParams.get("filter"); // e.g., "online", "all", or specific doctorId
         const doctorId = searchParams.get("doctorId");
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
         let response;
 
         if (filter === "online") {
-            response = await fetchOnlineDoctors(hospitalId, role as Role);
+            response = await fetchOnlineDoctors({ role: role as Role, hospitalId });
         } else if (doctorId) {
             const doctorIdNumber = parseInt(doctorId, 10);
             if (isNaN(doctorIdNumber)) {
@@ -46,13 +47,20 @@ export async function GET(req: NextRequest) {
                     { status: 400 }
                 );
             }
-            response = await fetchDoctorDetails(
-                doctorIdNumber,
+            response = await fetchDoctorDetails(doctorIdNumber, {
+                role: role as Role,
                 hospitalId,
-                role as Role
-            );
+            });
         } else {
-            response = await fetchAllDoctors(hospitalId, role as Role);
+            response = await fetchAllDoctors(
+                hospitalId || null,
+                role as Role,
+                {
+                    role: role as Role,
+                    hospitalId: hospitalId || null,
+                    userId: userId || null,
+                }
+            );
         }
 
         return NextResponse.json(response, { status: 200 });

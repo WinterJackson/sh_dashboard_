@@ -18,10 +18,9 @@ const prisma = require("@/lib/prisma");
 /**
  * Fetch top doctors based on user's role and hospitalId.
  */
-export async function fetchTopDoctors(user: {
-    role: Role;
-    hospitalId: number | null;
-}): Promise<
+export async function fetchTopDoctors(
+    user?: { role: Role; hospitalId: number | null }
+): Promise<
     {
         doctorId: number;
         imageUrl: string;
@@ -30,12 +29,19 @@ export async function fetchTopDoctors(user: {
         specialization: string;
     }[]
 > {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    const session = await getServerSession(authOptions);
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return [];
+        }
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return [];
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+        };
     }
 
     const { role, hospitalId } = user;
@@ -131,13 +137,25 @@ export async function fetchTopDoctors(user: {
 /**
  * Fetch all online doctors.
  */
-export async function fetchOnlineDoctors(hospitalId: number | null, role: Role): Promise<Doctor[]> {
-    const session = await getServerSession(authOptions);
+export async function fetchOnlineDoctors(
+    user?: { role: Role; hospitalId: number | null }
+): Promise<Doctor[]> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return [];
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return [];
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+        };
     }
+
+    const { role, hospitalId } = user;
 
     try {
         if (role !== "SUPER_ADMIN" && !hospitalId) {
@@ -194,13 +212,25 @@ export async function fetchOnlineDoctors(hospitalId: number | null, role: Role):
 /**
  * Fetch count of online doctors based on user's role and hospitalId.
  */
-export async function fetchOnlineDoctorsCount(role: Role, hospitalId: number | null): Promise<number> {
-    const session = await getServerSession(authOptions);
+export async function fetchOnlineDoctorsCount(
+    user?: { role: Role; hospitalId: number | null }
+): Promise<number> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return 0;
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return 0;
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+        };
     }
+
+    const { role, hospitalId } = user;
 
     try {
         let onlineDoctorsCount = 0;
@@ -232,14 +262,26 @@ export async function fetchOnlineDoctorsCount(role: Role, hospitalId: number | n
 /**
  * Fetch details of a specific doctor by doctorId.
  */
-export async function fetchDoctorDetails(doctorId: number, hospitalId: number | null, role: Role): Promise<Doctor | null> {
+export async function fetchDoctorDetails(
+    doctorId: number,
+    user?: { role: Role; hospitalId: number | null }
+): Promise<Doctor | null> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    const session = await getServerSession(authOptions);
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return null;
+        }
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return null;
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+        };
     }
+
+    const { role, hospitalId } = user;
 
     try {
         if (role !== "SUPER_ADMIN" && (!hospitalId || role !== "ADMIN")) {
@@ -295,13 +337,24 @@ export async function fetchDoctorDetails(doctorId: number, hospitalId: number | 
  * @param userId - The user ID of the doctor.
  * @returns An object containing the doctorId or null if not found.
  */
-export async function fetchDoctorIdByUserId(userId: string): Promise<{ doctorId: number } | null> {
+export async function fetchDoctorIdByUserId(
+    userId: string,
+    user?: { role: Role; hospitalId: number | null; userId: string | null }
+): Promise<{ doctorId: number } | null> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    const session = await getServerSession(authOptions);
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return null;
+        }
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return null;
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
     }
 
     try {
@@ -331,12 +384,25 @@ export async function fetchDoctorIdByUserId(userId: string): Promise<{ doctorId:
 /**
  * Fetch all doctors with optional filtering by hospitalId.
  */
-export async function fetchAllDoctors(hospitalId: number | null, role: Role): Promise<Doctor[]> {
-    const session = await getServerSession(authOptions);
+export async function fetchAllDoctors(
+    hospitalId: number | null,
+    role: Role,
+    user?: { role: Role; hospitalId: number | null; userId: string | null }
+): Promise<Doctor[]> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return [];
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return [];
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
     }
 
     try {
@@ -391,19 +457,27 @@ export async function fetchAllDoctors(hospitalId: number | null, role: Role): Pr
 /**
  * Fetch all doctors based on user role and hospitalId.
  */
-export async function fetchDoctors(user: {
-    role: Role;
-    hospitalId: string | null;
-}): Promise<Doctor[]> {
-    const session = await getServerSession(authOptions);
+export async function fetchDoctors(
+    user?: { role: Role; hospitalId: string | null; userId: string | null }
+): Promise<Doctor[]> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return [];
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return [];
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId ? String(session.user.hospitalId) : null,
+            userId: session.user.id,
+        };
     }
 
     try {
-        let doctors = []
+        let doctors: Doctor[] = [];
 
         if (user.role === "SUPER_ADMIN") {
             doctors = await prisma.doctor.findMany({
@@ -420,7 +494,7 @@ export async function fetchDoctors(user: {
             });
         } else if (user.hospitalId) {
             doctors = await prisma.doctor.findMany({
-                where: { hospitalId: parseInt(user.hospitalId, 10) },
+                where: { hospitalId: parseInt(user.hospitalId, 10) }, // Convert back to number
                 include: {
                     hospital: true,
                     specialization: true,
@@ -446,19 +520,28 @@ export async function fetchDoctors(user: {
 /**
  * Fetch doctors by hospital ID.
  */
-export async function fetchDoctorsByHospital(hospitalId: number, role: Role): Promise<Doctor[]> {
-    const session = await getServerSession(authOptions);
+export async function fetchDoctorsByHospital(
+    hospitalId: number,
+    role: Role,
+    user?: { role: Role; hospitalId: number | null; userId: string | null }
+): Promise<Doctor[]> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return [];
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return [];
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
     }
 
     try {
-        // if (!hospitalId || role !== "ADMIN") {
-        //     console.error("Unauthorized access");
-        //     return [];
-        // }
 
         const doctors = await prisma.doctor.findMany({
             where: { hospitalId },
@@ -507,28 +590,39 @@ export async function fetchDoctorsByHospital(hospitalId: number, role: Role): Pr
  * Adds a new doctor to the system.
  * Handles user creation, doctor record creation, and sending reset email.
  */
-export async function addDoctorAPI(doctorData: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    gender: string;
-    hospitalId: number;
-    departmentId: number;
-    specializationId: number;
-    serviceId?: number;
-    phoneNo: string;
-    dateOfBirth: string;
-    qualifications?: string;
-    about?: string;
-    status?: string;
-    profileImageUrl?: string;
-}): Promise<any> {
+export async function addDoctorAPI(
+    doctorData: {
+        firstName: string;
+        lastName: string;
+        email: string;
+        gender: string;
+        hospitalId: number;
+        departmentId: number;
+        specializationId: number;
+        serviceId?: number;
+        phoneNo: string;
+        dateOfBirth: string;
+        qualifications?: string;
+        about?: string;
+        status?: string;
+        profileImageUrl?: string;
+    },
+    user?: { role: Role; hospitalId: number | null; userId: string | null }
+): Promise<any> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    const session = await getServerSession(authOptions);
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return null;
+        }
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return null;
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
     }
 
     try {
@@ -661,13 +755,23 @@ export async function addDoctorAPI(doctorData: {
 export async function getDoctorsBySpecialization(
     specializationId: number,
     hospitalId: number | null,
-    role: Role
+    role: Role,
+    user?: { role: Role; hospitalId: number | null; userId: string | null }
 ): Promise<Doctor[]> {
-    const session = await getServerSession(authOptions);
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return [];
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return [];
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
     }
 
     try {

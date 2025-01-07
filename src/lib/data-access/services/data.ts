@@ -19,44 +19,48 @@ const prisma = require("@/lib/prisma");
  * @param selectedDepartmentId - (Optional) Department ID to filter services.
  */
 export async function fetchServices(
-    userRole: Role,
-    userHospitalId: number | null,
+    user?: { role: Role; hospitalId: number | null },
     selectedDepartmentId?: number
 ): Promise<Service[]> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    const session = await getServerSession(authOptions);
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return [];
+        }
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return [];
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+        };
     }
 
+    const { role, hospitalId } = user;
+
     try {
-        // Construct dynamic `where` clause based on role and filters
-        const whereClause: Prisma.ServiceWhereInput = {
-            departments: {
-                some: {
-                    departmentId: selectedDepartmentId,
-                    department: userRole !== "SUPER_ADMIN" && userHospitalId
-                        ? {
-                              hospitals: {
-                                  some: { hospitalId: userHospitalId },
-                              },
-                          }
-                        : undefined,
+        // Use direct conditional filtering in the `where` clause
+        return await prisma.service.findMany({
+            where: {
+                departments: {
+                    some: {
+                        departmentId: selectedDepartmentId,
+                        department: role !== "SUPER_ADMIN" && hospitalId
+                            ?   {
+                                    hospitals: {
+                                        some: { hospitalId },
+                                    },
+                                }
+                            : undefined,
+                    },
                 },
             },
-        };
-
-        const services = await prisma.service.findMany({
-            where: whereClause,
             select: { serviceId: true, serviceName: true },
         });
-
-        return services;
     } catch (error) {
         const errorMessage = getErrorMessage(error);
-        Sentry.captureException(error, { extra: { errorMessage } });
+        Sentry.captureException(error, { extra: { errorMessage, user } });
         console.error("Failed to fetch services:", errorMessage);
         return [];
     }
@@ -74,17 +78,27 @@ export async function fetchServices(
  */
 export async function filteredServices(
     selectedDepartmentId: number,
-    currentHospitalId: number
+    currentHospitalId: number,
+    user?: { role: Role; hospitalId: number | null }
 ): Promise<Service[]> {
-    const session = await getServerSession(authOptions);
+    if (!user) {
+        const session = await getServerSession(authOptions);
 
-    if (!session || !session?.user) {
-        redirect("/sign-in");
-        return [];
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return [];
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+        };
     }
 
     try {
-        const services = await prisma.service.findMany({
+        // Directly filter based on department and hospital
+        return await prisma.service.findMany({
             where: {
                 departments: {
                     some: {
@@ -99,12 +113,11 @@ export async function filteredServices(
             },
             select: { serviceId: true, serviceName: true },
         });
-
-        return services;
     } catch (error) {
         const errorMessage = getErrorMessage(error);
-        Sentry.captureException(error, { extra: { errorMessage } });
+        Sentry.captureException(error, { extra: { errorMessage, user } });
         console.error("Failed to fetch filtered services:", errorMessage);
         return [];
     }
 }
+

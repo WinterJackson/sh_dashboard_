@@ -2,6 +2,8 @@
 
 import { NextResponse } from "next/server";
 import { fetchSpecializations } from "@/lib/data-access/specializations/data";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 import * as Sentry from "@sentry/nextjs";
 
 export const dynamic = 'force-dynamic';
@@ -11,8 +13,16 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET() {
     try {
-        const specializations = await fetchSpecializations();
-        return NextResponse.json(specializations, { status: 200 });
+        const session = await getServerSession(authOptions);
+
+        const user = session?.user
+            ?   {
+                    role: session.user.role,
+                    hospitalId: session.user.hospitalId,
+                }
+            : undefined;
+
+        const specializations = await fetchSpecializations(user);        return NextResponse.json(specializations, { status: 200 });
     } catch (error) {
         // Capture the exception in Sentry
         Sentry.captureException(error);
