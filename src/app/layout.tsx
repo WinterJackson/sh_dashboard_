@@ -24,23 +24,22 @@ export default async function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
-
     return (
         <NotFoundBoundary>
             <html lang="en">
                 <body className={`${inter.className} antialiased`}>
                     <SessionWrapper>
-                        <UserProvider>
-                            <LoadingProvider>
-                                <SearchProvider>
-                                    <EdgeStoreProvider>
-                                        <ErrorBoundaryWrapper>
+                        <ErrorBoundaryWrapper>
+                            <UserProvider>
+                                <LoadingProvider>
+                                    <SearchProvider>
+                                        <EdgeStoreProvider>
                                             <main>{children}</main>
-                                        </ErrorBoundaryWrapper>
-                                    </EdgeStoreProvider>
-                                </SearchProvider>
-                            </LoadingProvider>
-                        </UserProvider>
+                                        </EdgeStoreProvider>
+                                    </SearchProvider>
+                                </LoadingProvider>
+                            </UserProvider>
+                        </ErrorBoundaryWrapper>
                     </SessionWrapper>
                 </body>
             </html>
