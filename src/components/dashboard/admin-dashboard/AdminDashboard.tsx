@@ -1,6 +1,25 @@
 // File: src/components/dashboard/admin-dashboard/AdminDashboard.tsx
 
 import DashboardAppointments from "@/components/dashboard/ui/DashboardAppointments";
+import {
+    fetchAppointments,
+    fetchAppointmentsForLast14Days,
+    fetchAppointmentsTodayCount,
+} from "@/lib/data-access/appointments/data";
+import { fetchAvailableBedsCount } from "@/lib/data-access/beds/data";
+import {
+    fetchOnlineDoctorsCount,
+    fetchTopDoctors,
+} from "@/lib/data-access/doctors/data";
+import {
+    fetchPatientsForLast14Days,
+    fetchPatientsTodayCount,
+} from "@/lib/data-access/patients/data";
+import {
+    fetchInwardReferrals,
+    fetchOutwardReferrals,
+} from "@/lib/data-access/referrals/data";
+import { Role } from "@/lib/definitions";
 import AppointmentsTodayCard from "../ui/AppointmentsTodayCard";
 import AvailableBedsCard from "../ui/AvailableBedsCard";
 import AvailableDoctorsCard from "../ui/AvailableDoctorsCard";
@@ -10,25 +29,6 @@ import OutwardReferralsCard from "../ui/OutwardReferralsCard";
 import PatientsGraphCard from "../ui/PatientsGraphCard";
 import PatientsTodayCard from "../ui/PatientsTodayCard";
 import TopDoctorsCard from "../ui/TopDoctorsCard";
-import {
-    fetchAppointments,
-    fetchAppointmentsForLast14Days,
-    fetchAppointmentsTodayCount,
-} from "@/lib/data-access/appointments/data";
-import { Role } from "@/lib/definitions";
-import { fetchAvailableBedsCount } from "@/lib/data-access/beds/data";
-import {
-    fetchOnlineDoctorsCount,
-    fetchTopDoctors,
-} from "@/lib/data-access/doctors/data";
-import {
-    fetchInwardReferrals,
-    fetchOutwardReferrals,
-} from "@/lib/data-access/referrals/data";
-import {
-    fetchPatientsForLast14Days,
-    fetchPatientsTodayCount,
-} from "@/lib/data-access/patients/data";
 
 interface AdminDashboardProps {
     session: {
@@ -41,6 +41,7 @@ interface AdminDashboardProps {
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = async ({ session }) => {
+    
     const firstName = session?.user?.username?.split(" ")[0] || "Super Admin";
 
     const { appointments, totalAppointments } = await fetchAppointments({
@@ -52,94 +53,95 @@ const AdminDashboard: React.FC<AdminDashboardProps> = async ({ session }) => {
     // Fetch available beds count
     const availableBedsCount = await fetchAvailableBedsCount(
         session?.user
-            ?   {
-                    role: session.user.role as Role,
-                    hospitalId: session.user.hospitalId,
-                }
+            ? {
+                  role: session.user.role as Role,
+                  hospitalId: session.user.hospitalId,
+              }
             : undefined
     );
 
     // Fetch available doctors count
     const onlineDoctorsCount = await fetchOnlineDoctorsCount(
         session?.user
-            ?   {
-                    role: session.user.role as Role,
-                    hospitalId: session.user.hospitalId,
-                }
+            ? {
+                  role: session.user.role as Role,
+                  hospitalId: session.user.hospitalId,
+              }
             : undefined
     );
 
     // Fetch inward referrals
     const inwardReferrals = await fetchInwardReferrals(
         session?.user
-            ?   {
-                    role: session.user.role as Role,
-                    hospitalId: session.user.hospitalId,
-                }
+            ? {
+                  role: session.user.role as Role,
+                  hospitalId: session.user.hospitalId,
+              }
             : undefined
     );
 
     // Fetch outward referrals
     const outwardReferrals = await fetchOutwardReferrals(
         session?.user
-            ?   {
-                    role: session.user.role as Role,
-                    hospitalId: session.user.hospitalId,
-                }
+            ? {
+                  role: session.user.role as Role,
+                  hospitalId: session.user.hospitalId,
+              }
             : undefined
     );
 
     // Fetch today's appointments count
     const appointmentsTodayCount = await fetchAppointmentsTodayCount(
         session?.user
-            ?   {
-                    role: session.user.role as Role,
-                    hospitalId: session.user.hospitalId,
-                    userId: null,
-                }
+            ? {
+                  role: session.user.role as Role,
+                  hospitalId: session.user.hospitalId,
+                  userId: null,
+              }
             : undefined
     );
 
     // Fetch appointments for last 14 days
     const last14DaysAppointments = await fetchAppointmentsForLast14Days(
         session?.user
-            ?   {
-                    role: session.user.role as Role,
-                    hospitalId: session.user.hospitalId,
-                    userId: null,
-                }
+            ? {
+                  role: session.user.role as Role,
+                  hospitalId: session.user.hospitalId,
+                  userId: null,
+              }
             : undefined
     );
 
     // Fetch unique patients today
     const uniquePatientsTodayCount = await fetchPatientsTodayCount(
         session?.user
-            ?   {
-                    role: session.user.role as Role,
-                    hospitalId: session.user.hospitalId,
-                    userId: null,
-                }
+            ? {
+                  role: session.user.role as Role,
+                  hospitalId: session.user.hospitalId,
+                  userId: null,
+              }
             : undefined
     );
 
     // Fetch unique patients for last 14 days
-    const { currentWeekPatients, previousWeekPatients } = await fetchPatientsForLast14Days(
-        session?.user
-            ?   {
-                    role: session.user.role as Role,
-                    hospitalId: session.user.hospitalId,
-                    userId: null,
-                }
-            : undefined
-    );
+    const { currentWeekPatients, previousWeekPatients } =
+        await fetchPatientsForLast14Days(
+            session?.user
+                ? {
+                      role: session.user.role as Role,
+                      hospitalId: session.user.hospitalId,
+                      userId: null,
+                  }
+                : undefined
+        );
 
     // Fetch top doctors based on role and hospital ID
     const topDoctors = await fetchTopDoctors(
         session?.user
-            ?   {
-                    role: session.user.role as Role,
-                    hospitalId: session.user.hospitalId,
-                }
+            ? {
+                  role: session.user.role as Role,
+                  hospitalId: session.user.hospitalId,
+              }
             : undefined
     );
 
