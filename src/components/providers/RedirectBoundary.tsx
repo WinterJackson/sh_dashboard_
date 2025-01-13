@@ -1,4 +1,4 @@
-// src/components/RedirectBoundary.tsx
+// src/components/providers/RedirectBoundary.tsx
 import React from "react";
 
 function RedirectBoundary({ children }: { children: React.ReactNode }) {

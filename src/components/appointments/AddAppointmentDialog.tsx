@@ -14,12 +14,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSessionData } from "@/hooks/useSessionData";
-import {
-    fetchDoctorIdByUserId,
-    fetchDoctorsByHospital,
-} from "@/lib/data-access/doctors/data";
-import { fetchHospitals } from "@/lib/data-access/hospitals/data";
-import { fetchPatientDetails } from "@/lib/data-access/patients/data";
+import { useFetchHospitals } from "@/hooks/useFetchHospitals";
+import { useFetchPatientDetails } from "@/hooks/useFetchPatientDetails";
 import { Doctor, Hospital, Role } from "@/lib/definitions";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { IconButton } from "@mui/material";
@@ -27,6 +23,8 @@ import { differenceInYears } from "date-fns";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { useFetchDoctorsByHospital } from "@/hooks/useFetchDoctorsByHospital";
+import { useFetchDoctorIdByUserId } from "@/hooks/useFetchDoctorIdByUserId";
 
 interface AddAppointmentDialogProps {
     onClose: () => void;
@@ -44,7 +42,6 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
     );
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [doctors, setDoctors] = useState<Doctor[]>([]);
-    const [hospitals, setHospitals] = useState<Hospital[]>([]);
     const [patientDetails, setPatientDetails] = useState<any | null>(null);
     const router = useRouter();
     const sessionData = useSessionData();
@@ -52,27 +49,57 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
     const hospitalId = sessionData?.user?.hospitalId;
     const userId = sessionData?.user?.id;
 
-    console.log(userId);
+    const [patientName, setPatientName] = useState("");
 
-    const fetchAndSetPatientDetails = async (name: string) => {
-        const details = await fetchPatientDetails(name, {
+    // Use hook to fetch patient details
+    const {
+        data: fetchedPatientDetails,
+        isLoading,
+        isError,
+    } = useFetchPatientDetails(patientName, {
+        role,
+        hospitalId: hospitalId ?? null,
+        userId: userId ?? null,
+    });
+
+    // Use hook to fetch hospitals
+    const { data: hospitals } = useFetchHospitals({
+        role,
+        hospitalId: hospitalId ?? null,
+        userId: userId ?? null,
+    });
+
+    // Use hook to fetch doctors by hospital
+    const { data: fetchedDoctors } = useFetchDoctorsByHospital(
+        patientDetails?.hospitalId || hospitalId || -1,
+        role,
+        {
             role,
             hospitalId: hospitalId ?? null,
             userId: userId ?? null,
-        });
+        }
+    );
 
-        if (details) {
+    // Use hook to fetch doctor ID by user ID
+    const { data: doctorIdData } = useFetchDoctorIdByUserId(userId || "", {
+        role,
+        hospitalId: hospitalId ?? null,
+        userId: userId ?? null,
+    });
+
+    useEffect(() => {
+        if (fetchedPatientDetails) {
             const age = differenceInYears(
                 new Date(),
-                new Date(details.dateOfBirth)
+                new Date(fetchedPatientDetails.dateOfBirth)
             );
             setValue("age", age);
-            setValue("patientId", details.patientId);
-            setPatientDetails(details);
+            setValue("patientId", fetchedPatientDetails.patientId);
+            setPatientDetails(fetchedPatientDetails);
 
             if (role === "SUPER_ADMIN") {
-                setValue("hospitalName", details.hospital.name);
-                setValue("hospitalId", details.hospitalId);
+                setValue("hospitalName", fetchedPatientDetails.hospital.name);
+                setValue("hospitalId", fetchedPatientDetails.hospitalId);
             } else if (
                 (role === "ADMIN" || role === "DOCTOR" || role === "NURSE") &&
                 sessionData?.user
@@ -80,7 +107,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                 setValue("hospitalName", sessionData.user.hospital);
                 setValue("hospitalId", sessionData.user.hospitalId);
             }
-        } else {
+        } else if (isError) {
             setError("patientName", { message: "Patient not found" });
             setValue("age", "");
             setValue("patientId", "");
@@ -88,7 +115,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
             setValue("hospitalId", "");
             setPatientDetails(null);
         }
-    };
+    }, [fetchedPatientDetails, isError, role, sessionData, setValue, setError]);
 
     useEffect(() => {
         if (doctor) {
@@ -101,54 +128,14 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
             setValue("doctorId", doctor.doctorId);
         }
 
-    const fetchData = async () => {
-        try {
-            if (role === "SUPER_ADMIN" && patientDetails) {
-                const fetchedDoctors = await fetchDoctorsByHospital(patientDetails.hospitalId, role, {
-                    role,
-                    hospitalId: patientDetails.hospitalId,
-                    userId: userId ?? null,
-                });
-                setDoctors(fetchedDoctors);
-
-                const fetchedHospitals = await fetchHospitals(
-                    sessionData?.user
-                        ?   {
-                                role: sessionData.user.role as Role,
-                                hospitalId: sessionData.user.hospitalId ?? null,
-                                userId: sessionData.user.id,
-                            }
-                        : undefined
-                );
-
-                setHospitals(fetchedHospitals);
-                setValue("hospitalName", patientDetails.hospital.name);
-                setValue("hospitalId", patientDetails.hospitalId);
-            } else if ((role === "ADMIN" || role === "NURSE") && hospitalId) {
-                const fetchedDoctors = await fetchDoctorsByHospital(hospitalId, role, {
-                    role,
-                    hospitalId,
-                    userId: userId ?? null,
-                });
-                setDoctors(fetchedDoctors);
-            } else if (role === "DOCTOR" && userId) {
-                const doctorData = await fetchDoctorIdByUserId(userId, {
-                    role,
-                    hospitalId: hospitalId ?? null,
-                    userId,
-                });
-
-                if (doctorData) {
-                    setValue("doctorId", doctorData.doctorId.toString());
-                }
-            }
-        } catch (error) {
-            console.error("Failed to fetch data:", error);
+        if (fetchedDoctors) {
+            setDoctors(fetchedDoctors);
         }
-    };
 
-        fetchData();
-    }, [role, hospitalId, patientDetails, doctor, setValue, userId]);
+        if (doctorIdData) {
+            setValue("doctorId", doctorIdData.doctorId.toString());
+        }
+    }, [doctor, fetchedDoctors, doctorIdData, setValue]);
 
     const onSubmit = async (data: any) => {
         try {
@@ -167,16 +154,10 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                 throw new Error("Hospital ID mismatch");
             }
 
-        const doctorId =
-            role === "DOCTOR" && userId
-                ? (
-                      await fetchDoctorIdByUserId(userId, {
-                          role,
-                          hospitalId: hospitalId ?? null,
-                          userId,
-                      })
-                  )?.doctorId
-                : data.doctorId;
+            const doctorId =
+                role === "DOCTOR" && userId
+                    ? doctorIdData?.doctorId
+                    : data.doctorId;
 
             if (!doctorId) {
                 setError("doctorId", { message: "Doctor ID is missing" });
@@ -237,11 +218,15 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                                 {...register("patientName", {
                                     required: "Patient name is required",
                                     onBlur: (e) =>
-                                        fetchAndSetPatientDetails(
-                                            e.target.value
-                                        ),
+                                        setPatientName(e.target.value),
                                 })}
                             />
+                            {isLoading && <p>Loading...</p>}
+                            {isError && (
+                                <p className="text-red-500">
+                                    Patient not found
+                                </p>
+                            )}
                         </div>
                         <div>
                             <Label htmlFor="age">Age</Label>
@@ -373,7 +358,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                                     >
                                         Select a hospital
                                     </option>
-                                    {hospitals.map((hospital: any) => (
+                                    {(hospitals || []).map((hospital: Hospital) => (
                                         <option
                                             key={hospital.name}
                                             value={hospital.name}

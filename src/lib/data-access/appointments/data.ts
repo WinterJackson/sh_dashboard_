@@ -188,7 +188,50 @@ export async function updateAppointmentDetails(
     }
 }
 
-// Update appointment status
+// Update appointment type
+export async function updateAppointmentType(
+    appointmentId: string,
+    newType: string,
+    user?: { role: Role; hospitalId: number | null; userId: string | null }
+): Promise<{ success: boolean; updatedType?: string }> {
+
+    if (!user) {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return { success: false };
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
+    }
+
+    if (!appointmentId || !newType) {
+        console.error("Appointment ID and new type are required.");
+        return { success: false };
+    }
+
+    try {
+        const updatedAppointment = await prisma.appointment.update({
+            where: { appointmentId },
+            data: { type: newType },
+        });
+
+        return { success: true, updatedType: updatedAppointment.type };
+    } catch (error) {
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error(`Error updating appointment type for ${appointmentId}:`, errorMessage);
+        return { success: false };
+    }
+}
+
+// Update appointment status for cancel and pending dialog
 export async function updateAppointmentStatus(
     appointmentId: string,
     updateData: { status: string; reason: string },
@@ -237,49 +280,77 @@ export async function updateAppointmentStatus(
     }
 }
 
-// Update appointment type
-export async function updateAppointmentType(
+/**
+ * Updates the reschedule status of an appointment.
+ * @param appointmentId - The ID of the appointment to update.
+ * @param updateData - Object containing update details (e.g., date, time, doctor, etc.).
+ * @param user - The user making the request.
+ */
+export async function updateAppointmentStatusReschedule(
     appointmentId: string,
-    newType: string,
+    updateData: {
+        date: string;
+        timeFrom?: string; // Made optional to handle undefined values
+        timeTo?: string; // Made optional to handle undefined values
+        doctorId: number;
+        hospitalId: number;
+        type: string;
+    },
     user?: { role: Role; hospitalId: number | null; userId: string | null }
-): Promise<{ success: boolean; updatedType?: string }> {
-
+): Promise<Appointment | null> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
         if (!session || !session?.user) {
             console.error("Session fetch failed:", session);
             redirect("/sign-in");
-            return { success: false };
+            return null;
         }
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
-            userId: session.user.id,
+            hospitalId: session.user.hospitalId ?? null,
+            userId: session.user.id ?? null,
         };
     }
 
-    if (!appointmentId || !newType) {
-        console.error("Appointment ID and new type are required.");
-        return { success: false };
-    }
-
     try {
+        if (!updateData.date || !updateData.timeFrom || !updateData.timeTo) {
+            console.error("Date, timeFrom, and timeTo are required.");
+            throw new Error("Invalid or missing time data.");
+        }
+
+        // Process appointment start time
+        const appointmentDate = new Date(updateData.date);
+        const [hoursFrom, minutesFrom] = updateData.timeFrom.split(":");
+        appointmentDate.setHours(parseInt(hoursFrom, 10), parseInt(minutesFrom, 10));
+
+        // Process appointment end time
+        const appointmentEndAt = new Date(updateData.date);
+        const [hoursTo, minutesTo] = updateData.timeTo.split(":");
+        appointmentEndAt.setHours(parseInt(hoursTo, 10), parseInt(minutesTo, 10));
+
+        // Perform the update
         const updatedAppointment = await prisma.appointment.update({
             where: { appointmentId },
-            data: { type: newType },
+            data: {
+                appointmentDate,
+                appointmentEndAt,
+                doctorId: updateData.doctorId,
+                hospitalId: updateData.hospitalId,
+                type: updateData.type,
+                status: "Rescheduled",
+            },
         });
 
-        return { success: true, updatedType: updatedAppointment.type };
+        return updatedAppointment;
     } catch (error) {
         const errorMessage = getErrorMessage(error);
         Sentry.captureException(error, { extra: { errorMessage } });
-        console.error(`Error updating appointment type for ${appointmentId}:`, errorMessage);
-        return { success: false };
+        console.error("Error updating appointment reschedule status:", errorMessage);
+        return null;
     }
 }
-
 
 export async function fetchAppointmentsToday(
     user?: { role: Role; hospitalId: number | null; userId: string | null }
@@ -377,7 +448,6 @@ export async function fetchAppointmentsToday(
     }
 }
 
-
 export async function fetchAppointmentsTodayCount(
     user?: { role: Role; hospitalId: number | null; userId: string | null }
 ): Promise<number> {
@@ -465,7 +535,6 @@ export async function fetchAppointmentsTodayCount(
         return 0;
     }
 }
-
 
 export async function fetchAppointmentsForLast14Days(
     user?: { role: Role; hospitalId: number | null; userId: string | null }
@@ -564,7 +633,6 @@ export async function fetchAppointmentsForLast14Days(
         return { appointments: [] };
     }
 }
-
 
 export async function fetchAppointmentsForLast14DaysCount(
     user?: { role: Role; hospitalId: number | null; userId: string | null }

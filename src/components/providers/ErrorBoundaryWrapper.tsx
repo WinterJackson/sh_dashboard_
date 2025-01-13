@@ -1,4 +1,4 @@
-// src/components/ErrorBoundaryWrapper.tsx
+// src/components/providers/ErrorBoundaryWrapper.tsx
 
 "use client";
 

@@ -1,8 +1,8 @@
 // File: src/app/(auth)/dashboard/layout.tsx
 
 import HeaderWrapper from "@/components/header/HeaderWrapper";
+import RedirectBoundary from "@/components/providers/RedirectBoundary";
 import SidebarWrapper from "@/components/sidebar/SidebarWrapper";
-import RedirectBoundary from "@/components/RedirectBoundary";
 import React from "react";
 
 export default async function DashboardLayout({
@@ -10,7 +10,6 @@ export default async function DashboardLayout({
 }: {
     children: React.ReactNode;
 }) {
-
     return (
         <RedirectBoundary>
             <div className="flex relative w-full flex-col min-h-screen bg-gray-100 overflow-hidden">

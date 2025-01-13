@@ -1,4 +1,4 @@
-// src/components/SessionWrapper.tsx
+// src/components/providers/SessionWrapper.tsx
 
 "use client";
 

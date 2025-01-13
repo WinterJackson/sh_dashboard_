@@ -10,7 +10,8 @@ import AppointmentsPagination from "./../appointments/ui/AppointmentsPagination"
 import RescheduleDialog from "@/components/appointments/RescheduleDialog";
 import CancelDialog from "@/components/appointments/CancelDialog";
 import PendingDialog from "@/components/appointments/PendingDialog";
-import { updateAppointmentStatus, updateAppointmentType } from "@/lib/data-access/appointments/data";
+import { useUpdateAppointmentStatus } from "@/hooks/useUpdateAppointmentStatus";
+import { useUpdateAppointmentType } from "@/hooks/useUpdateAppointmentType";
 
 const ITEMS_PER_PAGE = 15;
 
@@ -33,7 +34,11 @@ export default function AppointmentList({
     const [openDialog, setOpenDialog] = useState(false);
     const [dialogType, setDialogType] = useState<string | undefined>(undefined);
     const [dialogAppointmentId, setDialogAppointmentId] = useState<string | undefined>(undefined);
-    const [searchTerm, setSearchTerm] = useState("");
+    const [ searchTerm ] = useState("");
+
+    // Initialize hooks for mutations
+    const { mutate: updateType } = useUpdateAppointmentType();
+    const { mutate: updateStatus } = useUpdateAppointmentStatus();
 
     // Initialize typeText mapping whenever appointments/page changes
     useEffect(() => {
@@ -48,33 +53,39 @@ export default function AppointmentList({
     const handleUpdateAppointmentType = async (appointmentId: string, newType: string) => {
         setTypeText((prev) => ({ ...prev, [appointmentId]: newType }));
 
-        const { success, updatedType } = await updateAppointmentType(
-            appointmentId,
-            newType,
-            session?.user
-                ? {
-                      role: session.user.role as Role,
-                      hospitalId: session.user.hospitalId,
-                      userId: session.user.id,
-                  }
-                : undefined
+        updateType(
+            {
+                appointmentId,
+                newType,
+                user: session?.user
+                    ? {
+                          role: session.user.role as Role,
+                          hospitalId: session.user.hospitalId,
+                          userId: session.user.id,
+                      }
+                    : undefined,
+            },
+            {
+                onSuccess: (updatedType) => {
+                    if (updatedType) {
+                        setFilteredAppointments((prevAppointments) =>
+                            prevAppointments.map((appointment) =>
+                                appointment.appointmentId === appointmentId
+                                    ? { ...appointment, type: updatedType }
+                                    : appointment
+                            )
+                        );
+                    }
+                },
+                onError: () => {
+                    console.error("Failed to update appointment type");
+                    setTypeText((prev) => ({
+                        ...prev,
+                        [appointmentId]: appointments.find((a) => a.appointmentId === appointmentId)?.type || newType,
+                    }));
+                },
+            }
         );
-        
-        if (!success) {
-            console.error("Failed to update appointment type");
-            setTypeText((prev) => ({
-                ...prev,
-                [appointmentId]: appointments.find((a) => a.appointmentId === appointmentId)?.type || newType,
-            }));
-        } else if (updatedType) {
-            setFilteredAppointments((prevAppointments) =>
-                prevAppointments.map((appointment) =>
-                    appointment.appointmentId === appointmentId
-                        ? { ...appointment, type: updatedType }
-                        : appointment
-                )
-            );
-        }
     };
 
     // Handler to open dialog
@@ -93,25 +104,29 @@ export default function AppointmentList({
 
     // Handler to update appointment status
     const handleUpdateStatus = async (appointmentId: string, status: string, reason?: string) => {
-        try {
-            const updatedAppointment = await updateAppointmentStatus(
+        updateStatus(
+            {
                 appointmentId,
-                { status, reason: reason || "" },
-                session?.user
+                updateData: { status, reason: reason || "" },
+                user: session?.user
                     ? {
                           role: session.user.role as Role,
                           hospitalId: session.user.hospitalId,
                           userId: session.user.id,
                       }
-                    : undefined
-            );
-            
-            if (updatedAppointment) {
-                handleActionChange(appointmentId, status);
+                    : undefined,
+            },
+            {
+                onSuccess: (updatedAppointment) => {
+                    if (updatedAppointment) {
+                        handleActionChange(appointmentId, status);
+                    }
+                },
+                onError: (error) => {
+                    console.error(`Failed to update status for ${appointmentId}:`, error);
+                },
             }
-        } catch (error) {
-            console.error(`Failed to update status for ${appointmentId}:`, error);
-        }
+        );
     };
 
     // Handle action change for dropdown actions
@@ -123,6 +138,16 @@ export default function AppointmentList({
             prevAppointments.map((appointment) =>
                 appointment.appointmentId === appointmentId
                     ? { ...appointment, status: action }
+                    : appointment
+            )
+        );
+    };
+
+    const updateFilteredAppointments = (updatedAppointment: Appointment) => {
+        setFilteredAppointments((prevAppointments) =>
+            prevAppointments.map((appointment) =>
+                appointment.appointmentId === updatedAppointment.appointmentId
+                    ? updatedAppointment
                     : appointment
             )
         );
@@ -159,6 +184,7 @@ export default function AppointmentList({
 
     return (
         <div className="flex-grow">
+
             <AppointmentFilters
                 appointments={appointments}
                 session={session}
@@ -229,17 +255,10 @@ export default function AppointmentList({
                         <RescheduleDialog
                             appointmentId={dialogAppointmentId}
                             onClose={handleDialogClose}
-                            onRescheduleSuccess={(updatedAppointment) =>
-                                setFilteredAppointments((prevAppointments) =>
-                                    prevAppointments.map((appointment) =>
-                                        appointment.appointmentId ===
-                                        updatedAppointment.appointmentId
-                                            ? updatedAppointment
-                                            : appointment
-                                    )
-                                )
-                            }
                             handleActionChange={handleActionChange}
+                            updateFilteredAppointments={
+                                updateFilteredAppointments
+                            }
                         />
                     )}
 

@@ -72,7 +72,7 @@ const AppointmentsFilters: React.FC<AppointmentsFiltersProps> = ({
     // Filtering logic
     const filteredAppointments = useMemo(() => {
         return appointments.filter((appointment) => {
-            const searchTextLower = searchTerm.toLowerCase();
+            const searchTextLower = searchTerm.toLowerCase() || "";
             let filterMatch = true;
 
             if (searchTerm) {

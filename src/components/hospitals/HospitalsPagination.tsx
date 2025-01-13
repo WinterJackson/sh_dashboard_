@@ -5,7 +5,7 @@
 import React from "react";
 import { Pagination, PaginationNext, PaginationPrevious, PaginationItem, PaginationContent } from "@/components/ui/pagination";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";  // A utility function for conditionally applying classes if you use it in your project
+import { cn } from "@/lib/utils";
 
 interface HospitalsPaginationProps {
     totalItems: number;

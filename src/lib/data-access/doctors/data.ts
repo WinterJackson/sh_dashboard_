@@ -705,6 +705,16 @@ export async function addDoctorAPI(
                 });
             } else {
                 user = existingUser;
+
+                // Check if doctor record already exists
+                const existingDoctor = await tx.doctor.findUnique({
+                    where: { userId: user.userId },
+                });
+
+                if (existingDoctor) {
+                    console.error("Doctor already exists for this user.");
+                    throw new Error("Doctor already exists.");
+                }
             }
 
             doctor = await tx.doctor.create({

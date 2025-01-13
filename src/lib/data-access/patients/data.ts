@@ -515,3 +515,74 @@ export async function fetchPatientDetails(
         return null;
     }
 }
+
+/**
+ * Fetch patients based on the user's role and hospital ID.
+ * @param user - User's role, hospital ID, and user ID.
+ * @returns Array of patients.
+ */
+export async function fetchPatientsByRole(
+    user?: { role: Role; hospitalId: number | null }
+): Promise<Patient[]> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session?.user) {
+            console.error("Session fetch failed:", session);
+            redirect("/sign-in");
+            return [];
+        }
+
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+        };
+    }
+
+    const { role, hospitalId } = user;
+
+    try {
+        let whereClause: Record<string, any> = {};
+
+        switch (role) {
+            case "SUPER_ADMIN":
+                // Fetch all patients for SUPER_ADMIN
+                whereClause = {};
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                // Fetch patients only for the user's hospital
+                if (!hospitalId) {
+                    console.error(`${role}s must have an associated hospital ID.`);
+                    return [];
+                }
+                whereClause = { hospitalId };
+                break;
+
+            default:
+                console.error("Invalid role provided.");
+                return [];
+        }
+
+        // Fetch patients based on the whereClause
+        const patients = await prisma.patient.findMany({
+            where: whereClause,
+            include: {
+                hospital: true,
+                appointments: {
+                    orderBy: { appointmentDate: "desc" }, // Sort appointments by date
+                },
+            },
+        });
+
+        return patients;
+    } catch (error) {
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Failed to fetch patients by role:", errorMessage);
+        return [];
+    }
+}

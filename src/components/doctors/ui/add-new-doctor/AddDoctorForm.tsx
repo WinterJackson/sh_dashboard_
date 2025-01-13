@@ -19,7 +19,7 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { useEdgeStore } from "@/lib/edgestore";
+import { EdgeStoreProvider, useEdgeStore } from "@/lib/edgestore";
 import { base64ToFile } from "@/lib/utils";
 import { calculateAge } from "@/hooks/useCalculateAge";
 import {
@@ -29,7 +29,7 @@ import {
     Service,
     Role,
 } from "@/lib/definitions";
-import { addDoctorAPI } from "@/lib/data-access/doctors/data";
+import { useAddDoctorAPI } from "@/hooks/useAddDoctorAPI";
 import { ChevronRight } from "lucide-react";
 
 interface AddDoctorFormProps {
@@ -51,7 +51,7 @@ interface AddDoctorFormProps {
     };
 }
 
-const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
+const AddDoctorFormComponent: React.FC<AddDoctorFormProps> = ({
     specialties,
     departments,
     hospitals,
@@ -62,6 +62,7 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
     sessionUser,
 }) => {
     const { edgestore } = useEdgeStore();
+    const { mutate: addDoctor, isPending: isSubmitting } = useAddDoctorAPI();
 
     const [message, setMessage] = useState<{
         text: string;
@@ -73,7 +74,7 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
         null
     ); // Store base64 string
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    // const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [selectedSpecialization, setSelectedSpecialization] = useState<
         number | null
@@ -234,16 +235,13 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
 
     // Submit handler
     const onSubmit = async (data: any) => {
-        setIsSubmitting(true);
         setMessage(null);
 
         let profileImageUrl: string | null = null;
 
         if (profileImageData) {
             try {
-                // Convert base64 string to File object
                 const file = base64ToFile(profileImageData, "profileImage.jpg");
-
                 const uploadResponse = await edgestore.doctorImages.upload({
                     file,
                 });
@@ -254,10 +252,10 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
                     text: "Failed to upload profile image.",
                     type: "error",
                 });
-                setIsSubmitting(false);
                 return;
             }
         }
+
         const processedData = {
             ...data,
             specializationId: selectedSpecialization,
@@ -272,33 +270,33 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
             profileImageUrl,
         };
 
-        try {
-            await addDoctorAPI(processedData, sessionUser);
-            setMessage({ text: "Doctor added successfully!", type: "success" });
-
-            // Reset form fields
-            methods.reset();
-
-            // Reset dropdown states
-            setSelectedSpecialization(null);
-            setSelectedDepartment(null);
-            setSelectedHospital(null);
-            setSelectedService(null);
-            setSelectedGender(null);
-            setSelectedStatus("Offline");
-
-            // Clear profile image
-            setProfileImage(null);
-            setPreviewImage(null);
-        } catch (error: any) {
-            console.error("Failed to add doctor:", error);
-            setMessage({
-                text: "Failed to add doctor. Please try again.",
-                type: "error",
-            });
-        } finally {
-            setIsSubmitting(false);
-        }
+        // Pass both doctorData and sessionUser as a single object
+        addDoctor(
+            { doctorData: processedData, user: sessionUser },
+            {
+                onSuccess: () => {
+                    setMessage({
+                        text: "Doctor added successfully!",
+                        type: "success",
+                    });
+                    methods.reset();
+                    setSelectedSpecialization(null);
+                    setSelectedDepartment(null);
+                    setSelectedHospital(null);
+                    setSelectedService(null);
+                    setSelectedGender(null);
+                    setSelectedStatus("Offline");
+                    setProfileImage(null);
+                    setPreviewImage(null);
+                },
+                onError: () => {
+                    setMessage({
+                        text: "Failed to add doctor. Please try again.",
+                        type: "error",
+                    });
+                },
+            }
+        );
     };
 
     const handleDropdownChange = (key: any, isOpen: any) => {
@@ -811,5 +809,11 @@ const AddDoctorForm: React.FC<AddDoctorFormProps> = ({
         </div>
     );
 };
+
+const AddDoctorForm: React.FC<AddDoctorFormProps> = (props) => (
+    <EdgeStoreProvider>
+        <AddDoctorFormComponent {...props} />
+    </EdgeStoreProvider>
+);
 
 export default AddDoctorForm;

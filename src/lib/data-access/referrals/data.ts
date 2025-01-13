@@ -64,7 +64,6 @@ export const fetchInwardReferrals = async (
     }
 };
 
-
 export const fetchInwardReferralsCount = async (
     user?: { role: Role; hospitalId: number | null }
 ): Promise<number> => {
@@ -109,7 +108,6 @@ export const fetchInwardReferralsCount = async (
         return 0;
     }
 };
-
 
 export const fetchOutwardReferrals = async (
     user?: { role: Role; hospitalId: number | null }
@@ -209,7 +207,6 @@ export const fetchOutwardReferralsCount = async (
     }
 };
 
-
 /**
  * Create a new referral
  * @param data - The referral data to be persisted.
@@ -240,7 +237,7 @@ export async function createReferral(
         status: string;
     },
     user?: { role: Role; hospitalId: number | null }
-): Promise<any> {
+): Promise<Referral | null> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -264,7 +261,7 @@ export async function createReferral(
             where: { name: data.hospitalName },
         });
 
-        if (!hospital) {
+        if (!hospital || !hospital.hospitalId) {
             console.error(`Hospital with name '${data.hospitalName}' not found.`);
             return null;
         }

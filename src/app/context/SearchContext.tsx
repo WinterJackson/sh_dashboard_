@@ -1,6 +1,6 @@
-"use client"
-
 // File: src/app/context/SearchContext.tsx
+
+"use client"
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
@@ -15,6 +15,8 @@ const SearchContext = createContext<SearchContextType | undefined>(undefined);
 export const SearchProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [searchTerm, setSearchTerm] = useState<string>('');
 
+    console.log("SearchProvider initialized");
+
     const clearSearchTerm = () => setSearchTerm('');
 
     return (
@@ -26,6 +28,9 @@ export const SearchProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
 export const useSearch = (): SearchContextType => {
     const context = useContext(SearchContext);
+
+    console.log("useSearch invoked", context);
+
     if (!context) {
         throw new Error('useSearch must be used within a SearchProvider');
     }

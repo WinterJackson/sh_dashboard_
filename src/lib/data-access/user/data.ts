@@ -23,10 +23,12 @@ export type UserProfile = {
     doctor?: {
         department: { name: string };
         specialization: { name: string };
+        hospital: { name: string };
     };
     nurse?: {
         department: { name: string };
         specialization: { name: string };
+        hospital: { name: string };
     };
     hospitalId: number | null;
     hospital: string | null;
@@ -72,12 +74,14 @@ export async function fetchUserProfile(userId?: string): Promise<UserProfile> {
                     include: {
                         department: true,
                         specialization: true,
+                        hospital: true,
                     },
                 },
                 nurse: {
                     include: {
                         department: true,
                         specialization: true,
+                        hospital: true,
                     },
                 },
             },
@@ -122,12 +126,14 @@ export async function fetchUserProfile(userId?: string): Promise<UserProfile> {
                 ? {
                       department: { name: userProfile.doctor.department?.name || "" },
                       specialization: { name: userProfile.doctor.specialization?.name || "" },
+                      hospital: { name: userProfile.doctor.hospital?.name || "" },
                   }
                 : undefined,
             nurse: userProfile.nurse
                 ? {
                       department: { name: userProfile.nurse.department?.name || "" },
                       specialization: { name: userProfile.nurse.specialization?.name || "" },
+                      hospital: { name: userProfile.doctor.hospital?.name || "" },
                   }
                 : undefined,
             hospitalId: userProfile.hospital?.hospitalId || null,

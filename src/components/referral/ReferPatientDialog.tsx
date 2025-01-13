@@ -10,15 +10,16 @@ import {
     DialogContent,
     DialogTitle,
     DialogDescription,
-    DialogClose
+    DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { fetchPatientDetails } from "@/lib/data-access/patients/data";
+import { useFetchPatientDetails } from "@/hooks/useFetchPatientDetails";
+import { useCreateReferral } from "@/hooks/useCreateReferral";
 import { useUser } from "@/app/context/UserContext";
-import { Role } from "@/lib/definitions";
+import { Hospital, Role } from "@/lib/definitions";
 
 interface ReferPatientDialogProps {
     onClose: () => void;
@@ -35,27 +36,37 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
     const hospitalId = user?.hospitalId;
     const userId = user?.id;
 
-    console.log(user)
+    const [patientName, setPatientName] = useState("");
 
-    const fetchAndSetPatientDetails = async (name: string) => {
-        const details = await fetchPatientDetails(name, {
-            role,
-            hospitalId: hospitalId ?? null,
-            userId: userId ?? null,
-        });
-        
-        console.log(details)
+    // Use the hook to fetch patient details
+    const {
+        data: fetchedPatientDetails,
+        isLoading,
+        isError,
+    } = useFetchPatientDetails(patientName, {
+        role,
+        hospitalId: hospitalId ?? null,
+        userId: userId ?? null,
+    });
 
-        if (details) {
-            setValue("patientId", details.patientId);
-            setValue("gender", details.gender);
-            setValue("dateOfBirth", details.dateOfBirth ? new Date(details.dateOfBirth).toISOString().split('T')[0] : ""); // Date format 'YYYY-MM-DD'
-            setValue("homeAddress", details.homeAddress);
-            setValue("state", details.state);
-            setValue("phoneNo", details.phoneNo);
-            setValue("email", details.email);
-            setValue("status", details.status);
-        } else {
+    useEffect(() => {
+        if (fetchedPatientDetails) {
+            setValue("patientId", fetchedPatientDetails.patientId);
+            setValue("gender", fetchedPatientDetails.gender);
+            setValue(
+                "dateOfBirth",
+                fetchedPatientDetails.dateOfBirth
+                    ? new Date(fetchedPatientDetails.dateOfBirth)
+                          .toISOString()
+                          .split("T")[0]
+                    : ""
+            ); // Date format 'YYYY-MM-DD'
+            setValue("homeAddress", fetchedPatientDetails.homeAddress);
+            setValue("state", fetchedPatientDetails.state);
+            setValue("phoneNo", fetchedPatientDetails.phoneNo);
+            setValue("email", fetchedPatientDetails.email);
+            setValue("status", fetchedPatientDetails.status);
+        } else if (isError) {
             setValue("patientId", "");
             setValue("gender", "");
             setValue("dateOfBirth", "");
@@ -65,66 +76,105 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
             setValue("email", "");
             setValue("status", "");
         }
-    };
+    }, [fetchedPatientDetails, isError, setValue]);
 
-    console.log(user)
+    // Function to auto-fill referring physician details
+    const autoFillPhysicianDetails = useCallback(() => {
+        if (user?.role === "DOCTOR" || user?.role === "NURSE") {
+            // Determine prefix based on role
+            const prefix = user.role === "DOCTOR" ? "Dr." : "Nurse";
 
-// Function to auto-fill referring physician details
-const autoFillPhysicianDetails = useCallback(() => {
-    if (user?.role === "DOCTOR" || user?.role === "NURSE") {
-        // Determine prefix based on role
-        const prefix = user.role === "DOCTOR" ? "Dr." : "Nurse";
+            // Construct the full name using optional chaining
+            const fullName = `${prefix} ${user.profile?.firstName || ""} ${
+                user.profile?.lastName || ""
+            }`;
 
-        // Construct the full name using optional chaining
-        const fullName = `${prefix} ${user.profile?.firstName || ""} ${user.profile?.lastName || ""}`;
+            // Fetch department name based on user role
+            const departmentName =
+                user?.doctor?.department?.name ||
+                user?.nurse?.department?.name ||
+                "";
 
-        // Fetch department name based on user role
-        const departmentName =
-            user?.doctor?.department?.name ||
-            user?.nurse?.department?.name ||
-            "";
+            // Fetch specialization based on user role
+            const specialization =
+                user?.doctor?.specialization ||
+                user?.nurse?.specialization ||
+                "";
 
-        // Fetch specialization based on user role
-        const specialization =
-            user?.doctor?.specialization ||
-            user?.nurse?.specialization ||
-            "";
+            const hospital =
+                user?.doctor?.hospital?.name ||
+                user?.nurse?.hospital?.name ||
+                "";
 
-        // Auto-fill the form fields
-        setValue("physicianName", fullName);
-        setValue("physicianDepartment", departmentName);
-        setValue("physicianSpecialty", specialization);
-        setValue("physicianEmail", user?.email || "");
-        setValue("physicianPhoneNumber", user.profile?.phoneNo || "");
-    }
-}, [user, setValue]);
+            // Auto-fill the form fields
+            setValue("physicianName", fullName);
+            setValue("physicianDepartment", departmentName);
+            setValue("physicianSpecialty", specialization);
+            setValue("physicianEmail", user?.email || "");
+            setValue("physicianPhoneNumber", user.profile?.phoneNo || "");
+            setValue("hospitalName", (hospital));
+        }
+    }, [user, setValue]);
 
-useEffect(() => {
-    autoFillPhysicianDetails();
-}, [autoFillPhysicianDetails]);
+    useEffect(() => {
+        autoFillPhysicianDetails();
+    }, [autoFillPhysicianDetails]);
+
+    // Transform the user object to match the expected type
+    const userForReferral = user
+        ? { role: user.role as Role, hospitalId: user.hospitalId }
+        : undefined;
+
+    // Use the hook to create a referral, passing the user object
+    const { mutate: createReferral, status } = useCreateReferral(userForReferral);
+    const isCreatingReferral = status === "pending";
 
     const onSubmit = async (data: any) => {
         try {
-            const response = await fetch(`${process.env.API_URL}/referrals`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to refer patient");
+            if (!hospitalId) {
+                throw new Error("Hospital ID is missing");
             }
 
-            const result = await response.json();
-            setSaved(true);
+            // Prepare referral data
+            const referralData = {
+                patientId: data.patientId,
+                patientName: data.patientName,
+                gender: data.gender,
+                dateOfBirth: data.dateOfBirth,
+                homeAddress: data.homeAddress,
+                state: data.state,
+                phoneNo: data.phoneNo,
+                email: data.email,
+                physicianName: data.physicianName,
+                physicianDepartment: data.physicianDepartment,
+                physicianSpecialty: data.physicianSpecialty,
+                physicianEmail: data.physicianEmail,
+                physicianPhoneNumber: data.physicianPhoneNumber,
+                hospitalName: data.hospitalName,
+                type: data.type,
+                primaryCareProvider: data.primaryCareProvider,
+                referralAddress: data.referralAddress,
+                referralPhone: data.referralPhone,
+                reasonForConsultation: data.reasonForConsultation,
+                diagnosis: data.diagnosis,
+                status: data.status,
+            };
 
-            // Redirect to the updated referrals page
-            // router.replace('/dashboard/referrals');
-
+            // Call the mutation
+            createReferral(referralData, {
+                onSuccess: (newReferral) => {
+                    if (newReferral) {
+                        setSaved(true);
+                        // Optionally redirect to the referrals page
+                        // router.replace('/dashboard/referrals');
+                    }
+                },
+                onError: (error) => {
+                    console.error("Failed to refer patient:", error);
+                },
+            });
         } catch (error) {
-            console.error(error);
+            console.error("Error submitting referral:", error);
         }
     };
 
@@ -172,10 +222,18 @@ useEffect(() => {
                     className="bg-[#EFEFEF]"
                     {...register("patientName", {
                         required: true,
-                        onBlur: (e) =>
-                            fetchAndSetPatientDetails(e.target.value),
+                        onBlur: (e) => setPatientName(e.target.value),
                     })}
                 />
+                {isLoading &&
+                    <p className=" mt-2 p-2 rounded-[5px] text-sm bg-bluelight">
+                        Loading Patient Details...
+                    </p>}
+
+                {isError &&
+                    <p className="text-red-500 mt-2 p-2 rounded-[5px] bg-slate-400">
+                        Patient not found
+                    </p>}
             </div>
             <div>
                 <Label htmlFor="gender">Gender</Label>
@@ -286,7 +344,6 @@ useEffect(() => {
     );
 
     const renderSection2 = () => {
-        
         return (
             <div className="relative h-auto grid gap-3">
                 {/* Help Section */}
@@ -330,6 +387,18 @@ useEffect(() => {
                         } ${user?.profile?.firstName} ${
                             user?.profile?.lastName
                         }`}
+                        readOnly
+                    />
+                </div>
+
+                {/* Hospital Name Field */}
+                <div>
+                    <Label htmlFor="hospitalName">Hospital Name</Label>
+                    <Input
+                        id="hospitalName"
+                        className="bg-[#EFEFEF]"
+                        {...register("hospitalName", { required: true })}
+                        value={(user?.hospital as Hospital | null)?.name || ""} 
                         readOnly
                     />
                 </div>
@@ -461,7 +530,10 @@ useEffect(() => {
                     </p>
                     <ol className="list-disc ml-10 text-gray-500 text-[13px]">
                         <li>type of referral (Internal or External).</li>
-                        <li>primary care provider for the patient - can be a private/public hospital, doctor, nurse or relative.</li>
+                        <li>
+                            primary care provider for the patient - can be a
+                            private/public hospital, doctor, nurse or relative.
+                        </li>
                         <li>
                             address of the patient or that of the primary care
                             provider.
@@ -544,8 +616,12 @@ useEffect(() => {
                 <Button type="button" onClick={() => setCurrentSection(2)}>
                     Back
                 </Button>
-                <Button type="submit" disabled={saved} className="ml-2">
-                    Refer Patient
+                <Button
+                    type="submit"
+                    disabled={saved || isCreatingReferral}
+                    className="ml-2"
+                >
+                    {isCreatingReferral ? "Submitting..." : "Refer Patient"}
                 </Button>
             </div>
         </div>
@@ -562,9 +638,9 @@ useEffect(() => {
                     Fill out the form below to refer a patient.
                 </DialogDescription>
                 <form className="p-1" onSubmit={handleSubmit(onSubmit)}>
-                        {currentSection === 1 && renderSection1()}
-                        {currentSection === 2 && renderSection2()}
-                        {currentSection === 3 && renderSection3()}
+                    {currentSection === 1 && renderSection1()}
+                    {currentSection === 2 && renderSection2()}
+                    {currentSection === 3 && renderSection3()}
                 </form>
                 {saved && (
                     <div className="absolute bottom-11 bg-bluelight left-20 ml-12 p-2 rounded-[10px]">

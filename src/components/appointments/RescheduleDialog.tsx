@@ -2,42 +2,40 @@
 
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import React, { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import {
     Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
     DialogTrigger,
+    DialogContent,
+    DialogTitle,
+    DialogDescription,
+    DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useSessionData } from "@/hooks/useSessionData";
-import { fetchHospitals } from "@/lib/data-access/hospitals/data";
-import { fetchOnlineDoctors } from "@/lib/data-access/doctors/data";
-import { Doctor, Hospital, Role } from "@/lib/definitions";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { IconButton } from "@mui/material";
-import { revalidatePath } from "next/cache";
-import React, { useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { updateAppointmentDetails } from "@/lib/data-access/appointments/data";
-
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import { useFetchHospitals } from "@/hooks/useFetchHospitals";
+import { useFetchOnlineDoctors } from "@/hooks/useFetchOnlineDoctors";
+import { useSessionData } from "@/hooks/useSessionData";
+import { Appointment, Doctor, Hospital, Role } from "@/lib/definitions";
+import { useUpdateAppointmentStatusReschedule } from "@/hooks/useUpdateAppointmentStatusReschedule";
 
 interface RescheduleDialogProps {
     appointmentId: string;
     onClose: () => void;
-    onRescheduleSuccess: (updatedAppointment: any) => void;
     handleActionChange: (appointmentId: string, action: string) => void;
+    updateFilteredAppointments: (updatedAppointment: Appointment ) => void;
 }
 
 const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
     appointmentId,
     onClose,
-    onRescheduleSuccess,
     handleActionChange,
+    updateFilteredAppointments,
 }) => {
     const {
         register,
@@ -49,110 +47,98 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
         mode: "onBlur",
     });
 
+    const [saved, setSaved] = useState<boolean>(false);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(
         undefined
     );
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-    const [doctors, setDoctors] = useState<Doctor[]>([]);
-    const [hospitals, setHospitals] = useState<Hospital[]>([]);
-    const [isSaving, setIsSaving] = useState(false);
-    const [saved, setSaved] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    // const [doctors, setDoctors] = useState<Doctor[]>([]);
 
     const sessionData = useSessionData();
     const userRole = sessionData?.user?.role as Role;
-    const hospitalId = sessionData?.user?.hospitalId ?? null;
+    const hospitalId = sessionData?.user?.hospitalId;
+    const userId = sessionData?.user?.id;
 
-    // Fetch doctors and hospitals based on user role
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const fetchedDoctors = await fetchOnlineDoctors({
-                    role: userRole,
-                    hospitalId: hospitalId,
-                });
+    // Use the useFetchHospitals hook
+    const { data: hospitals } = useFetchHospitals({
+        role: userRole,
+        hospitalId: hospitalId ?? null,
+        userId: userId ?? null,
+    });
 
-                if (userRole !== "SUPER_ADMIN" && hospitalId) {
-                    const filteredDoctors = fetchedDoctors.filter(
-                        (doctor: { hospitalId: number }) =>
-                            doctor.hospitalId === hospitalId
-                    );
-                    setDoctors(filteredDoctors);
-                } else {
-                    setDoctors(fetchedDoctors);
-                }
+    // Use the useFetchOnlineDoctors hook
+    const { data: doctors } = useFetchOnlineDoctors({
+        role: userRole,
+        hospitalId: hospitalId ?? null,
+        userId: userId ?? null,
+    });
 
-                if (userRole === "SUPER_ADMIN") {
-                    const fetchedHospitals = await fetchHospitals(
-                        sessionData?.user
-                            ?   {
-                                    role: userRole,
-                                    hospitalId,
-                                    userId: sessionData.user.id,
-                                }
-                            : undefined
-                    );
-                    setHospitals(fetchedHospitals);
-                }
-            } catch (error) {
-                console.error("Failed to fetch doctors or hospitals:", error);
-            }
-        };
-
-        fetchData();
-    }, [userRole, hospitalId]);
-
-    // Handle doctor change to fetch associated hospital
     const handleDoctorChange = async (
         event: React.ChangeEvent<HTMLSelectElement>
     ) => {
         const doctorId = parseInt(event.target.value, 10);
+
         if (userRole === "SUPER_ADMIN" && doctorId) {
-            const selectedDoctor = doctors.find(
-                (doctor) => doctor.doctorId === doctorId
-            );
-            setValue("hospitalId", selectedDoctor?.hospitalId || "");
+            try {
+                const selectedDoctor = doctors?.find(
+                    (doctor: { doctorId: number }) =>
+                        doctor.doctorId === doctorId
+                );
+
+                if (selectedDoctor) {
+                    setValue("hospitalId", selectedDoctor.hospitalId);
+                } else {
+                    setValue("hospitalId", "");
+                }
+            } catch (error) {
+                console.error(
+                    "Failed to fetch and set doctor hospital:",
+                    error
+                );
+            }
         }
     };
 
-    const onSubmit = async (data: any) => {
-        setIsSaving(true);
-        setError(null);
+    // Mutation hook for updating the appointment
+    const updateAppointment = useUpdateAppointmentStatusReschedule();
 
-        try {
-            const requestBody = {
-                ...data,
-                date: selectedDate?.toISOString(),
-                hospitalId: userRole === "SUPER_ADMIN" ? parseInt(data.hospitalId, 10) : hospitalId, // Convert to Int
-                doctorId: parseInt(data.doctorId, 10),
-                type: data.type,
-                status: "Rescheduled",
-            };
-
-            const updatedAppointment = await updateAppointmentDetails(
-                appointmentId,
-                requestBody,
-                {
-                    role: userRole,
-                    hospitalId: hospitalId,
-                    userId: sessionData?.user?.id || null,
-                }
-            );
-
-            if (!updatedAppointment) {
-                throw new Error("Failed to reschedule appointment.");
-            }
-
-            setSaved(true);
-            handleActionChange(appointmentId, "Rescheduled");
-            onRescheduleSuccess(updatedAppointment);
-            onClose();
-        } catch (error) {
-            console.error("Error rescheduling appointment:", error);
-            setError("Failed to reschedule appointment. Please try again.");
-        } finally {
-            setIsSaving(false);
+    const onSubmit = (data: any) => {
+        if (!selectedDate) {
+            console.error("Date is required.");
+            return;
         }
+
+        if (!data.timeFrom || !data.timeTo) {
+            console.error("Both timeFrom and timeTo are required.");
+            return;
+        }
+
+        const requestBody = {
+            date: selectedDate.toISOString(),
+            timeFrom: data.timeFrom,
+            timeTo: data.timeTo,
+            doctorId: parseInt(data.doctorId, 10),
+            hospitalId:
+                userRole === "SUPER_ADMIN"
+                    ? parseInt(data.hospitalId, 10)
+                    : hospitalId!,
+            type: data.type,
+        };
+
+        updateAppointment.mutate(
+            { appointmentId, updateData: requestBody },
+            {
+                onSuccess: (updatedAppointment) => {
+                    if (updatedAppointment) {
+                        updateFilteredAppointments(updatedAppointment);
+                        handleActionChange(appointmentId, "Rescheduled");
+                        onClose();
+                    } else {
+                        console.error("Updated appointment is null.");
+                    }
+                },
+            }
+        );
     };
 
     const handleDateChange = (date: Date | undefined) => {
@@ -160,8 +146,12 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
         setIsCalendarOpen(false);
     };
 
+    const handleClose = () => {
+        onClose();
+    };
+
     return (
-        <Dialog open={true} onOpenChange={onClose}>
+        <Dialog open={true} onOpenChange={handleClose}>
             <DialogTrigger asChild>
                 <button className="hidden"></button>
             </DialogTrigger>
@@ -249,7 +239,6 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                 <Controller
                                     control={control}
                                     name="timeFrom"
-                                    defaultValue=""
                                     rules={{
                                         required: "Start time is required.",
                                     }}
@@ -257,17 +246,21 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                         <Input
                                             type="time"
                                             {...field}
-                                            className="flex bg-[#EFEFEF] h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                            className="flex bg-[#EFEFEF] h-10  w-full border px-3 py-2 text-sm rounded-[5px]"
                                         />
                                     )}
                                 />
+                                {errors.timeFrom && (
+                                    <p className="text-sm text-destructive">
+                                        Start time is required
+                                    </p>
+                                )}
                             </div>
                             <div>
                                 <Label htmlFor="timeTo">To</Label>
                                 <Controller
                                     control={control}
                                     name="timeTo"
-                                    defaultValue=""
                                     rules={{
                                         required: "End time is required.",
                                     }}
@@ -275,10 +268,15 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                         <Input
                                             type="time"
                                             {...field}
-                                            className="flex bg-[#EFEFEF] h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                            className="flex bg-[#EFEFEF] h-10  w-full border px-3 py-2 text-sm rounded-[5px]"
                                         />
                                     )}
                                 />
+                                {errors.timeTo && (
+                                    <p className="text-sm text-destructive">
+                                        End time is required
+                                    </p>
+                                )}
                             </div>
                         </div>
                         <div>
@@ -288,7 +286,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                 {...register("doctorId", {
                                     required: "Doctor is required.",
                                 })}
-                                className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px]"
                                 onChange={handleDoctorChange}
                             >
                                 <option
@@ -297,7 +295,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                 >
                                     Select a doctor
                                 </option>
-                                {doctors.map((doctor: any) => (
+                                {(doctors || []).map((doctor: Doctor) => (
                                     <option
                                         key={doctor.doctorId}
                                         value={doctor.doctorId}
@@ -309,14 +307,12 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                     </option>
                                 ))}
                             </select>
-                            {errors.doctor && (
-                                <p className="text-sm p-2 text-destructive">
+                            {errors.doctorId && (
+                                <p className="text-sm text-destructive">
                                     Doctor is required.
                                 </p>
                             )}
                         </div>
-
-                        {/* Conditionally render the Hospital input only for Super Admin */}
                         {userRole === "SUPER_ADMIN" && (
                             <div>
                                 <Label htmlFor="hospitalId">Hospital</Label>
@@ -325,7 +321,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                     {...register("hospitalId", {
                                         required: "Hospital is required.",
                                     })}
-                                    className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px]"
                                 >
                                     <option
                                         value=""
@@ -333,10 +329,10 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                     >
                                         Select a hospital
                                     </option>
-                                    {hospitals.map((hospital: any) => (
+                                    {hospitals?.map((hospital: Hospital) => (
                                         <option
                                             key={hospital.hospitalId}
-                                            value={hospital.hospitalId} // Use hospitalId as the value
+                                            value={hospital.hospitalId}
                                             className="bg-white"
                                         >
                                             {hospital.name}
@@ -344,47 +340,13 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                     ))}
                                 </select>
                                 {errors.hospitalId && (
-                                    <p className="text-sm p-2 text-destructive">
+                                    <p className="text-sm text-destructive">
                                         Hospital is required.
                                     </p>
                                 )}
                             </div>
                         )}
-
-                        <div>
-                            <Label htmlFor="type">Type</Label>
-                            <select
-                                id="type"
-                                {...register("type", {
-                                    required: "Type is required.",
-                                })}
-                                className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                <option
-                                    value=""
-                                    className="bg-[#EFEFEF] text-gray-500"
-                                >
-                                    Select appointment type
-                                </option>
-                                <option value="Virtual" className="bg-white">
-                                    Virtual
-                                </option>
-                                <option value="Walk In" className="bg-white">
-                                    Walk In
-                                </option>
-                            </select>
-                            {errors.type && (
-                                <p className="text-sm p-2 text-destructive">
-                                    Type is required.
-                                </p>
-                            )}
-                        </div>
                     </div>
-                    {saved && (
-                        <div className="absolute bottom-11 bg-bluelight p-2 rounded-[10px]">
-                            <p className=" text-black">Saved Successfully!</p>
-                        </div>
-                    )}
                     <div className="mt-4 flex justify-end">
                         <Button
                             type="submit"
@@ -395,7 +357,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                         </Button>
                     </div>
                 </form>
-                <DialogClose onClick={onClose} />
+                <DialogClose onClick={handleClose} />
             </DialogContent>
         </Dialog>
     );

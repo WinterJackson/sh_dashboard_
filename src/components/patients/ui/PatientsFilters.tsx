@@ -22,7 +22,7 @@ import {
     // Hospital as HospitalIcon,
     CircleX as CancelledIcon,
 } from "lucide-react";
-import { fetchPatientsByRole } from "@/lib/data";
+import { useFetchPatientsByRole } from "@/hooks/useFetchPatientsByRole";
 import { SymbolIcon } from "@radix-ui/react-icons";
 
 interface PatientsFiltersProps {
@@ -57,6 +57,12 @@ const PatientsFilters: React.FC<PatientsFiltersProps> = ({
     const [showOptions, setShowOptions] = useState(false);
 
     const isSuperAdmin = userRole === "SUPER_ADMIN";
+
+    // fetch patients by role
+    const { data: fetchedPatients, refetch } = useFetchPatientsByRole({
+        role: userRole,
+        hospitalId,
+    });
 
     // Helper function to sanitize input and phone numbers
     const sanitizeNumber = (input: string): string => input.replace(/\D/g, "");
@@ -177,13 +183,12 @@ const PatientsFilters: React.FC<PatientsFiltersProps> = ({
         setSearchTerm("");
         setLatestAppointmentsActive(false);
 
-        const reloadPatients = async () => {
-            if (userRole && hospitalId !== null) {
-                const fetchedPatients = await fetchPatientsByRole({ role: userRole, hospitalId });
+        // Refetch patients using the custom hook
+        refetch().then(() => {
+            if (fetchedPatients) {
                 onSetPatients(fetchedPatients);
             }
-        };
-        reloadPatients();
+        });
     };
 
     return (

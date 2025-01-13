@@ -1,18 +1,16 @@
 // src/app/layout.tsx
 
-import "../styles/global.css";
-import type { Metadata } from "next";
-import { inter } from "@/components/ui/fonts";
-import SessionWrapper from "@/components/SessionWrapper";
-import { UserProvider } from "@/app/context/UserContext";
 import { LoadingProvider } from "@/app/context/LoadingContext";
 import { SearchProvider } from "@/app/context/SearchContext";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
-import { getUserProfile } from "@/lib/session";
-import { EdgeStoreProvider } from "@/lib/edgestore";
-import ErrorBoundaryWrapper from "@/components/ErrorBoundaryWrapper"; // Import wrapper
-import NotFoundBoundary from "@/components/NotFoundBoundary";
+import { UserProvider } from "@/app/context/UserContext";
+import ErrorBoundaryWrapper from "@/components/providers/ErrorBoundaryWrapper"; // Import wrapper
+import NotFoundBoundary from "@/components/providers/NotFoundBoundary";
+import SessionWrapper from "@/components/providers/SessionWrapper";
+import { inter } from "@/components/ui/fonts";
+// import { EdgeStoreProvider } from "@/lib/edgestore";
+import QueryClientWrapper from "@/components/providers/ClientQueryProvider";
+import type { Metadata } from "next";
+import "../styles/global.css";
 
 export const metadata: Metadata = {
     title: "Hospital Dashboard",
@@ -30,15 +28,17 @@ export default async function RootLayout({
                 <body className={`${inter.className} antialiased`}>
                     <SessionWrapper>
                         <ErrorBoundaryWrapper>
-                            <UserProvider>
-                                <LoadingProvider>
-                                    <SearchProvider>
-                                        <EdgeStoreProvider>
-                                            <main>{children}</main>
-                                        </EdgeStoreProvider>
-                                    </SearchProvider>
-                                </LoadingProvider>
-                            </UserProvider>
+                            <QueryClientWrapper>
+                                <UserProvider>
+                                    <LoadingProvider>
+                                        <SearchProvider>
+                                            {/* <EdgeStoreProvider> */}
+                                                <main>{children}</main>
+                                            {/* </EdgeStoreProvider> */}
+                                        </SearchProvider>
+                                    </LoadingProvider>
+                                </UserProvider>
+                            </QueryClientWrapper>
                         </ErrorBoundaryWrapper>
                     </SessionWrapper>
                 </body>
