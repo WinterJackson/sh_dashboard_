@@ -11,11 +11,15 @@ import { getErrorMessage } from "@/hooks/getErrorMessage";
 
 const prisma = require("@/lib/prisma");
 
-export async function fetchAppointments(user?: {
-    role: Role;
-    hospitalId: number | null;
-    userId: string | null;
-}): Promise<{ appointments: Appointment[]; totalAppointments: number }> {
+export async function fetchAppointments(
+    user?: {
+        role: Role;
+        hospitalId: number | null;
+        userId: string | null;
+    },
+    take?: number,
+    skip?: number
+): Promise<{ appointments: Appointment[]; totalAppointments: number }> {
     
     if (!user) {
         const session = await getServerSession(authOptions);
@@ -93,6 +97,8 @@ export async function fetchAppointments(user?: {
                 hospital: true,
             },
             orderBy: { appointmentDate: "desc" },
+            take,
+            skip,
         });
 
         // Get the total count of appointments for pagination or informational purposes

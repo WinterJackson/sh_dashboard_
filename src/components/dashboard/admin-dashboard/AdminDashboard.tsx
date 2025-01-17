@@ -29,6 +29,7 @@ import OutwardReferralsCard from "../ui/OutwardReferralsCard";
 import PatientsGraphCard from "../ui/PatientsGraphCard";
 import PatientsTodayCard from "../ui/PatientsTodayCard";
 import TopDoctorsCard from "../ui/TopDoctorsCard";
+import ServicesDataCard from "../ui/ServicesDataCard";
 
 interface AdminDashboardProps {
     session: {
@@ -44,11 +45,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = async ({ session }) => {
     
     const firstName = session?.user?.username?.split(" ")[0] || "Super Admin";
 
-    const { appointments, totalAppointments } = await fetchAppointments({
-        role: session?.user?.role as Role,
-        hospitalId: session?.user?.hospitalId,
-        userId: null,
-    });
+    const { appointments, totalAppointments } = await fetchAppointments(
+        session?.user
+            ? {
+                  role: session.user.role as Role,
+                  hospitalId: session.user.hospitalId,
+                  userId: null,
+                }
+            : undefined
+    );
 
     // Fetch available beds count
     const availableBedsCount = await fetchAvailableBedsCount(
@@ -209,10 +214,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = async ({ session }) => {
                     />
                 </div>
                 <div className="grid w-full p-4">
-                    <PatientsGraphCard
-                        session={session}
-                        appointments={transformedAppointments}
-                    />
+                    {/* <ServicesDataCard session={session}/> */}
+                    <ServicesDataCard />
                 </div>
             </div>
             <div className="flex w-full">

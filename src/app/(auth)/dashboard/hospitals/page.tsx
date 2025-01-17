@@ -48,15 +48,15 @@ export default async function HospitalsPage({ searchParams }: HospitalsPageProps
             <h1 className="text-xl font-bold bg-bluelight/5 p-2 rounded-[10px]">
                 Hospitals
             </h1>
-            <HospitalsTable 
-                hospitals={hospitals} 
-                totalHospitals={totalHospitals} 
-                currentPage={page} 
+            <HospitalsTable
+                hospitals={hospitals}
+                totalHospitals={totalHospitals}
+                currentPage={page}
             />
-            <HospitalsPagination 
-                totalItems={totalHospitals} 
-                itemsPerPage={ITEMS_PER_PAGE} 
-                currentPage={page} 
+            <HospitalsPagination
+                totalItems={totalHospitals}
+                itemsPerPage={ITEMS_PER_PAGE}
+                currentPage={page}
             />
         </div>
     );

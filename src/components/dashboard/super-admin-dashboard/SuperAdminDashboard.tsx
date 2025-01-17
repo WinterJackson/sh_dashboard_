@@ -27,6 +27,7 @@ import {
 } from "@/lib/data-access/patients/data";
 import { fetchTopDoctors } from "@/lib/data-access/doctors/data";
 import { Role } from "@/lib/definitions";
+import ServicesDataCard from "../ui/ServicesDataCard";
 
 interface SuperAdminDashboardProps {
     session: {
@@ -43,12 +44,15 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = async ({
 }) => {
     const firstName = session?.user?.username?.split(" ")[0] || "Super Admin";
 
-    // Fetch appointments for Super Admin (no filters applied)
-    const { appointments, totalAppointments } = await fetchAppointments({
-        role: session?.user?.role as Role,
-        hospitalId: null,
-        userId: null,
-    });
+    const { appointments, totalAppointments } = await fetchAppointments(
+        session?.user
+            ? {
+                  role: session.user.role as Role,
+                  hospitalId: null,
+                  userId: null,
+              }
+            : undefined
+    );
 
     // Fetch available beds count
     const availableBedsCount = await fetchAvailableBedsCount(
@@ -208,10 +212,8 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = async ({
                     />
                 </div>
                 <div className="grid w-full p-4">
-                    <PatientsGraphCard
-                        session={session}
-                        appointments={transformedAppointments}
-                    />
+                    {/* <ServicesDataCard session={session}/> */}
+                    <ServicesDataCard />
                 </div>
             </div>
             <div className="flex flex-row w-full h-full mt-4">

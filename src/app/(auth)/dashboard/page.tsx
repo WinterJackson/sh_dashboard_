@@ -1,14 +1,14 @@
 // src/app/(auth)/dashboard/page.tsx
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
-import { redirect } from "next/navigation";
-import SuperAdminDashboard from "@/components/dashboard/super-admin-dashboard/SuperAdminDashboard";
 import AdminDashboard from "@/components/dashboard/admin-dashboard/AdminDashboard";
 import DoctorDashboard from "@/components/dashboard/doc-dashboard/DoctorDashboard";
 import NurseDashboard from "@/components/dashboard/nurse-dashboard/NurseDashboard";
 import StaffDashboard from "@/components/dashboard/staff-dashboard/StaffDashboard";
+import SuperAdminDashboard from "@/components/dashboard/super-admin-dashboard/SuperAdminDashboard";
+import { authOptions } from "@/lib/authOptions";
 import { Role } from "@/lib/definitions";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
     // Fetch session using NextAuth's getServerSession
@@ -29,7 +29,7 @@ export default async function DashboardPage() {
             role: user?.role as Role,
             hospitalId: user?.hospitalId || null,
         },
-    }
+    };
 
     return (
         <div className="h-full">

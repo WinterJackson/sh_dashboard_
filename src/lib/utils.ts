@@ -53,7 +53,6 @@ export function generateRandomPassword(length = 12): string {
         .join("");
 }
 
-
 export const base64ToFile = (base64: string, filename: string): File => {
     const [header, base64Data] = base64.split(',');
     let mimeType = 'image/jpeg';  // Default to JPEG if MIME type is not found
@@ -83,3 +82,10 @@ export const base64ToFile = (base64: string, filename: string): File => {
     return new File([blob], filename, { type: mimeType });
 };
 
+/**
+ * Calculates the percentage of a value relative to a total.
+ */
+export function calculatePercentage(value: number, total: number): string {
+    if (total === 0) return "0.00%"; // Avoid division by zero
+    return ((value / total) * 100).toFixed(2) + "%";
+}

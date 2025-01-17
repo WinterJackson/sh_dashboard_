@@ -22,7 +22,7 @@ const HospitalsPagination: React.FC<HospitalsPaginationProps> = ({ totalItems, i
     };
 
     return (
-        <Pagination className="my-4">
+        <Pagination className="bg-bluelight/5 p-3 mt-2 rounded-b-2xl">
             <PaginationPrevious
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}

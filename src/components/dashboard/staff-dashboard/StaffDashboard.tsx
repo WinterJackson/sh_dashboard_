@@ -29,6 +29,7 @@ import {
     fetchPatientsForLast14Days,
     fetchPatientsTodayCount,
 } from "@/lib/data-access/patients/data";
+import ServicesDataCard from "../ui/ServicesDataCard";
 
 interface StaffDashboardProps {
     session: {
@@ -43,11 +44,15 @@ interface StaffDashboardProps {
 const StaffDashboard: React.FC<StaffDashboardProps> = async ({ session }) => {
     const firstName = session?.user?.username?.split(" ")[0] || "Super Admin";
 
-    const { appointments, totalAppointments } = await fetchAppointments({
-        role: session?.user?.role as Role,
-        hospitalId: session?.user?.hospitalId,
-        userId: null,
-    });
+    const { appointments, totalAppointments } = await fetchAppointments(
+        session?.user
+            ? {
+                  role: session.user.role as Role,
+                  hospitalId: session.user.hospitalId,
+                  userId: null,
+              }
+            : undefined
+    );
 
     // Fetch available beds count
     const availableBedsCount = await fetchAvailableBedsCount(
@@ -207,10 +212,8 @@ const StaffDashboard: React.FC<StaffDashboardProps> = async ({ session }) => {
                     />
                 </div>
                 <div className="grid w-full p-4">
-                    <PatientsGraphCard
-                        session={session}
-                        appointments={transformedAppointments}
-                    />
+                    {/* <ServicesDataCard session={session}/> */}
+                    <ServicesDataCard />
                 </div>
             </div>
             <div className="flex w-full">
