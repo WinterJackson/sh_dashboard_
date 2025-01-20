@@ -205,29 +205,28 @@ const StaffDashboard: React.FC<StaffDashboardProps> = async ({ session }) => {
                 </div>
             </div>
             <div className="flex">
-                <div className="grid w-full p-4">
+                <div className="grid w-1/2 p-4">
                     <PatientsGraphCard
                         session={session}
                         appointments={transformedAppointments}
                     />
                 </div>
-                <div className="grid w-full p-4">
-                    {/* <ServicesDataCard session={session}/> */}
-                    <ServicesDataCard />
+                <div className="grid w-1/2 p-4">
+                    <ServicesDataCard session={session} />
                 </div>
             </div>
-            <div className="flex w-full">
-                <div className="w-2/3 p-4">
+            <div className="flex flex-row w-full h-full mt-4">
+                <div className="w-2/3 p-4 pr-2">
                     <DashboardAppointments
                         appointments={appointments}
                         totalAppointments={totalAppointments}
                     />
                 </div>
-                <div className="w-1/3 p-2 h-full">
-                    <div className="h-1/2">
+                <div className="flex flex-col w-1/3 p-4 gap-4">
+                    <div className="">
                         <TopDoctorsCard topDoctors={topDoctors || []} />
                     </div>
-                    <div className="h-1/2">
+                    <div className="">
                         <LearnMoreCard />
                     </div>
                 </div>

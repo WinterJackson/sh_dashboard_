@@ -19,6 +19,11 @@ enum Role {
   STAFF
 }
 
+enum ServiceType {
+  HEALTH
+  NON_MEDICAL
+}
+
 model User {
   userId     String      @id @default(uuid())
   username   String      @unique
@@ -270,6 +275,7 @@ model HospitalDepartment {
 model Service {
   serviceId     Int                  @id @default(autoincrement())
   serviceName   String
+  type          ServiceType          // HEALTH or NON_MEDICAL
   appointments  AppointmentService[]
   departments   DepartmentService[]
   doctors       Doctor[]

@@ -4,10 +4,11 @@
 
 import React, { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Label } from "recharts";
+import GraphTooltip from "@/components/ui/graph-tooltip";
 
 interface PatientCountPerMonth {
     month: string;
-    count: number;
+    Count: number;
 }
 
 interface PatientsGraphCardProps {
@@ -21,38 +22,38 @@ interface PatientsGraphCardProps {
         appointmentDate: string;
         hospitalId: number;
         patientId: number;
-    }[]; // Data passed as props
+    }[];
 }
 
 // Corrected mock data with number keys
 const mockAppointmentsData: Record<number, PatientCountPerMonth[]> = {
     2024: [
-        { month: "Feb", count: 30 },
-        { month: "Mar", count: 25 },
-        { month: "Jan", count: 20 },
-        { month: "Apr", count: 28 },
-        { month: "May", count: 35 },
-        { month: "Jun", count: 40 },
-        { month: "Jul", count: 45 },
-        { month: "Aug", count: 50 },
-        { month: "Sep", count: 42 },
-        { month: "Oct", count: 38 },
-        { month: "Nov", count: 33 },
-        { month: "Dec", count: 37 },
+        { month: "Feb", Count: 30 },
+        { month: "Mar", Count: 25 },
+        { month: "Jan", Count: 20 },
+        { month: "Apr", Count: 28 },
+        { month: "May", Count: 35 },
+        { month: "Jun", Count: 40 },
+        { month: "Jul", Count: 45 },
+        { month: "Aug", Count: 50 },
+        { month: "Sep", Count: 42 },
+        { month: "Oct", Count: 38 },
+        { month: "Nov", Count: 33 },
+        { month: "Dec", Count: 37 },
     ],
     2025: [
-        { month: "Jan", count: 32 },
-        { month: "Feb", count: 28 },
-        { month: "Mar", count: 35 },
-        { month: "Apr", count: 45 },
-        { month: "May", count: 50 },
-        { month: "Jun", count: 60 },
-        { month: "Jul", count: 55 },
-        { month: "Aug", count: 58 },
-        { month: "Sep", count: 48 },
-        { month: "Oct", count: 50 },
-        { month: "Nov", count: 42 },
-        { month: "Dec", count: 47 },
+        { month: "Jan", Count: 32 },
+        { month: "Feb", Count: 28 },
+        { month: "Mar", Count: 35 },
+        { month: "Apr", Count: 45 },
+        { month: "May", Count: 50 },
+        { month: "Jun", Count: 60 },
+        { month: "Jul", Count: 55 },
+        { month: "Aug", Count: 58 },
+        { month: "Sep", Count: 48 },
+        { month: "Oct", Count: 50 },
+        { month: "Nov", Count: 42 },
+        { month: "Dec", Count: 47 },
     ],
 };
 
@@ -74,10 +75,10 @@ const PatientsGraphCard: React.FC<PatientsGraphCardProps> = ({ session, appointm
         //             ? appointments.filter(app => app.hospitalId === hospitalId)
         //             : appointments;
     
-        //         // Initialize all months with a count of 0
+        //         // Initialize all months with a Count of 0
         //         const initialData: PatientCountPerMonth[] = months.map(month => ({
         //             month,
-        //             count: 0,
+        //             Count: 0,
         //         }));
     
         //         // Count unique patients per month
@@ -102,7 +103,7 @@ const PatientsGraphCard: React.FC<PatientsGraphCardProps> = ({ session, appointm
         //         // Update the initial data with actual counts
         //         const finalData = initialData.map((data) => ({
         //             ...data,
-        //             count: uniquePatientsByMonth[data.month]?.size || 0,
+        //             Count: uniquePatientsByMonth[data.month]?.size || 0,
         //         }));
     
         //         setAppointmentsData(finalData);
@@ -122,7 +123,7 @@ const PatientsGraphCard: React.FC<PatientsGraphCardProps> = ({ session, appointm
     };
 
     return (
-        <div className="grid p-4 rounded-2xl xl:pb-5 bg-slate-100 shadow-lg shadow-gray-300">
+        <div className="w-full grid p-4 pt-0 rounded-2xl xl:pb-5 bg-slate-100 shadow-lg shadow-gray-300">
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-sm xl:text-base font-semibold">
                     Patients Per Month ({year})
@@ -164,10 +165,10 @@ const PatientsGraphCard: React.FC<PatientsGraphCardProps> = ({ session, appointm
                         />
                     </XAxis>
                     <YAxis />
-                    <Tooltip />
+                    <Tooltip content={<GraphTooltip />} />
                     <Legend align="right" />
                     <Bar
-                        dataKey="count"
+                        dataKey="Count"
                         fill="#016BD2"
                         background={{ fill: "#dbedff" }}
                         maxBarSize={40}

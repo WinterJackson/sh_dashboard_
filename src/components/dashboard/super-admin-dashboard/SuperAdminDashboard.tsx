@@ -205,19 +205,18 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = async ({
                 </div>
             </div>
             <div className="flex">
-                <div className="grid w-full p-4">
+                <div className="grid w-1/2 p-4">
                     <PatientsGraphCard
                         session={session}
                         appointments={transformedAppointments}
                     />
                 </div>
-                <div className="grid w-full p-4">
-                    {/* <ServicesDataCard session={session}/> */}
-                    <ServicesDataCard />
+                <div className="grid w-1/2 p-4">
+                    <ServicesDataCard session={session} />
                 </div>
             </div>
             <div className="flex flex-row w-full h-full mt-4">
-                <div className="w-2/3 p-4">
+                <div className="w-2/3 p-4 pr-2">
                     <DashboardAppointments
                         appointments={appointments}
                         totalAppointments={totalAppointments}

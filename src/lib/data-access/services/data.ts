@@ -123,13 +123,12 @@ export async function filteredServices(
 
 /**
  * Fetches appointment service data based on the user's role and hospital association.
- * Calculates percentages and filters services based on appointment count.
+ * Calculates percentages and filters services based on their type and appointment count.
  */
 export async function fetchHospitalServices(user?: {
     role: Role;
     hospitalId: number | null;
 }): Promise<{ name: string; value: number; percentage: string }[]> {
-    // Handle unauthenticated user and session fetching
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -145,18 +144,20 @@ export async function fetchHospitalServices(user?: {
         };
     }
 
-    // Extract role and hospitalId from the user object
     const { role, hospitalId } = user;
 
     try {
-        // Variables to store fetched data
         let appointmentServices: { service: { serviceName: string }; appointmentId: string }[] = [];
         let totalAppointments = 0;
 
-        // Fetch data based on user role and hospital association
         if (role === Role.SUPER_ADMIN) {
-            // Fetch all appointment services for SUPER_ADMIN
+            // Fetch all appointments for health-related services
             appointmentServices = await prisma.appointmentService.findMany({
+                where: {
+                    service: {
+                        type: "HEALTH",
+                    },
+                },
                 select: {
                     service: {
                         select: { serviceName: true },
@@ -165,13 +166,22 @@ export async function fetchHospitalServices(user?: {
                 },
             });
 
-            totalAppointments = await prisma.appointmentService.count();
+            totalAppointments = await prisma.appointmentService.count({
+                where: {
+                    service: {
+                        type: "HEALTH",
+                    },
+                },
+            });
         } else if (hospitalId) {
-            // Fetch data specific to the user's hospital
+            // Fetch appointments for health-related services in the user's hospital
             appointmentServices = await prisma.appointmentService.findMany({
                 where: {
                     appointment: {
                         hospitalId,
+                    },
+                    service: {
+                        type: "HEALTH",
                     },
                 },
                 select: {
@@ -186,6 +196,9 @@ export async function fetchHospitalServices(user?: {
                 where: {
                     appointment: {
                         hospitalId,
+                    },
+                    service: {
+                        type: "HEALTH",
                     },
                 },
             });

@@ -25,7 +25,7 @@ const PatientsTodayCard: React.FC<PatientsTodayCardProps> = ({
     const previousWeekCount = previousWeekPatients.length;
 
     let percentageChange = 0;
-    let isPositive = true; // Determine the icon and color
+    let isPositive = true;
 
     if (previousWeekCount > 0) {
         const change = currentWeekCount - previousWeekCount;

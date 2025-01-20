@@ -1,6 +1,6 @@
 // src/lib/prisma.js file
 
-import { PrismaClient } from '@prisma/client';
+const { PrismaClient } = require('@prisma/client');
 const Sentry = require("@sentry/nextjs");
 
 let prisma;
@@ -28,4 +28,3 @@ module.exports = prisma;
 //     }
 // });
 
-module.exports = prisma;

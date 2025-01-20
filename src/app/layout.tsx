@@ -8,7 +8,7 @@ import NotFoundBoundary from "@/components/providers/NotFoundBoundary";
 import SessionWrapper from "@/components/providers/SessionWrapper";
 import { inter } from "@/components/ui/fonts";
 // import { EdgeStoreProvider } from "@/lib/edgestore";
-import QueryClientWrapper from "@/components/providers/ClientQueryProvider";
+import ClientQueryProvider from "@/components/providers/ClientQueryProvider";
 import type { Metadata } from "next";
 import "../styles/global.css";
 
@@ -28,7 +28,7 @@ export default async function RootLayout({
                 <body className={`${inter.className} antialiased`}>
                     <SessionWrapper>
                         <ErrorBoundaryWrapper>
-                            <QueryClientWrapper>
+                            <ClientQueryProvider>
                                 <UserProvider>
                                     <LoadingProvider>
                                         <SearchProvider>
@@ -38,7 +38,7 @@ export default async function RootLayout({
                                         </SearchProvider>
                                     </LoadingProvider>
                                 </UserProvider>
-                            </QueryClientWrapper>
+                            </ClientQueryProvider>
                         </ErrorBoundaryWrapper>
                     </SessionWrapper>
                 </body>

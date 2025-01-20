@@ -1,7 +1,5 @@
 // app/scripts/seed.js file
 
-// import prisma from "../lib/prisma";
-
 const prisma = require("../lib/prisma");
 
 const bcrypt = require("bcrypt");
@@ -119,6 +117,7 @@ async function seedServices() {
             data: services.map((service) => ({
                 serviceId: service.serviceId,
                 serviceName: service.serviceName,
+                type: service.type,
             })),
             skipDuplicates: true,
         });
