@@ -3,8 +3,25 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Label } from "recharts";
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+    ResponsiveContainer,
+    Label,
+} from "recharts";
 import GraphTooltip from "@/components/ui/graph-tooltip";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { ChevronRight } from "lucide-react";
 
 interface PatientCountPerMonth {
     month: string;
@@ -25,7 +42,7 @@ interface PatientsGraphCardProps {
     }[];
 }
 
-// Corrected mock data with number keys
+// mock data with number keys
 const mockAppointmentsData: Record<number, PatientCountPerMonth[]> = {
     2024: [
         { month: "Feb", Count: 30 },
@@ -57,70 +74,73 @@ const mockAppointmentsData: Record<number, PatientCountPerMonth[]> = {
     ],
 };
 
-const PatientsGraphCard: React.FC<PatientsGraphCardProps> = ({ session, appointments }) => {
+const PatientsGraphCard: React.FC<PatientsGraphCardProps> = ({
+    session,
+    appointments,
+}) => {
     const role = session?.user?.role;
     const hospitalId = session?.user?.hospitalId;
-
-    const [appointmentsData, setAppointmentsData] = useState<PatientCountPerMonth[]>(mockAppointmentsData["2024"]); // test code
+    const [appointmentsData, setAppointmentsData] = useState<
+        PatientCountPerMonth[]
+    >(mockAppointmentsData[2024]);
     const [year, setYear] = useState<number>(new Date().getFullYear());
+    const years = Array.from(
+        { length: 5 },
+        (_, i) => new Date().getFullYear() - i
+    );
 
     useEffect(() => {
-        // Uncomment this section to fetch real data
-
-        // const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        // REAL DATA IMPLEMENTATION (COMMENTED OUT)
+        /*
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         
-        // const getAppointments = () => {
-        //     try {
-        //         const filteredAppointments = role !== "SUPER_ADMIN" && hospitalId
-        //             ? appointments.filter(app => app.hospitalId === hospitalId)
-        //             : appointments;
+        const getAppointments = () => {
+            try {
+                const filteredAppointments = role !== "SUPER_ADMIN" && hospitalId
+                    ? appointments.filter(app => app.hospitalId === hospitalId)
+                    : appointments;
     
-        //         // Initialize all months with a Count of 0
-        //         const initialData: PatientCountPerMonth[] = months.map(month => ({
-        //             month,
-        //             Count: 0,
-        //         }));
+                const initialData: PatientCountPerMonth[] = months.map(month => ({
+                    month,
+                    Count: 0,
+                }));
     
-        //         // Count unique patients per month
-        //         const uniquePatientsByMonth: { [key: string]: Set<number> } = {};
+                const uniquePatientsByMonth: { [key: string]: Set<number> } = {};
     
-        //         filteredAppointments.forEach((appointment) => {
-        //             const appointmentDate = new Date(appointment.appointmentDate);
-        //             const appointmentYear = appointmentDate.getFullYear();
+                filteredAppointments.forEach((appointment) => {
+                    const appointmentDate = new Date(appointment.appointmentDate);
+                    const appointmentYear = appointmentDate.getFullYear();
     
-        //             if (appointmentYear === year) {
-        //                 const monthIndex = appointmentDate.getMonth();
-        //                 const month = months[monthIndex];
+                    if (appointmentYear === year) {
+                        const monthIndex = appointmentDate.getMonth();
+                        const month = months[monthIndex];
     
-        //                 if (!uniquePatientsByMonth[month]) {
-        //                     uniquePatientsByMonth[month] = new Set();
-        //                 }
+                        if (!uniquePatientsByMonth[month]) {
+                            uniquePatientsByMonth[month] = new Set();
+                        }
     
-        //                 uniquePatientsByMonth[month].add(appointment.patientId);
-        //             }
-        //         });
+                        uniquePatientsByMonth[month].add(appointment.patientId);
+                    }
+                });
     
-        //         // Update the initial data with actual counts
-        //         const finalData = initialData.map((data) => ({
-        //             ...data,
-        //             Count: uniquePatientsByMonth[data.month]?.size || 0,
-        //         }));
+                const finalData = initialData.map((data) => ({
+                    ...data,
+                    Count: uniquePatientsByMonth[data.month]?.size || 0,
+                }));
     
-        //         setAppointmentsData(finalData);
-        //     } catch (error) {
-        //         console.error("Error processing appointments:", error);
-        //     }
-        // };
+                setAppointmentsData(finalData);
+            } catch (error) {
+                console.error("Error processing appointments:", error);
+            }
+        };
     
-        // getAppointments();
+        getAppointments();
+        */
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // MOCK DATA IMPLEMENTATION
         setAppointmentsData(mockAppointmentsData[year]);
-    }, [year, role, hospitalId]);
-
-    const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setYear(Number(event.target.value));
-    };
+    }, [year, role, hospitalId, appointments]);
 
     return (
         <div className="w-full grid p-4 pt-0 rounded-2xl xl:pb-5 bg-slate-100 shadow-lg shadow-gray-300">
@@ -128,29 +148,30 @@ const PatientsGraphCard: React.FC<PatientsGraphCardProps> = ({ session, appointm
                 <h3 className="text-sm xl:text-base font-semibold">
                     Patients Per Month ({year})
                 </h3>
-                <div className="flex items-center text-sm xl:text-base">
-                    <label htmlFor="year-sselect" className="mr-2">
-                        Select Year:
-                    </label>
-                    <select
-                        id="year-select"
-                        value={year}
-                        onChange={handleYearChange}
-                        className="p-2 border rounded"
-                    >
-                        {Array.from({ length: 5 }, (_, i) => (
-                            <option
-                                key={i}
-                                value={(
-                                    new Date().getFullYear() - i
-                                ).toString()}
-                            >
-                                {new Date().getFullYear() - i}
-                            </option>
-                        ))}
-                    </select>
+
+                <div className="flex items-center">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild className="group">
+                            <button className="bg-bluelight/5 flex items-center justify-between p-2 border rounded max-w-[120px] text-sm text-right truncate">
+                                <span className="truncate">{year}</span>
+                                <ChevronRight className="h-4 w-4 ml-2 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-[80px] rounded-[5px]">
+                            {years.map((yearOption) => (
+                                <DropdownMenuItem
+                                    key={yearOption}
+                                    onClick={() => setYear(yearOption)}
+                                    className="cursor-pointer rounded-[5px] mb-1 hover:bg-primary/10"
+                                >
+                                    {yearOption}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
+
             <ResponsiveContainer width="100%" height={300}>
                 <BarChart
                     data={appointmentsData}
@@ -171,7 +192,7 @@ const PatientsGraphCard: React.FC<PatientsGraphCardProps> = ({ session, appointm
                         dataKey="Count"
                         fill="#016BD2"
                         background={{ fill: "#dbedff" }}
-                        maxBarSize={40}
+                        maxBarSize={60}
                         legendType="circle"
                         radius={[10, 10, 0, 0]}
                     />

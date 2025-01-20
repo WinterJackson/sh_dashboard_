@@ -32,6 +32,7 @@ import ServicesDataCard from "../ui/ServicesDataCard";
 interface SuperAdminDashboardProps {
     session: {
         user: {
+            userId: string;
             username: string;
             role: Role;
             hospitalId: number | null;

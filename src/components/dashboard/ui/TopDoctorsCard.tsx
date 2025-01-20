@@ -38,7 +38,7 @@ const TopDoctorsCard: React.FC<TopDoctorsCardProps> = ({ topDoctors = [] }) => {
                                 height={55}
                                 className="object-cover rounded-full border-4 border-gray-300"
                             />
-                            <div className="flex w-full items-center justify-between gap-4">
+                            <div className="flex w-full items-center justify-between gap-4 border-gray-300">
                                 <div className="flex-shrink-0 flex flex-col gap-1 min-w-[400px]">
                                     <h1 className="font-semibold text-base capitalize whitespace-nowrap px-1 rounded-[5px]">
                                         {doctor.name}

@@ -34,6 +34,7 @@ import ServicesDataCard from "../ui/ServicesDataCard";
 interface StaffDashboardProps {
     session: {
         user: {
+            userId: string;
             username: string;
             role: Role;
             hospitalId: number | null;

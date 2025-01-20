@@ -157,6 +157,7 @@ export async function fetchHospitalServices(user?: {
                     service: {
                         type: "HEALTH",
                     },
+                    appointment: hospitalId ? { hospitalId } : undefined,
                 },
                 select: {
                     service: {
@@ -171,6 +172,7 @@ export async function fetchHospitalServices(user?: {
                     service: {
                         type: "HEALTH",
                     },
+                    appointment: hospitalId ? { hospitalId } : undefined,
                 },
             });
         } else if (hospitalId) {

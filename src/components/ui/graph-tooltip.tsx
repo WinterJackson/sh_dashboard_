@@ -8,7 +8,7 @@ interface GraphTooltipProps {
         value: number;
         payload: {
             month: string;
-            count: number;
+            Count: number;
         };
     }[];
     label?: string;
@@ -27,7 +27,7 @@ const GraphTooltip: React.FC<GraphTooltipProps> = ({ active, payload, label }) =
                 {data.month}
             </p>
             <p className="text-sm text-gray-600">
-                Patient Count: <span className="font-medium">{data.count}</span>
+                Patient Count: <span className="font-medium">{data.Count}</span>
             </p>
         </div>
     );
