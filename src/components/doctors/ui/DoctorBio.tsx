@@ -6,91 +6,130 @@ import React, { useState } from "react";
 import PercentageBar from "./PercentageBar";
 import CloseIcon from "@mui/icons-material/Close";
 import Image from "next/image";
+import { useFetchDoctorDetails } from "@/hooks/useFetchDoctorDetails";
+import { Role } from "@/lib/definitions";
+import { Rating } from "@mui/material";
+import { Skeleton } from "@/components/ui/skeleton"; // Import the Skeleton component
 
-type Props = {
+interface DoctorBioProps {
+    doctorId: number;
+    role: Role;
+    hospitalId: number | null;
     cancel: () => void;
-};
+}
 
-function DoctorBio({ cancel }: Props) {
+function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
     const [slide, setSlide] = useState("0");
 
+    // Construct user
+    const user = { role, hospitalId };
+
+    // Fetch doctor details
+    const {
+        data: doctor,
+        isLoading,
+        error,
+    } = useFetchDoctorDetails(doctorId, user);
+
+    // Calculate rating distribution
+    const ratingDistribution: Record<number, number> = {
+        5: doctor?.reviews?.filter((review) => review.rating === 5).length || 0,
+        4: doctor?.reviews?.filter((review) => review.rating === 4).length || 0,
+        3: doctor?.reviews?.filter((review) => review.rating === 3).length || 0,
+        2: doctor?.reviews?.filter((review) => review.rating === 2).length || 0,
+        1: doctor?.reviews?.filter((review) => review.rating === 1).length || 0,
+    };
+
+    const totalReviews = doctor?.reviews?.length || 0;
+    const averageRating =
+        totalReviews > 0
+            ? (ratingDistribution[5] * 5 +
+                  ratingDistribution[4] * 4 +
+                  ratingDistribution[3] * 3 +
+                  ratingDistribution[2] * 2 +
+                  ratingDistribution[1] * 1) /
+              totalReviews
+            : 0;
+
     return (
-        <div className="absolute top-0 left-0 z-30 flex justify-center items-center lg:bg-[#7978780c] h-full w-screen">
-            <div className="relative flex flex-col gap-8 p-6 bg-white opacity-100 lg:w-fit rounded-2xl h-full lg:max-h-[800px] overflow-y-scroll scrollbar-custom w-full lg:max-w-[1000px]">
-                <div className="absolute top-1 right-1" onClick={cancel}>
+        <div className="absolute top-0 left-0 z-30 flex justify-center items-center h-full w-screen">
+            <div className="relative flex flex-col gap-8 p-6 bg-slate-100 opacity-100 lg:w-fit rounded-2xl h-full lg:max-h-[800px] overflow-y-scroll scrollbar-custom w-full lg:max-w-[1000px]">
+                <div className="absolute rounded-[5px] top-4 right-4 p-1 bg-gray-200 hover:bg-bluelight" onClick={cancel}>
                     <CloseIcon />
                 </div>
 
                 <div className="flex gap-6 flex-wrap justify-center lg:justify-start">
                     {/* Profile bio */}
-                    <div className="flex flex-1 flex-col gap-7 items-center w-[500px]">
+                    <div className="flex flex-1 flex-col gap-7 items-center w-[500px] bg-gray-200 p-2 py-4 rounded-[10px]">
                         <div className="flex gap-5 items-center">
-                            <Image
-                                src="/images/img-p3.png"
-                                alt=""
-                                width={150}
-                                height={150}
-                                className="rounded-full"
-                                style={{ objectFit: "cover" }}
-                            />
+                            <div className="w-[150px] h-[150px] rounded-full overflow-hidden">
+                                {isLoading ? (
+                                    <Skeleton className="w-full h-full" />
+                                ) : (
+                                    <Image
+                                        src={doctor?.user?.profile?.imageUrl || "/images/img-p3.png"}
+                                        alt={`${doctor?.user?.profile?.firstName} ${doctor?.user?.profile?.lastName}`}
+                                        width={150}
+                                        height={150}
+                                        className="w-full h-full object-cover rounded-full border-4 border-primary m-2"
+                                    />
+                                )}
+                            </div>
                             <div className="flex flex-col gap-4">
-                                <h1 className="font-semibold text-lg capitalize">
-                                    Dr Jane Gold
-                                </h1>
-                                <div className="flex flex-col gap-0">
-                                    <h1 className="text-lg capitalize">
-                                        Gynecologist
-                                    </h1>
-                                    <div className="flex flex-col gap-2">
-                                        <div>
-                                            <p className="text-gray-400 text-lg capitalize">
-                                                Women's Health
-                                            </p>
-                                            <p className="capitalize">
-                                                Joined Feb 2023
-                                            </p>
+                                {isLoading ? (
+                                    <>
+                                        <Skeleton className="h-6 w-48" />
+                                        <Skeleton className="h-4 w-32" />
+                                        <Skeleton className="h-4 w-40" />
+                                    </>
+                                ) : (
+                                    <>
+                                        <h1 className="font-semibold text-lg capitalize">
+                                            Dr. {doctor?.user?.profile?.firstName}{" "}
+                                            {doctor?.user?.profile?.lastName}
+                                        </h1>
+                                        <div className="flex flex-col gap-0">
+                                            <h1 className="text-lg capitalize">
+                                                {doctor?.specialization?.name}
+                                            </h1>
+                                            <div className="flex flex-col gap-2">
+                                                <div>
+                                                    <p className="text-gray-400 text-lg capitalize">
+                                                        {doctor?.department?.name}
+                                                    </p>
+                                                    <p className="capitalize">
+                                                        Joined{" "}
+                                                        {doctor?.createdAt
+                                                            ? new Date(doctor.createdAt).toLocaleDateString()
+                                                            : "N/A"}
+                                                    </p>
+                                                </div>
+                                                <p className="capitalize text-sm text-primary">
+                                                    {doctor?.hospital?.name}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <p className="capitalize text-sm text-primary">
-                                            Self-Registered
-                                        </p>
-                                    </div>
-                                </div>
+                                    </>
+                                )}
                             </div>
                         </div>
 
-                        {/* Sliding bio */}
+                        {/* bio */}
                         <div className="flex flex-col gap-6 min-w-[360px] max-w-[400px]">
                             <div className="flex justify-between gap-2 min-w-[360px] max-w-[400px]">
-                                <div
-                                    className={`flex w-1/3 justify-center font-bold py-3 border-b-2 ${
-                                        slide === "0"
-                                            ? "border-primary text-primary"
-                                            : "border-gray-400 text-gray-400"
-                                    }`}
-                                    onClick={() => setSlide("0")}
-                                >
-                                    <p>Biography</p>
-                                </div>
-                                <div
-                                    className={`flex w-1/3 justify-center font-bold py-3 border-b-2 ${
-                                        slide === "400"
-                                            ? "border-primary text-primary"
-                                            : "border-gray-400 text-gray-400"
-                                    }`}
-                                    onClick={() => setSlide("400")}
-                                >
-                                    <p>Skills</p>
-                                </div>
-                                <div
-                                    className={`flex w-1/3 justify-center font-bold py-3 border-b-2 ${
-                                        slide === "800"
-                                            ? "border-primary text-primary"
-                                            : "border-gray-400 text-gray-400"
-                                    }`}
-                                    onClick={() => setSlide("800")}
-                                >
-                                    <p>Contact Information</p>
-                                </div>
+                                {["Biography", "Skills", "Contact Information"].map((tab, index) => (
+                                    <div
+                                        key={tab}
+                                        className={`flex w-1/3 justify-center font-bold py-3 border-b-2 ${
+                                            slide === String(index * 400)
+                                                ? "border-primary text-primary"
+                                                : "border-gray-400 text-gray-400"
+                                        }`}
+                                        onClick={() => setSlide(String(index * 400))}
+                                    >
+                                        <p>{tab}</p>
+                                    </div>
+                                ))}
                             </div>
                             <div className="overflow-hidden">
                                 <div
@@ -100,227 +139,171 @@ function DoctorBio({ cancel }: Props) {
                                         transition: "transform 0.3s ease-in-out",
                                     }}
                                 >
-                                    <div className="w-[400px] flex-shrink-0">
-                                        <p>
-                                            Lorem ipsum dolor sit amet
-                                            consectetur adipisicing elit. Nam
-                                            autem, tenetur ab obcaecati corporis
-                                            iusto voluptatem architecto nobis
-                                            eos dolores cum porro debitis, ipsum
-                                            odit doloribus! Dolore odio quam
-                                            error.
-                                        </p>
-                                    </div>
-                                    <div className="w-[400px] flex-shrink-0">
-                                        <p className="font-bold capitalize">
-                                            Obstetrics
-                                        </p>
-                                        <p className="font-bold capitalize">
-                                            Gynecology
-                                        </p>
-                                        <p className="font-bold capitalize">
-                                            Reproductive Medicine
-                                        </p>
-                                    </div>
-                                    <div className="w-[400px] flex-shrink-0">
-                                        <p className="flex gap-10">
-                                            <span className="font-bold text-primary">
-                                                Email
-                                            </span>
-                                            <span className="text-gray-400">
-                                                janegold@example.com
-                                            </span>
-                                        </p>
-                                        <p className="flex gap-10">
-                                            <span className="font-bold text-primary">
-                                                Phone Number
-                                            </span>
-                                            <span className="text-gray-400">
-                                                +234 556 667 238
-                                            </span>
-                                        </p>
-                                        <p className="flex gap-10">
-                                            <span className="font-bold text-primary">
-                                                Address
-                                            </span>
-                                            <span className="text-gray-400">
-                                                Nairobi, Kenya
-                                            </span>
-                                        </p>
-                                        <p className="flex gap-10">
-                                            <span className="font-bold text-primary">
-                                                LinkedIn
-                                            </span>
-                                            <span className="text-gray-400">
-                                                janegold@example.com
-                                            </span>
-                                        </p>
-                                    </div>
+                                    {isLoading ? (
+                                        <>
+                                            <div className="w-[400px] flex-shrink-0">
+                                                <Skeleton className="h-24 w-full" />
+                                            </div>
+                                            <div className="w-[400px] flex-shrink-0">
+                                                <Skeleton className="h-24 w-full" />
+                                            </div>
+                                            <div className="w-[400px] flex-shrink-0">
+                                                <Skeleton className="h-24 w-full" />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="w-[400px] flex-shrink-0">
+                                                <p>{doctor?.bio || "No biography available."}</p>
+                                            </div>
+                                            <div className="w-[400px] flex-shrink-0">
+                                                {doctor?.skills?.map((skill, index) => (
+                                                    <p key={index} className="font-medium capitalize">
+                                                        {skill}
+                                                    </p>
+                                                ))}
+                                            </div>
+                                            <div className="w-[400px] flex-shrink-0">
+                                                <p className="flex gap-10">
+                                                    <span className="font-bold text-primary">Email :</span>
+                                                    <span className="text-black">
+                                                        {doctor?.user?.email || "N/A"}
+                                                    </span>
+                                                </p>
+                                                <p className="flex gap-10">
+                                                    <span className="font-bold text-primary">Phone Number :</span>
+                                                    <span className="text-black">
+                                                        {doctor?.user?.profile?.phoneNo || "N/A"}
+                                                    </span>
+                                                </p>
+                                                <p className="flex gap-10">
+                                                    <span className="font-bold text-primary">Address :</span>
+                                                    <span className="text-black">
+                                                        {doctor?.user?.profile?.address || "N/A"}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Patient reviews */}
-                    <div className="flex flex-1 flex-col gap-5 min-w-[400px] max-w-[500px] items-center lg:items-start">
+                    <div className="flex flex-1 flex-col gap-5 w-[500px] items-center lg:items-start">
                         <h1 className="font-semibold">Patient Reviews</h1>
                         <div className="flex flex-col gap-2 w-full items-center lg:items-start">
-                            <div className="flex justify-between gap-10 max-w-[400px] w-full bg-bluelight items-center p-3 rounded-2xl">
-                                <div className="flex gap-2">
-                                    <Image
-                                        src="/images/Star.svg"
-                                        alt=""
-                                        width={50}
-                                        height={50}
-                                        className="scale-150"
-                                    />
-                                    <Image
-                                        src="/images/Star.svg"
-                                        alt=""
-                                        width={50}
-                                        height={50}
-                                        className="scale-150"
-                                    />
-                                    <Image
-                                        src="/images/Star.svg"
-                                        alt=""
-                                        width={50}
-                                        height={50}
-                                        className="scale-150"
-                                    />
-                                    <Image
-                                        src="/images/Star.svg"
-                                        alt=""
-                                        width={50}
-                                        height={50}
-                                        className="scale-150"
-                                    />
-                                    <Image
-                                        src="/images/Star.svg"
-                                        alt=""
-                                        width={50}
-                                        height={50}
-                                        className="scale-150"
-                                    />
+                            {isLoading ? (
+                                <Skeleton className="h-16 w-full" />
+                            ) : (
+                                <div className="flex justify-between gap-10 max-w-[400px] w-full bg-bluelight items-center p-3 rounded-2xl">
+                                    <div className="flex gap-2">
+                                        <Rating
+                                            value={averageRating}
+                                            precision={0.1}
+                                            readOnly
+                                        />
+                                    </div>
+                                    <div>
+                                        <p>{averageRating.toFixed(1)} / 5.0</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p>4.7 out of 5</p>
-                                </div>
-                            </div>
-                            <p>40 patients rating</p>
+                            )}
+                            {isLoading ? (
+                                <Skeleton className="h-4 w-24" />
+                            ) : (
+                                <p>{totalReviews} patients rating</p>
+                            )}
                         </div>
 
-                        <div className="flex flex-col max-w-[400px] gap-4 flex-1 w-full">
-                            <div className="flex justify-between gap-2 items-center">
-                                <h2 className="font-bold w-[50px]">5 star</h2>
-                                <PercentageBar percentage="80%" />
-                                <span className="text-gray-500">80%</span>
-                            </div>
-                            <div className="flex justify-between gap-2 items-baseline">
-                                <h2 className="font-bold w-[50px]">4 star</h2>
-                                <PercentageBar percentage="10%" />
-                                <span className="text-gray-500">10%</span>
-                            </div>
-                            <div className="flex justify-between gap-2 items-baseline">
-                                <h2 className="font-bold w-[50px]">3 star</h2>
-                                <PercentageBar percentage="6%" />
-                                <span className="text-gray-500">6%</span>
-                            </div>
-                            <div className="flex justify-between gap-2 items-baseline">
-                                <h2 className="font-bold w-[50px]">2 star</h2>
-                                <PercentageBar percentage="4%" />
-                                <span className="text-gray-500">4%</span>
-                            </div>
-                            <div className="flex justify-between gap-2 items-baseline">
-                                <h2 className="font-bold w-[50px]">1 star</h2>
-                                <PercentageBar percentage="0%" />
-                                <span className="text-gray-500">0%</span>
-                            </div>
+                        <div className="flex flex-col max-w-[400px] gap-4 flex-1 w-full bg-gray-200 p-4 rounded-[10px]">
+                            {[5, 4, 3, 2, 1].map((rating) => {
+                                const ratingCount = ratingDistribution[rating];
+                                const ratingPercentage =
+                                    totalReviews > 0
+                                        ? (
+                                              (ratingCount / totalReviews) *
+                                              100
+                                          ).toFixed(0)
+                                        : "0";
+
+                                return (
+                                    <div
+                                        key={rating}
+                                        className="flex justify-between gap-2 items-center"
+                                    >
+                                        {isLoading ? (
+                                            <Skeleton className="h-4 w-12" />
+                                        ) : (
+                                            <h2 className="font-bold w-[50px]">
+                                                {rating} star
+                                            </h2>
+                                        )}
+                                        {isLoading ? (
+                                            <Skeleton className="h-4 w-full" />
+                                        ) : (
+                                            <PercentageBar
+                                                percentage={`${ratingPercentage}%`}
+                                            />
+                                        )}
+                                        {isLoading ? (
+                                            <Skeleton className="h-4 w-8" />
+                                        ) : (
+                                            <span className="text-gray-500">
+                                                {ratingPercentage}%
+                                            </span>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>
 
                 {/* Licenses */}
                 <div className="flex flex-col">
-                    <h1 className="font-semibold mb-6">License</h1>
-                    <div className="flex flex-wrap gap-4 justify-center">
-                        <div className="flex flex-1 gap-5 items-center max-w-[430px] min-w-[380px] border border-black p-4 rounded-xl">
-                            <Image
-                                src="/images/document.svg"
-                                alt="Document icon"
-                                width={24}
-                                height={24}
-                            />
-                            <div className="flex flex-col gap-2 flex-1">
-                                <h2 className="font-semibold capitalize">
-                                    General Medical Practice License
-                                </h2>
-                                <PercentageBar percentage={"25%"} />
-                                <div className="flex justify-between items-center">
-                                    <div className="flex flex-col gap-1">
-                                        <h2>Expiry Date</h2>
-                                        <span className="text-gray-400">
-                                            21/2/23
-                                        </span>
+                    <h1 className="font-semibold mb-6">Licenses</h1>
+                    <div className="flex flex-wrap gap-4 justify-center bg-gray-200 p-4 rounded-[10px]">
+                        {isLoading ? (
+                            <>
+                                <Skeleton className="h-32 w-full max-w-[430px] min-w-[380px]" />
+                                <Skeleton className="h-32 w-full max-w-[430px] min-w-[380px]" />
+                            </>
+                        ) : (
+                            doctor?.licenses?.map((license) => (
+                                <div
+                                    key={license.licenseId}
+                                    className="flex flex-1 gap-5 items-center max-w-[430px] min-w-[380px] border border-black p-4 rounded-xl"
+                                >
+                                    <Image
+                                        src="/images/document.svg"
+                                        alt="Document icon"
+                                        width={24}
+                                        height={24}
+                                    />
+                                    <div className="flex flex-col gap-2 flex-1">
+                                        <h2 className="font-semibold capitalize">
+                                            {license.name}
+                                        </h2>
+                                        <PercentageBar percentage={"100%"} />
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex flex-col gap-1">
+                                                <h2>Expiry Date</h2>
+                                                <span className="text-gray-400">
+                                                    {new Date(
+                                                        license.expiryDate
+                                                    ).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                            <button className="bg-primary text-white px-6 py-2 rounded-2xl">
+                                                View
+                                            </button>
+                                        </div>
                                     </div>
-                                    <button className="bg-primary text-white px-6 py-2 rounded-2xl">
-                                        View
-                                    </button>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-1 gap-5 items-center max-w-[430px] min-w-[380px] border border-black p-4 rounded-xl">
-                            <Image
-                                src="/images/document.svg"
-                                alt="Document icon"
-                                width={24}
-                                height={24}
-                            />
-                            <div className="flex flex-col gap-2 flex-1">
-                                <h2 className="font-semibold capitalize">
-                                    General Medical Practice License
-                                </h2>
-                                <PercentageBar percentage={"25%"} />
-                                <div className="flex justify-between items-center">
-                                    <div className="flex flex-col gap-1">
-                                        <h2>Expiry Date</h2>
-                                        <span className="text-gray-400">
-                                            21/2/23
-                                        </span>
-                                    </div>
-                                    <button className="bg-primary text-white px-6 py-2 rounded-2xl">
-                                        View
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-1 gap-5 items-center max-w-[430px] min-w-[380px] border border-black p-4 rounded-xl">
-                            <Image
-                                src="/images/document.svg"
-                                alt="Document icon"
-                                width={24}
-                                height={24}
-                            />
-                            <div className="flex flex-col gap-2 flex-1">
-                                <h2 className="font-semibold capitalize">
-                                    General Medical Practice License
-                                </h2>
-                                <PercentageBar percentage={"25%"} />
-                                <div className="flex justify-between items-center">
-                                    <div className="flex flex-col gap-1">
-                                        <h2>Expiry Date</h2>
-                                        <span className="text-gray-400">
-                                            21/2/23
-                                        </span>
-                                    </div>
-                                    <button className="bg-primary text-white px-6 py-2 rounded-2xl">
-                                        View
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                            ))
+                        )}
                     </div>
                 </div>
             </div>

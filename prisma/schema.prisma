@@ -89,29 +89,58 @@ model Specialization {
 }
 
 model Doctor {
-  doctorId       Int              @id @default(autoincrement())
-  userId         String           @unique
-  hospitalId     Int
-  departmentId   Int
-  serviceId      Int?
-  specializationId Int
-  about          String?
-  qualifications String?
-  status         String
-  phoneNo        String
-  workingHours   String
-  averageRating  Float
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
-  appointments   Appointment[]
-  specialization Specialization @relation(fields: [specializationId], references: [specializationId])
-  department     Department       @relation(fields: [departmentId], references: [departmentId])
-  hospital       Hospital         @relation(fields: [hospitalId], references: [hospitalId])
-  service        Service?         @relation(fields: [serviceId], references: [serviceId])
-  user           User             @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  docEarnings    DoctorEarning[]
-  referrals      DoctorReferral[]
+  doctorId             Int              @id @default(autoincrement())
+  userId               String           @unique
+  hospitalId           Int
+  departmentId         Int
+  serviceId            Int?
+  specializationId     Int
+  about                String?
+  qualifications       String?
+  status               String // "Online" or "Offline"
+  phoneNo              String
+  workingHours         String
+  averageRating        Float
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  skills               String[]
+  bio                  String?
+  yearsOfExperience    Int?
+  appointments         Appointment[]
+  specialization       Specialization @relation(fields: [specializationId], references: [specializationId])
+  department           Department       @relation(fields: [departmentId], references: [departmentId])
+  hospital             Hospital         @relation(fields: [hospitalId], references: [hospitalId])
+  service              Service?         @relation(fields: [serviceId], references: [serviceId])
+  user                 User             @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  docEarnings          DoctorEarning[]
+  referrals            DoctorReferral[]
+  docReviews           DoctorReview[]
+  docLicenses          DoctorLicense[]
 }
+
+
+model DoctorLicense {
+  licenseId String @id @default(uuid())
+  doctorId Int
+  name String
+  licenseNumber String
+  issueDate DateTime
+  expiryDate DateTime
+  issuingAuthority String
+  doctor Doctor @relation(fields: [doctorId], references: [doctorId])
+}
+
+model DoctorReview {
+  reviewId String @id @default(uuid())
+  doctorId Int
+  patientId Int
+  rating Int // 1-5
+  comment String?
+  createdAt DateTime @default(now())
+  doctor Doctor @relation(fields: [doctorId], references: [doctorId])
+  patient Patient @relation(fields: [patientId], references: [patientId])
+}
+
 
 model Nurse {
   nurseId        Int        @id @default(autoincrement())
@@ -172,6 +201,7 @@ model Patient {
   payments              Payment[]
   referrals             Referral[]
   serviceUsages         ServiceUsage?
+  docReviews            DoctorReview[]
 }
 
 model Appointment {

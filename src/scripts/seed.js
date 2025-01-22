@@ -13,10 +13,12 @@ const {
     profiles,
     superAdmins,
     admins,
+    patients,
     doctors,
+    doctorLicenses,
+    doctorReviews,
     nurses,
     staff,
-    patients,
     beds,
     appointments,
     payments,
@@ -95,7 +97,6 @@ async function seedDepartments() {
 }
 
 async function seedHospitalDepartments() {
-
     try {
         await prisma.hospitalDepartment.createMany({
             data: hospitalDepartments.map((hospitalDepartment) => ({
@@ -140,7 +141,8 @@ async function seedDepartmentServices() {
         });
         console.log(`Seeded department services`);
     } catch (error) {
-        const truncatedData = JSON.stringify(error, null, 2).slice(0, 1000) + '...';
+        const truncatedData =
+            JSON.stringify(error, null, 2).slice(0, 1000) + "...";
 
         console.error("Error seeding department services:", truncatedData);
         throw truncatedData;
@@ -164,7 +166,7 @@ async function seedUsers() {
                     resetToken: null,
                     resetTokenExpiry: null,
                     createdAt: randomPastDate(730),
-                    updatedAt: randomPastDate(365)
+                    updatedAt: randomPastDate(365),
                 }))
             ),
             skipDuplicates: true,
@@ -204,7 +206,6 @@ async function seedProfiles() {
     }
 }
 
-
 async function seedSuperAdmins() {
     try {
         await prisma.superAdmin.createMany({
@@ -238,6 +239,33 @@ async function seedAdmins() {
     }
 }
 
+async function seedPatients() {
+    try {
+        await prisma.patient.createMany({
+            data: patients.map((patient) => ({
+                patientId: patient.patientId,
+                hospitalId: patient.hospitalId,
+                name: patient.name,
+                phoneNo: patient.phoneNo,
+                email: patient.email,
+                dateOfBirth: patient.dateOfBirth,
+                gender: patient.gender,
+                reasonForConsultation: patient.reasonForConsultation,
+                admissionDate: patient.admissionDate,
+                dischargeDate: patient.dischargeDate,
+                status: patient.status,
+                createdAt: randomPastDate(730),
+                updatedAt: randomPastDate(365),
+            })),
+            skipDuplicates: true,
+        });
+        console.log(`Seeded patients`);
+    } catch (error) {
+        console.error("Error seeding patients:", error);
+        throw error;
+    }
+}
+
 async function seedDoctors() {
     try {
         await prisma.doctor.createMany({
@@ -254,8 +282,11 @@ async function seedDoctors() {
                 phoneNo: doctor.phoneNo,
                 workingHours: doctor.workingHours,
                 averageRating: doctor.averageRating,
+                skills: doctor.skills || [],
+                bio: doctor.bio,
+                yearsOfExperience: doctor.yearsOfExperience,
                 createdAt: randomPastDate(730),
-                updatedAt: randomPastDate(365)
+                updatedAt: randomPastDate(365),
             })),
             skipDuplicates: true,
         });
@@ -266,6 +297,46 @@ async function seedDoctors() {
     }
 }
 
+async function seedDoctorLicenses() {
+    try {
+        await prisma.doctorLicense.createMany({
+            data: doctorLicenses.map((doctorLicense) => ({
+                licenseId: doctorLicense.licenseId,
+                doctorId: doctorLicense.doctorId,
+                name: doctorLicense.name,
+                licenseNumber: doctorLicense.licenseNumber,
+                issueDate: doctorLicense.issueDate,
+                expiryDate: doctorLicense.expiryDate,
+                issuingAuthority: doctorLicense.issuingAuthority,
+            })),
+            skipDuplicates: true,
+        });
+        console.log(`Seeded licenses`);
+    } catch (error) {
+        console.error("Error seeding licenses:", error);
+        throw error;
+    }
+}
+
+async function seedDoctorReviews() {
+    try {
+        await prisma.doctorReview.createMany({
+            data: doctorReviews.map((doctorReview) => ({
+                reviewId: doctorReview.reviewId,
+                doctorId: doctorReview.doctorId,
+                patientId: doctorReview.patientId,
+                rating: doctorReview.rating,
+                comment: doctorReview.comment,
+                createdAt: doctorReview.createdAt,
+            })),
+            skipDuplicates: true,
+        });
+        console.log(`Seeded reviews`);
+    } catch (error) {
+        console.error("Error seeding reviews:", error);
+        throw error;
+    }
+}
 
 async function seedNurses() {
     try {
@@ -281,7 +352,7 @@ async function seedNurses() {
                 workingHours: nurse.workingHours,
                 averageRating: nurse.averageRating,
                 createdAt: randomPastDate(730),
-                updatedAt: randomPastDate(365)
+                updatedAt: randomPastDate(365),
             })),
             skipDuplicates: true,
         });
@@ -306,40 +377,13 @@ async function seedStaff() {
                 workingHours: staff.workingHours,
                 averageRating: staff.averageRating,
                 createdAt: randomPastDate(730),
-                updatedAt: randomPastDate(365)
+                updatedAt: randomPastDate(365),
             })),
             skipDuplicates: true,
         });
         console.log(`Seeded staff`);
     } catch (error) {
         console.error("Error seeding staff:", error);
-        throw error;
-    }
-}
-
-async function seedPatients() {
-    try {
-        await prisma.patient.createMany({
-            data: patients.map((patient) => ({
-                patientId: patient.patientId,
-                hospitalId: patient.hospitalId,
-                name: patient.name,
-                phoneNo: patient.phoneNo,
-                email: patient.email,
-                dateOfBirth: patient.dateOfBirth,
-                gender: patient.gender,
-                reasonForConsultation: patient.reasonForConsultation,
-                admissionDate: patient.admissionDate,
-                dischargeDate: patient.dischargeDate,
-                status: patient.status,
-                createdAt: randomPastDate(730),
-                updatedAt: randomPastDate(365)
-            })),
-            skipDuplicates: true,
-        });
-        console.log(`Seeded patients`);
-    } catch (error) {
-        console.error("Error seeding patients:", error);
         throw error;
     }
 }
@@ -390,7 +434,7 @@ async function seedAppointments() {
                 patientAppointmentNotes: appointment.patientAppointmentNotes,
                 reasonForVisit: appointment.reasonForVisit,
                 createdAt: randomPastDate(730),
-                updatedAt: randomPastDate(365)
+                updatedAt: randomPastDate(365),
             })),
             skipDuplicates: true,
         });
@@ -418,7 +462,8 @@ async function seedPayments() {
         });
         console.log(`Seeded payments`);
     } catch (error) {
-        const truncatedData = JSON.stringify(error.message, null, 2).slice(0, 500) + '...';
+        const truncatedData =
+            JSON.stringify(error.message, null, 2).slice(0, 500) + "...";
 
         console.error("Error seeding payments:", truncatedData);
         throw truncatedData;
@@ -445,13 +490,14 @@ async function seedReferrals() {
                 physicianEmail: referral.physicianEmail,
                 physicianPhoneNumber: referral.physicianPhoneNumber,
                 createdAt: randomPastDate(730),
-                updatedAt: randomPastDate(365)
+                updatedAt: randomPastDate(365),
             })),
             skipDuplicates: true,
         });
         console.log(`Seeded referrals`);
     } catch (error) {
-        const truncatedData = JSON.stringify(error.message, null, 2).slice(0, 500) + '...';
+        const truncatedData =
+            JSON.stringify(error.message, null, 2).slice(0, 500) + "...";
 
         console.error("Error seeding payments:", truncatedData);
         throw truncatedData;
@@ -538,7 +584,7 @@ async function seedSessions() {
                 userId: session.userId,
                 expires: session.expires,
                 createdAt: randomPastDate(730),
-                updatedAt: randomPastDate(365)
+                updatedAt: randomPastDate(365),
             })),
             skipDuplicates: true,
         });
@@ -583,7 +629,6 @@ async function seedVerificationTokens() {
 //     }
 // }
 
-
 async function main() {
     // Seed database
     await seedSpecializations();
@@ -596,7 +641,10 @@ async function main() {
     await seedProfiles();
     await seedSuperAdmins();
     await seedAdmins();
+    await seedPatients();
     await seedDoctors();
+    await seedDoctorLicenses();
+    await seedDoctorReviews();
     await seedNurses();
     await seedStaff();
     await seedPatients();

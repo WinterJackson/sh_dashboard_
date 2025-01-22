@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { Doctor, Hospital, Department, Role } from "@/lib/definitions";
 import DoctorsCard from "./ui/DoctorsCard";
 import DoctorsFilters from "./ui/DoctorsFilters";
@@ -58,7 +58,12 @@ const DoctorsList: React.FC<DoctorsListProps> = React.memo(
                 </div>
                 <div className="flex flex-wrap justify-between gap-4 mt-6 mb-6">
                     {paginatedDoctors.map((doctor) => (
-                        <DoctorsCard key={doctor.doctorId} doctor={doctor} />
+                        <DoctorsCard
+                            key={doctor.doctorId}
+                            doctor={doctor}
+                            role={role}
+                            hospitalId={hospitalId ? parseInt(hospitalId, 10) : null}
+                        />
                     ))}
                 </div>
                 <DoctorsPagination

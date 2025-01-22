@@ -7,13 +7,19 @@ import DoctorBio from "./DoctorBio";
 import Image from "next/image";
 import { Rating } from "@mui/material";
 import AddAppointmentDialog from "@/components/appointments/AddAppointmentDialog"; // Import the appointment dialog
-import { Doctor } from "@/lib/definitions";
+import { Doctor, Role } from "@/lib/definitions";
 
 interface DoctorsCardProps {
     doctor: Doctor;
+    role: Role;
+    hospitalId: number | null;
 }
 
-const DoctorsCard: React.FC<DoctorsCardProps> = ({ doctor }) => {
+const DoctorsCard: React.FC<DoctorsCardProps> = ({
+    doctor,
+    role,
+    hospitalId,
+}) => {
     const [showBio, setShowBio] = useState(false);
     const [showAppointmentDialog, setShowAppointmentDialog] = useState(false);
 
@@ -52,13 +58,15 @@ const DoctorsCard: React.FC<DoctorsCardProps> = ({ doctor }) => {
                 {/* Doctor Profile Info */}
                 <div className="flex w-full gap-4">
                     <div className="w-1/2 flex justify-center items-center">
-                        <Image
-                            src={doctor.user?.profile?.imageUrl || "/images/doctor.svg"}
-                            alt={`Profile picture of Dr. ${doctor.user?.profile?.firstName || "Doctor"} ${doctor.user?.profile?.lastName || ""}`}
-                            width={80}
-                            height={80}
-                            className="rounded-[50%] border-4 border-gray-300"
-                        />
+                        <div className="w-[80px] h-[80px] rounded-full overflow-hidden">
+                            <Image
+                                src={doctor.user?.profile?.imageUrl || "/images/doctor.svg"}
+                                alt={`Profile picture of Dr. ${doctor.user?.profile?.firstName || "Doctor"} ${doctor.user?.profile?.lastName || ""}`}
+                                width={80}
+                                height={80}
+                                className="w-full h-full object-cover rounded-[50%] border-4 border-gray-300"
+                            />
+                        </div>
                     </div>
 
                     {/* Line separator */}
@@ -110,7 +118,12 @@ const DoctorsCard: React.FC<DoctorsCardProps> = ({ doctor }) => {
                     <div className="fixed inset-0 bg-black/80 z-40"></div>
                     <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center z-50">
                         <div className="bg-white p-4 shadow-md rounded-lg">
-                            <DoctorBio cancel={handleCloseBio} />
+                            <DoctorBio
+                                doctorId={doctor.doctorId}
+                                role={role}
+                                hospitalId={hospitalId}
+                                cancel={handleCloseBio}
+                            />
                             <button
                                 className="mt-2 p-2 border border-black"
                                 onClick={handleCloseBio}

@@ -87,6 +87,9 @@ export interface Doctor {
     averageRating: number;
     createdAt: Date;
     updatedAt: Date;
+    skills: string[];
+    bio?: string;
+    yearsOfExperience?: number;
     appointments: Appointment[];
     specialization: Specialization;
     department: Department;
@@ -95,6 +98,26 @@ export interface Doctor {
     user: User;
     docEarnings?: DoctorEarning[];
     referrals?: DoctorReferral[];
+    docLicenses: DoctorLicense[];
+    docReviews: DoctorReview[];
+}
+
+export interface DoctorLicense {
+    licenseId: string;
+    name: string;
+    licenseNumber: string;
+    issueDate: Date;
+    expiryDate: Date;
+    issuingAuthority: string;
+}
+
+export interface DoctorReview {
+    reviewId: string;
+    doctorId: number;
+    patientId: number;
+    rating: number;
+    comment?: string;
+    createdAt: Date;
 }
 
 export interface Nurse {
@@ -104,7 +127,7 @@ export interface Nurse {
     departmentId: number;
     specializationId: number;
     specialization: Specialization;
-    status: string;  // "Online" or "Offline"
+    status: string; // "Online" or "Offline"
     phoneNo: string;
     workingHours: string;
     averageRating: number;
@@ -122,7 +145,7 @@ export interface Staff {
     departmentId: number;
     specializationId: number;
     specialization: Specialization;
-    status: string;  // "Online" or "Offline"
+    status: string; // "Online" or "Offline"
     phoneNo: string;
     workingHours: string;
     averageRating: number;
@@ -156,6 +179,7 @@ export interface Patient {
     payments?: Payment[];
     referrals: Referral[];
     serviceUsages?: ServiceUsage;
+    docReviews: DoctorReview[];
 }
 
 export interface Appointment {

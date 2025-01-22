@@ -89,14 +89,14 @@ const Header: React.FC<HeaderProps> = ({ profileData }) => {
                                     </p>
                                 )}
                             </div>
-                            <div className="flex items-center justify-center rounded-full w-[55px] h-[55px]">
+                            <div className="flex items-center justify-center rounded-full w-[55px] h-[55px] overflow-hidden">
                                 {imageUrl ? (
                                     <Image
                                         src={imageUrl}
                                         alt="Profile Picture"
                                         width={55}
                                         height={55}
-                                        className="rounded-full border-4 border-gray-300"
+                                        className="w-full h-full object-cover rounded-full border-4 border-gray-300"
                                     />
                                 ) : (
                                     <FaUserCircle className="text-gray-500 rounded-full w-[55px] h-[55px]" />

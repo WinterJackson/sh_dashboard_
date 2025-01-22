@@ -2,7 +2,7 @@
 
 "use server";
 
-import { Doctor, Role } from "@/lib/definitions";
+import { Doctor, DoctorLicense, Profile, DoctorReview, Role } from "@/lib/definitions";
 import * as Sentry from "@sentry/nextjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
@@ -18,9 +18,10 @@ const prisma = require("@/lib/prisma");
 /**
  * Fetch top doctors based on user's role and hospitalId.
  */
-export async function fetchTopDoctors(
-    user?: { role: Role; hospitalId: number | null }
-): Promise<
+export async function fetchTopDoctors(user?: {
+    role: Role;
+    hospitalId: number | null;
+}): Promise<
     {
         doctorId: number;
         imageUrl: string;
@@ -137,9 +138,10 @@ export async function fetchTopDoctors(
 /**
  * Fetch all online doctors.
  */
-export async function fetchOnlineDoctors(
-    user?: { role: Role; hospitalId: number | null }
-): Promise<Doctor[]> {
+export async function fetchOnlineDoctors(user?: {
+    role: Role;
+    hospitalId: number | null;
+}): Promise<Doctor[]> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -200,7 +202,7 @@ export async function fetchOnlineDoctors(
             },
         });
 
-        return onlineDoctors
+        return onlineDoctors;
     } catch (error) {
         const errorMessage = getErrorMessage(error);
         Sentry.captureException(error);
@@ -212,9 +214,10 @@ export async function fetchOnlineDoctors(
 /**
  * Fetch count of online doctors based on user's role and hospitalId.
  */
-export async function fetchOnlineDoctorsCount(
-    user?: { role: Role; hospitalId: number | null }
-): Promise<number> {
+export async function fetchOnlineDoctorsCount(user?: {
+    role: Role;
+    hospitalId: number | null;
+}): Promise<number> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -260,21 +263,28 @@ export async function fetchOnlineDoctorsCount(
 }
 
 /**
- * Fetch details of a specific doctor by doctorId.
+ * Fetch complete doctor profile data for Bio display
  */
 export async function fetchDoctorDetails(
     doctorId: number,
     user?: { role: Role; hospitalId: number | null }
-): Promise<Doctor | null> {
+): Promise<
+    | (Doctor & {
+          licenses: DoctorLicense[];
+          reviews: DoctorReview[];
+          user: { profile: Profile };
+          specialization: { name: string };
+          department: { name: string };
+          hospital: { name: string };
+      })
+    | null
+> {
     if (!user) {
         const session = await getServerSession(authOptions);
-
-        if (!session || !session?.user) {
-            console.error("Session fetch failed:", session);
+        if (!session?.user) {
             redirect("/sign-in");
             return null;
         }
-
         user = {
             role: session.user.role as Role,
             hospitalId: session.user.hospitalId,
@@ -284,14 +294,23 @@ export async function fetchDoctorDetails(
     const { role, hospitalId } = user;
 
     try {
-        if (role !== "SUPER_ADMIN" && (!hospitalId || role !== "ADMIN")) {
-            console.error("Unauthorized access");
+        // Authorization check
+        if (
+            role !== Role.SUPER_ADMIN &&
+            (!hospitalId || ![Role.ADMIN, Role.DOCTOR].includes(role))
+        ) {
+            console.error("Unauthorized doctor details access");
             return null;
         }
 
         const doctorDetails = await prisma.doctor.findUnique({
-            where: { doctorId },
+            where: {
+                doctorId,
+                ...(role !== Role.SUPER_ADMIN && { hospitalId }),
+            },
             include: {
+                docLicenses: true,
+                docReviews: true,
                 user: {
                     include: {
                         profile: {
@@ -299,35 +318,39 @@ export async function fetchDoctorDetails(
                                 firstName: true,
                                 lastName: true,
                                 imageUrl: true,
-                                gender: true,
                                 dateOfBirth: true,
                                 phoneNo: true,
-                                address: true,
-                                city: true,
-                                state: true,
-                                nextOfKin: true,
-                                nextOfKinPhoneNo: true,
-                                emergencyContact: true,
                             },
                         },
                     },
                 },
-                hospital: true,
-                department: true,
-                specialization: {
-                    select: { name: true },
-                },
-                service: {
-                    select: { serviceName: true },
-                },
+                specialization: { select: { name: true } },
+                department: { select: { name: true } },
+                hospital: { select: { name: true } },
             },
         });
 
-        return doctorDetails
+        if (!doctorDetails) {
+            console.warn(`Doctor not found: ${doctorId}`);
+            return null;
+        }
+
+        return {
+            ...doctorDetails,
+            licenses: doctorDetails.docLicenses || [],
+            reviews: doctorDetails.docReviews || [],
+            skills: doctorDetails.skills || [],
+            yearsOfExperience:
+                doctorDetails.yearsOfExperience ||
+                new Date().getFullYear() -
+                    new Date(
+                        doctorDetails.user.profile.dateOfBirth
+                    ).getFullYear(),
+        };
     } catch (error) {
         const errorMessage = getErrorMessage(error);
         Sentry.captureException(error);
-        console.error("Failed to fetch doctor details:", errorMessage);
+        console.error("Doctor details fetch failed:", errorMessage);
         return null;
     }
 }
@@ -445,7 +468,7 @@ export async function fetchAllDoctors(
             },
         });
 
-        return doctors
+        return doctors;
     } catch (error) {
         const errorMessage = getErrorMessage(error);
         Sentry.captureException(error);
@@ -457,9 +480,11 @@ export async function fetchAllDoctors(
 /**
  * Fetch all doctors based on user role and hospitalId.
  */
-export async function fetchDoctors(
-    user?: { role: Role; hospitalId: string | null; userId: string | null }
-): Promise<Doctor[]> {
+export async function fetchDoctors(user?: {
+    role: Role;
+    hospitalId: string | null;
+    userId: string | null;
+}): Promise<Doctor[]> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -471,7 +496,9 @@ export async function fetchDoctors(
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId ? String(session.user.hospitalId) : null,
+            hospitalId: session.user.hospitalId
+                ? String(session.user.hospitalId)
+                : null,
             userId: session.user.id,
         };
     }
@@ -542,7 +569,6 @@ export async function fetchDoctorsByHospital(
     }
 
     try {
-
         const doctors = await prisma.doctor.findMany({
             where: { hospitalId },
             include: {
@@ -577,7 +603,7 @@ export async function fetchDoctorsByHospital(
             },
         });
 
-        return doctors
+        return doctors;
     } catch (error) {
         const errorMessage = getErrorMessage(error);
         Sentry.captureException(error);
@@ -787,7 +813,7 @@ export async function getDoctorsBySpecialization(
     try {
         if (role !== "SUPER_ADMIN" && (!hospitalId || role !== "ADMIN")) {
             console.error("Unauthorized access");
-            return []
+            return [];
         }
 
         const doctors = await prisma.doctor.findMany({
@@ -827,11 +853,14 @@ export async function getDoctorsBySpecialization(
             },
         });
 
-        return doctors
+        return doctors;
     } catch (error) {
         const errorMessage = getErrorMessage(error);
         Sentry.captureException(error);
-        console.error("Failed to fetch doctors by specialization:", errorMessage);
+        console.error(
+            "Failed to fetch doctors by specialization:",
+            errorMessage
+        );
         return [];
     }
 }
