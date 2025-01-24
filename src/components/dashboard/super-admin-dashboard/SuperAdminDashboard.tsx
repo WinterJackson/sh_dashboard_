@@ -1,5 +1,6 @@
 // File: src/components/dashboard/super-admin-dashboard/SuperAdminDashboard.tsx
 
+import React from "react";
 import DashboardAppointments from "@/components/dashboard/ui/DashboardAppointments";
 import AppointmentsTodayCard from "../ui/AppointmentsTodayCard";
 import AvailableBedsCard from "../ui/AvailableBedsCard";
@@ -10,24 +11,27 @@ import OutwardReferralsCard from "../ui/OutwardReferralsCard";
 import PatientsGraphCard from "../ui/PatientsGraphCard";
 import PatientsTodayCard from "../ui/PatientsTodayCard";
 import TopDoctorsCard from "../ui/TopDoctorsCard";
-import {
-    fetchOutwardReferrals,
-    fetchInwardReferrals,
-} from "@/lib/data-access/referrals/data";
+import ServicesDataCard from "../ui/ServicesDataCard";
+
 import {
     fetchAppointments,
     fetchAppointmentsTodayCount,
     fetchAppointmentsForLast14Days,
 } from "@/lib/data-access/appointments/data";
 import { fetchAvailableBedsCount } from "@/lib/data-access/beds/data";
-import { fetchOnlineDoctorsCount } from "@/lib/data-access/doctors/data";
+import {
+    fetchOnlineDoctorsCount,
+    fetchTopDoctors,
+} from "@/lib/data-access/doctors/data";
 import {
     fetchPatientsForLast14Days,
     fetchPatientsTodayCount,
 } from "@/lib/data-access/patients/data";
-import { fetchTopDoctors } from "@/lib/data-access/doctors/data";
+import {
+    fetchOutwardReferrals,
+    fetchInwardReferrals,
+} from "@/lib/data-access/referrals/data";
 import { Role } from "@/lib/definitions";
-import ServicesDataCard from "../ui/ServicesDataCard";
 
 interface SuperAdminDashboardProps {
     session: {
@@ -45,195 +49,136 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = async ({
 }) => {
     const firstName = session?.user?.username?.split(" ")[0] || "Super Admin";
 
-    const { appointments, totalAppointments } = await fetchAppointments(
-        session?.user
-            ? {
-                  role: session.user.role as Role,
-                  hospitalId: null,
-                  userId: null,
-              }
-            : undefined
-    );
+    // params object for all fetch calls
+    const params = {
+        role: session.user.role,
+        hospitalId: session.user.hospitalId,
+        userId: null,
+    };
 
-    // Fetch available beds count
-    const availableBedsCount = await fetchAvailableBedsCount(
-        session?.user
-            ?   {
-                    role: session.user.role as Role,
-                    hospitalId: session.user.hospitalId,
-                }
-            : undefined
-    );
+    try {
+        // Fetch all data in parallel
+        const [
+            appointmentsResponse,
+            availableBedsCount,
+            onlineDoctorsCount,
+            inwardReferrals,
+            outwardReferrals,
+            appointmentsTodayCount,
+            last14DaysAppointments,
+            uniquePatientsTodayCount,
+            patientsLast14DaysResponse,
+            topDoctors,
+        ] = await Promise.all([
+            fetchAppointments(params),
+            fetchAvailableBedsCount(params),
+            fetchOnlineDoctorsCount(params),
+            fetchInwardReferrals(params),
+            fetchOutwardReferrals(params),
+            fetchAppointmentsTodayCount(params),
+            fetchAppointmentsForLast14Days(params),
+            fetchPatientsTodayCount(params),
+            fetchPatientsForLast14Days(params),
+            fetchTopDoctors(params),
+        ]);
 
-    // Fetch available doctors count
-    const onlineDoctorsCount = await fetchOnlineDoctorsCount(
-        session?.user
-            ?   {
-                    role: session.user.role as Role,
-                    hospitalId: session.user.hospitalId,
-                }
-            : undefined
-    );
+        // Transform appointments for graph card
+        const transformedAppointments = appointmentsResponse.appointments.map(
+            (appointment) => ({
+                appointmentDate: new Date(
+                    appointment.appointmentDate
+                ).toISOString(),
+                hospitalId: appointment.hospitalId,
+                patientId: appointment.patientId,
+            })
+        );
 
-    // Fetch inward referrals
-    const inwardReferrals = await fetchInwardReferrals(
-        session?.user
-            ?   {
-                    role: session.user.role as Role,
-                    hospitalId: session.user.hospitalId,
-                }
-            : undefined
-    );
-
-    // Fetch outward referrals
-    const outwardReferrals = await fetchOutwardReferrals(
-        session?.user
-            ?   {
-                    role: session.user.role as Role,
-                    hospitalId: session.user.hospitalId,
-                }
-            : undefined
-    );
-
-    // Fetch today's appointments count
-    const appointmentsTodayCount = await fetchAppointmentsTodayCount(
-        session?.user
-            ?   {
-                    role: session.user.role as Role,
-                    hospitalId: null,
-                    userId: null,
-                }
-            : undefined
-    );
-
-    // Fetch appointments for last 14 days
-    const last14DaysAppointments = await fetchAppointmentsForLast14Days(
-        session?.user
-            ?   {
-                    role: session.user.role as Role,
-                    hospitalId: null,
-                    userId: null,
-                }
-            : undefined
-    );
-
-    // Fetch unique patients today
-    const uniquePatientsTodayCount = await fetchPatientsTodayCount(
-        session?.user
-            ?   {
-                    role: session.user.role as Role,
-                    hospitalId: null,
-                    userId: null,
-                }
-            : undefined
-    );
-
-    // Fetch unique patients for last 14 days
-    const { currentWeekPatients, previousWeekPatients } = await fetchPatientsForLast14Days(
-        session?.user
-            ?   {
-                    role: session.user.role as Role,
-                    hospitalId: null,
-                    userId: null,
-                }
-            : undefined
-    );
-
-    // Fetch top doctors based on role and hospital ID
-    const topDoctors = await fetchTopDoctors(
-        session?.user
-            ?   {
-                    role: session.user.role as Role,
-                    hospitalId: null,
-                }
-            : undefined
-    );
-
-    // Transform the appointments to match the required type
-    const transformedAppointments = appointments.map(
-        (appointment: {
-            appointmentDate: string | number | Date;
-            hospitalId: any;
-            patientId: any;
-        }) => ({
-            appointmentDate: new Date(
-                appointment.appointmentDate
-            ).toISOString(),
-            hospitalId: appointment.hospitalId,
-            patientId: appointment.patientId,
-        })
-    );
-
-    return (
-        <>
-            <div className="text-xl font-semibold p-4 mx-4 rounded-[10px] bg-bluelight/5">
-                Welcome, {firstName}
-            </div>
-            <div className="flex">
-                <div className="grid w-full">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-                        <AvailableDoctorsCard
+        return (
+            <>
+                <div className="text-xl font-semibold p-4 mx-4 rounded-[10px] bg-bluelight/5">
+                    Welcome, {firstName}
+                </div>
+                <div className="flex">
+                    <div className="grid w-full">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                            <AvailableDoctorsCard
+                                session={session}
+                                onlineDoctorsCount={onlineDoctorsCount}
+                            />
+                            <AvailableBedsCard
+                                availableBedsCount={availableBedsCount}
+                            />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                            <AppointmentsTodayCard
+                                appointmentsTodayCount={appointmentsTodayCount}
+                                last14DaysAppointments={
+                                    last14DaysAppointments.appointments
+                                }
+                            />
+                            <PatientsTodayCard
+                                uniquePatientsTodayCount={
+                                    uniquePatientsTodayCount
+                                }
+                                currentWeekPatients={
+                                    patientsLast14DaysResponse.currentWeekPatients
+                                }
+                                previousWeekPatients={
+                                    patientsLast14DaysResponse.previousWeekPatients
+                                }
+                            />
+                        </div>
+                    </div>
+                    <div className="grid w-full">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                            <OutwardReferralsCard
+                                outwardReferrals={outwardReferrals}
+                            />
+                            <InwardReferralsCard
+                                inwardReferrals={inwardReferrals}
+                            />
+                        </div>
+                    </div>
+                </div>
+                <div className="flex">
+                    <div className="grid w-1/2 p-4">
+                        <PatientsGraphCard
                             session={session}
-                            onlineDoctorsCount={onlineDoctorsCount}
-                        />
-                        <AvailableBedsCard
-                            availableBedsCount={availableBedsCount}
+                            appointments={transformedAppointments}
                         />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-                        <AppointmentsTodayCard
-                            appointmentsTodayCount={appointmentsTodayCount}
-                            last14DaysAppointments={
-                                last14DaysAppointments.appointments
+                    <div className="grid w-1/2 p-4">
+                        <ServicesDataCard session={session} />
+                    </div>
+                </div>
+                <div className="flex flex-row w-full h-full mt-4">
+                    <div className="w-2/3 p-4 pr-2">
+                        <DashboardAppointments
+                            appointments={appointmentsResponse.appointments}
+                            totalAppointments={
+                                appointmentsResponse.totalAppointments
                             }
                         />
-                        <PatientsTodayCard
-                            uniquePatientsTodayCount={uniquePatientsTodayCount}
-                            currentWeekPatients={currentWeekPatients}
-                            previousWeekPatients={previousWeekPatients}
-                        />
+                    </div>
+                    <div className="flex flex-col w-1/3 p-4 gap-4">
+                        <div className="">
+                            <TopDoctorsCard topDoctors={topDoctors || []} />
+                        </div>
+                        <div className="">
+                            <LearnMoreCard />
+                        </div>
                     </div>
                 </div>
-                <div className="grid w-full">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-                        <OutwardReferralsCard
-                            outwardReferrals={outwardReferrals}
-                        />
-                        <InwardReferralsCard
-                            inwardReferrals={inwardReferrals}
-                        />
-                    </div>
-                </div>
+            </>
+        );
+    } catch (error) {
+        console.error("Error loading dashboard data:", error);
+        return (
+            <div className="text-red-500 text-center">
+                Failed to load dashboard data. Please try again later.
             </div>
-            <div className="flex">
-                <div className="grid w-1/2 p-4">
-                    <PatientsGraphCard
-                        session={session}
-                        appointments={transformedAppointments}
-                    />
-                </div>
-                <div className="grid w-1/2 p-4">
-                    <ServicesDataCard session={session} />
-                </div>
-            </div>
-            <div className="flex flex-row w-full h-full mt-4">
-                <div className="w-2/3 p-4 pr-2">
-                    <DashboardAppointments
-                        appointments={appointments}
-                        totalAppointments={totalAppointments}
-                    />
-                </div>
-                <div className="flex flex-col w-1/3 p-4 gap-4">
-                    <div className="">
-                        <TopDoctorsCard topDoctors={topDoctors || []} />
-                    </div>
-                    <div className="">
-                        <LearnMoreCard />
-                    </div>
-                </div>
-            </div>
-        </>
-    );
+        );
+    }
 };
 
 export default SuperAdminDashboard;
