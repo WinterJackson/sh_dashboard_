@@ -11,11 +11,12 @@ import { getErrorMessage } from "@/hooks/getErrorMessage";
 
 const prisma = require("@/lib/prisma");
 
-
 // Fetch today's patients
-export async function fetchPatientsToday(
-    user?: { role: Role; hospitalId: number | null; userId: string | null }
-): Promise<{ patients: Patient[] }> {
+export async function fetchPatientsToday(user?: {
+    role: Role;
+    hospitalId: number | null;
+    userId: string | null;
+}): Promise<{ patients: Patient[] }> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -44,7 +45,9 @@ export async function fetchPatientsToday(
                 break;
             case "ADMIN":
                 if (hospitalId === null) {
-                    console.error("Admins must have an associated hospital ID.");
+                    console.error(
+                        "Admins must have an associated hospital ID."
+                    );
                     return { patients: [] };
                 }
                 whereClause = { hospitalId };
@@ -66,7 +69,9 @@ export async function fetchPatientsToday(
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
-                    console.error(`${role}s must have an associated hospital ID.`);
+                    console.error(
+                        `${role}s must have an associated hospital ID.`
+                    );
                     return { patients: [] };
                 }
                 whereClause = { hospitalId };
@@ -99,7 +104,10 @@ export async function fetchPatientsToday(
         // Specify the type of appointments and map patients to enforce types
         const uniquePatients = Array.from(
             new Map(
-                appointments.map((a: { patient: { patientId: any; }; }) => [a.patient.patientId, a.patient])
+                appointments.map((a: { patient: { patientId: any } }) => [
+                    a.patient.patientId,
+                    a.patient,
+                ])
             ).values()
         ) as Patient[];
 
@@ -112,11 +120,12 @@ export async function fetchPatientsToday(
     }
 }
 
-
 // Fetch today's patients count
-export async function fetchPatientsTodayCount(
-    user?: { role: Role; hospitalId: number | null; userId: string | null }
-): Promise<number> {
+export async function fetchPatientsTodayCount(user?: {
+    role: Role;
+    hospitalId: number | null;
+    userId: string | null;
+}): Promise<number> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -146,7 +155,9 @@ export async function fetchPatientsTodayCount(
 
             case "ADMIN":
                 if (hospitalId === null) {
-                    console.error("Admins must have an associated hospital ID.");
+                    console.error(
+                        "Admins must have an associated hospital ID."
+                    );
                     return 0;
                 }
                 whereClause = { hospitalId };
@@ -170,7 +181,9 @@ export async function fetchPatientsTodayCount(
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
-                    console.error(`${role}s must have an associated hospital ID.`);
+                    console.error(
+                        `${role}s must have an associated hospital ID.`
+                    );
                     return 0;
                 }
                 whereClause = { hospitalId };
@@ -202,7 +215,9 @@ export async function fetchPatientsTodayCount(
         });
 
         // Use a Set to ensure unique patient IDs
-        const uniquePatientCount = new Set(appointments.map((a: { patientId: any; }) => a.patientId)).size;
+        const uniquePatientCount = new Set(
+            appointments.map((a: { patientId: any }) => a.patientId)
+        ).size;
 
         return uniquePatientCount;
     } catch (error) {
@@ -213,11 +228,15 @@ export async function fetchPatientsTodayCount(
     }
 }
 
-
 // Fetch patients for the last 14 days
-export async function fetchPatientsForLast14Days(
-    user?: { role: Role; hospitalId: number | null; userId: string | null }
-): Promise<{ currentWeekPatients: Patient[]; previousWeekPatients: Patient[] }> {
+export async function fetchPatientsForLast14Days(user?: {
+    role: Role;
+    hospitalId: number | null;
+    userId: string | null;
+}): Promise<{
+    currentWeekPatients: Patient[];
+    previousWeekPatients: Patient[];
+}> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -245,30 +264,46 @@ export async function fetchPatientsForLast14Days(
                 break;
             case "ADMIN":
                 if (hospitalId === null) {
-                    console.error("Admins must have an associated hospital ID.");
-                    return { currentWeekPatients: [], previousWeekPatients: [] };
+                    console.error(
+                        "Admins must have an associated hospital ID."
+                    );
+                    return {
+                        currentWeekPatients: [],
+                        previousWeekPatients: [],
+                    };
                 }
                 whereClause = { hospitalId };
                 break;
             case "DOCTOR":
                 if (!userId) {
                     console.error("Doctors must have a valid user ID.");
-                    return { currentWeekPatients: [], previousWeekPatients: [] };
+                    return {
+                        currentWeekPatients: [],
+                        previousWeekPatients: [],
+                    };
                 }
                 const doctor = await prisma.doctor.findUnique({
                     where: { userId },
                 });
                 if (!doctor) {
                     console.error("Doctor not found for the given user ID.");
-                    return { currentWeekPatients: [], previousWeekPatients: [] };
+                    return {
+                        currentWeekPatients: [],
+                        previousWeekPatients: [],
+                    };
                 }
                 whereClause = { doctorId: doctor.doctorId };
                 break;
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
-                    console.error(`${role}s must have an associated hospital ID.`);
-                    return { currentWeekPatients: [], previousWeekPatients: [] };
+                    console.error(
+                        `${role}s must have an associated hospital ID.`
+                    );
+                    return {
+                        currentWeekPatients: [],
+                        previousWeekPatients: [],
+                    };
                 }
                 whereClause = { hospitalId };
                 break;
@@ -317,13 +352,23 @@ export async function fetchPatientsForLast14Days(
         // Ensure unique patients for each week using a Map
         const currentWeekPatients = Array.from(
             new Map(
-                currentWeekAppointments.map((a: { patient: { patientId: any; }; }) => [a.patient.patientId, a.patient])
+                currentWeekAppointments.map(
+                    (a: { patient: { patientId: any } }) => [
+                        a.patient.patientId,
+                        a.patient,
+                    ]
+                )
             ).values()
         ) as Patient[];
 
         const previousWeekPatients = Array.from(
             new Map(
-                previousWeekAppointments.map((a: { patient: { patientId: any; }; }) => [a.patient.patientId, a.patient])
+                previousWeekAppointments.map(
+                    (a: { patient: { patientId: any } }) => [
+                        a.patient.patientId,
+                        a.patient,
+                    ]
+                )
             ).values()
         ) as Patient[];
 
@@ -334,20 +379,24 @@ export async function fetchPatientsForLast14Days(
     } catch (error) {
         const errorMessage = getErrorMessage(error);
         Sentry.captureException(error, { extra: { errorMessage } });
-        console.error("Failed to fetch patients for the last 14 days:", errorMessage);
+        console.error(
+            "Failed to fetch patients for the last 14 days:",
+            errorMessage
+        );
         return { currentWeekPatients: [], previousWeekPatients: [] };
     }
 }
-
 
 /**
  * Fetch patients based on user role and hospital association.
  * @param user - User's role, hospital ID, and user ID.
  * @returns Patients and total count.
  */
-export async function fetchPatients(
-    user?: { role: Role; hospitalId?: number | null; userId?: string | null }
-): Promise<{ patients: Patient[]; totalPatients: number }> {
+export async function fetchPatients(user?: {
+    role: Role;
+    hospitalId?: number | null;
+    userId?: string | null;
+}): Promise<{ patients: Patient[]; totalPatients: number }> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -397,12 +446,16 @@ export async function fetchPatients(
                     },
                 });
 
-                totalPatients = await prisma.patient.count({ where: { hospitalId } });
+                totalPatients = await prisma.patient.count({
+                    where: { hospitalId },
+                });
                 break;
 
             case "DOCTOR":
                 if (!hospitalId || !userId) {
-                    console.error("Doctors must have a valid hospital ID and user ID.");
+                    console.error(
+                        "Doctors must have a valid hospital ID and user ID."
+                    );
                     return { patients: [], totalPatients: 0 };
                 }
 
@@ -436,7 +489,10 @@ export async function fetchPatients(
         const sortedPatients = patients.sort((a, b) => {
             const aLatestAppointment = a.appointments[0]?.appointmentDate ?? 0;
             const bLatestAppointment = b.appointments[0]?.appointmentDate ?? 0;
-            return new Date(bLatestAppointment).getTime() - new Date(aLatestAppointment).getTime();
+            return (
+                new Date(bLatestAppointment).getTime() -
+                new Date(aLatestAppointment).getTime()
+            );
         });
 
         return { patients: sortedPatients, totalPatients };
@@ -447,7 +503,6 @@ export async function fetchPatients(
         return { patients: [], totalPatients: 0 };
     }
 }
-
 
 // Fetch patients details using the patient name
 export async function fetchPatientDetails(
@@ -486,7 +541,9 @@ export async function fetchPatientDetails(
             case "NURSE":
             case "STAFF":
                 if (!hospitalId) {
-                    console.error(`${role}s must have an associated hospital ID.`);
+                    console.error(
+                        `${role}s must have an associated hospital ID.`
+                    );
                     return null;
                 }
                 whereClause.hospitalId = hospitalId;
@@ -521,9 +578,10 @@ export async function fetchPatientDetails(
  * @param user - User's role, hospital ID, and user ID.
  * @returns Array of patients.
  */
-export async function fetchPatientsByRole(
-    user?: { role: Role; hospitalId: number | null }
-): Promise<Patient[]> {
+export async function fetchPatientsByRole(user?: {
+    role: Role;
+    hospitalId: number | null;
+}): Promise<Patient[]> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -556,7 +614,9 @@ export async function fetchPatientsByRole(
             case "STAFF":
                 // Fetch patients only for the user's hospital
                 if (!hospitalId) {
-                    console.error(`${role}s must have an associated hospital ID.`);
+                    console.error(
+                        `${role}s must have an associated hospital ID.`
+                    );
                     return [];
                 }
                 whereClause = { hospitalId };
@@ -584,5 +644,68 @@ export async function fetchPatientsByRole(
         Sentry.captureException(error, { extra: { errorMessage } });
         console.error("Failed to fetch patients by role:", errorMessage);
         return [];
+    }
+}
+
+// delete multiple patients
+export async function deletePatients(
+    patientIds: number[],
+    user?: { role: Role; hospitalId: number | null; userId: string | null }
+): Promise<{ success: boolean; message?: string }> {
+    if (!user) {
+        const session = await getServerSession(authOptions);
+        if (!session?.user) {
+            redirect("/sign-in");
+            return { success: false, message: "Unauthorized" };
+        }
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId,
+            userId: session.user.id,
+        };
+    }
+
+    const { role, hospitalId } = user;
+
+    try {
+        if (patientIds.length === 0) {
+            throw new Error("No patient IDs provided");
+        }
+
+        const whereClause: any = {
+            patientId: { in: patientIds },
+            ...(role !== "SUPER_ADMIN" && hospitalId && { hospitalId }),
+        };
+
+        // Verify existence first for better error handling
+        const existingPatients = await prisma.patient.findMany({
+            where: whereClause,
+            select: { patientId: true },
+        });
+
+        if (existingPatients.length !== patientIds.length) {
+            throw new Error("Some patients not found or unauthorized");
+        }
+
+        // Perform deletion in transaction
+        await prisma.$transaction([
+            prisma.patient.deleteMany({
+                where: whereClause,
+            }),
+        ]);
+
+        return { success: true };
+    } catch (error) {
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, {
+            extra: {
+                errorMessage,
+                patientIds,
+                userRole: user.role,
+                hospitalId: user.hospitalId,
+            },
+        });
+        console.error("Patient deletion failed:", errorMessage);
+        return { success: false, message: errorMessage };
     }
 }

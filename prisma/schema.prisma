@@ -81,7 +81,7 @@ model Admin {
 }
 
 model Specialization {
-  specializationId        Int      @id @default(autoincrement())
+  specializationId Int      @id @default(autoincrement())
   name      String   @unique
   doctors   Doctor[]
   Nurse Nurse[]
@@ -118,7 +118,6 @@ model Doctor {
   docLicenses          DoctorLicense[]
 }
 
-
 model DoctorLicense {
   licenseId String @id @default(uuid())
   doctorId Int
@@ -138,9 +137,8 @@ model DoctorReview {
   comment String?
   createdAt DateTime @default(now())
   doctor Doctor @relation(fields: [doctorId], references: [doctorId])
-  patient Patient @relation(fields: [patientId], references: [patientId])
+  patient Patient @relation(fields: [patientId], references: [patientId], onDelete: Cascade)
 }
-
 
 model Nurse {
   nurseId        Int        @id @default(autoincrement())
@@ -232,7 +230,7 @@ model Appointment {
   updatedAt                  DateTime             @updatedAt
   doctor                     Doctor               @relation(fields: [doctorId], references: [doctorId])
   hospital                   Hospital             @relation(fields: [hospitalId], references: [hospitalId])
-  patient                    Patient              @relation(fields: [patientId], references: [patientId])
+  patient                    Patient              @relation(fields: [patientId], references: [patientId], onDelete: Cascade)
   services                   AppointmentService[]
   payments                   Payment[]
 }
@@ -254,7 +252,7 @@ model Bed {
   ward         String
   availability String // Occupied or Available
   hospital     Hospital @relation(fields: [hospitalId], references: [hospitalId])
-  patient      Patient? @relation(fields: [patientId], references: [patientId])
+  patient      Patient? @relation(fields: [patientId], references: [patientId], onDelete: Cascade)
 
   @@unique([hospitalId, patientId])
 }
@@ -328,7 +326,7 @@ model AppointmentService {
   serviceId     Int
   patientId     Int
   appointment   Appointment @relation(fields: [appointmentId], references: [appointmentId])
-  patient       Patient     @relation(fields: [patientId], references: [patientId])
+  patient       Patient     @relation(fields: [patientId], references: [patientId], onDelete: Cascade)
   service       Service     @relation(fields: [serviceId], references: [serviceId])
 
   @@id([appointmentId, serviceId])
@@ -339,7 +337,7 @@ model ServiceUsage {
   serviceId Int      @unique
   patientId Int      @unique
   date      DateTime
-  patient   Patient  @relation(fields: [patientId], references: [patientId])
+  patient   Patient  @relation(fields: [patientId], references: [patientId], onDelete: Cascade)
   service   Service  @relation(fields: [serviceId], references: [serviceId])
 }
 
@@ -354,7 +352,7 @@ model Payment {
   updatedAt     DateTime    @updatedAt
   appointment   Appointment @relation(fields: [appointmentId], references: [appointmentId])
   hospital      Hospital    @relation(fields: [hospitalId], references: [hospitalId])
-  patient       Patient     @relation(fields: [patientId], references: [patientId])
+  patient       Patient     @relation(fields: [patientId], references: [patientId], onDelete: Cascade)
   service       Service     @relation(fields: [serviceId], references: [serviceId])
 }
 
@@ -379,7 +377,7 @@ model Referral {
 
   doctors  DoctorReferral[]
   hospital Hospital        @relation(fields: [hospitalId], references: [hospitalId])
-  patient  Patient          @relation(fields: [patientId], references: [patientId])
+  patient  Patient          @relation(fields: [patientId], references: [patientId], onDelete: Cascade)
 
   @@unique([patientId, hospitalId, effectiveDate, type])
 }

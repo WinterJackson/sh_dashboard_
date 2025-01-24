@@ -9,6 +9,10 @@ import PatientRow from "@/components/patients/ui/PatientRow";
 import PatientsPagination from "@/components/patients/ui/PatientsPagination";
 import PatientsFilters from "@/components/patients/ui/PatientsFilters";
 import { format } from "date-fns";
+import { useDeletePatients } from "@/hooks/useDeletePatients";
+import Delete from "@mui/icons-material/Delete";
+import { useSession } from "next-auth/react";
+import ConfirmationModal from "@/components/patients/ui/ConfirmationModal";
 
 interface PatientsListProps {
     patients: Patient[];
@@ -27,38 +31,149 @@ export default function PatientsList({
     userRole,
     hospitalId,
 }: PatientsListProps) {
+    const { data: session } = useSession();
+    const { mutate: deletePatients, isPending: isDeleting } =
+        useDeletePatients();
+    const [selectedPatients, setSelectedPatients] = useState<number[]>([]);
+    const [showDeleteError, setShowDeleteError] = useState(false);
+    const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
+    const [deletedPatientDetails, setDeletedPatientDetails] = useState<{
+        name: string;
+        patientId: number;
+    } | null>(null);
+
     const [currentPage, setCurrentPage] = useState(1);
     const [filteredPatients, setFilteredPatients] = useState(patients);
     const { searchTerm } = useSearch();
 
-    // Handle setting patients
-    const onSetPatients = (updatedPatients: Patient[]) => {
-        setFilteredPatients(updatedPatients);
+    // State for the confirmation modal
+    const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+    const [modalConfig, setModalConfig] = useState<{
+        title: string;
+        message: string;
+        onConfirm: () => void;
+    }>({
+        title: "",
+        message: "",
+        onConfirm: () => {},
+    });
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedPatients(
+                paginatedPatients.map((patient) => patient.patientId)
+            );
+        } else {
+            setSelectedPatients([]);
+        }
     };
 
-    // Handle filtering patients based on filter changes
-    const onFilterChange = (filteredPatients: Patient[]) => {
-        setFilteredPatients(filteredPatients);
+    const handleSingleSelect = (patientId: number, checked: boolean) => {
+        setSelectedPatients((prev) =>
+            checked
+                ? [...prev, patientId]
+                : prev.filter((id) => id !== patientId)
+        );
     };
 
-    // Apply search term filter with useMemo to minimize recalculations
+    const handleBulkDelete = () => {
+        if (!selectedPatients.length) return;
+
+        // Open the confirmation modal for bulk delete
+        setModalConfig({
+            title: "Delete Patients",
+            message: `Are you sure you want to delete ${selectedPatients.length} patient(s)? This action cannot be undone.`,
+            onConfirm: () => {
+                deletePatients(
+                    {
+                        patientIds: selectedPatients,
+                        user: {
+                            role: userRole,
+                            hospitalId: hospitalId,
+                            userId: session?.user?.id || null,
+                        },
+                    },
+                    {
+                        onSuccess: () => {
+                            setFilteredPatients((prev) =>
+                                prev.filter(
+                                    (patient) =>
+                                        !selectedPatients.includes(patient.patientId)
+                                )
+                            );
+                            setSelectedPatients([]);
+                            setShowDeleteSuccess(true);
+                            setShowDeleteError(false);
+                        },
+                        onError: () => setShowDeleteError(true),
+                    }
+                );
+                setIsConfirmationModalOpen(false);
+            },
+        });
+        setIsConfirmationModalOpen(true);
+    };
+
+    const onDelete = async (patientId: number) => {
+        // Find the patient to be deleted
+        const patientToDelete = filteredPatients.find(
+            (patient) => patient.patientId === patientId
+        );
+
+        if (!patientToDelete) return;
+
+        // Open confirmation modal for single delete
+        setModalConfig({
+            title: "Delete Patient",
+            message: `Are you sure you want to delete patient "${patientToDelete.name}" (ID: ${patientToDelete.patientId})? This action cannot be undone.`,
+            onConfirm: () => {
+                deletePatients(
+                    {
+                        patientIds: [patientId],
+                        user: {
+                            role: userRole,
+                            hospitalId: hospitalId,
+                            userId: session?.user?.id || null,
+                        },
+                    },
+                    {
+                        onSuccess: () => {
+                            setFilteredPatients((prev) =>
+                                prev.filter(
+                                    (patient) => patient.patientId !== patientId
+                                )
+                            );
+                            setShowDeleteSuccess(true);
+                            setShowDeleteError(false);
+                            setDeletedPatientDetails({
+                                name: patientToDelete.name,
+                                patientId: patientToDelete.patientId,
+                            });
+                        },
+                        onError: () => setShowDeleteError(true),
+                    }
+                );
+                setIsConfirmationModalOpen(false);
+            },
+        });
+        setIsConfirmationModalOpen(true);
+    };
+
     const searchFilteredPatients = useMemo(() => {
         const term = searchTerm.toLowerCase();
-
         return filteredPatients.filter((patient) => {
             const formattedDateOfBirth = patient.dateOfBirth
-                ? format(new Date(patient.dateOfBirth), 'MM/dd/yyyy')
-                : '';
-
+                ? format(new Date(patient.dateOfBirth), "MM/dd/yyyy")
+                : "";
             const genderMatch =
-                term === 'other'
-                    ? !['male', 'female'].includes(patient.gender.toLowerCase())
+                term === "other"
+                    ? !["male", "female"].includes(patient.gender.toLowerCase())
                     : patient.gender.toLowerCase() === term;
 
             return (
                 patient.name.toLowerCase().includes(term) ||
                 patient.email.toLowerCase().includes(term) ||
-                patient.phoneNo.replace(/\s+/g, '').includes(term) ||
+                patient.phoneNo.replace(/\s+/g, "").includes(term) ||
                 patient.patientId.toString().includes(term) ||
                 formattedDateOfBirth.includes(term) ||
                 genderMatch
@@ -66,50 +181,88 @@ export default function PatientsList({
         });
     }, [searchTerm, filteredPatients]);
 
-    // Paginate the search-filtered patients based on currentPage
     const paginatedPatients = useMemo(() => {
         const start = (currentPage - 1) * ITEMS_PER_PAGE;
         const end = start + ITEMS_PER_PAGE;
         return searchFilteredPatients.slice(start, end);
     }, [searchFilteredPatients, currentPage]);
 
-    // Calculate total pages dynamically based on searchFilteredPatients length
     const totalPages = Math.ceil(
         searchFilteredPatients.length / ITEMS_PER_PAGE
     );
 
-
-    // Fetch and navigate to edit patient
-    const onEdit = async (patientId: number) => {
-        // try {
-        //     const patientDetails = await fetchPatientDetails(patientId);
-        //     window.location.href = `/dashboard/patients/edit/${patientId}`;
-        // } catch (error) {
-        //     console.error("Failed to fetch patient details for edit:", error);
-        // }
+    const onSetPatients = (updatedPatients: Patient[]) => {
+        setFilteredPatients(updatedPatients);
     };
 
-    // Delete a patient by ID and refresh the list
-    const onDelete = async (patientId: number) => {
-        // try {
-        //     await deletePatientById(patientId); // API call to delete patient
-        //     setFilteredPatients((prev) => prev.filter((patient) => patient.patientId !== patientId));
-        //     alert("Patient deleted successfully.");
-        // } catch (error) {
-        //     console.error("Failed to delete patient:", error);
-        //     alert("Failed to delete patient.");
-        // }
+    const onFilterChange = (filteredPatients: Patient[]) => {
+        setFilteredPatients(filteredPatients);
+    };
+
+    const onEdit = async (patientId: number) => {
+        // Implement edit functionality if needed
     };
 
     return (
-        <div>
+        <div className="relative">
+            {isDeleting && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg">
+                        Deleting {selectedPatients.length} patient(s)...
+                    </div>
+                </div>
+            )}
+
+            {/* Success Message */}
+            {showDeleteSuccess && (
+                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-[10px] relative mb-4">
+                    {deletedPatientDetails ? (
+                        <span>
+                            Patient <strong>{deletedPatientDetails.name}</strong> (ID:{" "}
+                            <strong>{deletedPatientDetails.patientId}</strong>) deleted
+                            successfully.
+                        </span>
+                    ) : (
+                        <span>
+                            {selectedPatients.length > 1
+                                ? `${selectedPatients.length} patients deleted successfully.`
+                                : "Patient deleted successfully."}
+                        </span>
+                    )}
+                    <button
+                        onClick={() => {
+                            setShowDeleteSuccess(false);
+                            setDeletedPatientDetails(null);
+                        }}
+                        className="absolute top-0 right-0 px-2 py-1"
+                    >
+                        ×
+                    </button>
+                </div>
+            )}
+
+            {/* Error Message */}
+            {showDeleteError && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-[10px] relative mb-4">
+                    Error deleting patients. Please try again.
+                    <button
+                        onClick={() => setShowDeleteError(false)}
+                        className="absolute top-0 right-0 px-2 py-1"
+                    >
+                        ×
+                    </button>
+                </div>
+            )}
+
             <PatientsFilters
                 hospitals={hospitals}
                 userRole={userRole}
-                hospitalId={hospitalId}                patients={patients}
+                hospitalId={hospitalId}
+                patients={patients}
                 onFilterChange={onFilterChange}
                 onSetPatients={onSetPatients}
             />
+
             <table className="w-full bg-bluelight/5 p-1 rounded-t-2xl border-separate border-spacing-y-4">
                 <thead>
                     <tr className="text-gray-800">
@@ -128,7 +281,38 @@ export default function PatientsList({
                         <th className="text-center p-2 w-[15%]">Last Appt</th>
                         <th className="text-center p-2 w-[15%]">Next Appt</th>
                         <th className="text-center p-2 w-[15%]">Reason</th>
-                        <th className="text-center p-2 w-[2%]"></th>
+                        <th className="text-center p-2 w-[2%]">
+                            <div className="flex flex-col items-center justify-center gap-1">
+                                <input
+                                    type="checkbox"
+                                    className="w-4 h-4"
+                                    onChange={(e) =>
+                                        handleSelectAll(e.target.checked)
+                                    }
+                                    checked={
+                                        selectedPatients.length > 0 &&
+                                        selectedPatients.length ===
+                                            paginatedPatients.length
+                                    }
+                                    ref={(el) => {
+                                        if (el) {
+                                            el.indeterminate =
+                                                selectedPatients.length > 0 &&
+                                                selectedPatients.length <
+                                                    paginatedPatients.length;
+                                        }
+                                    }}
+                                />
+                                <button
+                                    onClick={handleBulkDelete}
+                                    disabled={selectedPatients.length === 0}
+                                    className="text-primary hover:text-red-700"
+                                    aria-label="Delete selected patients"
+                                >
+                                    <Delete className="w-7 h-7" />
+                                </button>
+                            </div>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -137,16 +321,31 @@ export default function PatientsList({
                             key={patient.patientId}
                             patient={patient}
                             userRole={userRole}
-                            hospitalId={hospitalId}                            onEdit={() => onEdit(patient.patientId)}
+                            hospitalId={hospitalId}
+                            onEdit={onEdit}
                             onDelete={() => onDelete(patient.patientId)}
+                            onSelect={handleSingleSelect}
+                            isSelected={selectedPatients.includes(
+                                patient.patientId
+                            )}
                         />
                     ))}
                 </tbody>
             </table>
+
             <PatientsPagination
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={setCurrentPage}
+            />
+
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={isConfirmationModalOpen}
+                onClose={() => setIsConfirmationModalOpen(false)}
+                onConfirm={modalConfig.onConfirm}
+                title={modalConfig.title}
+                message={modalConfig.message}
             />
         </div>
     );

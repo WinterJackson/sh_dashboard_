@@ -1,4 +1,4 @@
-// src/components/patients/PatientRow.tsx
+// src/components/patients/ui/PatientRow.tsx
 
 "use client"
 
@@ -18,9 +18,20 @@ type PatientRowProps = {
     hospitalId: number | null;
     onEdit: (patientId: number) => void;
     onDelete: (patientId: number) => void;
+    onSelect: (patientId: number, checked: boolean) => void;
+    isSelected: boolean;
 };
 
-const PatientRow: React.FC<PatientRowProps> = ({ patient, userRole, hospitalId, onEdit, onDelete }) => {
+const PatientRow: React.FC<PatientRowProps> = ({
+    patient,
+    userRole,
+    hospitalId,
+    onEdit,
+    onDelete,
+    onSelect,
+    isSelected
+}) => {
+
     // Format appointments based on the patient's last and next appointment logic
     const getLastAppointment = (appointments: Patient["appointments"] | undefined) => {
         if (!appointments || appointments.length === 0) return null;
@@ -49,7 +60,12 @@ const PatientRow: React.FC<PatientRowProps> = ({ patient, userRole, hospitalId, 
         <tr className="bg-white shadow-md py-2">
             {/* Checkbox Column */}
             <td className="text-center w-[8%] p-2 rounded-l-[10px]">
-                <input type="checkbox" className="w-[15px] h-[15px]" />
+                <input
+                    type="checkbox"
+                    className="w-[15px] h-[15px]"
+                    checked={isSelected}
+                    onChange={(e) => onSelect(patient.patientId, e.target.checked)}
+                />
             </td>
 
             {/* Basic Info Column - Links to patient profile */}
