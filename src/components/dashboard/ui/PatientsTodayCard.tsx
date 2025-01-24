@@ -2,7 +2,7 @@
 
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import icon from "../../../../public/images/patient.svg";
 import Image from "next/image";
 import Link from "next/link";
@@ -20,29 +20,41 @@ const PatientsTodayCard: React.FC<PatientsTodayCardProps> = ({
     currentWeekPatients,
     previousWeekPatients,
 }) => {
-    // Calculate current and previous week counts
-    const currentWeekCount = currentWeekPatients.length;
-    const previousWeekCount = previousWeekPatients.length;
+    // Memoize the calculation of current and previous week counts
+    const { currentWeekCount, previousWeekCount } = useMemo(() => {
+        if (!currentWeekPatients || !previousWeekPatients) {
+            return { currentWeekCount: 0, previousWeekCount: 0 };
+        }
+        return {
+            currentWeekCount: currentWeekPatients.length,
+            previousWeekCount: previousWeekPatients.length,
+        };
+    }, [currentWeekPatients, previousWeekPatients]);
 
-    let percentageChange = 0;
-    let isPositive = true;
+    // Calculate percentage change
+    const { percentageChange, isPositive } = useMemo(() => {
+        let percentageChange = 0;
+        let isPositive = true;
 
-    if (previousWeekCount > 0) {
-        const change = currentWeekCount - previousWeekCount;
-        percentageChange = (change / previousWeekCount) * 100;
-        isPositive = change >= 0;
-    } else if (currentWeekCount > 0) {
-        // No patients in the previous week but patients in the current week
-        percentageChange = 100; // 100% increase
-        isPositive = true;
-    } else if (currentWeekCount === 0 && previousWeekCount > 0) {
-        // Patients in the previous week but none in the current week
-        percentageChange = -100; // 100% decrease
-        isPositive = false;
-    } else {
-        // No patients in both weeks
-        percentageChange = 0;
-    }
+        if (previousWeekCount > 0) {
+            const change = currentWeekCount - previousWeekCount;
+            percentageChange = (change / previousWeekCount) * 100;
+            isPositive = change >= 0;
+        } else if (currentWeekCount > 0) {
+            // No patients in the previous week but patients in the current week
+            percentageChange = 100; // 100% increase
+            isPositive = true;
+        } else if (currentWeekCount === 0 && previousWeekCount > 0) {
+            // Patients in the previous week but none in the current week
+            percentageChange = -100; // 100% decrease
+            isPositive = false;
+        } else {
+            // No patients in both weeks
+            percentageChange = 0;
+        }
+
+        return { percentageChange, isPositive };
+    }, [currentWeekCount, previousWeekCount]);
 
     // Helper to dynamically set font size based on the number of digits
     const getFontSizeClass = (numDigits: number) => {

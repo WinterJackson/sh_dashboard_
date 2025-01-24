@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { Hospital, Role } from "@/lib/definitions";
 import Link from "next/link";
@@ -97,7 +97,7 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
             : undefined
     );
 
-    // get hospital ID for services fetch
+    // Get hospital ID for services fetch
     const targetHospitalId =
         userRole === Role.SUPER_ADMIN ? selectedHospitalId : userHospitalId;
 
@@ -116,7 +116,7 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
         isServicesLoading;
     const isError = isHospitalsError || isServicesError;
 
-    // name of hospital being displayed
+    // Name of hospital being displayed
     const displayedHospitalName =
         userRole === Role.SUPER_ADMIN
             ? selectedHospitalId
@@ -125,6 +125,23 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
                 : "All Hospitals"
             : null;
 
+    // Memoize the processed data for the PieChart
+    const processedData = useMemo(() => {
+        if (!servicesData || servicesData.length === 0) return [];
+
+        const top7Data = [...servicesData]
+            .sort((a, b) => b.value - a.value) // Sort by value in descending order
+            .slice(0, 7); // Take the top 7 services
+
+        const top7Total = top7Data.reduce((sum, service) => sum + service.value, 0);
+
+        return top7Data.map((service) => ({
+            name: service.name,
+            value: service.value,
+            percentage: ((service.value / top7Total) * 100).toFixed(2), // Recalculate percentage
+        }));
+    }, [servicesData]);
+
     if (isError || !servicesData) {
         return (
             <div className="p-8 bg-white rounded-lg shadow-md">
@@ -132,19 +149,6 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
             </div>
         );
     }
-
-    // Transform servicesData for PieChart
-    const top7Data = [...servicesData]
-        .sort((a, b) => b.value - a.value) // Sort by value in descending order
-        .slice(0, 7); // Take the top 7 services
-
-    const top7Total = top7Data.reduce((sum, service) => sum + service.value, 0);
-
-    const processedData = top7Data.map((service) => ({
-        name: service.name,
-        value: service.value,
-        percentage: ((service.value / top7Total) * 100).toFixed(2), // Recalculate percentage
-    }));
 
     return (
         <div className="flex flex-col p-4 w-full rounded-2xl xl:pb-5 bg-slate-100 shadow-lg shadow-gray-300">

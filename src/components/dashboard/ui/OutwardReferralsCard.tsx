@@ -28,7 +28,16 @@ const OutwardReferralsCard: React.FC<OutwardReferralsCardProps> = ({
         currentWeekCount,
         percentageChange,
         patientChangeText,
-    }: ReferralStats = useMemo((): ReferralStats => {
+    }: ReferralStats = useMemo(() => {
+        if (!outwardReferrals || outwardReferrals.length === 0) {
+            return {
+                currentWeekCount: 0,
+                previousWeekCount: 0,
+                percentageChange: 0,
+                patientChangeText: "No referrals this week.",
+            };
+        }
+
         const today = new Date();
 
         // Separate current and previous week referrals

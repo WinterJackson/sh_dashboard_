@@ -1,6 +1,6 @@
 // File: src/components/dashboard/nurse-dashboard/NurseDashboard.tsx
 
-import React from "react";
+import React, { useMemo } from "react";
 import DashboardAppointments from "@/components/dashboard/ui/DashboardAppointments";
 import AppointmentsTodayCard from "../ui/AppointmentsTodayCard";
 import AvailableBedsCard from "../ui/AvailableBedsCard";
@@ -44,14 +44,20 @@ interface NurseDashboardProps {
 }
 
 const NurseDashboard: React.FC<NurseDashboardProps> = async ({ session }) => {
-    const firstName = session?.user?.username?.split(" ")[0] || "Super Admin";
+    const firstName = useMemo(
+        () => session?.user?.username?.split(" ")[0] || "Nurse",
+        [session.user.username]
+    );
 
     // params object for all fetch calls
-    const params = {
-        role: session.user.role,
-        hospitalId: session.user.hospitalId,
-        userId: null,
-    };
+    const params = useMemo(
+        () => ({
+            role: session.user.role,
+            hospitalId: session.user.hospitalId,
+            userId: null,
+        }),
+        [session.user.role, session.user.hospitalId]
+    );
 
     try {
         // Fetch all data in parallel

@@ -1,6 +1,6 @@
 // File: src/components/dashboard/admin-dashboard/AdminDashboard.tsx
 
-import React from "react";
+import React, { useMemo } from "react";
 import DashboardAppointments from "@/components/dashboard/ui/DashboardAppointments";
 import AppointmentsTodayCard from "../ui/AppointmentsTodayCard";
 import AvailableBedsCard from "../ui/AvailableBedsCard";
@@ -45,14 +45,20 @@ interface AdminDashboardProps {
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = async ({ session }) => {
-    const firstName = session?.user?.username?.split(" ")[0] || "Super Admin";
+    const firstName = useMemo(
+        () => session?.user?.username?.split(" ")[0] || "Admin",
+        [session.user.username]
+    );
 
     // params object for all fetch calls
-    const params = {
-        role: session.user.role,
-        hospitalId: session.user.hospitalId,
-        userId: null,
-    };
+    const params = useMemo(
+        () => ({
+            role: session.user.role,
+            hospitalId: session.user.hospitalId,
+            userId: null,
+        }),
+        [session.user.role, session.user.hospitalId]
+    );
 
     try {
         // Fetch all data in parallel

@@ -8,7 +8,7 @@ export const useFetchDoctorDetails = (
     user: { role: Role; hospitalId: number | null }
 ) => {
     return useQuery({
-        queryKey: ["doctorDetails", doctorId, user.role, user.hospitalId],
+        queryKey: ["doctorDetails", doctorId, user?.role, user?.hospitalId],
         queryFn: () => fetchDoctorDetails(doctorId, user),
         staleTime: 1000 * 60 * 10, // 10 minutes cache
         retry: 1,

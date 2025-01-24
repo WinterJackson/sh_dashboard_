@@ -6,7 +6,7 @@ import { Role } from "@/lib/definitions";
 
 export const useFetchPatientsByRole = (user?: { role: Role; hospitalId: number | null }) => {
     return useQuery({
-        queryKey: ["patientsByRole", user],
+        queryKey: ["patientsByRole", user?.role, user?.hospitalId],
         queryFn: () => fetchPatientsByRole(user),
         staleTime: 1000 * 60 * 10, // Cache data for 10 minutes
         retry: 1, // Retry once if the request fails

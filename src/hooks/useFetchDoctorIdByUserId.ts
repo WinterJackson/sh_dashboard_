@@ -9,7 +9,7 @@ export const useFetchDoctorIdByUserId = (
     user?: { role: Role; hospitalId: number | null; userId: string | null }
 ) => {
     return useQuery({
-        queryKey: ["doctorIdByUserId", userId, user],
+        queryKey: ["doctorIdByUserId", userId, user?.role, user?.hospitalId],
         queryFn: () => fetchDoctorIdByUserId(userId, user),
         staleTime: 1000 * 60 * 10, // Cache data for 10 minutes
         retry: 1, // Retry once if the request fails

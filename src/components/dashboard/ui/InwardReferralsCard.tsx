@@ -12,7 +12,7 @@ interface InwardReferralsCardProps {
     }[];
 }
 
-// Define the return type for useMemo
+// Return type for useMemo
 interface ReferralStats {
     currentWeekCount: number;
     previousWeekCount: number;
@@ -28,7 +28,16 @@ const InwardReferralsCard: React.FC<InwardReferralsCardProps> = ({
         currentWeekCount,
         percentageChange,
         patientChangeText,
-    }: ReferralStats = useMemo((): ReferralStats => {
+    }: ReferralStats = useMemo(() => {
+        if (!inwardReferrals || inwardReferrals.length === 0) {
+            return {
+                currentWeekCount: 0,
+                previousWeekCount: 0,
+                percentageChange: 0,
+                patientChangeText: "No referrals this week.",
+            };
+        }
+        
         const today = new Date();
 
         // Separate current and previous week referrals

@@ -18,9 +18,10 @@ const AppointmentsTodayCard: React.FC<AppointmentsTodayCardProps> = ({
     last14DaysAppointments,
 }) => {
     const percentageChange = useMemo(() => {
+        if (!last14DaysAppointments || last14DaysAppointments.length === 0) return 0;
+
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-
         const appointmentCounts = Array(14).fill(0);
 
         last14DaysAppointments.forEach((appointment) => {

@@ -9,7 +9,7 @@ export const useFetchPatientDetails = (
     user: { role: Role; hospitalId: number | null; userId: string | null }
 ) => {
     return useQuery({
-        queryKey: ["patientDetails", name],
+        queryKey: ["patientDetails", name, user?.role, user?.hospitalId],
         queryFn: () => fetchPatientDetails(name, user),
         enabled: !!name, // Only fetch if name is provided
     });
