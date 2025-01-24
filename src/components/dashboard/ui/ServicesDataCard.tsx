@@ -144,7 +144,7 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
 
     if (isError || !servicesData) {
         return (
-            <div className="p-8 bg-white rounded-lg shadow-md">
+            <div className="p-8 bg-slate-100 rounded-2xl shadow-lg shadow-gray-300">
                 Failed to load hospital services data.
             </div>
         );
