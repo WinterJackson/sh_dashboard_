@@ -31,7 +31,7 @@ export default function ConfirmationModal({
                 <div className="flex justify-end gap-4">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 text-gray-700 hover:bg-bluelight rounded-[10px]"
+                        className="px-4 py-2 text-gray-700 hover:bg-primary hover:text-white rounded-[10px]"
                     >
                         {cancelText}
                     </button>

@@ -47,7 +47,8 @@ export default function PatientsList({
     const { searchTerm } = useSearch();
 
     // State for the confirmation modal
-    const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+    const [isConfirmationModalOpen, setIsConfirmationModalOpen] =
+        useState(false);
     const [modalConfig, setModalConfig] = useState<{
         title: string;
         message: string;
@@ -98,7 +99,9 @@ export default function PatientsList({
                             setFilteredPatients((prev) =>
                                 prev.filter(
                                     (patient) =>
-                                        !selectedPatients.includes(patient.patientId)
+                                        !selectedPatients.includes(
+                                            patient.patientId
+                                        )
                                 )
                             );
                             setSelectedPatients([]);
@@ -218,9 +221,10 @@ export default function PatientsList({
                 <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-[10px] relative mb-4">
                     {deletedPatientDetails ? (
                         <span>
-                            Patient <strong>{deletedPatientDetails.name}</strong> (ID:{" "}
-                            <strong>{deletedPatientDetails.patientId}</strong>) deleted
-                            successfully.
+                            Patient{" "}
+                            <strong>{deletedPatientDetails.name}</strong> (ID:{" "}
+                            <strong>{deletedPatientDetails.patientId}</strong>)
+                            deleted successfully.
                         </span>
                     ) : (
                         <span>
@@ -254,6 +258,15 @@ export default function PatientsList({
                 </div>
             )}
 
+            {/* Selected Patients Count */}
+            {selectedPatients.length > 0 && (
+                <div className="bg-bluelight/5 border border-primary text-gray-700 p-3 rounded-[10px] relative mb-2">
+                    {selectedPatients.length === 1
+                        ? "1 patient selected."
+                        : `${selectedPatients.length} patients selected.`}
+                </div>
+            )}
+
             <PatientsFilters
                 hospitals={hospitals}
                 userRole={userRole}
@@ -282,7 +295,7 @@ export default function PatientsList({
                         <th className="text-center p-2 w-[15%]">Next Appt</th>
                         <th className="text-center p-2 w-[15%]">Reason</th>
                         <th className="text-center p-2 w-[2%]">
-                            <div className="flex flex-col items-center justify-center gap-1">
+                            <div className="flex flex-col items-center justify-center gap-1 p-2 rounded-[10px] bg-white shadow-sm shadow-gray-400 ">
                                 <input
                                     type="checkbox"
                                     className="w-4 h-4"
