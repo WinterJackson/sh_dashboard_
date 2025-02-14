@@ -6,9 +6,12 @@ import React, { useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 
-type Props = {};
+type Props = {
+    question: string;
+    answer: string;
+};
 
-function FAQ({}: Props) {
+function FAQ({ question, answer }: Props) {
     const [isExtended, setIsExtended] = useState(false);
     return (
         <div
@@ -20,9 +23,7 @@ function FAQ({}: Props) {
         >
             {/* Question */}
             <div className="flex justify-between items-center">
-                <h1 className="font-bold capitalize max-w-[70%]">
-                    Are there any subscription fees?
-                </h1>
+                <h1 className="font-bold capitalize max-w-[70%] text-nowrap">{question}</h1>
                 <button
                     onClick={() => setIsExtended(!isExtended)}
                     className="text-primary"
@@ -30,12 +31,7 @@ function FAQ({}: Props) {
                     {isExtended ? <RemoveIcon /> : <AddIcon />}
                 </button>
             </div>
-            <p className="max-w-[70%]">
-                Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-                Voluptatem, voluptas corrupti? Iure ut modi itaque deserunt et
-                excepturi velit incidunt dolores rerum, temporibus nulla
-                consequatur eligendi, aliquid qui alias laudantium.
-            </p>
+            <p className="max-w-full text-md bg-white p-2 rounded-[10px] shadow-sm shadow-gray-400">{answer}</p>
         </div>
     );
 }

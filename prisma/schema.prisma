@@ -24,28 +24,62 @@ enum ServiceType {
   NON_MEDICAL
 }
 
+enum NotificationType {
+  APPOINTMENT
+  SECURITY
+  SYSTEM
+  GENERAL
+}
+
 model User {
-  userId     String      @id @default(uuid())
-  username   String      @unique
-  email      String      @unique
-  password   String
-  role       Role
-  hospitalId Int?
-  isActive   Boolean     @default(true)
-  lastLogin  DateTime?
-  mustResetPassword Boolean  @default(false)
-  resetToken       String?
-  resetTokenExpiry DateTime?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  doctor     Doctor?
-  profile    Profile?
-  sessions   Session[]
-  hospital   Hospital?   @relation(fields: [hospitalId], references: [hospitalId])
-  superAdmin SuperAdmin?
-  admin      Admin?
-  nurse      Nurse?
-  staff      Staff?
+  userId              String         @id @default(uuid())
+  username            String         @unique
+  email               String         @unique
+  password            String
+  role                Role
+  hospitalId          Int?
+  isActive            Boolean        @default(true)
+  lastLogin           DateTime?
+  mustResetPassword   Boolean        @default(false)
+  resetToken          String?
+  resetTokenExpiry    DateTime?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  twoFactorEnabled    Boolean        @default(false)
+  autoLogoutTimeout   Int            @default(30) // in minutes
+  doctor              Doctor?
+  profile             Profile?
+  sessions            Session[]
+  hospital            Hospital?      @relation(fields: [hospitalId], references: [hospitalId])
+  superAdmin          SuperAdmin?
+  admin               Admin?
+  nurse               Nurse?
+  staff               Staff?
+  notifications       Notification[]
+  notificationSettings NotificationSettings?
+}
+
+model NotificationSettings {
+  notificationSettingsId                String  @id @default(uuid())
+  userId            String  @unique
+  appointmentAlerts Boolean @default(true)
+  emailAlerts       Boolean @default(true)
+  securityAlerts    Boolean @default(true)
+  systemUpdates     Boolean @default(true)
+  newDeviceLogin    Boolean @default(true)
+  user              User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+}
+
+model Notification {
+  notificationId        String   @id @default(uuid())
+  userId    String
+  type      NotificationType
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  metadata  Json?    // For storing additional data related to the notification
+  user      User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
 model Profile {

@@ -1,5 +1,20 @@
 // src/lib/definitions.ts
 
+export enum Role {
+    SUPER_ADMIN = "SUPER_ADMIN",
+    ADMIN = "ADMIN",
+    DOCTOR = "DOCTOR",
+    NURSE = "NURSE",
+    STAFF = "STAFF",
+}
+
+export enum NotificationType {
+    APPOINTMENT = "APPOINTMENT",
+    SECURITY = "SECURITY",
+    SYSTEM = "SYSTEM",
+    GENERAL = "GENERAL"
+}
+
 export interface User {
     userId: string;
     username: string;
@@ -14,6 +29,8 @@ export interface User {
     resetTokenExpiry?: Date | null;
     createdAt: Date;
     updatedAt: Date;
+    twoFactorEnabled?: boolean;
+    autoLogoutTimeout?: number;
     doctor?: Doctor;
     profile?: Profile;
     sessions?: Session[];
@@ -22,14 +39,31 @@ export interface User {
     admin?: Admin;
     nurse?: Nurse;
     staff?: Staff;
+    notifications?: Notification[];
+    notificationSettings?: NotificationSettings;
 }
 
-export enum Role {
-    SUPER_ADMIN = "SUPER_ADMIN",
-    ADMIN = "ADMIN",
-    DOCTOR = "DOCTOR",
-    NURSE = "NURSE",
-    STAFF = "STAFF",
+export interface Notification {
+    notificationId: string;
+    userId: string;
+    type: NotificationType;
+    message: string;
+    isRead: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    metadata?: Record<string, any>; // Optional additional data
+    user: User;
+}
+
+export interface NotificationSettings {
+    notificationSettingsId: string;
+    userId: string;
+    appointmentAlerts: boolean;
+    emailAlerts: boolean;
+    securityAlerts: boolean;
+    systemUpdates: boolean;
+    newDeviceLogin: boolean;
+    user: User;
 }
 
 export interface Profile {

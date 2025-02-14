@@ -1,4 +1,5 @@
 // src/components/providers/NotFoundBoundary.tsx
+
 import React from "react";
 
 function NotFoundBoundary({ children }: { children: React.ReactNode }) {

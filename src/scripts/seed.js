@@ -10,6 +10,8 @@ const {
     services,
     departmentServices,
     users,
+    notifications,
+    notificationSettings,
     profiles,
     superAdmins,
     admins,
@@ -174,6 +176,49 @@ async function seedUsers() {
         console.log(`Seeded users`);
     } catch (error) {
         console.error("Error seeding users:", error);
+        throw error;
+    }
+}
+
+async function seedNotifications() {
+    try {
+        await prisma.notification.createMany({
+            data: notifications.map((notification) => ({
+                notificationId: notification.notificationId,
+                userId: notification.userId,
+                type: notification.type,
+                message: notification.message,
+                isRead: notification.isRead,
+                metadata: notification.metadata,
+                createdAt: notification.createdAt,
+                updatedAt: notification.updatedAt,
+            })),
+            skipDuplicates: true,
+        });
+        console.log(`Seeded notifications`);
+    } catch (error) {
+        console.error("Error seeding notifications:", error);
+        throw error;
+    }
+}
+
+async function seedNotificationSettings() {
+    try {
+        await prisma.notificationSettings.createMany({
+            data: notificationSettings.map((settings) => ({
+                notificationSettingsId: settings.notificationSettingsId,
+                userId: settings.userId,
+                appointmentAlerts: settings.appointmentAlerts,
+                emailAlerts: settings.emailAlerts,
+                securityAlerts: settings.securityAlerts,
+                systemUpdates: settings.systemUpdates,
+                newDeviceLogin: settings.newDeviceLogin,
+            })),
+            skipDuplicates: true,
+        });
+        console.log(`Seeded notification settings`);
+    } catch (error) {
+        console.error("Error seeding notification settings:", error);
         throw error;
     }
 }
@@ -638,6 +683,8 @@ async function main() {
     await seedServices();
     await seedDepartmentServices();
     await seedUsers();
+    await seedNotifications();
+    await seedNotificationSettings();
     await seedProfiles();
     await seedSuperAdmins();
     await seedAdmins();
