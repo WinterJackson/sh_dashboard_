@@ -12,12 +12,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Role } from "@/lib/definitions";
 import Image from "next/image";
-import { StaticImport } from "next/dist/shared/lib/get-img-props";
+import { useEdgeStore } from "@/lib/edgestore";
+import { useState, useEffect } from "react";
+import { base64ToFile } from "@/lib/utils";
+import { useRef } from "react";
 
 interface ExtendedProfileUpdateData extends ProfileUpdateData {
     username: string;
     email: string;
     imageUrl?: string;
+    userId: string;
 }
 
 interface AccountTabProps {
@@ -63,11 +67,21 @@ export default function AccountTab({
         useUpdateUser();
     const isPending = isProfilePending || isUserPending;
 
+    const { edgestore } = useEdgeStore();
+    const [profileImageData, setProfileImageData] = useState<string | null>(
+        null
+    );
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+    // reference for the image file input
+    const imageFileInputRef = useRef<HTMLInputElement>(null);
+
     const {
         register,
         handleSubmit,
         formState: { errors },
         watch,
+        setValue,
     } = useForm<ExtendedProfileUpdateData>({
         defaultValues: {
             ...profile,
@@ -81,13 +95,70 @@ export default function AccountTab({
 
     const imageUrl = watch("imageUrl");
 
+    const handleProfileImageChange = async (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new window.Image();
+            img.src = e.target?.result as string;
+
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                if (!ctx) return;
+
+                // Crop to square
+                const size = Math.min(img.width, img.height);
+                canvas.width = size;
+                canvas.height = size;
+
+                ctx.drawImage(
+                    img,
+                    (img.width - size) / 2,
+                    (img.height - size) / 2,
+                    size,
+                    size,
+                    0,
+                    0,
+                    size,
+                    size
+                );
+
+                const resizedImage = canvas.toDataURL("image/jpeg");
+                setProfileImageData(resizedImage);
+                setPreviewImage(resizedImage);
+            };
+        };
+        reader.readAsDataURL(file);
+    };
+
     const onSubmit = async (data: ExtendedProfileUpdateData) => {
         try {
+            let imageUrl = data.imageUrl;
+
+            // Upload new image if exists
+            if (profileImageData) {
+                const file = base64ToFile(profileImageData, "profile.jpg");
+                const res = await edgestore.doctorImages.upload({
+                    file,
+                    options: { manualFileName: `profile-${profile.userId}` },
+                });
+                imageUrl = res.url;
+                setValue("imageUrl", res.url);
+            }
+
             const { username, email, ...profileData } = data;
             // Update user credentials
             await updateUser({ username, email });
             // Update profile information
-            await updateProfile(profileData);
+            await updateProfile({
+                ...profileData,
+                imageUrl,
+            } as ProfileUpdateData & { imageUrl?: string });
             toast.success("Account updated successfully");
         } catch (error) {
             toast.error(
@@ -98,14 +169,21 @@ export default function AccountTab({
         }
     };
 
-    const imageSource = imageUrl || "/images/default-avatar.png";
+    const imageSource =
+        previewImage || imageUrl || "/images/default-avatar.png";
 
     const MEDICAL_ROLES = ["DOCTOR", "NURSE", "STAFF"];
     const isMedicalStaff = MEDICAL_ROLES.includes(role);
 
+    useEffect(() => {
+        if (imageUrl) {
+            setPreviewImage(imageUrl);
+        }
+    }, [imageUrl]);
+
     return (
         <div className="space-y-6 p-2">
-            <h2 className="text-lg font-semibold bg-white p-2 rounded-[10px] shadow-sm shadow-gray-400">
+            <h2 className="text-lg text-primary font-semibold bg-white p-2 rounded-[10px] shadow-sm shadow-gray-400">
                 Account Information
             </h2>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -160,33 +238,57 @@ export default function AccountTab({
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="p-2 pl-1 block text-gray-600 text-sm font-medium">
-                                    Profile Picture URL
+                                    Profile Picture
                                 </label>
-                                <Input
-                                    {...register("imageUrl")}
-                                    placeholder="Enter image URL"
-                                />
-                                {imageUrl && (
-                                    <div className="mt-2">
-                                        <Image
-                                            src={
-                                                imageSource as
-                                                    | string
-                                                    | StaticImport
-                                            }
-                                            alt="Profile Preview"
-                                            width={96}
-                                            height={96}
-                                            className="rounded-full object-cover w-24 h-24"
-                                            onError={(e) => {
-                                                (
-                                                    e.target as HTMLImageElement
-                                                ).src =
-                                                    "/images/default-avatar.png";
-                                            }}
-                                        />
-                                    </div>
-                                )}
+
+                                <div className="justify-items-center w-full p-2 pb-4 rounded-[5px] border-2 bg-black/5">
+                                <div className="justify-center items-center p-3">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleProfileImageChange}
+                                        className="bg-white border-2 rounded-[10px] block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/80"
+                                        ref={imageFileInputRef}
+                                    />
+                                    {previewImage && (
+                                        <div className="mt-2 border-2 bg-white py-4 rounded-[10px] justify-items-center">
+                                            <Image
+                                                src={imageSource}
+                                                alt="Profile Preview"
+                                                width={96}
+                                                height={96}
+                                                className="w-[96px] h-[96px] object-cover rounded-full border-2 border-primary m-2"
+                                                onError={(e) => {
+                                                    (
+                                                        e.target as HTMLImageElement
+                                                    ).src =
+                                                        "/images/default-avatar.png";
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Cancel Button */}
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setPreviewImage(
+                                            profile.imageUrl || null
+                                        );
+                                        setProfileImageData(null);
+                                        // Clear image file input value
+                                        if (imageFileInputRef.current) {
+                                            imageFileInputRef.current.value =
+                                                "";
+                                        }
+                                    }}
+                                    className="bg-primary p-2 px-4 w-[110px] rounded-[10px] mt-2 text-sm text-white font-semibold hover:text-white hover:bg-red-700"
+                                >
+                                    Cancel
+                                </button>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -194,8 +296,8 @@ export default function AccountTab({
                     {/* Bio and Contact Information */}
                     <div className="grid grid-cols-2 gap-4">
                         {/* Bio Section */}
-                        <div className="col-span-1 space-y-4 bg-white p-4 rounded-[10px] shadow-sm shadow-gray-400">
-                            <h3 className="text-lg font-semibold bg-bluelight/5 p-1">
+                        <div className="col-span-1 space-y-2 bg-white p-4 rounded-[10px] shadow-sm shadow-gray-400">
+                            <h3 className="text-base text-primary font-semibold border-b-2 border-gray-300 p-1 pb-0">
                                 Bio
                             </h3>
                             <div>
@@ -249,6 +351,7 @@ export default function AccountTab({
                                     id="dateOfBirth"
                                     {...register("dateOfBirth")}
                                     type="date"
+                                    className="w-auto"
                                     placeholder="Enter your date of birth"
                                 />
                             </div>
@@ -314,8 +417,8 @@ export default function AccountTab({
                         </div>
 
                         {/* Contact Information Section */}
-                        <div className="col-span-1 space-y-4 bg-white p-4 rounded-[10px] shadow-sm shadow-gray-400">
-                            <h3 className="text-lg font-semibold bg-bluelight/5 p-1">
+                        <div className="col-span-1 space-y-2 pb-6 bg-white p-4 rounded-[10px] shadow-sm shadow-gray-400">
+                            <h3 className="text-base text-primary font-semibold border-b-2 border-gray-300 p-1 pb-0">
                                 Contact Information
                             </h3>
                             <div>
@@ -424,6 +527,7 @@ export default function AccountTab({
                         type="submit"
                         onClick={handleSubmit(onSubmit)}
                         disabled={isPending || Object.keys(errors).length > 0}
+                        className="w-full"
                     >
                         {isPending ? "Saving..." : "Save Changes"}
                     </Button>

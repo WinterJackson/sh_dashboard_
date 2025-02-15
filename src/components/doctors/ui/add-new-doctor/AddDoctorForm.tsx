@@ -1,4 +1,4 @@
-// File: src/components/doctors/ui/add-new-doctor/AddDoctorForm.tsx
+// src/components/doctors/ui/add-new-doctor/AddDoctorForm.tsx
 
 "use client";
 
@@ -72,7 +72,7 @@ const AddDoctorFormComponent: React.FC<AddDoctorFormProps> = ({
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [profileImageData, setProfileImageData] = useState<string | null>(
         null
-    ); // Store base64 string
+    );
 
     // const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -270,7 +270,7 @@ const AddDoctorFormComponent: React.FC<AddDoctorFormProps> = ({
             profileImageUrl,
         };
 
-        // Pass both doctorData and sessionUser as a single object
+        // Pass doctorData and sessionUser as object
         addDoctor(
             { doctorData: processedData, user: sessionUser },
             {
@@ -312,7 +312,7 @@ const AddDoctorFormComponent: React.FC<AddDoctorFormProps> = ({
                 >
                     <div className="flex flex-row w-full gap-3">
                         {/* PROFILE IMAGE UPLOAD & PREVIEW */}
-                        <div className="flex flex-col gap-6 bg-white shadow-lg shadow-gray-300 w-1/3 p-4 rounded-xl">
+                        <div className="flex flex-col gap-6 bg-white shadow-sm shadow-gray-400 w-1/3 p-4 rounded-xl">
                             <span className="text-primary font-semibold border-b-2 border-gray-300">
                                 Upload Profile Picture
                             </span>
@@ -356,7 +356,7 @@ const AddDoctorFormComponent: React.FC<AddDoctorFormProps> = ({
                         </div>
 
                         {/* BIO */}
-                        <div className="flex flex-col gap-6 bg-white shadow-lg shadow-gray-300 w-1/3 p-4 rounded-xl">
+                        <div className="flex flex-col gap-6 bg-white shadow-sm shadow-gray-400 w-1/3 p-4 rounded-xl">
                             <span className="text-primary font-semibold border-b-2 border-gray-300">
                                 Bio
                             </span>
@@ -452,7 +452,7 @@ const AddDoctorFormComponent: React.FC<AddDoctorFormProps> = ({
                         </div>
 
                         {/* CONTACT INFORMATION */}
-                        <div className="flex flex-col gap-6 bg-white shadow-lg shadow-gray-300 w-1/3 p-4 rounded-xl">
+                        <div className="flex flex-col gap-6 bg-white shadow-sm shadow-gray-400 w-1/3 p-4 rounded-xl">
                             <span className="text-primary font-semibold border-b-2 border-gray-300">
                                 Contact Information
                             </span>
@@ -483,12 +483,12 @@ const AddDoctorFormComponent: React.FC<AddDoctorFormProps> = ({
                         </div>
                     </div>
 
-                    <div className="flex flex-col w-full bg-white shadow-lg shadow-gray-300 p-4 rounded-xl">
+                    {/* PROFESSIONAL INFORMATION */}
+                    <div className="flex flex-col w-full bg-white shadow-sm shadow-gray-400 p-4 rounded-xl">
                         <span className="text-primary font-semibold px-2 mb-8 border-b-2 border-gray-300">
                             Professional Information
                         </span>
 
-                        {/* PROFESSIONAL INFORMATION */}
                         <div className="flex flex-row w-full gap-6 p-2 mb-8">
                             {userRole === Role.SUPER_ADMIN && (
                                 <FormItem className="flex flex-col flex-1 min-w-0 bg-bluelight rounded-[10px]">

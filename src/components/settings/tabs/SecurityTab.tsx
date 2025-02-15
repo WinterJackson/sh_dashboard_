@@ -3,6 +3,7 @@
 "use client";
 
 import { useUpdateSecuritySettings } from "@/hooks/useUpdateSecuritySettings";
+import { useChangePassword } from "@/hooks/useChangePassword";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,25 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// Password change form schema
+const passwordSchema = z.object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z.string()
+        .min(8, "Password must be at least 8 characters")
+        .regex(/[A-Z]/, "Must contain at least one uppercase letter")
+        .regex(/[a-z]/, "Must contain at least one lowercase letter")
+        .regex(/[0-9]/, "Must contain at least one number"),
+    confirmPassword: z.string().min(1, "Confirm password is required")
+}).refine(data => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"]
+});
+
+type PasswordFormData = z.infer<typeof passwordSchema>;
 
 interface SecurityTabProps {
     securitySettings?: {
@@ -27,8 +47,7 @@ interface SecurityTabProps {
 }
 
 function SecurityTab({ securitySettings }: SecurityTabProps) {
-    const { mutate: updateSecuritySettings, isPending } =
-        useUpdateSecuritySettings();
+    const { mutate: updateSecuritySettings, isPending } = useUpdateSecuritySettings();
 
     const [twoFactorEnabled, setTwoFactorEnabled] = useState(
         securitySettings?.twoFactorEnabled || false
@@ -39,6 +58,11 @@ function SecurityTab({ securitySettings }: SecurityTabProps) {
     );
 
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
+    const { mutateAsync: changePassword, isPending: isChangingPassword } = useChangePassword();
+    const { register, handleSubmit, formState: { errors }, reset } = useForm<PasswordFormData>({
+        resolver: zodResolver(passwordSchema)
+    });
 
     const handleToggle = async (setting: string, value: boolean) => {
         try {
@@ -65,22 +89,32 @@ function SecurityTab({ securitySettings }: SecurityTabProps) {
         }
     };
 
-    const handleChangePassword = () => {
-        setIsPasswordModalOpen(true);
+    const handlePasswordSubmit = async (data: PasswordFormData) => {
+        try {
+            await changePassword({
+                currentPassword: data.currentPassword,
+                newPassword: data.newPassword
+            });
+            toast.success("Password changed successfully");
+            reset();
+            setIsPasswordModalOpen(false);
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to change password");
+        }
     };
 
     return (
-        <div className="space-y-4 p-2">
-            <h2 className="text-lg font-semibold bg-white p-2 rounded-[10px] shadow-sm shadow-gray-400">
+        <div className="space-y-4 p-2 w-full">
+            <h2 className="text-lg text-primary font-semibold bg-white p-2 rounded-[10px] shadow-sm shadow-gray-400 w-full">
                 Security Preference
             </h2>
-            <div className="bg-white p-4 rounded-[10px] shadow-sm shadow-gray-400">
-                <h3 className="text-base font-semibold mb-4 border-b-2">
+            <div className="bg-white p-4 rounded-[10px] shadow-sm shadow-gray-400 w-full">
+                <h3 className="text-base font-semibold mb-4 border-b-2 border-gray-300 p-1 pb-0 w-full">
                     Password And Security
                 </h3>
                 {/* Two Factor Authentication */}
-                <div className="flex items-center justify-between mb-4">
-                    <div>
+                <div className="flex items-center justify-between mb-4 border-2 border-gray-100 p-2 rounded-[10px] w-full">
+                    <div className="w-full">
                         <Label htmlFor="twoFactorEnabled">
                             Two Factor Authentication 2-FA
                         </Label>
@@ -98,8 +132,8 @@ function SecurityTab({ securitySettings }: SecurityTabProps) {
                     />
                 </div>
                 {/* Automatic Log Out */}
-                <div className="flex items-center justify-between mb-4">
-                    <div>
+                <div className="flex items-center justify-between mb-4 border-2 border-gray-100 p-2 rounded-[10px] w-full">
+                    <div className="w-full">
                         <Label htmlFor="autoLogoutTimeout">
                             Automatic Log Out
                         </Label>
@@ -118,48 +152,86 @@ function SecurityTab({ securitySettings }: SecurityTabProps) {
                     />
                 </div>
             </div>
+
             {/* Password Change Modal */}
             <Dialog
                 open={isPasswordModalOpen}
                 onOpenChange={setIsPasswordModalOpen}
             >
                 <DialogTrigger asChild>
-                    <Button onClick={() => setIsPasswordModalOpen(true)}>
+                    <Button
+                        onClick={() => setIsPasswordModalOpen(true)}
+                        className="w-full"
+                    >
                         Change Password
                     </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="w-full max-w-md">
                     <DialogHeader>
                         <DialogTitle>Change Password</DialogTitle>
                         <DialogDescription>
-                            Enter your current password and new password.
+                            Enter your current password and set a new password
                         </DialogDescription>
                     </DialogHeader>
-                    <form onSubmit={(e) => e.preventDefault()}>
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="currentPassword">
-                                    Current Password
-                                </Label>
+                    <form onSubmit={handleSubmit(handlePasswordSubmit)}>
+                        <div className="space-y-4 w-full">
+                            {/* Current Password */}
+                            <div className="w-full">
+                                <Label htmlFor="currentPassword">Current Password</Label>
                                 <Input
                                     id="currentPassword"
                                     type="password"
                                     placeholder="Enter current password"
+                                    {...register("currentPassword")}
                                 />
+                                {errors.currentPassword && (
+                                    <p className="text-red-500 text-sm mt-1">
+                                        {errors.currentPassword.message}
+                                    </p>
+                                )}
                             </div>
-                            <div>
-                                <Label htmlFor="newPassword">
-                                    New Password
-                                </Label>
+
+                            {/* New Password */}
+                            <div className="w-full">
+                                <Label htmlFor="newPassword">New Password</Label>
                                 <Input
                                     id="newPassword"
                                     type="password"
                                     placeholder="Enter new password"
+                                    {...register("newPassword")}
                                 />
+                                {errors.newPassword && (
+                                    <p className="text-red-500 text-sm mt-1">
+                                        {errors.newPassword.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Confirm Password */}
+                            <div className="w-full">
+                                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                                <Input
+                                    id="confirmPassword"
+                                    type="password"
+                                    placeholder="Confirm new password"
+                                    {...register("confirmPassword")}
+                                />
+                                {errors.confirmPassword && (
+                                    <p className="text-red-500 text-sm mt-1">
+                                        {errors.confirmPassword.message}
+                                    </p>
+                                )}
                             </div>
                         </div>
-                        <DialogFooter>
-                            <Button type="submit">Change Password</Button>
+
+                        <DialogFooter className="w-full mt-4">
+                            <Button 
+                                type="submit"
+                                disabled={isChangingPassword}
+                                className="w-full"
+                            >
+                                {isChangingPassword ? "Changing..." : "Change Password"}
+                            </Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>

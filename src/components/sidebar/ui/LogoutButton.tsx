@@ -25,7 +25,7 @@ const LogoutButton = () => {
     };
 
     return (
-        <div className="flex max-w-[110px] py-1 px-2 bg-slate-100 items-center rounded-[10px] gap-2 group hover:bg-primary">
+        <div className="flex max-w-[110px] py-1 px-2 bg-slate-100 items-center rounded-[10px] shadow-sm shadow-gray-400 gap-2 group hover:bg-primary">
             <ExitIcon
                 className={`text-base ${
                     isLoading ? "text-gray-400" : "text-primary group-hover:text-white"

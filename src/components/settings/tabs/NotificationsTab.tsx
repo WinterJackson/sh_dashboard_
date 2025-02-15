@@ -36,12 +36,12 @@ export default function NotificationsTab({
 
     return (
         <div className="space-y-6 p-2">
-            <h2 className="text-lg font-semibold bg-white p-2 rounded-[10px] shadow-sm shadow-gray-400">
+            <h2 className="text-lg text-primary font-semibold bg-white p-2 rounded-[10px] shadow-sm shadow-gray-400">
                 Notification Preferences
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-4 p-3 rounded-[10px] bg-white shadow-sm shadow-gray-400">
                 {/* Appointment Alerts */}
-                <div className="flex items-center justify-between p-4 border bg-white rounded-[10px] shadow-sm shadow-gray-400">
+                <div className="flex items-center justify-between p-2 border-2 border-gray-200 rounded-[10px] bg-white">
                     <div className="space-y-1">
                         <Label>Appointment Alerts</Label>
                         <p className="text-sm text-muted-foreground">
@@ -58,7 +58,7 @@ export default function NotificationsTab({
                 </div>
 
                 {/* Email Alerts */}
-                <div className="flex items-center justify-between p-4 border bg-white rounded-[10px] shadow-sm shadow-gray-400">
+                <div className="flex items-center justify-between p-2 border-2 border-gray-200 rounded-[10px] bg-white">
                     <div className="space-y-1">
                         <Label>Email Alerts</Label>
                         <p className="text-sm text-muted-foreground">
@@ -75,7 +75,7 @@ export default function NotificationsTab({
                 </div>
 
                 {/* Security Alerts */}
-                <div className="flex items-center justify-between p-4 border bg-white rounded-[10px] shadow-sm shadow-gray-400">
+                <div className="flex items-center justify-between p-2 border-2 border-gray-200 rounded-[10px] bg-white">
                     <div className="space-y-1">
                         <Label>Security Alerts</Label>
                         <p className="text-sm text-muted-foreground">
@@ -92,7 +92,7 @@ export default function NotificationsTab({
                 </div>
 
                 {/* System Updates */}
-                <div className="flex items-center justify-between p-4 border bg-white rounded-[10px] shadow-sm shadow-gray-400">
+                <div className="flex items-center justify-between p-2 border-2 border-gray-200 rounded-[10px] bg-white">
                     <div className="space-y-1">
                         <Label>System Updates</Label>
                         <p className="text-sm text-muted-foreground">
@@ -109,7 +109,7 @@ export default function NotificationsTab({
                 </div>
 
                 {/* New Device Login */}
-                <div className="flex items-center justify-between p-4 border bg-white rounded-[10px] shadow-sm shadow-gray-400">
+                <div className="flex items-center justify-between p-2 border-2 border-gray-200 rounded-[10px] bg-white">
                     <div className="space-y-1">
                         <Label>New Device Login</Label>
                         <p className="text-sm text-muted-foreground">

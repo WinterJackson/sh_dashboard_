@@ -11,6 +11,7 @@ import { inter } from "@/components/ui/fonts";
 import ClientQueryProvider from "@/components/providers/ClientQueryProvider";
 import type { Metadata } from "next";
 import "../styles/global.css";
+import { EdgeStoreProvider } from "@/lib/edgestore";
 
 export const metadata: Metadata = {
     title: "Hospital Dashboard",
@@ -32,9 +33,9 @@ export default async function RootLayout({
                                 <UserProvider>
                                     <LoadingProvider>
                                         <SearchProvider>
-                                            {/* <EdgeStoreProvider> */}
+                                            <EdgeStoreProvider>
                                                 <main>{children}</main>
-                                            {/* </EdgeStoreProvider> */}
+                                            </EdgeStoreProvider>
                                         </SearchProvider>
                                     </LoadingProvider>
                                 </UserProvider>

@@ -31,7 +31,7 @@ function SupportTab() {
             <div className="flex h-full w-[50%] pt-7">
                 <div className="flex flex-col gap-7">
                     <div className="flex flex-col gap-4">
-                        <h1 className="capitalize font-semibold bg-white p-2 rounded-[10px] shadow-sm shadow-gray-400">Frequently asked questions</h1>
+                        <h1 className="text-primary capitalize font-semibold bg-white p-2 rounded-[10px] shadow-sm shadow-gray-400">Frequently asked questions</h1>
                         <p className="text-primary capitalize text-sm p-2">Questions you might have about our Products and services</p>
                     </div>
                     <div className="flex flex-col gap-4">

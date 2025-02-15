@@ -38,7 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
                 <nav className="flex flex-col pb-60">
                     <Link
                         href="/dashboard"
-                        className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center ${
+                        className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center border-b-2 ${
                             isActive("/dashboard")
                                 ? "bg-primary text-white"
                                 : "hover:bg-bluelight hover:text-black"
@@ -49,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
                     </Link>
                     <Link
                         href="/dashboard/appointments"
-                        className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center ${
+                        className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center border-2 ${
                             isActive("/dashboard/appointments")
                                 ? "bg-primary text-white"
                                 : "hover:bg-bluelight hover:text-black"
@@ -68,7 +68,7 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
                     )}
                     <Link
                         href="/dashboard/patients"
-                        className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center ${
+                        className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center border-2 ${
                             isActive("/dashboard/patients")
                                 ? "bg-primary text-white"
                                 : "hover:bg-bluelight hover:text-black"
@@ -81,7 +81,7 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
                     {role === "SUPER_ADMIN" && (
                         <Link
                             href="/dashboard/hospitals"
-                            className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center ${
+                            className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center border-2 ${
                                 isActive("/dashboard/hospitals")
                                     ? "bg-primary text-white"
                                     : "hover:bg-bluelight hover:text-black"
@@ -94,7 +94,7 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
                     )}
                     <Link
                         href="/dashboard/messaging"
-                        className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center ${
+                        className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center border-2 ${
                             isActive("/dashboard/messaging")
                                 ? "bg-primary text-white"
                                 : "hover:bg-bluelight hover:text-black"
@@ -105,7 +105,7 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
                     </Link>
                     <Link
                         href="/dashboard/settings"
-                        className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center ${
+                        className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center border-2 ${
                             isActive("/dashboard/settings")
                                 ? "bg-primary text-white"
                                 : "hover:bg-bluelight hover:text-black"
@@ -116,7 +116,7 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
                     </Link>
                     <Link
                         href="/dashboard/profile"
-                        className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center ${
+                        className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center border-2 ${
                             isActive("/dashboard/profile")
                                 ? "bg-primary text-white"
                                 : "hover:bg-bluelight hover:text-black"
@@ -129,7 +129,7 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
             </div>
             <div className="p-4">
                 <div className="flex flex-col gap-4">
-                    <div className="flex-grow items-start bg-slate-100 py-1 px-2 hover:bg-bluelight/10 rounded-[10px]">
+                    <div className="flex-grow items-start bg-slate-100 py-1 px-2 hover:bg-bluelight/10 rounded-[10px] shadow-sm shadow-gray-400">
                         {username !== "Guest User" && role !== "Guest" ? (
                             <>
                                 <p className="font-semibold text-nowrap">
