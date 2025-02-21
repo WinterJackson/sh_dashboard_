@@ -7,7 +7,6 @@ import ErrorBoundaryWrapper from "@/components/providers/ErrorBoundaryWrapper"; 
 import NotFoundBoundary from "@/components/providers/NotFoundBoundary";
 import SessionWrapper from "@/components/providers/SessionWrapper";
 import { inter } from "@/components/ui/fonts";
-// import { EdgeStoreProvider } from "@/lib/edgestore";
 import ClientQueryProvider from "@/components/providers/ClientQueryProvider";
 import type { Metadata } from "next";
 import "../styles/global.css";

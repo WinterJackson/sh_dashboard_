@@ -216,16 +216,25 @@ model Patient {
   name                  String               @unique
   phoneNo               String               @unique
   email                 String               @unique
+  imageUrl              String?
   dateOfBirth           DateTime
+  maritalStatus         String?
   gender                String
+  occupation            String?
   homeAddress           String?
   state                 String?
+  nextOfKinName         String?
+  nextOfKinRelationship String?
+  nextOfKinHomeAddress  String?
+  nextOfKinPhoneNo      String?
+  nextOfKinEmail        String?
   reasonForConsultation String
   admissionDate         DateTime?
   dischargeDate         DateTime?
   status                String // Inpatient or Outpatient
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt
+  medicalInformation    MedicalInformation[]
   appointments          Appointment[]
   appointmentServices   AppointmentService[]
   currentBed            Bed[]
@@ -234,6 +243,23 @@ model Patient {
   referrals             Referral[]
   serviceUsages         ServiceUsage?
   docReviews            DoctorReview[]
+}
+
+model MedicalInformation {
+  infoId            String   @id @default(uuid())
+  patientId         Int      @unique
+  height            Float?
+  weight            Float?
+  bloodGroup        String?
+  allergies         String?
+  bmi               Float?
+  bodyType          String?
+  alcohol           Boolean?
+  drugs             Boolean?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  patient           Patient  @relation(fields: [patientId], references: [patientId])
 }
 
 model Appointment {
@@ -246,6 +272,7 @@ model Appointment {
   action                     String?
   status                     String? // (Pending, Confirmed, Completed, Cancelled, Rescheduled)
   consultationFee            Float?
+  treatment                  String?
   isPaid                     Boolean
   paymentId                  String?
   completed                  Boolean
@@ -255,6 +282,7 @@ model Appointment {
   rescheduledDate            DateTime?
   cancellationReason         String?
   pendingReason              String?
+  notes                      String?
   appointmentReminderSent    Int?
   appointmentReminderSentLTF DateTime?
   doctorAppointmentNotes     String?

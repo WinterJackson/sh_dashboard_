@@ -1,4 +1,4 @@
-// src/components/patients/ui/ConfirmationModal.tsx
+// src/components/patients/ui/patient-table/ConfirmationModal.tsx
 
 import React from "react";
 

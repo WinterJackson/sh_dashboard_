@@ -1,4 +1,4 @@
-// src/components/patients/ui/PatientsPagination.tsx
+// src/components/patients/ui/patient-table/PatientsPagination.tsx
 
 import {
     Pagination,

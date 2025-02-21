@@ -16,6 +16,7 @@ const {
     superAdmins,
     admins,
     patients,
+    medicalInformations,
     doctors,
     doctorLicenses,
     doctorReviews,
@@ -311,6 +312,32 @@ async function seedPatients() {
     }
 }
 
+async function seedMedicalInformations() {
+    try {
+        await prisma.medicalInformation.createMany({
+            data: medicalInformations.map((medicalInformation) => ({
+                infoId: medicalInformation.infoId,
+                patientId: medicalInformation.patientId,
+                height: medicalInformation.height,
+                weight: medicalInformation.weight,
+                bloodGroup: medicalInformation.bloodGroup,
+                allergies: medicalInformation.allergies,
+                bmi: medicalInformation.bmi,
+                bodyType: medicalInformation.bodyType,
+                alcohol: medicalInformation.alcohol,
+                drugs: medicalInformation.drugs,
+                createdAt: medicalInformation.createdAt,
+                updatedAt: medicalInformation.updatedAt,
+            })),
+            skipDuplicates: true,
+        });
+        console.log(`Seeded MedicalInformation`);
+    } catch (error) {
+        console.error("Error seeding MedicalInformation:", error);
+        throw error;
+    }
+}
+
 async function seedDoctors() {
     try {
         await prisma.doctor.createMany({
@@ -466,6 +493,7 @@ async function seedAppointments() {
                 action: appointment.action,
                 status: appointment.status, // (Pending, Confirmed, Completed, Cancelled)
                 consultationFee: appointment.consultationFee,
+                treatment: appointment.treatment,
                 isPaid: appointment.isPaid,
                 paymentId: appointment.paymentId,
                 completed: appointment.completed,
@@ -689,12 +717,12 @@ async function main() {
     await seedSuperAdmins();
     await seedAdmins();
     await seedPatients();
+    await seedMedicalInformations();
     await seedDoctors();
     await seedDoctorLicenses();
     await seedDoctorReviews();
     await seedNurses();
     await seedStaff();
-    await seedPatients();
     await seedBeds();
     await seedAppointments();
     await seedPayments();

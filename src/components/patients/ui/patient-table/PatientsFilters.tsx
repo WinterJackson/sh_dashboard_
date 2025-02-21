@@ -1,4 +1,4 @@
-// src/components/patients/ui/PatientsFilters.tsx
+// src/components/patients/ui/patient-table/PatientsFilters.tsx
 
 "use client";
 

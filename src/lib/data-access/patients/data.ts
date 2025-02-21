@@ -2,7 +2,7 @@
 
 "use server";
 
-import { Patient, Role } from "@/lib/definitions";
+import { MedicalInformation, Patient, Role } from "@/lib/definitions";
 import * as Sentry from "@sentry/nextjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
@@ -570,6 +570,77 @@ export async function fetchPatientDetails(
         Sentry.captureException(error, { extra: { errorMessage } });
         console.error("Failed to fetch patient details:", errorMessage);
         return null;
+    }
+}
+
+// Fetch patients details using the patient ID
+export async function fetchPatientDetailsById(patientId: number): Promise<Patient | null> {
+    try {
+        const patient = await prisma.patient.findUnique({
+            where: { patientId },
+            include: {
+                medicalInformation: true,
+                appointments: {
+                    orderBy: { appointmentDate: "desc" },
+                    select: {
+                        appointmentId: true,
+                        appointmentDate: true,
+                        type: true,
+                        status: true,
+                        doctorAppointmentNotes: true,
+                        patientAppointmentNotes: true,
+                        doctor: {
+                            include: {
+                                user: {
+                                    include: { profile: true },
+                                },
+                            },
+                        },
+                    },
+                },
+                hospital: true,
+            },
+        });
+
+        if (!patient) {
+            console.warn(`Patient with ID '${patientId}' not found.`);
+            return null;
+        }
+
+        return patient;
+    } catch (error) {
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage, patientId } });
+        console.error("Failed to fetch patient details by ID:", errorMessage);
+        return null;
+    }
+}
+
+// Update patients medical info using the patient ID
+export async function updateMedicalInfo(
+    patientId: number,
+    data: Partial<MedicalInformation>
+): Promise<MedicalInformation> {
+    try {
+        // BMI CALCULATION BY height and weight provided
+        if (data.height && data.weight) {
+            const heightInMeters = data.height
+            const weightInKg = data.weight;
+            data.bmi = parseFloat((weightInKg / (heightInMeters * heightInMeters)).toFixed(1));
+        }
+
+        const updatedMedicalInfo = await prisma.medicalInformation.upsert({
+            where: { patientId },
+            update: data,
+            create: { patientId, ...data },
+        });
+
+        return updatedMedicalInfo;
+    } catch (error) {
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage, patientId, data } });
+        console.error("Failed to update medical information:", errorMessage);
+        throw new Error("Medical information update failed");
     }
 }
 

@@ -5,14 +5,14 @@
 import { useState, useMemo } from "react";
 import { useSearch } from "@/app/context/SearchContext";
 import { Patient, Hospital, Role } from "@/lib/definitions";
-import PatientRow from "@/components/patients/ui/PatientRow";
-import PatientsPagination from "@/components/patients/ui/PatientsPagination";
-import PatientsFilters from "@/components/patients/ui/PatientsFilters";
+import PatientRow from "@/components/patients/ui/patient-table/PatientRow";
+import PatientsPagination from "@/components/patients/ui/patient-table/PatientsPagination";
+import PatientsFilters from "@/components/patients/ui/patient-table/PatientsFilters";
 import { format } from "date-fns";
 import { useDeletePatients } from "@/hooks/useDeletePatients";
 import Delete from "@mui/icons-material/Delete";
 import { useSession } from "next-auth/react";
-import ConfirmationModal from "@/components/patients/ui/ConfirmationModal";
+import ConfirmationModal from "@/components/patients/ui/patient-table/ConfirmationModal";
 
 interface PatientsListProps {
     patients: Patient[];

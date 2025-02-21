@@ -51,7 +51,7 @@ export interface Notification {
     isRead: boolean;
     createdAt: Date;
     updatedAt: Date;
-    metadata?: Record<string, any>; // Optional additional data
+    mmetadata?: Record<string, any>; // Optional additional data
     user: User;
 }
 
@@ -138,11 +138,13 @@ export interface Doctor {
 
 export interface DoctorLicense {
     licenseId: string;
+    doctorId: number;
     name: string;
     licenseNumber: string;
     issueDate: Date;
     expiryDate: Date;
     issuingAuthority: string;
+    doctor: Doctor;
 }
 
 export interface DoctorReview {
@@ -152,6 +154,8 @@ export interface DoctorReview {
     rating: number;
     comment?: string;
     createdAt: Date;
+    doctor: Doctor;
+    patient: Patient;
 }
 
 export interface Nurse {
@@ -191,29 +195,55 @@ export interface Staff {
 }
 
 export interface Patient {
+    notes: string;
     patientId: number;
     hospitalId: number;
     name: string;
     phoneNo: string;
     email: string;
+    imageUrl?: string | null;
     dateOfBirth: Date;
+    maritalStatus?: string | null;
     gender: string;
-    homeAddress?: string;
-    state?: string;
+    occupation?: string | null;
+    homeAddress?: string | null;
+    state?: string | null;
+    nextOfKinName?: string | null;
+    nextOfKinRelationship?: string | null;
+    nextOfKinHomeAddress?: string | null;
+    nextOfKinPhoneNo?: string | null;
+    nextOfKinEmail?: string | null;
     reasonForConsultation: string;
-    admissionDate?: Date;
-    dischargeDate?: Date;
-    status: string;
+    admissionDate?: Date | null;
+    dischargeDate?: Date | null;
+    status: string; // "Inpatient" or "Outpatient"
     createdAt: Date;
     updatedAt: Date;
+    medicalInformation: MedicalInformation[];
     appointments: Appointment[];
     appointmentServices: AppointmentService[];
     currentBed?: Bed[];
     hospital: Hospital;
     payments?: Payment[];
     referrals: Referral[];
-    serviceUsages?: ServiceUsage;
+    serviceUsages?: ServiceUsage | null;
     docReviews: DoctorReview[];
+}
+
+export interface MedicalInformation {
+    infoId: string;
+    patientId: number;
+    height?: number;
+    weight?: number;
+    bloodGroup?: string;
+    allergies?: string;
+    bmi?: number;
+    bodyType?: string;
+    alcohol?: boolean;
+    drugs?: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    patient: Patient;
 }
 
 export interface Appointment {
@@ -226,6 +256,7 @@ export interface Appointment {
     action?: string;
     status?: string;
     consultationFee?: number;
+    treatment?: string;
     isPaid: boolean;
     paymentId?: string;
     completed: boolean;
@@ -235,6 +266,7 @@ export interface Appointment {
     rescheduledDate?: Date;
     cancellationReason?: string;
     pendingReason?: string;
+    notes?: string;
     appointmentReminderSent?: number;
     appointmentReminderSentLTF?: Date;
     doctorAppointmentNotes?: string;
@@ -272,6 +304,7 @@ export interface Bed {
 export interface Service {
     serviceId: number;
     serviceName: string;
+    type: "HEALTH" | "NON_MEDICAL";
     appointments: AppointmentService[];
     departments: DepartmentService[];
     doctors: Doctor[];
@@ -303,7 +336,6 @@ export interface Hospital {
 }
 
 export interface Department {
-    hospitalDepartments: any;
     departmentId: number;
     name: string;
     description: string;
