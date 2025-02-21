@@ -76,7 +76,7 @@ export default function DocumentsSection({ patientId }: { patientId: number }) {
                 ))}
 
                 {files.length === 0 && (
-                    <p className="text-gray-500 text-center py-4">
+                    <p className="text-gray-500 text-[15px] text-center py-4">
                         No documents uploaded yet
                     </p>
                 )}

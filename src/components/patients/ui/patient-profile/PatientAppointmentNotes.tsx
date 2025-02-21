@@ -1,18 +1,18 @@
-// src/components/patients/ui/patient-profile/PatientNotes.tsx
+// src/components/patients/ui/patient-profile/PatientAppointmentNotes.tsx
 
 "use client";
 
 import React from "react";
 
-interface PatientNotesProps {
+interface PatientAppointmentNotesProps {
     doctorNotes: string;
     patientNotes: string;
 }
 
-export default function PatientNotes({
+export default function PatientAppointmentNotes({
     doctorNotes,
     patientNotes,
-}: PatientNotesProps) {
+}: PatientAppointmentNotesProps) {
     return (
         <div className="bg-white p-4 rounded-[10px] shadow-md">
             <h2 className="p-2 bg-bluelight/10 rounded-[10px] text-base text-primary font-semibold mb-4">
@@ -20,14 +20,14 @@ export default function PatientNotes({
             </h2>
 
             <div className="p-2">
-                {/* Doctor's Appointment Notes */}
+                {/* Doctor's latest Appointment Note */}
                 <div className="mb-4 text-[15px]">
-                    <strong>Doctor Notes:</strong> <span>{doctorNotes}</span>
+                    <strong>Doctor:</strong> <span>{doctorNotes}</span>
                 </div>
 
-                {/* Patient's Appointment Notes */}
+                {/* Patient's latest Appointment Note */}
                 <div className="mb-4 text-[15px]">
-                    <strong>Patient Notes:</strong> <span>{patientNotes}</span>
+                    <strong>Patient:</strong> <span>{patientNotes}</span>
                 </div>
             </div>
         </div>

@@ -8,7 +8,7 @@ import { MedicalInformation, Patient } from "@/lib/definitions";
 import { useState, useEffect } from "react";
 import PatientSidebar from "./ui/patient-profile/PatientSidebar";
 import AppointmentsTimeline from "./ui/patient-profile/AppointmentsTimeline";
-import PatientNotes from "./ui/patient-profile/PatientNotes";
+import PatientNotes from "./ui/patient-profile/PatientAppointmentNotes";
 import DocumentsSection from "./ui/patient-profile/DocumentsSection";
 import MedicalInfoSection from "./ui/patient-profile/MedicalInfoSection";
 import { useRouter } from "next/navigation";
