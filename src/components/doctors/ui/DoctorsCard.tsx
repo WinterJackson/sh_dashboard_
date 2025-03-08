@@ -138,6 +138,7 @@ const DoctorsCard: React.FC<DoctorsCardProps> = ({
             {/* Appointment Dialog */}
             {showAppointmentDialog && (
                 <AddAppointmentDialog
+                    open={showAppointmentDialog}
                     doctor={doctor}
                     onClose={() => setShowAppointmentDialog(false)}
                 />
