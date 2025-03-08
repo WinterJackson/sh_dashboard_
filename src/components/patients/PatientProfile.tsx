@@ -12,6 +12,7 @@ import PatientNotes from "./ui/patient-profile/PatientAppointmentNotes";
 import DocumentsSection from "./ui/patient-profile/DocumentsSection";
 import MedicalInfoSection from "./ui/patient-profile/MedicalInfoSection";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function PatientProfile({ patient }: { patient: Patient }) {
     const router = useRouter();
@@ -53,7 +54,32 @@ export default function PatientProfile({ patient }: { patient: Patient }) {
     const lastAppointment = data.appointments[0];
 
     return (
-        <div className="flex flex-col md:flex-row gap-6 p-4">
+        <div className="flex flex-col gap-1">
+            
+                {/* Breadcrumb Navigation */}
+                <nav className="breadcrumbs text-sm px-4">
+                    <ul className="flex  gap-2">
+                        <li>
+                            <Link
+                                href="/dashboard/patients"
+                                className="text-primary hover:text-blue-700"
+                            >
+                                Patients
+                            </Link>
+                        </li>
+                        |
+                        <li>
+                            <Link
+                                href={`/dashboard/patients/${patient.patientId}`}
+                                className="font-semibold text-gray-600 hover:text-primary"
+                            >
+                                {patient.name}
+                            </Link>
+                        </li>
+                    </ul>
+                </nav>
+
+            <div className="flex flex-col md:flex-row gap-6 p-4">
             {/* Left Sidebar */}
             <div className="w-auto md:w-auto">
                 <PatientSidebar patient={data} />
@@ -81,6 +107,8 @@ export default function PatientProfile({ patient }: { patient: Patient }) {
                     </div>
                 </div>
             </div>
+            </div>
+
         </div>
     );
 }

@@ -3,12 +3,17 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
+import AddAppointmentDialog from "@/components/appointments/AddAppointmentDialog";
 import { Patient } from "@/lib/definitions";
 import { calculateAge } from "@/hooks/useCalculateAge";
 import { formatDate } from "@/hooks/useFormatDate";
 import pp from "../../../../../public/images/profile-placeholder.png";
 
 export default function PatientSidebar({ patient }: { patient: Patient }) {
+
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
     return (
         <div className="bg-white shadow-md rounded-[10px] p-4 w-[300px]">
             <div className="flex items-center bg-black/5 py-2 px-1 rounded-[10px]">
@@ -90,9 +95,19 @@ export default function PatientSidebar({ patient }: { patient: Patient }) {
             </div>
 
             <div className="mt-6 flex flex-col space-y-4">
-                <button className="bg-bluelight shadow-sm shadow-gray-400 px-4 py-2 text-black text-xs font-semibold rounded-[10px] hover:bg-primary hover:border-primary hover:text-white">
+            <button 
+                    onClick={() => setIsDialogOpen(true)}
+                    className="bg-bluelight shadow-sm shadow-gray-400 px-4 py-2 text-black text-xs font-semibold rounded-[10px] hover:bg-primary hover:border-primary hover:text-white"
+                >
                     Add Appointment +
                 </button>
+                
+                <AddAppointmentDialog 
+                    open={isDialogOpen}
+                    onClose={() => setIsDialogOpen(false)}
+                    patient={patient}
+                />
+
                 <button className="bg-bluelight shadow-sm shadow-gray-400 px-4 py-2 text-black text-xs font-semibold rounded-[10px] hover:bg-primary hover:border-primary hover:text-white">
                     Send Message
                 </button>

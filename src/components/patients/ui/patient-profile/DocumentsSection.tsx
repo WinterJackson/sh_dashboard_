@@ -37,7 +37,7 @@ export default function DocumentsSection({ patientId }: { patientId: number }) {
 
     return (
         <div className="bg-white p-4 rounded-[10px] shadow-md">
-            <h2 className="text-base text-primary p-2 bg-bluelight/10 rounded-[10px] font-semibold mb-4">Files / Documents</h2>
+            <h2 className="text-base text-primary p-2 bg-bluelight/10 rounded-[10px] font-semibold mb-4">Files | Documents</h2>
 
             <div className="mb-4">
                 <Input

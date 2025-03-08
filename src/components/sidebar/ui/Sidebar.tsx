@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
     const isActive = (href: string) => pathname === href;
 
     return (
-        <div className="relative w-64 h-full bg-white shadow-lg shadow-gray-300 flex flex-col rounded-2xl">
+        <div className="relative w-64 h-auto bg-white shadow-lg shadow-gray-300 flex flex-col rounded-2xl">
             <div className="flex-grow pt-20">
                 <nav className="flex flex-col pb-60">
                     <Link

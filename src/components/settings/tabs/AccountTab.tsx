@@ -235,13 +235,13 @@ export default function AccountTab({
                         </div>
 
                         {/* Profile Picture */}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="gap-4">
                             <div>
                                 <label className="p-2 pl-1 block text-gray-600 text-sm font-medium">
                                     Profile Picture
                                 </label>
 
-                                <div className="justify-items-center w-full p-2 pb-4 rounded-[5px] border-2 bg-black/5">
+                            <div className="justify-items-center w-full p-2 pb-4 rounded-[5px] border-2 bg-black/5">
                                 <div className="justify-center items-center p-3">
                                     <input
                                         type="file"
@@ -287,7 +287,7 @@ export default function AccountTab({
                                 >
                                     Cancel
                                 </button>
-                                </div>
+                            </div>
 
                             </div>
                         </div>
@@ -297,7 +297,7 @@ export default function AccountTab({
                     <div className="grid grid-cols-2 gap-4">
                         {/* Bio Section */}
                         <div className="col-span-1 space-y-2 bg-white p-4 rounded-[10px] shadow-sm shadow-gray-400">
-                            <h3 className="text-base text-primary font-semibold border-b-2 border-gray-300 p-1 pb-0">
+                            <h3 className="text-base text-primary font-semibold border-b-2 border-gray-300 p-1 pb-0 bg-bluelight/5">
                                 Bio
                             </h3>
                             <div>
@@ -418,7 +418,7 @@ export default function AccountTab({
 
                         {/* Contact Information Section */}
                         <div className="col-span-1 space-y-2 pb-6 bg-white p-4 rounded-[10px] shadow-sm shadow-gray-400">
-                            <h3 className="text-base text-primary font-semibold border-b-2 border-gray-300 p-1 pb-0">
+                            <h3 className="text-base text-primary font-semibold border-b-2 border-gray-300 p-1 pb-0 bg-bluelight/5">
                                 Contact Information
                             </h3>
                             <div>

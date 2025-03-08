@@ -107,7 +107,7 @@ const Header: React.FC<HeaderProps> = ({ profileData }) => {
                 </div>
             </header>
             {openAppointmentDialog && (
-                <AddAppointmentDialog onClose={handleDialogClose} />
+                <AddAppointmentDialog onClose={handleDialogClose} open={openAppointmentDialog} />
             )}
             {openReferDialog && (
                 <ReferPatientDialog onClose={handleDialogClose} />

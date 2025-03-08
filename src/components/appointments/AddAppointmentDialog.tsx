@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { useSessionData } from "@/hooks/useSessionData";
 import { useFetchHospitals } from "@/hooks/useFetchHospitals";
 import { useFetchPatientDetails } from "@/hooks/useFetchPatientDetails";
-import { Doctor, Hospital, Role } from "@/lib/definitions";
+import { Doctor, Hospital, Patient, Role } from "@/lib/definitions";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { IconButton } from "@mui/material";
 import { differenceInYears } from "date-fns";
@@ -27,12 +27,16 @@ import { useFetchDoctorsByHospital } from "@/hooks/useFetchDoctorsByHospital";
 import { useFetchDoctorIdByUserId } from "@/hooks/useFetchDoctorIdByUserId";
 
 interface AddAppointmentDialogProps {
+    open: boolean;
     onClose: () => void;
-    doctor?: any;
+    patient?: Patient;
+    doctor?: Doctor;
 }
 
 const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
+    open,
     onClose,
+    patient,
     doctor,
 }) => {
     const { register, handleSubmit, control, setValue, setError } = useForm();
@@ -42,16 +46,16 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
     );
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [doctors, setDoctors] = useState<Doctor[]>([]);
-    const [patientDetails, setPatientDetails] = useState<any | null>(null);
+    const [patientDetails, setPatientDetails] = useState<Patient | null>(null);
     const router = useRouter();
     const sessionData = useSessionData();
     const role = sessionData?.user?.role as Role;
     const hospitalId = sessionData?.user?.hospitalId;
     const userId = sessionData?.user?.id;
 
-    const [patientName, setPatientName] = useState("");
+    const [patientName, setPatientName] = useState(patient?.name || "");
 
-    // Use hook to fetch patient details
+    // Use hook to fetch patient details if not provided
     const {
         data: fetchedPatientDetails,
         isLoading,
@@ -71,7 +75,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
 
     // Use hook to fetch doctors by hospital
     const { data: fetchedDoctors } = useFetchDoctorsByHospital(
-        patientDetails?.hospitalId || hospitalId || -1,
+        patient?.hospitalId || hospitalId || -1,
         role,
         {
             role,
@@ -87,8 +91,31 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
         userId: userId ?? null,
     });
 
+    // Prefill form when patient prop is provided
     useEffect(() => {
-        if (fetchedPatientDetails) {
+        if (patient) {
+            const age = differenceInYears(
+                new Date(),
+                new Date(patient.dateOfBirth)
+            );
+            setValue("patientName", patient.name);
+            setValue("age", age);
+            setValue("patientId", patient.patientId);
+            setPatientDetails(patient);
+
+            if (role === "SUPER_ADMIN") {
+                setValue("hospitalName", patient.hospital.name);
+                setValue("hospitalId", patient.hospitalId);
+            } else if (sessionData?.user) {
+                setValue("hospitalName", sessionData.user.hospital);
+                setValue("hospitalId", sessionData.user.hospitalId);
+            }
+        }
+    }, [patient, sessionData, setValue, role]);
+
+    // Handle fetched patient details
+    useEffect(() => {
+        if (fetchedPatientDetails && !patient) {
             const age = differenceInYears(
                 new Date(),
                 new Date(fetchedPatientDetails.dateOfBirth)
@@ -100,29 +127,19 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
             if (role === "SUPER_ADMIN") {
                 setValue("hospitalName", fetchedPatientDetails.hospital.name);
                 setValue("hospitalId", fetchedPatientDetails.hospitalId);
-            } else if (
-                (role === "ADMIN" || role === "DOCTOR" || role === "NURSE") &&
-                sessionData?.user
-            ) {
+            } else if (sessionData?.user) {
                 setValue("hospitalName", sessionData.user.hospital);
                 setValue("hospitalId", sessionData.user.hospitalId);
             }
-        } else if (isError) {
-            setError("patientName", { message: "Patient not found" });
-            setValue("age", "");
-            setValue("patientId", "");
-            setValue("hospitalName", "");
-            setValue("hospitalId", "");
-            setPatientDetails(null);
         }
-    }, [fetchedPatientDetails, isError, role, sessionData, setValue, setError]);
+    }, [fetchedPatientDetails, patient, sessionData, setValue, role]);
 
+    // Handle doctor and hospital data
     useEffect(() => {
         if (doctor) {
-            // Pre-fill doctor and hospital fields if doctor prop is passed
             setValue(
                 "doctorName",
-                `${doctor.user.profile.firstName} ${doctor.user.profile.lastName}`
+                `${doctor.user.profile?.firstName} ${doctor.user.profile?.lastName}`
             );
             setValue("hospitalName", doctor.hospital.name);
             setValue("doctorId", doctor.doctorId);
@@ -145,13 +162,9 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                 selectedHospitalId = patientDetails.hospitalId;
             }
 
-            if (
-                !selectedHospitalId ||
-                (role !== "SUPER_ADMIN" &&
-                    patientDetails.hospitalId !== hospitalId)
-            ) {
-                setError("hospitalId", { message: "Hospital ID mismatch" });
-                throw new Error("Hospital ID mismatch");
+            if (!selectedHospitalId) {
+                setError("hospitalId", { message: "Hospital ID is required" });
+                throw new Error("Hospital ID is required");
             }
 
             const doctorId =
@@ -189,20 +202,13 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
         }
     };
 
-    const handleClose = () => {
-        onClose();
-    };
-
     const handleDateChange = (date: Date | undefined) => {
         setSelectedDate(date);
         setIsCalendarOpen(false);
     };
 
     return (
-        <Dialog open={true} onOpenChange={handleClose}>
-            <DialogTrigger asChild>
-                <button className="hidden"></button>
-            </DialogTrigger>
+        <Dialog open={open} onOpenChange={onClose}>
             <DialogContent>
                 <DialogTitle>Schedule Appointment</DialogTitle>
                 <DialogDescription className="bg-[#EFEFEF] p-2">
@@ -218,8 +224,10 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                                 {...register("patientName", {
                                     required: "Patient name is required",
                                     onBlur: (e) =>
+                                        !patient &&
                                         setPatientName(e.target.value),
                                 })}
+                                readOnly={!!patient}
                             />
                             {isLoading && <p>Loading...</p>}
                             {isError && (
@@ -235,7 +243,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                                 type="number"
                                 className="bg-[#EFEFEF]"
                                 {...register("age", { required: true })}
-                                readOnly={!!patientDetails}
+                                readOnly
                             />
                         </div>
                         <div>
@@ -244,7 +252,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                                 id="patientId"
                                 className="bg-[#EFEFEF]"
                                 {...register("patientId", { required: true })}
-                                readOnly={!!patientDetails}
+                                readOnly
                             />
                         </div>
                         <div className="flex gap-2">
@@ -351,6 +359,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                                         required: true,
                                     })}
                                     className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px]"
+                                    disabled={!!patient}
                                 >
                                     <option
                                         value=""
@@ -358,15 +367,21 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                                     >
                                         Select a hospital
                                     </option>
-                                    {(hospitals || []).map((hospital: Hospital) => (
-                                        <option
-                                            key={hospital.name}
-                                            value={hospital.name}
-                                            className="bg-white"
-                                        >
-                                            {hospital.name}
-                                        </option>
-                                    ))}
+                                    {(hospitals || []).map(
+                                        (hospital: Hospital) => (
+                                            <option
+                                                key={hospital.name}
+                                                value={hospital.name}
+                                                selected={
+                                                    patient?.hospitalId ===
+                                                    hospital.hospitalId
+                                                }
+                                                className="bg-white"
+                                            >
+                                                {hospital.name}
+                                            </option>
+                                        )
+                                    )}
                                 </select>
                             </div>
                         )}
