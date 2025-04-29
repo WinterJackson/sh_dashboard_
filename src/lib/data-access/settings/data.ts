@@ -10,7 +10,7 @@ import * as Sentry from "@sentry/nextjs";
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { NotificationSettings, User } from "@/lib/definitions";
+import { NotificationSettings, User, Profile, Doctor, Nurse, Staff } from "@/lib/definitions";
 
 const prisma = require("@/lib/prisma");
 
@@ -20,9 +20,9 @@ export type ProfileUpdateData = {
     firstName: string;
     lastName: string;
     phoneNo: string;
-    city: string;
-    state: string;
-    gender: string;
+    cityOrTown?: string;
+    county?: string;
+    gender?: string;
     dateOfBirth?: string;
     address?: string;
     emergencyContact?: string;
@@ -34,7 +34,7 @@ export type ProfileUpdateData = {
     qualifications?: string;
     workingHours?: string;
     yearsOfExperience?: number;
-    skills?: string[];
+    skills?: string;
     licenses?: {
         name: string;
         licenseNumber: string;
@@ -48,7 +48,11 @@ export type ProfileUpdateData = {
 };
 
 export type SecuritySettings = Pick<
-    User,"twoFactorEnabled" | "autoLogoutTimeout">;
+    User,
+    "twoFactorEnabled" | "autoLogoutTimeout"
+> & {
+    newPassword?: string;
+};
 
 // Fetch complete user settings data
 export async function fetchUserSettings(userId?: string) {
@@ -74,8 +78,8 @@ export async function fetchUserSettings(userId?: string) {
                 firstName: user.profile?.firstName || "",
                 lastName: user.profile?.lastName || "",
                 phoneNo: user.profile?.phoneNo || "",
-                city: user.profile?.city || "",
-                state: user.profile?.state || "",
+                cityOrTown: user.profile?.cityOrTown || "",
+                county: user.profile?.county || "",
                 gender: user.profile?.gender || "",
                 dateOfBirth: user.profile?.dateOfBirth?.toISOString() || "",
                 address: user.profile?.address || "",
@@ -124,12 +128,64 @@ export async function updateProfile(data: ProfileUpdateData) {
 
         const updatedProfile = await prisma.profile.upsert({
             where: { userId: session.user.id },
-            update: data,
+            update: {
+                firstName: data.firstName,
+                lastName: data.lastName,
+                phoneNo: data.phoneNo,
+                cityOrTown: data.cityOrTown,
+                county: data.county,
+                gender: data.gender,
+                dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
+                address: data.address,
+                emergencyContact: data.emergencyContact,
+                nextOfKin: data.nextOfKin,
+                nextOfKinPhoneNo: data.nextOfKinPhoneNo,
+            },
             create: {
                 userId: session.user.id,
-                ...data,
+                firstName: data.firstName,
+                lastName: data.lastName,
+                phoneNo: data.phoneNo,
+                cityOrTown: data.cityOrTown,
+                county: data.county,
+                gender: data.gender,
+                dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
+                address: data.address,
+                emergencyContact: data.emergencyContact,
+                nextOfKin: data.nextOfKin,
+                nextOfKinPhoneNo: data.nextOfKinPhoneNo,
             },
         });
+
+        // Update doctor-specific fields if applicable
+        if (data.qualifications || data.workingHours || data.yearsOfExperience || data.skills || data.licenses) {
+            const doctor = await prisma.doctor.findFirst({
+                where: { userId: session.user.id },
+            });
+
+            if (doctor) {
+                await prisma.doctor.update({
+                    where: { doctorId: doctor.doctorId },
+                    data: {
+                        qualifications: data.qualifications,
+                        workingHours: data.workingHours,
+                        yearsOfExperience: data.yearsOfExperience,
+                        skills: data.skills,
+                        docLicenses: {
+                            createMany: {
+                                data: data.licenses?.map(license => ({
+                                    name: license.name,
+                                    licenseNumber: license.licenseNumber,
+                                    issuingAuthority: license.issuingAuthority,
+                                    issueDate: new Date(license.issueDate),
+                                    expiryDate: new Date(license.expiryDate),
+                                })),
+                            },
+                        },
+                    },
+                });
+            }
+        }
 
         revalidatePath("/settings");
         return updatedProfile;
@@ -145,24 +201,44 @@ export async function updateUser(data: { username: string; email: string }) {
         const session = await getServerSession(authOptions);
         if (!session?.user) redirect("/sign-in");
 
+        // Validate uniqueness of username and email
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { username: data.username, userId: { not: session.user.id } },
+                    { email: data.email, userId: { not: session.user.id } },
+                ],
+            },
+        });
+
+        if (existingUser) {
+            if (existingUser.username === data.username) {
+                throw new Error("Username already taken");
+            }
+            if (existingUser.email === data.email) {
+                throw new Error("Email already in use");
+            }
+        }
+
+        // Update user details
         const updatedUser = await prisma.user.update({
             where: { userId: session.user.id },
             data: {
                 username: data.username,
-                email: data.email
-            }
+                email: data.email,
+            },
         });
 
         revalidatePath("/settings");
         return updatedUser;
     } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
-            if (error.code === 'P2002') {
+            if (error.code === "P2002") {
                 const meta = error.meta as { target?: string[] };
-                if (meta?.target?.includes('email')) {
+                if (meta?.target?.includes("email")) {
                     throw new Error("Email already in use");
                 }
-                if (meta?.target?.includes('username')) {
+                if (meta?.target?.includes("username")) {
                     throw new Error("Username already taken");
                 }
             }
@@ -185,6 +261,7 @@ export async function updateNotificationSettings(
             redirect("/sign-in");
         }
 
+        // Upsert notification settings
         const updatedSettings = await prisma.notificationSettings.upsert({
             where: { userId: session.user.id },
             update: settings,
@@ -210,9 +287,22 @@ export async function updateSecuritySettings(settings: SecuritySettings) {
             redirect("/sign-in");
         }
 
+        // Prepare the data object for updating
+        const updateData: Partial<User> = {
+            twoFactorEnabled: settings.twoFactorEnabled,
+            autoLogoutTimeout: settings.autoLogoutTimeout,
+        };
+
+        // If updating password, hash it before saving
+        if (settings.newPassword) {
+            const hashedPassword = await bcrypt.hash(settings.newPassword, 12);
+            updateData.password = hashedPassword;
+        }
+
+        // Update user's security settings
         const updatedUser = await prisma.user.update({
             where: { userId: session.user.id },
-            data: settings,
+            data: updateData,
         });
 
         revalidatePath("/settings");
@@ -234,15 +324,25 @@ export async function changePassword(
             redirect("/sign-in");
         }
 
+        // Fetch the current user
         const user = await prisma.user.findUnique({
             where: { userId: session.user.id },
         });
 
-        if (!user || !(await bcrypt.compare(currentPassword, user.password))) {
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        // Validate the current password
+        const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        if (!isPasswordValid) {
             throw new Error("Current password is incorrect");
         }
 
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+        // Update the user's password
         const updatedUser = await prisma.user.update({
             where: { userId: session.user.id },
             data: { password: hashedPassword },
@@ -263,6 +363,19 @@ export async function updateEmail(newEmail: string) {
             redirect("/sign-in");
         }
 
+        // Check if the new email is already in use
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                email: newEmail,
+                userId: { not: session.user.id },
+            },
+        });
+
+        if (existingUser) {
+            throw new Error("Email already in use");
+        }
+
+        // Update the user's email
         const updatedUser = await prisma.user.update({
             where: { userId: session.user.id },
             data: { email: newEmail },

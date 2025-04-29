@@ -9,7 +9,7 @@ import Image from "next/image";
 import { useFetchDoctorDetails } from "@/hooks/useFetchDoctorDetails";
 import { Role } from "@/lib/definitions";
 import { Rating } from "@mui/material";
-import { Skeleton } from "@/components/ui/skeleton"; // Import the Skeleton component
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface DoctorBioProps {
     doctorId: number;
@@ -54,7 +54,10 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
     return (
         <div className="absolute top-0 left-0 z-30 flex justify-center items-center h-full w-screen">
             <div className="relative flex flex-col gap-8 p-6 bg-slate-100 opacity-100 lg:w-fit rounded-2xl h-full lg:max-h-[800px] overflow-y-scroll scrollbar-custom w-full lg:max-w-[1000px]">
-                <div className="absolute rounded-[5px] top-4 right-4 p-1 bg-gray-200 hover:bg-bluelight" onClick={cancel}>
+                <div
+                    className="absolute rounded-[5px] top-4 right-4 p-1 bg-gray-200 hover:bg-bluelight"
+                    onClick={cancel}
+                >
                     <CloseIcon />
                 </div>
 
@@ -67,7 +70,10 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                                     <Skeleton className="w-full h-full" />
                                 ) : (
                                     <Image
-                                        src={doctor?.user?.profile?.imageUrl || "/images/img-p3.png"}
+                                        src={
+                                            doctor?.user?.profile?.imageUrl ||
+                                            "/images/img-p3.png"
+                                        }
                                         alt={`${doctor?.user?.profile?.firstName} ${doctor?.user?.profile?.lastName}`}
                                         width={150}
                                         height={150}
@@ -85,7 +91,8 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                                 ) : (
                                     <>
                                         <h1 className="font-semibold text-lg capitalize">
-                                            Dr. {doctor?.user?.profile?.firstName}{" "}
+                                            Dr.{" "}
+                                            {doctor?.user?.profile?.firstName}{" "}
                                             {doctor?.user?.profile?.lastName}
                                         </h1>
                                         <div className="flex flex-col gap-0">
@@ -95,17 +102,25 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                                             <div className="flex flex-col gap-2">
                                                 <div>
                                                     <p className="text-gray-400 text-lg capitalize">
-                                                        {doctor?.department?.name}
+                                                        {
+                                                            doctor?.department
+                                                                ?.name
+                                                        }
                                                     </p>
                                                     <p className="capitalize">
                                                         Joined{" "}
                                                         {doctor?.createdAt
-                                                            ? new Date(doctor.createdAt).toLocaleDateString()
+                                                            ? new Date(
+                                                                  doctor.createdAt
+                                                              ).toLocaleDateString()
                                                             : "N/A"}
                                                     </p>
                                                 </div>
                                                 <p className="capitalize text-sm text-primary">
-                                                    {doctor?.hospital?.name}
+                                                    {
+                                                        doctor?.hospital
+                                                            ?.hospitalName
+                                                    }
                                                 </p>
                                             </div>
                                         </div>
@@ -117,7 +132,11 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                         {/* bio */}
                         <div className="flex flex-col gap-6 min-w-[360px] max-w-[400px]">
                             <div className="flex justify-between gap-2 min-w-[360px] max-w-[400px]">
-                                {["Biography", "Skills", "Contact Information"].map((tab, index) => (
+                                {[
+                                    "Biography",
+                                    "Skills",
+                                    "Contact Information",
+                                ].map((tab, index) => (
                                     <div
                                         key={tab}
                                         className={`flex w-1/3 justify-center font-bold py-3 border-b-2 ${
@@ -125,7 +144,9 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                                                 ? "border-primary text-primary"
                                                 : "border-gray-400 text-gray-400"
                                         }`}
-                                        onClick={() => setSlide(String(index * 400))}
+                                        onClick={() =>
+                                            setSlide(String(index * 400))
+                                        }
                                     >
                                         <p>{tab}</p>
                                     </div>
@@ -136,7 +157,8 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                                     className="flex gap-0 transition-transform duration-800"
                                     style={{
                                         transform: `translateX(-${slide}px)`,
-                                        transition: "transform 0.3s ease-in-out",
+                                        transition:
+                                            "transform 0.3s ease-in-out",
                                     }}
                                 >
                                     {isLoading ? (
@@ -154,32 +176,54 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                                     ) : (
                                         <>
                                             <div className="w-[400px] flex-shrink-0">
-                                                <p>{doctor?.bio || "No biography available."}</p>
+                                                <p>
+                                                    {doctor?.bio ||
+                                                        "No biography available."}
+                                                </p>
                                             </div>
                                             <div className="w-[400px] flex-shrink-0">
-                                                {doctor?.skills?.map((skill, index) => (
-                                                    <p key={index} className="font-medium capitalize">
-                                                        {skill}
-                                                    </p>
-                                                ))}
+                                                {doctor?.skills
+                                                    ?.split(",")
+                                                    .map(
+                                                        (
+                                                            skill: string,
+                                                            index: number
+                                                        ) => (
+                                                            <p
+                                                                key={index}
+                                                                className="font-medium capitalize"
+                                                            >
+                                                                {skill.trim()}
+                                                            </p>
+                                                        )
+                                                    )}
                                             </div>
                                             <div className="w-[400px] flex-shrink-0">
                                                 <p className="flex gap-10">
-                                                    <span className="font-bold text-primary">Email :</span>
+                                                    <span className="font-bold text-primary">
+                                                        Email :
+                                                    </span>
                                                     <span className="text-black">
-                                                        {doctor?.user?.email || "N/A"}
+                                                        {doctor?.user?.email ||
+                                                            "N/A"}
                                                     </span>
                                                 </p>
                                                 <p className="flex gap-10">
-                                                    <span className="font-bold text-primary">Phone Number :</span>
+                                                    <span className="font-bold text-primary">
+                                                        Phone Number :
+                                                    </span>
                                                     <span className="text-black">
-                                                        {doctor?.user?.profile?.phoneNo || "N/A"}
+                                                        {doctor?.user?.profile
+                                                            ?.phoneNo || "N/A"}
                                                     </span>
                                                 </p>
                                                 <p className="flex gap-10">
-                                                    <span className="font-bold text-primary">Address :</span>
+                                                    <span className="font-bold text-primary">
+                                                        Address :
+                                                    </span>
                                                     <span className="text-black">
-                                                        {doctor?.user?.profile?.address || "N/A"}
+                                                        {doctor?.user?.profile
+                                                            ?.address || "N/A"}
                                                     </span>
                                                 </p>
                                             </div>

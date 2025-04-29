@@ -2,7 +2,7 @@
 
 "use server";
 
-import { Referral, Role } from "@/lib/definitions";
+import { Referral, ReferralStatus, ReferralType, Role } from "@/lib/definitions";
 import * as Sentry from "@sentry/nextjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
@@ -11,6 +11,9 @@ import { getErrorMessage } from "@/hooks/getErrorMessage";
 
 const prisma = require("@/lib/prisma");
 
+/**
+ * Fetches inward referrals based on user role and hospitalId.
+ */
 export const fetchInwardReferrals = async (
     user?: { role: Role; hospitalId: number | null }
 ): Promise<Referral[]> => {
@@ -25,37 +28,77 @@ export const fetchInwardReferrals = async (
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
+            hospitalId: session.user.hospitalId ?? null, // Use null coalescing for undefined values
         };
     }
 
     const { role, hospitalId } = user;
 
     try {
-        if (role === "SUPER_ADMIN") {
-            // Fetch all internal referrals for SUPER_ADMIN
-            return await prisma.referral.findMany({
-                where: { type: "Internal" },
-                include: {
-                    patient: true,
-                    hospital: { select: { name: true, hospitalId: true } },
-                },
-            });
+        let whereClause: any = {};
+
+        // Define the filter clause based on the user role
+        switch (role) {
+            case "SUPER_ADMIN":
+                // No additional filtering for SUPER_ADMIN, see all referrals
+                whereClause = {
+                    OR: [
+                        { type: "UPWARD" },
+                        { type: "DOWNWARD" },
+                        { type: "LATERAL" },
+                        { type: "EMERGENCY" },
+                    ],
+                };
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (hospitalId === null) {
+                    throw new Error(`${role}s must have an associated hospital ID.`);
+                }
+                // Filter by destinationHospitalId for other roles
+                whereClause = {
+                    destinationHospitalId: hospitalId,
+                    OR: [
+                        { type: "UPWARD" },
+                        { type: "DOWNWARD" },
+                        { type: "LATERAL" },
+                        { type: "EMERGENCY" },
+                    ],
+                };
+                break;
+
+            default:
+                throw new Error("Invalid role provided.");
         }
 
-        if (hospitalId !== null) {
-            // Fetch referrals for other roles filtered by hospitalId
-            return await prisma.referral.findMany({
-                where: { type: "Internal", hospitalId },
-                include: {
-                    patient: true,
-                    hospital: { select: { name: true, hospitalId: true } },
+        // Fetch referrals based on the filter criteria
+        return await prisma.referral.findMany({
+            where: whereClause,
+            include: {
+                patient: true,
+                originHospital: {
+                    select: {
+                        hospitalId: true,
+                        hospitalName: true,
+                    },
                 },
-            });
-        }
-
-        console.warn("No hospitalId provided for role:", role);
-        return [];
+                destinationHospital: {
+                    select: {
+                        hospitalId: true,
+                        hospitalName: true,
+                    },
+                },
+                referringDoctor: {
+                    select: {
+                        doctorId: true,
+                        userId: true,
+                    },
+                },
+            },
+        });
     } catch (error) {
         const errorMessage = getErrorMessage(error);
         Sentry.captureException(error, { extra: { errorMessage, user } });
@@ -64,6 +107,9 @@ export const fetchInwardReferrals = async (
     }
 };
 
+/**
+ * Fetches the count of inward referrals based on user role and hospitalId.
+ */
 export const fetchInwardReferralsCount = async (
     user?: { role: Role; hospitalId: number | null }
 ): Promise<number> => {
@@ -78,29 +124,56 @@ export const fetchInwardReferralsCount = async (
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
+            hospitalId: session.user.hospitalId ?? null,
         };
     }
 
     const { role, hospitalId } = user;
 
     try {
-        if (role === "SUPER_ADMIN") {
-            // Fetch all internal referrals count for SUPER_ADMIN
-            return await prisma.referral.count({
-                where: { type: "Internal" },
-            });
+        let whereClause: any = {};
+
+        // Define the filter clause based on the user role
+        switch (role) {
+            case "SUPER_ADMIN":
+                // No additional filtering for SUPER_ADMIN, see all referrals
+                whereClause = {
+                    OR: [
+                        { type: "UPWARD" },
+                        { type: "DOWNWARD" },
+                        { type: "LATERAL" },
+                        { type: "EMERGENCY" },
+                    ],
+                };
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (hospitalId === null) {
+                    throw new Error(`${role}s must have an associated hospital ID.`);
+                }
+                // Filter by destinationHospitalId for other roles
+                whereClause = {
+                    destinationHospitalId: hospitalId,
+                    OR: [
+                        { type: "UPWARD" },
+                        { type: "DOWNWARD" },
+                        { type: "LATERAL" },
+                        { type: "EMERGENCY" },
+                    ],
+                };
+                break;
+
+            default:
+                throw new Error("Invalid role provided.");
         }
 
-        if (hospitalId !== null) {
-            // Fetch referrals count for other roles filtered by hospitalId
-            return await prisma.referral.count({
-                where: { type: "Internal", hospitalId },
-            });
-        }
-
-        console.warn("No hospitalId provided for role:", role);
-        return 0;
+        // Fetch referrals count based on the filter criteria
+        return await prisma.referral.count({
+            where: whereClause,
+        });
     } catch (error) {
         const errorMessage = getErrorMessage(error);
         Sentry.captureException(error, { extra: { errorMessage, user } });
@@ -109,6 +182,9 @@ export const fetchInwardReferralsCount = async (
     }
 };
 
+/**
+ * Fetches outward referrals based on user role and hospitalId.
+ */
 export const fetchOutwardReferrals = async (
     user?: { role: Role; hospitalId: number | null }
 ): Promise<Referral[]> => {
@@ -123,37 +199,78 @@ export const fetchOutwardReferrals = async (
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
+            hospitalId: session.user.hospitalId ?? null,
         };
     }
 
     const { role, hospitalId } = user;
 
     try {
-        if (role === "SUPER_ADMIN") {
-            // Fetch all external referrals for SUPER_ADMIN
-            return await prisma.referral.findMany({
-                where: { type: "External" },
-                include: {
-                    patient: true,
-                    hospital: { select: { name: true, hospitalId: true } },
-                },
-            });
+        let whereClause: any = {};
+
+        // Define the filter clause based on the user role
+        switch (role) {
+            case "SUPER_ADMIN":
+                // No additional filtering for SUPER_ADMIN, see all outward referrals
+                whereClause = {
+                    OR: [
+                        { type: "UPWARD" },
+                        { type: "DOWNWARD" },
+                        { type: "LATERAL" },
+                        { type: "EMERGENCY" },
+                    ],
+                    originHospitalId: { not: undefined },
+                };
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (hospitalId === null) {
+                    throw new Error(`${role}s must have an associated hospital ID.`);
+                }
+                // Filter by originHospitalId for other roles
+                whereClause = {
+                    originHospitalId: hospitalId,
+                    OR: [
+                        { type: "UPWARD" },
+                        { type: "DOWNWARD" },
+                        { type: "LATERAL" },
+                        { type: "EMERGENCY" },
+                    ],
+                };
+                break;
+
+            default:
+                throw new Error("Invalid role provided.");
         }
 
-        if (hospitalId !== null) {
-            // Fetch referrals for other roles filtered by hospitalId
-            return await prisma.referral.findMany({
-                where: { type: "External", hospitalId },
-                include: {
-                    patient: true,
-                    hospital: { select: { name: true, hospitalId: true } },
+        // Fetch referrals based on the filter criteria
+        return await prisma.referral.findMany({
+            where: whereClause,
+            include: {
+                patient: true,
+                originHospital: {
+                    select: {
+                        hospitalId: true,
+                        hospitalName: true,
+                    },
                 },
-            });
-        }
-
-        console.warn("No hospitalId provided for role:", role);
-        return [];
+                destinationHospital: {
+                    select: {
+                        hospitalId: true,
+                        hospitalName: true,
+                    },
+                },
+                referringDoctor: {
+                    select: {
+                        doctorId: true,
+                        userId: true,
+                    },
+                },
+            },
+        });
     } catch (error) {
         const errorMessage = getErrorMessage(error);
         Sentry.captureException(error, { extra: { errorMessage, user } });
@@ -162,6 +279,9 @@ export const fetchOutwardReferrals = async (
     }
 };
 
+/**
+ * Fetches the count of outward referrals based on user role and hospitalId.
+ */
 export const fetchOutwardReferralsCount = async (
     user?: { role: Role; hospitalId: number | null }
 ): Promise<number> => {
@@ -176,29 +296,57 @@ export const fetchOutwardReferralsCount = async (
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
+            hospitalId: session.user.hospitalId ?? null,
         };
     }
 
     const { role, hospitalId } = user;
 
     try {
-        if (role === "SUPER_ADMIN") {
-            // Fetch all external referrals count for SUPER_ADMIN
-            return await prisma.referral.count({
-                where: { type: "External" },
-            });
+        let whereClause: any = {};
+
+        // Define the filter clause based on the user role
+        switch (role) {
+            case "SUPER_ADMIN":
+                // No additional filtering for SUPER_ADMIN, see all outward referrals
+                whereClause = {
+                    OR: [
+                        { type: "UPWARD" },
+                        { type: "DOWNWARD" },
+                        { type: "LATERAL" },
+                        { type: "EMERGENCY" },
+                    ],
+                    originHospitalId: { not: undefined },
+                };
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (hospitalId === null) {
+                    throw new Error(`${role}s must have an associated hospital ID.`);
+                }
+                // Filter by originHospitalId for other roles
+                whereClause = {
+                    originHospitalId: hospitalId,
+                    OR: [
+                        { type: "UPWARD" },
+                        { type: "DOWNWARD" },
+                        { type: "LATERAL" },
+                        { type: "EMERGENCY" },
+                    ],
+                };
+                break;
+
+            default:
+                throw new Error("Invalid role provided.");
         }
 
-        if (hospitalId !== null) {
-            // Fetch referrals count for other roles filtered by hospitalId
-            return await prisma.referral.count({
-                where: { type: "External", hospitalId },
-            });
-        }
-
-        console.warn("No hospitalId provided for role:", role);
-        return 0;
+        // Fetch referrals count based on the filter criteria
+        return await prisma.referral.count({
+            where: whereClause,
+        });
     } catch (error) {
         const errorMessage = getErrorMessage(error);
         Sentry.captureException(error, { extra: { errorMessage, user } });
@@ -219,22 +367,22 @@ export async function createReferral(
         gender: string;
         dateOfBirth: string;
         homeAddress?: string;
-        state?: string;
+        county?: string;
         phoneNo: string;
         email: string;
-        physicianName: string;
-        physicianDepartment: string;
-        physicianSpecialty: string;
-        physicianEmail: string;
-        physicianPhoneNumber: string;
+        referringDoctorName: string;
+        departmentName: string;
+        specializationName: string;
+        referringDoctorEmail: string;
+        referringDoctorPhoneNo: string;
         hospitalName: string;
-        type: string;
+        type: ReferralType;
         primaryCareProvider: string;
         referralAddress: string;
         referralPhone: string;
         reasonForConsultation: string;
         diagnosis: string;
-        status: string;
+        status: ReferralStatus;
     },
     user?: { role: Role; hospitalId: number | null }
 ): Promise<Referral | null> {
@@ -249,7 +397,7 @@ export async function createReferral(
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
+            hospitalId: session.user.hospitalId ?? null,
         };
     }
 
@@ -258,7 +406,7 @@ export async function createReferral(
     try {
         // Validate hospital existence
         const hospital = await prisma.hospital.findUnique({
-            where: { name: data.hospitalName },
+            where: { hospitalName: data.hospitalName },
         });
 
         if (!hospital || !hospital.hospitalId) {
@@ -270,13 +418,14 @@ export async function createReferral(
 
         // Upsert the patient
         const patient = await prisma.patient.upsert({
-            where: { phoneNo: data.phoneNo },
+            where: { patientId: data.patientId },
             update: {
-                name: data.patientName,
+                firstName: data.patientName.split(" ")[0],
+                lastName: data.patientName.split(" ").slice(1).join(" ") || null,
                 gender: data.gender,
                 dateOfBirth: new Date(data.dateOfBirth),
-                homeAddress: data.homeAddress,
-                state: data.state,
+                address: data.homeAddress || null,
+                county: data.county || null,
                 phoneNo: data.phoneNo,
                 email: data.email,
                 reasonForConsultation: data.reasonForConsultation,
@@ -284,11 +433,12 @@ export async function createReferral(
                 hospitalId,
             },
             create: {
-                name: data.patientName,
+                firstName: data.patientName.split(" ")[0],
+                lastName: data.patientName.split(" ").slice(1).join(" ") || null,
                 gender: data.gender,
                 dateOfBirth: new Date(data.dateOfBirth),
-                homeAddress: data.homeAddress,
-                state: data.state,
+                address: data.homeAddress || null,
+                county: data.county || null,
                 phoneNo: data.phoneNo,
                 email: data.email,
                 reasonForConsultation: data.reasonForConsultation,
@@ -302,7 +452,7 @@ export async function createReferral(
         const existingReferral = await prisma.referral.findFirst({
             where: {
                 patientId: patient.patientId,
-                hospitalId,
+                originHospitalId: hospitalId,
                 type: data.type,
                 effectiveDate: {
                     gte: new Date(referralDate.setHours(0, 0, 0, 0)),
@@ -316,23 +466,42 @@ export async function createReferral(
             return null;
         }
 
+        // Fetch referring doctor details
+        const referringDoctor = await prisma.doctor.findFirst({
+            where: {
+                userId: {
+                    in: await prisma.user.findMany({
+                        where: { email: data.referringDoctorEmail },
+                        select: { userId: true },
+                    }).then((users: any[]) => users.map(u => u.userId)),
+                },
+            },
+        });
+
+        if (!referringDoctor) {
+            console.error("Referring doctor not found.");
+            return null;
+        }
+
         // Create the referral
         const newReferral = await prisma.referral.create({
             data: {
                 patientId: patient.patientId,
-                hospitalId,
-                effectiveDate: new Date(),
+                referringDoctorId: referringDoctor.doctorId,
+                originHospitalId: hospitalId,
+                destinationHospitalId: hospitalId,
+                previousReferralId: null,
                 type: data.type,
+                status: data.status,
+                priority: "ROUTINE",
+                urgency: "Medium",
+                isTransportRequired: false,
+                effectiveDate: new Date(),
+                diagnosis: data.diagnosis,
+                reasonForConsultation: data.reasonForConsultation,
                 primaryCareProvider: data.primaryCareProvider,
                 referralAddress: data.referralAddress,
                 referralPhone: data.referralPhone,
-                reasonForConsultation: data.reasonForConsultation,
-                diagnosis: data.diagnosis,
-                physicianName: data.physicianName,
-                physicianDepartment: data.physicianDepartment,
-                physicianSpecialty: data.physicianSpecialty,
-                physicianEmail: data.physicianEmail,
-                physicianPhoneNumber: data.physicianPhoneNumber,
             },
         });
 
@@ -344,4 +513,3 @@ export async function createReferral(
         return null;
     }
 }
-

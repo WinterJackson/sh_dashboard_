@@ -2,7 +2,7 @@
 
 "use server";
 
-import { Bed, Role } from "@/lib/definitions";
+import { Bed, BedAvailability, Role } from "@/lib/definitions";
 import * as Sentry from "@sentry/nextjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
@@ -28,25 +28,48 @@ export async function fetchAvailableBeds(
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
+            hospitalId: session.user.hospitalId ?? null,
         };
     }
 
     const { role, hospitalId } = user;
 
     try {
-        let beds = [];
-        if (role === "SUPER_ADMIN") {
-            beds = await prisma.bed.findMany({
-                where: { availability: "Available" },
-                include: { hospital: { select: { name: true, hospitalId: true } } },
-            });
-        } else if (hospitalId) {
-            beds = await prisma.bed.findMany({
-                where: { availability: "Available", hospitalId },
-                include: { hospital: { select: { name: true, hospitalId: true } } },
-            });
+        let whereClause: any = { availability: BedAvailability.AVAILABLE };
+
+        // Define the filter clause based on the user role
+        switch (role) {
+            case "SUPER_ADMIN":
+                // No additional filtering for SUPER_ADMIN, see all available beds
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (hospitalId === null) {
+                    throw new Error(`${role}s must have an associated hospital ID.`);
+                }
+                // Filter by hospitalId for other roles
+                whereClause.hospitalId = hospitalId;
+                break;
+
+            default:
+                throw new Error("Invalid role provided.");
         }
+
+        // Fetch available beds based on the filter criteria
+        const beds = await prisma.bed.findMany({
+            where: whereClause,
+            include: {
+                hospital: {
+                    select: {
+                        hospitalName: true,
+                        hospitalId: true,
+                    },
+                },
+            },
+        });
 
         return { beds };
     } catch (error) {
@@ -56,7 +79,6 @@ export async function fetchAvailableBeds(
         return { beds: [] };
     }
 }
-
 
 /**
  * Fetch count of available beds based on user's role and hospitalId.
@@ -75,28 +97,40 @@ export async function fetchAvailableBedsCount(
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
+            hospitalId: session.user.hospitalId ?? null,
         };
     }
 
     const { role, hospitalId } = user;
 
     try {
-        let availableBedsCount = 0;
-        if (role === "SUPER_ADMIN") {
-            // Count all available beds for SUPER_ADMIN
-            availableBedsCount = await prisma.bed.count({
-                where: { availability: "Available" },
-            });
-        } else if (hospitalId) {
-            // Count available beds for other roles based on hospitalId
-            availableBedsCount = await prisma.bed.count({
-                where: {
-                    availability: "Available",
-                    hospitalId: hospitalId,
-                },
-            });
+        let whereClause: any = { availability: BedAvailability.AVAILABLE };
+
+        // Define the filter clause based on the user role
+        switch (role) {
+            case "SUPER_ADMIN":
+                // No additional filtering for SUPER_ADMIN, see all available beds
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (hospitalId === null) {
+                    throw new Error(`${role}s must have an associated hospital ID.`);
+                }
+                // Filter by hospitalId for other roles
+                whereClause.hospitalId = hospitalId;
+                break;
+
+            default:
+                throw new Error("Invalid role provided.");
         }
+
+        // Count available beds based on the filter criteria
+        const availableBedsCount = await prisma.bed.count({
+            where: whereClause,
+        });
 
         return availableBedsCount;
     } catch (error) {
@@ -106,7 +140,6 @@ export async function fetchAvailableBedsCount(
         return 0;
     }
 }
-
 
 /**
  * Fetch occupied beds based on user's role and hospitalId.
@@ -125,34 +158,48 @@ export async function fetchOccupiedBeds(
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
+            hospitalId: session.user.hospitalId ?? null,
         };
     }
 
     const { role, hospitalId } = user;
 
     try {
-        let beds = [];
-        if (role === "SUPER_ADMIN") {
-            // Fetch all occupied beds for SUPER_ADMIN
-            beds = await prisma.bed.findMany({
-                where: { availability: "Occupied" },
-                include: {
-                    hospital: { select: { name: true, hospitalId: true } },
-                },
-            });
-        } else if (hospitalId) {
-            // Fetch occupied beds for other roles based on hospitalId
-            beds = await prisma.bed.findMany({
-                where: {
-                    availability: "Occupied",
-                    hospitalId: hospitalId,
-                },
-                include: {
-                    hospital: { select: { name: true, hospitalId: true } },
-                },
-            });
+        let whereClause: any = { availability: "Occupied" };
+
+        // Define the filter clause based on the user role
+        switch (role) {
+            case "SUPER_ADMIN":
+                // No additional filtering for SUPER_ADMIN, see all occupied beds
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (hospitalId === null) {
+                    throw new Error(`${role}s must have an associated hospital ID.`);
+                }
+                // Filter by hospitalId for other roles
+                whereClause.hospitalId = hospitalId;
+                break;
+
+            default:
+                throw new Error("Invalid role provided.");
         }
+
+        // Fetch occupied beds based on the filter criteria
+        const beds = await prisma.bed.findMany({
+            where: whereClause,
+            include: {
+                hospital: {
+                    select: {
+                        hospitalName: true,
+                        hospitalId: true,
+                    },
+                },
+            },
+        });
 
         return { beds };
     } catch (error) {
@@ -180,28 +227,40 @@ export async function fetchOccupiedBedsCount(
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
+            hospitalId: session.user.hospitalId ?? null,
         };
     }
 
     const { role, hospitalId } = user;
 
     try {
-        let occupiedBedsCount = 0;
-        if (role === "SUPER_ADMIN") {
-            // Count all occupied beds for SUPER_ADMIN
-            occupiedBedsCount = await prisma.bed.count({
-                where: { availability: "Occupied" },
-            });
-        } else if (hospitalId) {
-            // Count occupied beds for other roles based on hospitalId
-            occupiedBedsCount = await prisma.bed.count({
-                where: {
-                    availability: "Occupied",
-                    hospitalId: hospitalId,
-                },
-            });
+        let whereClause: any = { availability: "Occupied" };
+
+        // Define the filter clause based on the user role
+        switch (role) {
+            case "SUPER_ADMIN":
+                // No additional filtering for SUPER_ADMIN, see all occupied beds
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (hospitalId === null) {
+                    throw new Error(`${role}s must have an associated hospital ID.`);
+                }
+                // Filter by hospitalId for other roles
+                whereClause.hospitalId = hospitalId;
+                break;
+
+            default:
+                throw new Error("Invalid role provided.");
         }
+
+        // Count occupied beds based on the filter criteria
+        const occupiedBedsCount = await prisma.bed.count({
+            where: whereClause,
+        });
 
         return occupiedBedsCount;
     } catch (error) {
@@ -229,32 +288,48 @@ export async function fetchAllBeds(
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
+            hospitalId: session.user.hospitalId ?? null,
         };
     }
 
     const { role, hospitalId } = user;
 
     try {
-        let beds = [];
-        if (role === "SUPER_ADMIN") {
-            // Fetch all beds for SUPER_ADMIN
-            beds = await prisma.bed.findMany({
-                include: {
-                    hospital: { select: { name: true, hospitalId: true } },
-                },
-            });
-        } else if (hospitalId) {
-            // Fetch all beds for other roles based on hospitalId
-            beds = await prisma.bed.findMany({
-                where: {
-                    hospitalId: hospitalId,
-                },
-                include: {
-                    hospital: { select: { name: true, hospitalId: true } },
-                },
-            });
+        let whereClause: any = {};
+
+        // Define the filter clause based on the user role
+        switch (role) {
+            case "SUPER_ADMIN":
+                // No filtering for SUPER_ADMIN, see all beds
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (hospitalId === null) {
+                    throw new Error(`${role}s must have an associated hospital ID.`);
+                }
+                // Filter by hospitalId for other roles
+                whereClause.hospitalId = hospitalId;
+                break;
+
+            default:
+                throw new Error("Invalid role provided.");
         }
+
+        // Fetch all beds based on the filter criteria
+        const beds = await prisma.bed.findMany({
+            where: whereClause,
+            include: {
+                hospital: {
+                    select: {
+                        hospitalName: true,
+                        hospitalId: true,
+                    },
+                },
+            },
+        });
 
         return { beds };
     } catch (error) {
@@ -282,26 +357,40 @@ export async function fetchAllBedsCount(
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
+            hospitalId: session.user.hospitalId ?? null,
         };
     }
 
     const { role, hospitalId } = user;
 
     try {
-        let count = 0;
+        let whereClause: any = {};
 
-        if (role === "SUPER_ADMIN") {
-            // Count all beds for SUPER_ADMIN
-            count = await prisma.bed.count();
-        } else if (hospitalId) {
-            // Count all beds for other roles based on hospitalId
-            count = await prisma.bed.count({
-                where: {
-                    hospitalId: hospitalId,
-                },
-            });
+        // Define the filter clause based on the user role
+        switch (role) {
+            case "SUPER_ADMIN":
+                // No filtering for SUPER_ADMIN, see all beds
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (hospitalId === null) {
+                    throw new Error(`${role}s must have an associated hospital ID.`);
+                }
+                // Filter by hospitalId for other roles
+                whereClause.hospitalId = hospitalId;
+                break;
+
+            default:
+                throw new Error("Invalid role provided.");
         }
+
+        // Count all beds based on the filter criteria
+        const count = await prisma.bed.count({
+            where: whereClause,
+        });
 
         return { count };
     } catch (error) {

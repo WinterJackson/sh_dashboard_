@@ -29,20 +29,54 @@ export async function fetchHospitals(
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
-            userId: session.user.id,
+            hospitalId: session.user.hospitalId ?? null,
+            userId: session.user.id ?? null,
         };
     }
-    
+
     try {
+        let whereClause: any = {};
+
+        // Define the filter clause based on the user role
+        switch (user.role) {
+            case "SUPER_ADMIN":
+                // SUPER_ADMIN can see all hospitals without filtering
+                break;
+
+            case "ADMIN":
+                if (user.hospitalId === null) {
+                    throw new Error("Admins must have an associated hospital ID.");
+                }
+                // Admins see only their associated hospital
+                whereClause = { hospitalId: user.hospitalId };
+                break;
+
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (user.hospitalId === null) {
+                    throw new Error(`${user.role}s must have an associated hospital ID.`);
+                }
+                // Staff members see only their associated hospital
+                whereClause = { hospitalId: user.hospitalId };
+                break;
+
+            default:
+                throw new Error("Invalid role provided.");
+        }
+
+        // Fetch hospitals based on the filter criteria
         const hospitals = await prisma.hospital.findMany({
+            where: whereClause,
             select: {
                 hospitalId: true,
-                name: true,
+                hospitalName: true,
                 phone: true,
                 email: true,
-                country: true,
-                city: true,
+                county: true,
+                subCounty: true,
+                town: true,
+                streetAddress: true,
             },
         });
 

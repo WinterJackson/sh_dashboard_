@@ -11,7 +11,7 @@ import {
     DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { differenceInYears } from "date-fns";
-import { MapPin as PlaceIcon, Video } from 'lucide-react';
+import { MapPin as PlaceIcon, Video } from "lucide-react";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 interface AppointmentRowProps {
@@ -36,46 +36,81 @@ const AppointmentRow: React.FC<AppointmentRowProps> = ({
     const { appointmentId, patient, doctor, type, appointmentDate, status } =
         appointment;
 
-    // Determine if the appointment is cancelled
+    // Efficiently determine if the appointment is cancelled
     const rowClass =
-        actionText[appointmentId] === "Cancelled" || status === "Cancelled"
+        status === "CANCELLED" || actionText[appointmentId] === "CANCELLED"
             ? "bg-red-100"
             : "bg-white";
 
-    // Compute age if dateOfBirth exists
-    const age = patient?.dateOfBirth
-        ? differenceInYears(new Date(), new Date(patient.dateOfBirth))
-        : "N/A";
+    // Safely retrieve patient's name from the related Profile entity
+    const patientName = React.useMemo(() => {
+        return patient?.user?.profile
+            ? `${patient.user.profile.firstName} ${patient.user.profile.lastName}`
+            : "N/A";
+    }, [patient?.user?.profile]);
 
-    // Format date and time
-    const formattedDate = new Date(appointmentDate).toLocaleDateString();
-    const formattedTime = new Date(appointmentDate).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-    });
+    // Compute patient's age using dateOfBirth from the Profile entity
+    const patientAge = React.useMemo(() => {
+        if (!patient?.user?.profile?.dateOfBirth) return "N/A";
+        try {
+            const birthDate = new Date(patient.user.profile.dateOfBirth);
+            return differenceInYears(new Date(), birthDate);
+        } catch (error) {
+            console.error(
+                "Invalid date of birth:",
+                patient.user.profile.dateOfBirth
+            );
+            return "N/A";
+        }
+    }, [patient?.user?.profile?.dateOfBirth]);
+
+    // Format date and time efficiently
+    const formattedDate = React.useMemo(() => {
+        return new Date(appointmentDate).toLocaleDateString();
+    }, [appointmentDate]);
+
+    const formattedTime = React.useMemo(() => {
+        return new Date(appointmentDate).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    }, [appointmentDate]);
 
     return (
         <tr className={`text-center ${rowClass}`}>
+            {/* Patient Name */}
             <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-left">
-                {patient?.name}
+                {patientName}
             </td>
+
+            {/* Patient Age */}
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {age}
+                {patientAge}
             </td>
+
+            {/* Patient ID */}
             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                {patient?.patientId}
+                {patient?.patientId || "N/A"}
             </td>
+
+            {/* Appointment Time */}
             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                 {formattedTime}
             </td>
+
+            {/* Appointment Date */}
             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                 {formattedDate}
             </td>
+
+            {/* Doctor's Name */}
             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                 {doctor?.user?.profile
                     ? `Dr. ${doctor.user.profile.firstName} ${doctor.user.profile.lastName}`
                     : "N/A"}
             </td>
+
+            {/* Appointment Type Dropdown */}
             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                 <div className="flex justify-center">
                     <DropdownMenu>
@@ -119,15 +154,29 @@ const AppointmentRow: React.FC<AppointmentRowProps> = ({
                     </DropdownMenu>
                 </div>
             </td>
+
+            {/* Action Dropdown */}
             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                 <div className="flex justify-center">
                     <DropdownMenu>
                         <DropdownMenuTrigger className="flex w-auto justify-center p-1 border-gray-300 rounded max-w-[120px] bg-gray-100 text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary">
                             <span className="flex gap-1">
                                 <span className="pl-2">
-                                    {actionText[appointmentId] ||
-                                        status ||
-                                        "Action"}
+                                    {actionText[appointmentId]
+                                        ? `${actionText[appointmentId]
+                                              .charAt(0)
+                                              .toUpperCase()}${actionText[
+                                              appointmentId
+                                          ]
+                                              .slice(1)
+                                              .toLowerCase()}`
+                                        : status
+                                        ? `${status
+                                              .charAt(0)
+                                              .toUpperCase()}${status
+                                              .slice(1)
+                                              .toLowerCase()}`
+                                        : "Action"}
                                 </span>
                                 <ArrowDropDownIcon />
                             </span>
@@ -135,8 +184,14 @@ const AppointmentRow: React.FC<AppointmentRowProps> = ({
                         <DropdownMenuContent className="rounded-[10px] shadow-md p-2">
                             <DropdownMenuItem
                                 onSelect={() => {
-                                    handleActionChange(appointmentId, "Rescheduled");
-                                    handleDialogOpen("Reschedule", appointmentId);
+                                    handleActionChange(
+                                        appointmentId,
+                                        "Rescheduled"
+                                    );
+                                    handleDialogOpen(
+                                        "Reschedule",
+                                        appointmentId
+                                    );
                                 }}
                                 className="p-2 rounded-[5px]"
                             >
@@ -144,7 +199,10 @@ const AppointmentRow: React.FC<AppointmentRowProps> = ({
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onSelect={() => {
-                                    handleActionChange(appointmentId, "Cancelled");
+                                    handleActionChange(
+                                        appointmentId,
+                                        "Cancelled"
+                                    );
                                     handleDialogOpen("Cancel", appointmentId);
                                 }}
                                 className="p-2 rounded-[5px]"
@@ -153,7 +211,10 @@ const AppointmentRow: React.FC<AppointmentRowProps> = ({
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onSelect={() => {
-                                    handleActionChange(appointmentId, "Pending");
+                                    handleActionChange(
+                                        appointmentId,
+                                        "Pending"
+                                    );
                                     handleDialogOpen("Pending", appointmentId);
                                 }}
                                 className="p-2 rounded-[5px]"

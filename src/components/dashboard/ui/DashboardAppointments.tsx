@@ -6,6 +6,7 @@ import React, { useState } from "react";
 import AppointmentsPagination from "@/components/appointments/ui/AppointmentsPagination";
 import { Appointment } from "@/lib/definitions";
 import { MapPin as PlaceIcon, Video } from "lucide-react";
+import { differenceInYears } from "date-fns";
 
 interface DashboardAppointmentsProps {
     appointments: Appointment[];
@@ -36,23 +37,30 @@ const DashboardAppointments: React.FC<DashboardAppointmentsProps> = ({
     );
 
     const renderTableRows = () => {
-
         return currentAppointments.map((appointment) => (
             <tr
                 key={appointment.appointmentId}
                 className={`text-center ${
-                    appointment.status === "Cancelled" ? "bg-red-100" : ""
+                    appointment.status === "CANCELLED" ? "bg-red-100" : "" // Use uppercase status value
                 }`}
             >
+                {/* Patient Name */}
                 <td className="px-4 py-4 text-sm font-semibold text-gray-900 text-left whitespace-nowrap">
-                    {appointment.patient?.name || "N/A"}
+                    {appointment.patient?.user?.profile?.firstName &&
+                    appointment.patient?.user?.profile?.lastName
+                        ? `${appointment.patient.user.profile.firstName} ${appointment.patient.user.profile.lastName}`
+                        : "N/A"}
                 </td>
+
+                {/* Age */}
                 <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                    {appointment.patient?.dateOfBirth
-                        ? new Date().getFullYear() -
-                          new Date(
-                              appointment.patient.dateOfBirth
-                          ).getFullYear()
+                    {appointment.patient?.user?.profile?.dateOfBirth
+                        ? differenceInYears(
+                              new Date(),
+                              new Date(
+                                  appointment.patient.user.profile.dateOfBirth
+                              )
+                          )
                         : "N/A"}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
@@ -79,12 +87,16 @@ const DashboardAppointments: React.FC<DashboardAppointmentsProps> = ({
                     {appointment.type === "Virtual" ? (
                         <>
                             <Video className="text-primary" />
-                            <span className="text-primary">{appointment.type}</span>
+                            <span className="text-primary">
+                                {appointment.type}
+                            </span>
                         </>
                     ) : (
                         <>
                             <PlaceIcon className="text-black/70" />
-                            <span className="text-black/70">{appointment.type}</span>
+                            <span className="text-black/70">
+                                {appointment.type}
+                            </span>
                         </>
                     )}
                 </td>
@@ -98,7 +110,9 @@ const DashboardAppointments: React.FC<DashboardAppointmentsProps> = ({
     return (
         <div className="flex flex-col min-w-full shadow-lg shadow-gray-300 rounded-[20px] bg-slate-100">
             <div className="overflow-x-auto w-full">
-                <h2 className="py-4 px-4 font-semibold">Appointments Details</h2>
+                <h2 className="py-4 px-4 font-semibold">
+                    Appointments Details
+                </h2>
                 <table className="min-w-full w-full border-collapse divide-y divide-gray-200 mt-2 table-auto">
                     <thead className="bg-bluelight">
                         <tr>

@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createReferral } from "@/lib/data-access/referrals/data";
-import { Referral, Role } from "@/lib/definitions";
+import { Referral, Role, ReferralType, ReferralStatus } from "@/lib/definitions";
 
 export const useCreateReferral = (user?: { role: Role; hospitalId: number | null }) => {
     const queryClient = useQueryClient();
@@ -14,22 +14,22 @@ export const useCreateReferral = (user?: { role: Role; hospitalId: number | null
             gender: string;
             dateOfBirth: string;
             homeAddress?: string;
-            state?: string;
+            county?: string;
             phoneNo: string;
             email: string;
-            physicianName: string;
-            physicianDepartment: string;
-            physicianSpecialty: string;
-            physicianEmail: string;
-            physicianPhoneNumber: string;
+            referringDoctorName: string;
+            departmentName: string;
+            specializationName: string;
+            referringDoctorEmail: string;
+            referringDoctorPhoneNo: string;
             hospitalName: string;
-            type: string;
+            type: ReferralType;
             primaryCareProvider: string;
             referralAddress: string;
             referralPhone: string;
             reasonForConsultation: string;
             diagnosis: string;
-            status: string;
+            status: ReferralStatus;
         }) => createReferral(referralData, user),
         onSuccess: (newReferral: Referral | null) => {
             if (newReferral) {

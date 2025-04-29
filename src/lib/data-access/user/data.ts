@@ -9,7 +9,6 @@ import { authOptions } from "@/lib/authOptions";
 
 const prisma = require("@/lib/prisma");
 
-// Updated UserProfile type
 export type UserProfile = {
     id: string;
     username: string;
@@ -18,20 +17,20 @@ export type UserProfile = {
     profile?: {
         firstName: string;
         lastName: string;
-        phoneNo?: string;
+        phoneNo?: string | null;
     };
     doctor?: {
         department: { name: string };
         specialization: { name: string };
-        hospital: { name: string };
+        hospital: { hospitalName: string };
     };
     nurse?: {
         department: { name: string };
         specialization: { name: string };
-        hospital: { name: string };
+        hospital: { hospitalName: string };
     };
     hospitalId: number | null;
-    hospital: string | null;
+    hospitalName: string | null;
 };
 
 /**
@@ -44,7 +43,9 @@ export async function fetchUserProfile(userId?: string): Promise<UserProfile> {
             const session = await getServerSession(authOptions);
 
             if (!session || !session?.user) {
-                console.error("Session fetch failed or user not authenticated.");
+                console.error(
+                    "Session fetch failed or user not authenticated."
+                );
                 return {
                     id: "",
                     username: "",
@@ -53,12 +54,12 @@ export async function fetchUserProfile(userId?: string): Promise<UserProfile> {
                     profile: {
                         firstName: "",
                         lastName: "",
-                        phoneNo: "",
+                        phoneNo: null,
                     },
                     doctor: undefined,
                     nurse: undefined,
                     hospitalId: null,
-                    hospital: null,
+                    hospitalName: null,
                 };
             }
 
@@ -68,20 +69,35 @@ export async function fetchUserProfile(userId?: string): Promise<UserProfile> {
         const userProfile = await prisma.user.findUnique({
             where: { userId },
             include: {
-                hospital: true,
                 profile: true,
                 doctor: {
                     include: {
                         department: true,
                         specialization: true,
-                        hospital: true,
+                        hospital: {
+                            select: {
+                                hospitalId: true,
+                                hospitalName: true,
+                            },
+                        },
                     },
                 },
                 nurse: {
                     include: {
                         department: true,
                         specialization: true,
-                        hospital: true,
+                        hospital: {
+                            select: {
+                                hospitalId: true,
+                                hospitalName: true,
+                            },
+                        },
+                    },
+                },
+                hospital: {
+                    select: {
+                        hospitalId: true,
+                        hospitalName: true,
                     },
                 },
             },
@@ -97,12 +113,12 @@ export async function fetchUserProfile(userId?: string): Promise<UserProfile> {
                 profile: {
                     firstName: "",
                     lastName: "",
-                    phoneNo: "",
+                    phoneNo: null,
                 },
                 doctor: undefined,
                 nurse: undefined,
                 hospitalId: null,
-                hospital: null,
+                hospitalName: null,
             };
         }
 
@@ -115,34 +131,51 @@ export async function fetchUserProfile(userId?: string): Promise<UserProfile> {
                 ? {
                       firstName: userProfile.profile.firstName,
                       lastName: userProfile.profile.lastName,
-                      phoneNo: userProfile.profile.phoneNo,
+                      phoneNo: userProfile.profile.phoneNo || null,
                   }
                 : {
                       firstName: "",
                       lastName: "",
-                      phoneNo: "",
+                      phoneNo: null,
                   },
             doctor: userProfile.doctor
                 ? {
-                      department: { name: userProfile.doctor.department?.name || "" },
-                      specialization: { name: userProfile.doctor.specialization?.name || "" },
-                      hospital: { name: userProfile.doctor.hospital?.name || "" },
+                      department: {
+                          name: userProfile.doctor.department?.name || "",
+                      },
+                      specialization: {
+                          name: userProfile.doctor.specialization?.name || "",
+                      },
+                      hospital: {
+                          hospitalName:
+                              userProfile.doctor.hospital?.hospitalName || "",
+                      },
                   }
                 : undefined,
             nurse: userProfile.nurse
                 ? {
-                      department: { name: userProfile.nurse.department?.name || "" },
-                      specialization: { name: userProfile.nurse.specialization?.name || "" },
-                      hospital: { name: userProfile.doctor.hospital?.name || "" },
+                      department: {
+                          name: userProfile.nurse.department?.name || "",
+                      },
+                      specialization: {
+                          name: userProfile.nurse.specialization?.name || "",
+                      },
+                      hospital: {
+                          hospitalName:
+                              userProfile.nurse.hospital?.hospitalName || "",
+                      },
                   }
                 : undefined,
             hospitalId: userProfile.hospital?.hospitalId || null,
-            hospital: userProfile.hospital?.name || null,
+            hospitalName: userProfile.hospital?.hospitalName || null,
         };
     } catch (error) {
         const errorMessage = getErrorMessage(error);
         Sentry.captureException(error, { extra: { userId, errorMessage } });
-        console.error(`Error fetching user profile for userId=${userId}:`, errorMessage);
+        console.error(
+            `Error fetching user profile for userId=${userId}:`,
+            errorMessage
+        );
 
         // Return empty UserProfile object
         return {
@@ -153,12 +186,12 @@ export async function fetchUserProfile(userId?: string): Promise<UserProfile> {
             profile: {
                 firstName: "",
                 lastName: "",
-                phoneNo: "",
+                phoneNo: null,
             },
             doctor: undefined,
             nurse: undefined,
             hospitalId: null,
-            hospital: null,
+            hospitalName: null,
         };
     }
 }

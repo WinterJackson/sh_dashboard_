@@ -82,25 +82,63 @@ const PatientsFilters: React.FC<PatientsFiltersProps> = ({
         return filters;
     }, [selectedHospitalName, selectedGender, selectedDate]);
 
-    // Filtered patient data based on active filters
-    const filteredPatients = useMemo(() => {
-        const sanitizedTerm = sanitizeNumber(searchTerm);
+// Filtered patient data based on active filters
+const filteredPatients = useMemo(() => {
+    const sanitizedTerm = sanitizeNumber(searchTerm);
 
-        return patients.filter((patient) => {
-            // General filters based on filterType
-            if (filterType === "Name" && searchTerm && !patient.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-            if (filterType === "Reg No" && searchTerm && !patient.patientId.toString().includes(searchTerm)) return false;
-            if (filterType === "Phone No" && searchTerm && !sanitizeNumber(patient.phoneNo).includes(sanitizedTerm)) return false;
-            if (filterType === "Email" && searchTerm && !patient.email.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+    return patients.filter((patient) => {
+        // Access nested properties safely
+        const profile = patient.user?.profile;
+        const user = patient.user;
 
-            // Specific filters
-            if (selectedGender && patient.gender.toLowerCase() !== selectedGender.toLowerCase()) return false;
-            if (selectedHospitalId && patient.hospitalId !== selectedHospitalId) return false;
-            if (selectedDate && new Date(patient.dateOfBirth).toLocaleDateString() !== selectedDate.toLocaleDateString()) return false;
+        // Construct full name from firstName and lastName
+        const fullName =
+            `${profile?.firstName ?? ""} ${profile?.lastName ?? ""}`.toLowerCase();
 
-            return true;
-        });
-    }, [patients, searchTerm, filterType, selectedGender, selectedHospitalId, selectedDate]);
+        // General filters based on filterType
+        if (filterType === "Name" && searchTerm && !fullName.includes(searchTerm.toLowerCase())) {
+            return false;
+        }
+        if (filterType === "Reg No" && searchTerm && !patient.patientId.toString().includes(searchTerm)) {
+            return false;
+        }
+        if (
+            filterType === "Phone No" &&
+            searchTerm &&
+            !sanitizeNumber(profile?.phoneNo || "").includes(sanitizedTerm)
+        ) {
+            return false;
+        }
+        if (
+            filterType === "Email" &&
+            searchTerm &&
+            !user?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+        ) {
+            return false;
+        }
+
+        // Specific filters
+        if (
+            selectedGender &&
+            profile?.gender?.toLowerCase() !== selectedGender.toLowerCase()
+        ) {
+            return false;
+        }
+        if (selectedHospitalId && patient.hospitalId !== selectedHospitalId) {
+            return false;
+        }
+        if (
+            selectedDate &&
+            profile?.dateOfBirth &&
+            new Date(profile.dateOfBirth).toLocaleDateString() !==
+                selectedDate.toLocaleDateString()
+        ) {
+            return false;
+        }
+
+        return true;
+    });
+}, [patients, searchTerm, filterType, selectedGender, selectedHospitalId, selectedDate]);
 
     // Update filtered patients when active filters change
     useEffect(() => {
@@ -252,11 +290,11 @@ const PatientsFilters: React.FC<PatientsFiltersProps> = ({
                                                     onClick={() =>
                                                         handleHospitalSelect(
                                                             hospital.hospitalId,
-                                                            hospital.name
+                                                            hospital.hospitalName
                                                         )
                                                     }
                                                 >
-                                                    {hospital.name}
+                                                    {hospital.hospitalName}
                                                 </DropdownMenuItem>
                                             ))}
                                         </DropdownMenuSubContent>

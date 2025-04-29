@@ -78,17 +78,21 @@ const AppointmentsFilters: React.FC<AppointmentsFiltersProps> = ({
             if (searchTerm) {
                 switch (filterType) {
                     case "Patient Name":
-                        filterMatch = appointment.patient?.name
-                            .toLowerCase()
-                            .includes(searchTextLower);
+                        filterMatch = appointment.patient?.user?.profile
+                            ? `${appointment.patient.user.profile.firstName} ${appointment.patient.user.profile.lastName}`
+                                  .toLowerCase()
+                                  .includes(searchTextLower)
+                            : false;
                         break;
                     case "Age":
-                        if (appointment.patient?.dateOfBirth) {
+                        if (appointment.patient?.user?.profile?.dateOfBirth) {
                             const age = differenceInYears(
                                 new Date(),
-                                new Date(appointment.patient.dateOfBirth)
+                                new Date(appointment.patient.user.profile.dateOfBirth)
                             ).toString();
                             filterMatch = age.includes(searchTextLower);
+                        } else {
+                            filterMatch = false;
                         }
                         break;
                     case "Patient ID":
@@ -107,10 +111,8 @@ const AppointmentsFilters: React.FC<AppointmentsFiltersProps> = ({
                         }
                         break;
                     case "Hospital":
-                        if (isSuperAdmin && appointment.hospital?.name) {
-                            filterMatch = appointment.hospital.name
-                                .toLowerCase()
-                                .includes(searchTextLower);
+                        if (isSuperAdmin && appointment.hospital?.hospitalName) {
+                            filterMatch = appointment.hospital.hospitalName.toLowerCase().includes(searchTextLower);
                         }
                         break;
                     case "Status":
@@ -118,44 +120,40 @@ const AppointmentsFilters: React.FC<AppointmentsFiltersProps> = ({
                             filterMatch = appointment.status === selectedStatusFilter;
                         }
                         break;
-                    default:
-                        const isNameMatch = appointment.patient?.name
-                            .toLowerCase()
-                            .includes(searchTextLower);
-                        const isAgeMatch = appointment.patient?.dateOfBirth
-                            ? differenceInYears(new Date(), new Date(appointment.patient.dateOfBirth))
-                                  .toString()
-                                  .includes(searchTextLower)
-                            : false;
-                        const isIdMatch = appointment.patient?.patientId.toString().includes(searchTextLower);
-                        const isDateMatch = new Date(appointment.appointmentDate)
-                            .toLocaleDateString()
-                            .includes(searchTextLower);
-                        const isDoctorMatch = appointment.doctor?.user?.username
-                            .toLowerCase()
-                            .includes(searchTextLower);
-                        const isTypeMatch = appointment.type?.toLowerCase()
-                            .includes(searchTextLower);
-                        const isHospitalMatch = appointment.hospital?.name
-                            ? appointment.hospital.name
-                                  .toLowerCase()
-                                  .includes(searchTextLower)
-                            : false;
-                        const isStatusMatch = appointment.status
-                            ? appointment.status?.toLowerCase()
-                                  .includes(searchTextLower)
-                            : false;
-
-                        filterMatch =
-                            isNameMatch ||
-                            isAgeMatch ||
-                            isIdMatch ||
-                            isDateMatch ||
-                            isDoctorMatch ||
-                            isTypeMatch ||
-                            isHospitalMatch ||
-                            isStatusMatch;
-                        break;
+                        default:
+                            const isNameMatch = appointment.patient?.user?.profile
+                                ? `${appointment.patient.user.profile.firstName} ${appointment.patient.user.profile.lastName}`
+                                      .toLowerCase()
+                                      .includes(searchTextLower)
+                                : false;
+    
+                            const isAgeMatch = appointment.patient?.user?.profile?.dateOfBirth
+                                ? differenceInYears(new Date(), new Date(appointment.patient.user.profile.dateOfBirth))
+                                      .toString()
+                                      .includes(searchTextLower)
+                                : false;
+    
+                            const isIdMatch = appointment.patient?.patientId.toString().includes(searchTextLower);
+                            const isDateMatch = new Date(appointment.appointmentDate).toLocaleDateString().includes(searchTextLower);
+                            const isDoctorMatch = appointment.doctor?.user?.username.toLowerCase().includes(searchTextLower);
+                            const isTypeMatch = appointment.type?.toLowerCase().includes(searchTextLower);
+                            const isHospitalMatch = appointment.hospital?.hospitalName
+                                ? appointment.hospital.hospitalName.toLowerCase().includes(searchTextLower)
+                                : false;
+                            const isStatusMatch = appointment.status
+                                ? appointment.status.toLowerCase().includes(searchTextLower)
+                                : false;
+    
+                            filterMatch =
+                                isNameMatch ||
+                                isAgeMatch ||
+                                isIdMatch ||
+                                isDateMatch ||
+                                isDoctorMatch ||
+                                isTypeMatch ||
+                                isHospitalMatch ||
+                                isStatusMatch;
+                            break;
                 }
             }
 
@@ -318,7 +316,7 @@ const AppointmentsFilters: React.FC<AppointmentsFiltersProps> = ({
                                                             hospital?.hospitalId
                                                         );
                                                         setSelectedHospitalName(
-                                                            hospital?.name
+                                                            hospital?.hospitalName
                                                         );
                                                         setFilterType(
                                                             "Hospital"
@@ -326,7 +324,7 @@ const AppointmentsFilters: React.FC<AppointmentsFiltersProps> = ({
                                                     }}
                                                     className="p-2 rounded-[5px]"
                                                 >
-                                                    {hospital?.name}
+                                                    {hospital?.hospitalName}
                                                 </DropdownMenuItem>
                                             ))}
                                         </DropdownMenuSubContent>

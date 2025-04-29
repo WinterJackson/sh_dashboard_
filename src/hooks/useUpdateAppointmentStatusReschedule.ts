@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateAppointmentStatusReschedule } from "@/lib/data-access/appointments/data";
+import { Role } from "@/lib/definitions";
 
 export const useUpdateAppointmentStatusReschedule = () => {
     const queryClient = useQueryClient();
@@ -10,17 +11,24 @@ export const useUpdateAppointmentStatusReschedule = () => {
         mutationFn: ({
             appointmentId,
             updateData,
+            user,
         }: {
             appointmentId: string;
             updateData: {
                 date: string;
-                timeFrom: string;
-                timeTo: string;
+                timeFrom?: string;
+                timeTo?: string;
                 doctorId: number;
                 hospitalId: number;
                 type: string;
             };
-        }) => updateAppointmentStatusReschedule(appointmentId, updateData),
+            user?: {
+                role: Role;
+                hospitalId: number | null;
+                userId: string | null;
+            };
+        }) =>
+            updateAppointmentStatusReschedule(appointmentId, updateData, user),
         onSuccess: () => {
             // Invalidate appointments cache to reflect changes
             queryClient.invalidateQueries({ queryKey: ["appointments"] });

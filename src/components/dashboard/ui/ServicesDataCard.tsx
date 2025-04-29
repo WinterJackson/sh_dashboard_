@@ -121,7 +121,7 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
         userRole === Role.SUPER_ADMIN
             ? selectedHospitalId
                 ? hospitals.find((h) => h.hospitalId === selectedHospitalId)
-                      ?.name || "All Hospitals"
+                      ?.hospitalName || "All Hospitals"
                 : "All Hospitals"
             : null;
 
@@ -169,7 +169,7 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
                                                   (h) =>
                                                       h.hospitalId ===
                                                       selectedHospitalId
-                                              )?.name || "All Hospitals"
+                                              )?.hospitalName || "All Hospitals"
                                             : "All Hospitals"}
                                     </span>
                                     <ChevronRight className="h-4 w-4 ml-2 transition-transform duration-200 group-data-[state=open]:rotate-90" />
@@ -192,7 +192,7 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
                                         }
                                         className="cursor-pointer rounded-[5px] mb-1"
                                     >
-                                        {hospital.name}
+                                        {hospital.hospitalName}
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>

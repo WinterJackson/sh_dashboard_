@@ -45,7 +45,7 @@ export const authOptions: NextAuthOptions = {
                             username: true,
                             email: true,
                             role: true,
-                            hospital: { select: { hospitalId: true, name: true } },
+                            hospital: { select: { hospitalId: true, hospitalName: true } },
                         },
                     });
 
@@ -64,7 +64,7 @@ export const authOptions: NextAuthOptions = {
                         email: user.email,
                         role: user.role as Role,
                         hospitalId: user.hospital?.hospitalId || null,
-                        hospital: user.hospital?.name || null,
+                        hospital: user.hospital?.hospitalName || null,
                     };
                 } catch (error) {
                     console.error("Error during authentication:", error);

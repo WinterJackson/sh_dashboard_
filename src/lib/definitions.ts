@@ -6,13 +6,101 @@ export enum Role {
     DOCTOR = "DOCTOR",
     NURSE = "NURSE",
     STAFF = "STAFF",
+    PATIENT = "PATIENT",
+}
+
+export enum ServiceType {
+    MEDICAL = "MEDICAL",
+    NON_MEDICAL = "NON_MEDICAL",
 }
 
 export enum NotificationType {
     APPOINTMENT = "APPOINTMENT",
     SECURITY = "SECURITY",
     SYSTEM = "SYSTEM",
-    GENERAL = "GENERAL"
+    GENERAL = "GENERAL",
+}
+
+export enum MessageType {
+    TEXT = "TEXT",
+    IMAGE = "IMAGE",
+    FILE = "FILE",
+}
+
+export enum ConversationStatus {
+    ACTIVE = "ACTIVE",
+    ARCHIVED = "ARCHIVED",
+    DELETED = "DELETED",
+}
+
+export enum HospitalType {
+    PUBLIC = "PUBLIC",
+    PRIVATE = "PRIVATE",
+    MISSION = "MISSION",
+    NGO = "NGO",
+    MILITARY = "MILITARY",
+}
+
+export enum KEPHLevel {
+    LEVEL_1 = "LEVEL_1",
+    LEVEL_2 = "LEVEL_2",
+    LEVEL_3 = "LEVEL_3",
+    LEVEL_4 = "LEVEL_4",
+    LEVEL_5 = "LEVEL_5",
+}
+
+export enum DepartmentType {
+    CLINICAL = "CLINICAL",
+    SUPPORT = "SUPPORT",
+    ADMINISTRATIVE = "ADMINISTRATIVE",
+}
+
+export enum ReferralType {
+    UPWARD = "UPWARD",
+    DOWNWARD = "DOWNWARD",
+    LATERAL = "LATERAL",
+    EMERGENCY = "EMERGENCY",
+}
+
+export enum ReferralStatus {
+    PENDING = "PENDING",
+    ACCEPTED = "ACCEPTED",
+    COMPLETED = "COMPLETED",
+    REJECTED = "REJECTED",
+    CANCELLED = "CANCELLED",
+}
+
+export enum ReferralPriority {
+    IMMEDIATE = "IMMEDIATE",
+    URGENT = "URGENT",
+    ROUTINE = "ROUTINE",
+    SCHEDULED = "SCHEDULED",
+}
+
+export enum ReferralDoctorRole {
+    SENDER = "SENDER",
+    RECEIVER = "RECEIVER",
+}
+
+export enum BedType {
+    ICU = "ICU",
+    GENERAL = "GENERAL",
+    MATERNITY = "MATERNITY",
+    ISOLATION = "ISOLATION",
+    HDU = "HDU",
+}
+
+export enum AppointmentStatus {
+    PENDING = "PENDING",
+    CONFIRMED = "CONFIRMED",
+    COMPLETED = "COMPLETED",
+    CANCELLED = "CANCELLED",
+    RESCHEDULED = "RESCHEDULED"
+}
+
+export enum BedAvailability {
+    OCCUPIED = "OCCUPIED",
+    AVAILABLE = "AVAILABLE",
 }
 
 export interface User {
@@ -39,8 +127,13 @@ export interface User {
     admin?: Admin;
     nurse?: Nurse;
     staff?: Staff;
+    patient?: Patient;
     notifications?: Notification[];
     notificationSettings?: NotificationSettings;
+    conversationParticipant?: ConversationParticipant[];
+    messages?: Message[];
+    notes?: AppointmentNote[];
+    uploadedDocuments?: ReferralDocument[];
 }
 
 export interface Notification {
@@ -51,7 +144,7 @@ export interface Notification {
     isRead: boolean;
     createdAt: Date;
     updatedAt: Date;
-    mmetadata?: Record<string, any>; // Optional additional data
+    metadata?: Record<string, any>; // Optional additional data
     user: User;
 }
 
@@ -75,8 +168,8 @@ export interface Profile {
     phoneNo?: string;
     address?: string;
     dateOfBirth?: Date | null;
-    city?: string;
-    state?: string;
+    cityOrTown?: string;
+    county?: string;
     imageUrl?: string;
     nextOfKin?: string;
     nextOfKinPhoneNo?: string;
@@ -98,42 +191,32 @@ export interface Admin {
     hospital: Hospital;
 }
 
-export interface Specialization {
-    specializationId: number;
-    name: string;
-    doctors: Doctor[];
-    nurses: Nurse[];
-    staff: Staff[];
-}
-
 export interface Doctor {
     doctorId: number;
     userId: string;
     hospitalId: number;
     departmentId: number;
-    serviceId?: number | null;
     specializationId: number;
-    qualifications?: string;
-    about?: string;
+    qualifications?: string | null;
     status: string;
     phoneNo: string;
     workingHours: string;
     averageRating: number;
     createdAt: Date;
     updatedAt: Date;
-    skills: string[];
-    bio?: string;
-    yearsOfExperience?: number;
+    skills?: string | null;
+    bio?: string | null;
+    yearsOfExperience?: number | null;
     appointments: Appointment[];
     specialization: Specialization;
     department: Department;
     hospital: Hospital;
-    service?: Service | null;
     user: User;
-    docEarnings?: DoctorEarning[];
-    referrals?: DoctorReferral[];
-    docLicenses: DoctorLicense[];
+    docEarnings: DoctorEarning[];
+    referralsMade: Referral[];
+    doctorReferrals: ReferralDoctor[];
     docReviews: DoctorReview[];
+    docLicenses: DoctorLicense[];
 }
 
 export interface DoctorLicense {
@@ -152,7 +235,7 @@ export interface DoctorReview {
     doctorId: number;
     patientId: number;
     rating: number;
-    comment?: string;
+    comment?: string | null;
     createdAt: Date;
     doctor: Doctor;
     patient: Patient;
@@ -164,16 +247,19 @@ export interface Nurse {
     hospitalId: number;
     departmentId: number;
     specializationId: number;
-    specialization: Specialization;
-    status: string; // "Online" or "Offline"
+    status: string;
     phoneNo: string;
     workingHours: string;
     averageRating: number;
+    skills?: string | null;
+    bio?: string | null;
+    yearsOfExperience?: number | null;
     createdAt: Date;
     updatedAt: Date;
     user: User;
     hospital: Hospital;
     department: Department;
+    specialization: Specialization;
 }
 
 export interface Staff {
@@ -182,32 +268,27 @@ export interface Staff {
     hospitalId: number;
     departmentId: number;
     specializationId: number;
-    specialization: Specialization;
-    status: string; // "Online" or "Offline"
+    status: string;
     phoneNo: string;
     workingHours: string;
     averageRating: number;
+    skills?: string | null;
+    bio?: string | null;
+    yearsOfExperience?: number | null;
     createdAt: Date;
     updatedAt: Date;
     user: User;
     hospital: Hospital;
     department: Department;
+    specialization: Specialization;
 }
 
 export interface Patient {
-    notes: string;
     patientId: number;
+    userId: string;
     hospitalId: number;
-    name: string;
-    phoneNo: string;
-    email: string;
-    imageUrl?: string | null;
-    dateOfBirth: Date;
     maritalStatus?: string | null;
-    gender: string;
     occupation?: string | null;
-    homeAddress?: string | null;
-    state?: string | null;
     nextOfKinName?: string | null;
     nextOfKinRelationship?: string | null;
     nextOfKinHomeAddress?: string | null;
@@ -216,18 +297,61 @@ export interface Patient {
     reasonForConsultation: string;
     admissionDate?: Date | null;
     dischargeDate?: Date | null;
-    status: string; // "Inpatient" or "Outpatient"
+    status: string;
     createdAt: Date;
     updatedAt: Date;
     medicalInformation: MedicalInformation[];
     appointments: Appointment[];
     appointmentServices: AppointmentService[];
-    currentBed?: Bed[];
+    currentBed: Bed[];
     hospital: Hospital;
-    payments?: Payment[];
+    payments: Payment[];
     referrals: Referral[];
-    serviceUsages?: ServiceUsage | null;
+    serviceUsages: ServiceUsage[];
     docReviews: DoctorReview[];
+    referralDoctors: ReferralDoctor[];
+    user: User;
+}
+
+export interface Conversation {
+    conversationId: string;
+    appointmentId: string;
+    hospitalId: number;
+    subject?: string | null;
+    status: ConversationStatus;
+    lastMessageAt?: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+    participants: ConversationParticipant[];
+    messages: Message[];
+    appointment?: Appointment | null;
+    hospital?: Hospital | null;
+}
+
+export interface ConversationParticipant {
+    conversationId: string;
+    hospitalId: number;
+    appointmentId: string;
+    userId: string;
+    joinedAt: Date;
+    participantRole?: Role | null;
+    conversation: Conversation;
+    user: User;
+}
+
+export interface Message {
+    messageId: string;
+    conversationId: string;
+    hospitalId: number;
+    appointmentId: string;
+    senderId: string;
+    content: string;
+    messageType: MessageType;
+    isRead: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    conversation: Conversation;
+    sender: User;
 }
 
 export interface MedicalInformation {
@@ -253,32 +377,47 @@ export interface Appointment {
     hospitalId: number;
     appointmentDate: Date;
     type: string;
-    action?: string;
-    status?: string;
-    consultationFee?: number;
-    treatment?: string;
+    action?: string | null;
+    status?: AppointmentStatus | null;
+    consultationFee?: number | null;
+    treatment?: string | null;
     isPaid: boolean;
-    paymentId?: string;
+    paymentId?: string | null;
     completed: boolean;
     isVideoStarted: boolean;
-    commissionPercentage?: number;
-    appointmentEndAt?: Date;
-    rescheduledDate?: Date;
-    cancellationReason?: string;
-    pendingReason?: string;
-    notes?: string;
-    appointmentReminderSent?: number;
-    appointmentReminderSentLTF?: Date;
-    doctorAppointmentNotes?: string;
-    patientAppointmentNotes?: string;
-    reasonForVisit?: string;
+    commissionPercentage?: number | null;
+    appointmentEndAt?: Date | null;
+    rescheduledDate?: Date | null;
+    cancellationReason?: string | null;
+    pendingReason?: string | null;
+    diagnosis?: string | null;
+    prescription?: string | null;
+    appointmentReminderSent?: number | null;
+    appointmentReminderSentLTF?: Date | null;
+    reasonForVisit?: string | null;
     createdAt: Date;
     updatedAt: Date;
+    conversation?: Conversation | null;
     doctor: Doctor;
     hospital: Hospital;
     patient: Patient;
     services: AppointmentService[];
-    payments?: Payment[];
+    payments: Payment[];
+    notes: AppointmentNote[];
+}
+
+export interface AppointmentNote {
+    appointmentNoteId: string;
+    appointmentId: string;
+    hospitalId: number;
+    authorId: string;
+    authorRole: Role;
+    content: string;
+    createdAt: Date;
+    updatedAt: Date;
+    appointment: Appointment;
+    author: User;
+    hospital: Hospital;
 }
 
 export interface DoctorEarning {
@@ -290,115 +429,190 @@ export interface DoctorEarning {
     doctor: Doctor;
 }
 
+export interface BedCapacity {
+    bedCapacityId: string;
+    hospitalId: number;
+    totalInpatientBeds: number;
+    generalInpatientBeds: number;
+    cots: number;
+    maternityBeds: number;
+    emergencyCasualtyBeds: number;
+    intensiveCareUnitBeds: number;
+    highDependencyUnitBeds: number;
+    isolationBeds: number;
+    generalSurgicalTheatres?: number | null;
+    maternitySurgicalTheatres?: number | null;
+    hospital: Hospital;
+}
+
 export interface Bed {
     bedId: number;
     hospitalId: number;
     patientId?: number;
     type: string;
     ward: string;
-    availability: string;
+    availability: BedAvailability;
     hospital: Hospital;
     patient?: Patient;
 }
 
-export interface Service {
-    serviceId: number;
-    serviceName: string;
-    type: "HEALTH" | "NON_MEDICAL";
-    appointments: AppointmentService[];
-    departments: DepartmentService[];
-    doctors: Doctor[];
-    payments?: Payment[];
-    serviceUsages?: ServiceUsage;
-}
-
 export interface Hospital {
     hospitalId: number;
-    name: string;
-    phone: string;
-    email: string;
-    country: string;
-    city: string;
-    referralCode?: string;
-    website?: string;
-    logoUrl: string;
+    hospitalName: string;
+    hospitalLink?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    kephLevel?: KEPHLevel | null;
+    regulatoryBody?: string | null;
+    hospitalType?: HospitalType | null;
+    facilityType?: string | null;
+    nhifAccreditation?: string | null;
+    open24Hours?: string | null;
+    openWeekends?: string | null;
+    regulated?: string | null;
+    regulationStatus?: string | null;
+    regulatingBody?: string | null;
+    registrationNumber?: string | null;
+    licenseNumber?: string | null;
+    category?: string | null;
+    owner?: string | null;
+    county: string;
+    subCounty?: string | null;
+    ward?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    town?: string | null;
+    streetAddress?: string | null;
+    referralCode?: string | null;
+    description?: string | null;
+    emergencyPhone?: string | null;
+    emergencyEmail?: string | null;
+    website?: string | null;
+    logoUrl?: string | null;
+    operatingHours?: string | null;
+    nearestLandmark?: string | null;
+    plotNumber?: string | null;
     appointments: Appointment[];
-    beds?: Bed[];
+    beds: Bed[];
     doctors: Doctor[];
     nurses: Nurse[];
     departments: HospitalDepartment[];
     patients: Patient[];
-    payments?: Payment[];
-    referrals: Referral[];
+    payments: Payment[];
     users: User[];
     admins: Admin[];
     staffs: Staff[];
+    conversations: Conversation[];
+    appointmentNotes: AppointmentNote[];
+    bedCapacity: BedCapacity[];
+    hospitalServices: HospitalService[];
+    appointmentServices: AppointmentService[];
+    receivedReferrals: Referral[];
+    sentReferrals: Referral[];
+}
+
+export interface Specialization {
+    specializationId: number;
+    name: string;
+    description?: string | null;
+    doctors: Doctor[];
+    nurses: Nurse[];
+    staff: Staff[];
+    departmentLinks: DepartmentSpecialization[];
 }
 
 export interface Department {
     departmentId: number;
     name: string;
-    description: string;
-    services: DepartmentService[];
+    description?: string | null;
+    type: DepartmentType;
+    hospitalServices: HospitalService[];
     doctors: Doctor[];
     nurses: Nurse[];
     staff: Staff[];
     hospitals: HospitalDepartment[];
+    appointmentServices: AppointmentService[];
+    specializationLinks: DepartmentSpecialization[];
 }
 
-export interface DepartmentService {
+export interface DepartmentSpecialization {
     departmentId: number;
-    serviceId: number;
-    price: number;
+    specializationId: number;
+    createdAt: Date;
+    updatedAt: Date;
     department: Department;
-    service: Service;
+    specialization: Specialization;
 }
 
 export interface HospitalDepartment {
     hospitalId: number;
     departmentId: number;
+    headOfDepartment?: string | null;
+    contactEmail?: string | null;
+    contactPhone?: string | null;
+    location?: string | null;
+    establishedYear?: number | null;
+    description?: string | null;
+    createdAt: Date;
+    updatedAt: Date;
     hospital: Hospital;
     department: Department;
 }
 
-export interface ServiceUsage {
-    usageId: string;
+export interface Service {
     serviceId: number;
-    patientId: number;
-    date: Date;
-    service: Service;
-    patient: Patient;
+    serviceName: string;
+    type: ServiceType;
+    appointments: AppointmentService[];
+    doctors: Doctor[];
+    payments: Payment[];
+    serviceUsages: ServiceUsage[];
+    hospitalServices: HospitalService[];
 }
 
-export interface Referral {
-    referralId: number;
-    patientId: number;
+export interface HospitalService {
     hospitalId: number;
-    effectiveDate: Date;
-    type: string;
-    primaryCareProvider: string;
-    referralAddress: string;
-    referralPhone: string;
-    reasonForConsultation: string;
-    diagnosis: string;
-    physicianName: string;
-    physicianDepartment: string;
-    physicianSpecialty: string;
-    physicianEmail: string;
-    physicianPhoneNumber: string;
+    serviceId: number;
+    departmentId: number;
+    maxAppointmentsPerDay?: number | null;
+    requiresReferral: boolean;
+    isWalkInAllowed: boolean;
+    basePrice?: number | null;
+    discount?: number | null;
+    equipmentRequired?: string | null;
+    minStaffRequired?: number | null;
+    duration?: number | null;
     createdAt: Date;
     updatedAt: Date;
-    doctors?: DoctorReferral[];
-    hospital?: Hospital;
-    patient: Patient;
+    hospital: Hospital;
+    service: Service;
+    department: Department;
 }
 
-export interface DoctorReferral {
-    doctorId: number;
-    referralId: number;
+export interface AppointmentService {
+    appointmentId: string;
+    hospitalId: number;
     patientId: number;
-    doctor: Doctor;
-    referral: Referral;
+    serviceId: number;
+    departmentId?: number | null;
+    createdAt: Date;
+    updatedAt: Date;
+    appointment: Appointment;
+    patient: Patient;
+    service?: Service | null;
+    department?: Department | null;
+    hospital: Hospital;
+}
+
+export interface ServiceUsage {
+    usageId: string;
+    appointmentId: string;
+    serviceId: number;
+    patientId: number;
+    createdAt: Date;
+    updatedAt: Date;
+    patient: Patient;
+    service: Service;
 }
 
 export interface Payment {
@@ -416,13 +630,80 @@ export interface Payment {
     service: Service;
 }
 
-export interface AppointmentService {
-    appointmentId: string;
-    serviceId: number;
+export interface Referral {
+    referralId: number;
     patientId: number;
-    appointment: Appointment;
-    service: Service;
+    referringDoctorId: number;
+    originHospitalId: number;
+    destinationHospitalId: number;
+    previousReferralId?: number | null;
+    type: ReferralType;
+    status: ReferralStatus;
+    priority: ReferralPriority;
+    effectiveDate: Date;
+    urgency?: string | null;
+    isTransportRequired: boolean;
+    diagnosis?: string | null;
+    outcomeStatus?: string | null;
+    outcomeNotes?: string | null;
+    closedAt?: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
     patient: Patient;
+    originHospital: Hospital;
+    destinationHospital: Hospital;
+    referringDoctor: Doctor;
+    previousReferral?: Referral | null;
+    nextReferrals: Referral[];
+    documents: ReferralDocument[];
+    doctors: ReferralDoctor[];
+    transportation: Transportation[];
+}
+
+export interface ReferralDocument {
+    referralDocId: string;
+    referralId: number;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    fileData: Buffer;
+    uploadedAt: Date;
+    uploadedBy: string;
+    isEncrypted: boolean;
+    initializationVector?: string | null;
+    accessLog?: Record<string, any> | null;
+    referral: Referral;
+    uploader: User;
+}
+
+export interface ReferralDoctor {
+    doctorId: number;
+    referralId: number;
+    patientId: number;
+    referralRole: ReferralDoctorRole;
+    doctor: Doctor;
+    referral: Referral;
+    patient: Patient;
+}
+
+export interface Transportation {
+    transportationId: string;
+    referralId?: number | null;
+    patientId?: number | null;
+    ambulanceRegNo?: string | null;
+    driverName?: string | null;
+    driverContact?: string | null;
+    emergencyCallerPhoneNo?: string | null;
+    pickupLocation: string;
+    dropoffLocation?: string | null;
+    pickupTime?: Date | null;
+    dropoffTime?: Date | null;
+    cost?: number | null;
+    status: string;
+    notes?: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    referral?: Referral | null;
 }
 
 export interface Session {

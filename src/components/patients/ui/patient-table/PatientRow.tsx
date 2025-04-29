@@ -41,6 +41,10 @@ const PatientRow: React.FC<PatientRowProps> = ({
     onSelect,
     isSelected,
 }) => {
+
+    const profile = patient.user?.profile;
+    const user = patient.user;
+    
     // Format appointments based on the patient's last and next appointment logic
     const getLastAppointment = (
         appointments: Patient["appointments"] | undefined
@@ -107,22 +111,22 @@ const PatientRow: React.FC<PatientRowProps> = ({
                         />
                         <div className="flex flex-col">
                             <p className="font-semibold capitalize">
-                                {patient.name}
+                                {profile?.firstName} {profile?.lastName}
                             </p>
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger>
                                         <p className="text-sm text-primary truncate max-w-52 sm:max-w-[250px]">
-                                            {patient.email.length > 13
-                                                ? `${patient.email.slice(
+                                            {user?.email?.length > 13
+                                                ? `${user?.email?.slice(
                                                       0,
                                                       13
                                                   )}...`
-                                                : patient.email}
+                                                : user?.email}
                                         </p>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        <p>{patient.email}</p>
+                                        <p>{user?.email}</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
@@ -133,7 +137,7 @@ const PatientRow: React.FC<PatientRowProps> = ({
 
             {/* Phone Number Column */}
             <td className="text-center w-[15%] p-2 whitespace-nowrap">
-                {patient.phoneNo}
+                {profile?.phoneNo || "N/A"}
             </td>
 
             {/* Registration Number Column */}

@@ -33,31 +33,62 @@ export async function fetchServices(
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
+            hospitalId: session.user.hospitalId ?? null,
         };
     }
 
     const { role, hospitalId } = user;
 
     try {
-        // Use direct conditional filtering in the `where` clause
-        return await prisma.service.findMany({
-            where: {
-                departments: {
-                    some: {
-                        departmentId: selectedDepartmentId,
-                        department:
-                            role !== "SUPER_ADMIN" && hospitalId
-                                ? {
-                                      hospitals: {
-                                          some: { hospitalId },
-                                      },
-                                  }
-                                : undefined,
+        let whereClause: any = {};
+
+        // Define the filter clause based on the user role
+        switch (role) {
+            case "SUPER_ADMIN":
+                // No filtering for SUPER_ADMIN, see all services
+                whereClause = {
+                    departments: {
+                        some: {
+                            departmentId: selectedDepartmentId,
+                        },
                     },
-                },
+                };
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (hospitalId === null) {
+                    throw new Error(`${role}s must have an associated hospital ID.`);
+                }
+                // Filter by hospitalId for other roles
+                whereClause = {
+                    departments: {
+                        some: {
+                            departmentId: selectedDepartmentId,
+                            department: {
+                                hospitals: {
+                                    some: { hospitalId },
+                                },
+                            },
+                        },
+                    },
+                };
+                break;
+
+            default:
+                throw new Error("Invalid role provided.");
+        }
+
+        // Fetch services based on the filter criteria
+        return await prisma.service.findMany({
+            where: whereClause,
+            select: {
+                serviceId: true,
+                serviceName: true,
+                type: true,
             },
-            select: { serviceId: true, serviceName: true },
         });
     } catch (error) {
         const errorMessage = getErrorMessage(error);
@@ -92,26 +123,62 @@ export async function filteredServices(
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
+            hospitalId: session.user.hospitalId ?? null,
         };
     }
 
+    const { role, hospitalId } = user;
+
     try {
-        // Directly filter based on department and hospital
-        return await prisma.service.findMany({
-            where: {
-                departments: {
-                    some: {
-                        departmentId: selectedDepartmentId,
-                        department: {
-                            hospitals: {
-                                some: { hospitalId: currentHospitalId },
+        let whereClause: any = {};
+
+        // Define the filter clause based on the user role
+        switch (role) {
+            case "SUPER_ADMIN":
+                // No filtering for SUPER_ADMIN, see all services
+                whereClause = {
+                    departments: {
+                        some: {
+                            departmentId: selectedDepartmentId,
+                        },
+                    },
+                };
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (hospitalId === null) {
+                    throw new Error(`${role}s must have an associated hospital ID.`);
+                }
+                // Filter by hospitalId for other roles
+                whereClause = {
+                    departments: {
+                        some: {
+                            departmentId: selectedDepartmentId,
+                            department: {
+                                hospitals: {
+                                    some: { hospitalId: currentHospitalId },
+                                },
                             },
                         },
                     },
-                },
+                };
+                break;
+
+            default:
+                throw new Error("Invalid role provided.");
+        }
+
+        // Fetch services based on the filter criteria
+        return await prisma.service.findMany({
+            where: whereClause,
+            select: {
+                serviceId: true,
+                serviceName: true,
+                type: true,
             },
-            select: { serviceId: true, serviceName: true },
         });
     } catch (error) {
         const errorMessage = getErrorMessage(error);
@@ -140,7 +207,7 @@ export async function fetchHospitalServices(user?: {
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
+            hospitalId: session.user.hospitalId ?? null,
         };
     }
 
@@ -150,12 +217,12 @@ export async function fetchHospitalServices(user?: {
         let appointmentServices: { service: { serviceName: string }; appointmentId: string }[] = [];
         let totalAppointments = 0;
 
-        if (role === Role.SUPER_ADMIN) {
+        if (role === "SUPER_ADMIN") {
             // Fetch all appointments for health-related services
             appointmentServices = await prisma.appointmentService.findMany({
                 where: {
                     service: {
-                        type: "HEALTH",
+                        type: "MEDICAL",
                     },
                     appointment: hospitalId ? { hospitalId } : undefined,
                 },
@@ -170,7 +237,7 @@ export async function fetchHospitalServices(user?: {
             totalAppointments = await prisma.appointmentService.count({
                 where: {
                     service: {
-                        type: "HEALTH",
+                        type: "MEDICAL",
                     },
                     appointment: hospitalId ? { hospitalId } : undefined,
                 },
@@ -183,7 +250,7 @@ export async function fetchHospitalServices(user?: {
                         hospitalId,
                     },
                     service: {
-                        type: "HEALTH",
+                        type: "MEDICAL",
                     },
                 },
                 select: {
@@ -200,7 +267,7 @@ export async function fetchHospitalServices(user?: {
                         hospitalId,
                     },
                     service: {
-                        type: "HEALTH",
+                        type: "MEDICAL",
                     },
                 },
             });

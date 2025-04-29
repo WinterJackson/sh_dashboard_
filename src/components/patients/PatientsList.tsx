@@ -125,10 +125,16 @@ export default function PatientsList({
 
         if (!patientToDelete) return;
 
+        const profile = patientToDelete.user?.profile;
+        const user = patientToDelete.user;
+    
+        const fullName =
+            `${profile?.firstName ?? ""} ${profile?.lastName ?? ""}`.trim();
+
         // Open confirmation modal for single delete
         setModalConfig({
             title: "Delete Patient",
-            message: `Are you sure you want to delete patient "${patientToDelete.name}" (ID: ${patientToDelete.patientId})? This action cannot be undone.`,
+            message: `Are you sure you want to delete patient "${fullName}" (ID: ${patientToDelete.patientId})? This action cannot be undone.`,
             onConfirm: () => {
                 deletePatients(
                     {
@@ -149,7 +155,7 @@ export default function PatientsList({
                             setShowDeleteSuccess(true);
                             setShowDeleteError(false);
                             setDeletedPatientDetails({
-                                name: patientToDelete.name,
+                                name: fullName,
                                 patientId: patientToDelete.patientId,
                             });
                         },
@@ -165,18 +171,29 @@ export default function PatientsList({
     const searchFilteredPatients = useMemo(() => {
         const term = searchTerm.toLowerCase();
         return filteredPatients.filter((patient) => {
-            const formattedDateOfBirth = patient.dateOfBirth
-                ? format(new Date(patient.dateOfBirth), "MM/dd/yyyy")
+            const profile = patient.user?.profile;
+            const user = patient.user;
+    
+            const fullName =
+                `${profile?.firstName ?? ""} ${profile?.lastName ?? ""}`.toLowerCase();
+    
+            // Format date of birth
+            const formattedDateOfBirth = profile?.dateOfBirth
+                ? format(new Date(profile.dateOfBirth), "MM/dd/yyyy")
                 : "";
+    
+            // Gender match logic
             const genderMatch =
                 term === "other"
-                    ? !["male", "female"].includes(patient.gender.toLowerCase())
-                    : patient.gender.toLowerCase() === term;
-
+                    ? !["male", "female"].includes(
+                          profile?.gender?.toLowerCase() || ""
+                      )
+                    : profile?.gender?.toLowerCase() === term;
+    
             return (
-                patient.name.toLowerCase().includes(term) ||
-                patient.email.toLowerCase().includes(term) ||
-                patient.phoneNo.replace(/\s+/g, "").includes(term) ||
+                fullName.includes(term) ||
+                user?.email?.toLowerCase().includes(term) ||
+                (profile?.phoneNo || "").replace(/\s+/g, "").includes(term) ||
                 patient.patientId.toString().includes(term) ||
                 formattedDateOfBirth.includes(term) ||
                 genderMatch

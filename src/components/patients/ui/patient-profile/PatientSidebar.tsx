@@ -14,26 +14,31 @@ export default function PatientSidebar({ patient }: { patient: Patient }) {
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+    const profile = patient.user?.profile;
+    const user = patient.user;
+
     return (
         <div className="bg-white shadow-md rounded-[10px] p-4 w-[300px]">
             <div className="flex items-center bg-black/5 py-2 px-1 rounded-[10px]">
                 <div className="w-1/2 p-2">
-                    <Image
-                        src={patient.imageUrl || pp}
-                        alt={`${patient.name}'s profile`}
+                <Image
+                        src={profile?.imageUrl || pp}
+                        alt={`${profile?.firstName} ${profile?.lastName}'s profile`}
                         width={100}
                         height={100}
                         className="rounded-full border-2"
                     />
                 </div>
                 <div className="flex flex-col gap-1 w-1/2 p-2">
-                    <h2 className="text-base font-semibold">{patient.name}</h2>
+                    <h2 className="text-base font-semibold">
+                        {profile?.firstName} {profile?.lastName}
+                    </h2>
                     <p className="text-gray-600 text-sm">
                         Reg: {patient.patientId}
                     </p>
-                    <p className="text-gray-600 text-sm">{patient.gender}</p>
+                    <p className="text-gray-600 text-sm">{profile?.gender || "N/A"}</p>
                     <p className="text-gray-600 text-sm">
-                        {calculateAge(patient.dateOfBirth)} Years
+                        {profile?.dateOfBirth ? calculateAge(profile.dateOfBirth) : "N/A"} Years
                     </p>
                     <p className="text-gray-600 text-sm">
                         Date Joined: {formatDate(patient.createdAt)}
@@ -56,13 +61,13 @@ export default function PatientSidebar({ patient }: { patient: Patient }) {
                     </p>
                     <p className="text-[15px]">
                         <strong>Home Address:</strong>{" "}
-                        {patient.homeAddress || "N/A"}
+                        {profile?.address || "N/A"}
                     </p>
                     <p className="text-[15px]">
-                        <strong>Phone:</strong> {patient.phoneNo}
+                        <strong>Phone:</strong> {profile?.phoneNo || "N/A"}
                     </p>
                     <p className="text-[15px]">
-                        <strong>Email:</strong> {patient.email}
+                        <strong>Email:</strong> {user?.email || "N/A"}
                     </p>
                 </div>
             </div>

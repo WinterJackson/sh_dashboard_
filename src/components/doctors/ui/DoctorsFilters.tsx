@@ -66,7 +66,7 @@ const DoctorsFilters: React.FC<DoctorsFiltersProps> = ({
                   dateJoined.toDateString()
                 : true;
             const matchesHospital = hospital
-                ? doctor.hospital.name === hospital
+                ? doctor.hospital.hospitalName === hospital
                 : true;
 
             return (
@@ -204,13 +204,13 @@ const DoctorsFilters: React.FC<DoctorsFiltersProps> = ({
                                                                 (prev) => ({
                                                                     ...prev,
                                                                     hospital:
-                                                                        hospital.name,
+                                                                        hospital.hospitalName,
                                                                 })
                                                             )
                                                         }
                                                         className="rounded-[5px]"
                                                     >
-                                                        {hospital.name}
+                                                        {hospital.hospitalName}
                                                     </DropdownMenuItem>
                                                 ))
                                             ) : (

@@ -1,34 +1,33 @@
-// File: src/components/appointments/RescheduleDialog.tsx
+// src/components/appointments/RescheduleDialog.tsx
 
 "use client";
 
-import React, { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
-    DialogTrigger,
     DialogContent,
-    DialogTitle,
     DialogDescription,
-    DialogClose,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { IconButton } from "@mui/material";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import { useFetchHospitals } from "@/hooks/useFetchHospitals";
-import { useFetchOnlineDoctors } from "@/hooks/useFetchOnlineDoctors";
 import { useSessionData } from "@/hooks/useSessionData";
-import { Appointment, Doctor, Hospital, Role } from "@/lib/definitions";
+import { useFetchDoctorsByHospital } from "@/hooks/useFetchDoctorsByHospital";
+import { useFetchHospitals } from "@/hooks/useFetchHospitals";
 import { useUpdateAppointmentStatusReschedule } from "@/hooks/useUpdateAppointmentStatusReschedule";
+import { useFetchAppointmentById } from "@/hooks/useFetchAppointmentById";
+import { Doctor, Hospital, Role } from "@/lib/definitions";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import { IconButton } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { Calendar } from "../ui/calendar";
 
 interface RescheduleDialogProps {
     appointmentId: string;
     onClose: () => void;
     handleActionChange: (appointmentId: string, action: string) => void;
-    updateFilteredAppointments: (updatedAppointment: Appointment ) => void;
+    updateFilteredAppointments: (updatedAppointment: any) => void;
 }
 
 const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
@@ -43,63 +42,96 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
         control,
         setValue,
         formState: { errors },
-    } = useForm({
-        mode: "onBlur",
-    });
-
+    } = useForm({ mode: "onBlur" });
     const [saved, setSaved] = useState<boolean>(false);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(
         undefined
     );
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-    // const [doctors, setDoctors] = useState<Doctor[]>([]);
-
+    const [doctors, setDoctors] = useState<Doctor[]>([]);
     const sessionData = useSessionData();
-    const userRole = sessionData?.user?.role as Role;
+    const role = sessionData?.user?.role as Role;
     const hospitalId = sessionData?.user?.hospitalId;
     const userId = sessionData?.user?.id;
 
-    // Use the useFetchHospitals hook
-    const { data: hospitals } = useFetchHospitals({
-        role: userRole,
-        hospitalId: hospitalId ?? null,
-        userId: userId ?? null,
-    });
+    const { data: hospitals, isLoading: isHospitalsLoading } =
+        useFetchHospitals({
+            role,
+            hospitalId: hospitalId ?? null,
+            userId: userId ?? null,
+        });
 
-    // Use the useFetchOnlineDoctors hook
-    const { data: doctors } = useFetchOnlineDoctors({
-        role: userRole,
-        hospitalId: hospitalId ?? null,
-        userId: userId ?? null,
-    });
+    const [selectedHospitalId, setSelectedHospitalId] = useState<number | null>(
+        null
+    );
 
-    const handleDoctorChange = async (
-        event: React.ChangeEvent<HTMLSelectElement>
-    ) => {
-        const doctorId = parseInt(event.target.value, 10);
+    // Use the useFetchAppointmentById hook to fetch appointment details
+    const { data: appointmentDetails, isLoading: isAppointmentLoading } =
+        useFetchAppointmentById(appointmentId, {
+            role: sessionData?.user?.role as Role,
+            hospitalId: sessionData?.user?.hospitalId ?? null,
+            userId: sessionData?.user?.id ?? null,
+        });
 
-        if (userRole === "SUPER_ADMIN" && doctorId) {
-            try {
-                const selectedDoctor = doctors?.find(
-                    (doctor: { doctorId: number }) =>
-                        doctor.doctorId === doctorId
+    // Loading states
+    const [isHospitalLoading, setIsHospitalLoading] = useState<boolean>(true);
+    const [isDoctorLoading, setIsDoctorLoading] = useState<boolean>(true);
+
+    useEffect(() => {
+        if (!isAppointmentLoading && appointmentDetails) {
+            // Pre-fill hospital and doctor fields for SUPER_ADMIN
+            if (role === "SUPER_ADMIN") {
+                setSelectedHospitalId(appointmentDetails.hospitalId); // Pre-select hospital
+                setValue(
+                    "hospitalId",
+                    appointmentDetails.hospitalId.toString()
                 );
-
-                if (selectedDoctor) {
-                    setValue("hospitalId", selectedDoctor.hospitalId);
-                } else {
-                    setValue("hospitalId", "");
-                }
-            } catch (error) {
-                console.error(
-                    "Failed to fetch and set doctor hospital:",
-                    error
-                );
+                setValue("doctorId", appointmentDetails.doctorId.toString());
             }
+            setIsHospitalLoading(false);
+            setIsDoctorLoading(false);
+        } else if (role === "ADMIN" || role === "NURSE") {
+            // Automatically set hospital ID for ADMIN/NURSE users
+            if (hospitalId !== null && hospitalId !== undefined) {
+                setValue("hospitalId", hospitalId);
+                fetchDoctors(hospitalId);
+            }
+        } else if (role === "DOCTOR") {
+            // No hospital or doctor dropdown for DOCTOR users
+            setValue("hospitalId", hospitalId);
+            setValue("doctorId", userId);
+        }
+    }, [
+        role,
+        hospitalId,
+        selectedHospitalId,
+        appointmentDetails,
+        isAppointmentLoading,
+        setValue,
+    ]);
+
+    const { data: fetchedDoctors } = useFetchDoctorsByHospital(
+        selectedHospitalId ?? hospitalId ?? -1, // Default to -1 if both are null/undefined
+        role,
+        {
+            role,
+            hospitalId: selectedHospitalId ?? hospitalId ?? null, // Default to null if both are null/undefined
+            userId: userId ?? null,
+        }
+    );
+
+    useEffect(() => {
+        if (fetchedDoctors) {
+            setDoctors(fetchedDoctors);
+        }
+    }, [fetchedDoctors]);
+
+    const fetchDoctors = (hospitalId: number) => {
+        if (hospitalId) {
+            setSelectedHospitalId(hospitalId);
         }
     };
 
-    // Mutation hook for updating the appointment
     const updateAppointment = useUpdateAppointmentStatusReschedule();
 
     const onSubmit = (data: any) => {
@@ -107,7 +139,6 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
             console.error("Date is required.");
             return;
         }
-
         if (!data.timeFrom || !data.timeTo) {
             console.error("Both timeFrom and timeTo are required.");
             return;
@@ -117,25 +148,40 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
             date: selectedDate.toISOString(),
             timeFrom: data.timeFrom,
             timeTo: data.timeTo,
-            doctorId: parseInt(data.doctorId, 10),
+            doctorId:
+                role === "DOCTOR"
+                    ? parseInt(userId!, 10)
+                    : parseInt(data.doctorId, 10),
             hospitalId:
-                userRole === "SUPER_ADMIN"
+                role === "SUPER_ADMIN"
                     ? parseInt(data.hospitalId, 10)
                     : hospitalId!,
             type: data.type,
         };
 
         updateAppointment.mutate(
-            { appointmentId, updateData: requestBody },
+            {
+                appointmentId,
+                updateData: requestBody,
+                user: sessionData?.user
+                    ? {
+                          role: sessionData.user.role as Role,
+                          hospitalId: sessionData.user.hospitalId,
+                          userId: sessionData.user.id,
+                      }
+                    : undefined,
+            },
             {
                 onSuccess: (updatedAppointment) => {
                     if (updatedAppointment) {
-                        updateFilteredAppointments(updatedAppointment);
                         handleActionChange(appointmentId, "Rescheduled");
+                        updateFilteredAppointments(updatedAppointment);
+                        setSaved(true);
                         onClose();
-                    } else {
-                        console.error("Updated appointment is null.");
                     }
+                },
+                onError: (error) => {
+                    console.error(`Failed to reschedule appointment:`, error);
                 },
             }
         );
@@ -146,22 +192,18 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
         setIsCalendarOpen(false);
     };
 
-    const handleClose = () => {
-        onClose();
-    };
+    if (role === "STAFF") {
+        return null; // STAFF users cannot reschedule appointments
+    }
 
     return (
-        <Dialog open={true} onOpenChange={handleClose}>
-            <DialogTrigger asChild>
-                <button className="hidden"></button>
-            </DialogTrigger>
+        <Dialog open={true} onOpenChange={onClose}>
             <DialogContent>
                 <DialogTitle>Reschedule Appointment</DialogTitle>
                 <DialogDescription className="bg-[#EFEFEF] p-2">
                     Select a new date and time for the appointment and other
                     necessary details.
                 </DialogDescription>
-
                 <details
                     className="text-primary cursor-pointer pl-1 text-sm bg-primary/10 py-1 rounded-[5px]"
                     title="Click to expand and read instructions."
@@ -194,9 +236,22 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                         </ol>
                     </div>
                 </details>
-
                 <form className="p-1" onSubmit={handleSubmit(onSubmit)}>
                     <div className="grid gap-4">
+                        <div>
+                            <Label htmlFor="type">Appointment Type</Label>
+                            <select
+                                id="type"
+                                {...register("type", { required: true })}
+                                className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px]"
+                            >
+                                <option value="" disabled>
+                                    Select type
+                                </option>
+                                <option value="Virtual">Virtual</option>
+                                <option value="Walk In">Walk In</option>
+                            </select>
+                        </div>
                         <div>
                             <Label htmlFor="date">Date</Label>
                             <div className="flex items-center rounded-[5px] bg-[#EFEFEF]">
@@ -227,11 +282,6 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                     />
                                 </div>
                             )}
-                            {errors.date && (
-                                <p className="text-sm text-destructive">
-                                    Date is required.
-                                </p>
-                            )}
                         </div>
                         <div className="flex gap-2">
                             <div>
@@ -239,125 +289,105 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                 <Controller
                                     control={control}
                                     name="timeFrom"
-                                    rules={{
-                                        required: "Start time is required.",
-                                    }}
                                     render={({ field }) => (
-                                        <Input
+                                        <input
                                             type="time"
                                             {...field}
-                                            className="flex bg-[#EFEFEF] h-10  w-full border px-3 py-2 text-sm rounded-[5px]"
+                                            className="flex bg-[#EFEFEF] h-10 w-full border px-3 py-2 text-sm rounded-[5px]"
                                         />
                                     )}
                                 />
-                                {errors.timeFrom && (
-                                    <p className="text-sm text-destructive">
-                                        Start time is required
-                                    </p>
-                                )}
                             </div>
                             <div>
                                 <Label htmlFor="timeTo">To</Label>
                                 <Controller
                                     control={control}
                                     name="timeTo"
-                                    rules={{
-                                        required: "End time is required.",
-                                    }}
                                     render={({ field }) => (
-                                        <Input
+                                        <input
                                             type="time"
                                             {...field}
-                                            className="flex bg-[#EFEFEF] h-10  w-full border px-3 py-2 text-sm rounded-[5px]"
+                                            className="flex bg-[#EFEFEF] h-10 w-full border px-3 py-2 text-sm rounded-[5px]"
                                         />
                                     )}
                                 />
-                                {errors.timeTo && (
-                                    <p className="text-sm text-destructive">
-                                        End time is required
-                                    </p>
-                                )}
                             </div>
                         </div>
-                        <div>
-                            <Label htmlFor="doctorId">Doctor</Label>
-                            <select
-                                id="doctorId"
-                                {...register("doctorId", {
-                                    required: "Doctor is required.",
-                                })}
-                                className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px]"
-                                onChange={handleDoctorChange}
-                            >
-                                <option
-                                    value=""
-                                    className="bg-[#EFEFEF] text-gray-500"
-                                >
-                                    Select a doctor
-                                </option>
-                                {(doctors || []).map((doctor: Doctor) => (
-                                    <option
-                                        key={doctor.doctorId}
-                                        value={doctor.doctorId}
-                                        className="bg-white"
-                                    >
-                                        Dr. {doctor.user.username} -{" "}
-                                        {doctor.specialization?.name ||
-                                            "No Specialization"}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.doctorId && (
-                                <p className="text-sm text-destructive">
-                                    Doctor is required.
-                                </p>
-                            )}
-                        </div>
-                        {userRole === "SUPER_ADMIN" && (
+                        {role === "SUPER_ADMIN" && (
                             <div>
                                 <Label htmlFor="hospitalId">Hospital</Label>
                                 <select
                                     id="hospitalId"
                                     {...register("hospitalId", {
-                                        required: "Hospital is required.",
+                                        required: true,
+                                    })}
+                                    onChange={(e) =>
+                                        fetchDoctors(
+                                            parseInt(e.target.value, 10)
+                                        )
+                                    }
+                                    className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px]"
+                                >
+                                    <option value="" disabled>
+                                        Select a hospital
+                                    </option>
+                                    {(hospitals || []).map(
+                                        (hospital: Hospital) => (
+                                            <option
+                                                key={hospital.hospitalId}
+                                                value={hospital.hospitalId}
+                                                selected={
+                                                    appointmentDetails?.hospitalId ===
+                                                    hospital.hospitalId
+                                                }
+                                            >
+                                                {hospital.hospitalName}
+                                            </option>
+                                        )
+                                    )}
+                                </select>
+                                {isHospitalLoading && <p className="text-gray-500">Loading...</p>}
+                            </div>
+                        )}
+                        {["SUPER_ADMIN", "ADMIN", "NURSE"].includes(role) && (
+                            <div>
+                                <Label htmlFor="doctorId">Doctor</Label>
+                                <select
+                                    id="doctorId"
+                                    {...register("doctorId", {
+                                        required: true,
                                     })}
                                     className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px]"
                                 >
-                                    <option
-                                        value=""
-                                        className="bg-[#EFEFEF] text-gray-500"
-                                    >
-                                        Select a hospital
+                                    <option value="" disabled>
+                                        Select a doctor
                                     </option>
-                                    {hospitals?.map((hospital: Hospital) => (
+                                    {doctors.map((doc: Doctor) => (
                                         <option
-                                            key={hospital.hospitalId}
-                                            value={hospital.hospitalId}
-                                            className="bg-white"
+                                            key={doc.doctorId}
+                                            value={doc.doctorId}
                                         >
-                                            {hospital.name}
+                                            Dr. {doc.user?.profile?.firstName}{" "}
+                                            {doc.user?.profile?.lastName} -{" "}
+                                            {doc.specialization.name}
                                         </option>
                                     ))}
                                 </select>
-                                {errors.hospitalId && (
-                                    <p className="text-sm text-destructive">
-                                        Hospital is required.
-                                    </p>
-                                )}
+                                {isDoctorLoading && <p className="text-gray-500">Loading...</p>}
                             </div>
                         )}
-                    </div>
-                    <div className="mt-4 flex justify-end">
-                        <Button
-                            type="submit"
-                            disabled={saved}
-                            className="rounded-[10px]"
-                        >
-                            Save
-                        </Button>
+                        <div className="mt-4 flex justify-end">
+                            <Button type="submit" disabled={saved}>
+                                Save
+                            </Button>
+                        </div>
                     </div>
                 </form>
-                <DialogClose onClick={handleClose} />
+                {saved && (
+                    <div className="absolute bottom-7 bg-bluelight ml-7 p-2 rounded-[10px]">
+                        <p className="text-black">Saved Successfully!</p>
+                    </div>
+                )}{" "}
             </DialogContent>
         </Dialog>
     );

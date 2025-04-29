@@ -5,35 +5,43 @@ const prisma = require("../lib/prisma");
 const bcrypt = require("bcrypt");
 const {
     hospitals,
+    bedCapacityRecords,
+    beds,
+    specializations,
     departments,
+    departmentSpecializations,
     hospitalDepartments,
     services,
-    departmentServices,
+    hospitalServices,
     users,
     notifications,
     notificationSettings,
     profiles,
     superAdmins,
     admins,
-    patients,
-    medicalInformations,
     doctors,
     doctorLicenses,
     doctorReviews,
     nurses,
     staff,
-    beds,
+    patients,
+    conversations,
+    conversationParticipants,
+    messages,
+    medicalInformations,
     appointments,
+    appointmentNotes,
     payments,
     referrals,
-    doctorReferrals,
+    referralDocuments,
+    referralDoctors,
+    transportations,
     appointmentServices,
     serviceUsages,
     doctorEarnings,
     sessions,
     verificationTokens,
     roleConstraints,
-    specializations,
 } = require("../lib/placeholder-data");
 
 // Helper function to generate random dates
@@ -43,41 +51,70 @@ function randomPastDate(daysBack = 365) {
     return pastDate;
 }
 
-async function seedSpecializations() {
-    try {
-        await prisma.specialization.createMany({
-            data: specializations.map((spec) => ({
-                specializationId: spec.specializationId,
-                name: spec.name,
-            })),
-            skipDuplicates: true,
-        });
-        console.log(`Seeded specializations`);
-    } catch (error) {
-        console.error("Error seeding specializations:", error);
-        throw error;
-    }
-}
 
 async function seedHospitals() {
     try {
         await prisma.hospital.createMany({
             data: hospitals.map((hospital) => ({
                 hospitalId: hospital.hospitalId,
-                name: hospital.name,
+                hospitalName: hospital.hospitalName,
+                hospitalLink: hospital.hospitalLink,
                 phone: hospital.phone,
                 email: hospital.email,
-                country: hospital.country,
-                city: hospital.city,
+                kephLevel: hospital.kephLevel,
+                regulatoryBody: hospital.regulatoryBody,
+                hospitalType: hospital.hospitalType,
+                facilityType: hospital.facilityType,
+                nhifAccreditation: hospital.nhifAccreditation,
+                open24Hours: hospital.open24Hours,
+                openWeekends: hospital.openWeekends,
+                regulated: hospital.regulated,
+                regulationStatus: hospital.regulationStatus,
+                regulatingBody: hospital.regulatingBody,
+                registrationNumber: hospital.registrationNumber,
+                licenseNumber: hospital.licenseNumber,
+                category: hospital.category,
+                owner: hospital.owner,
+                county: hospital.county,
+                subCounty: hospital.subCounty,
+                ward: hospital.ward,
+                latitude: hospital.latitude,
+                longitude: hospital.longitude,
+                town: hospital.town,
+                streetAddress: hospital.streetAddress,
                 referralCode: hospital.referralCode,
+                description: hospital.description,
+                emergencyPhone: hospital.emergencyPhone,
+                emergencyEmail: hospital.emergencyEmail,
                 website: hospital.website,
                 logoUrl: hospital.logoUrl,
+                operatingHours: hospital.operatingHours,
+                nearestLandmark: hospital.nearestLandmark,
+                plotNumber: hospital.plotNumber,
             })),
             skipDuplicates: true,
         });
         console.log(`Seeded hospitals`);
     } catch (error) {
         console.error("Error seeding hospitals:", error);
+        throw error;
+    }
+}
+
+async function seedSpecializations() {
+    try {
+        const result = await prisma.specialization.createMany({
+            data: specializations.map((specialization) => ({
+                specializationId: specialization.specializationId,
+                name: specialization.name,
+                description: specialization.description,
+            })),
+            skipDuplicates: true,
+        });
+        const count = await prisma.specialization.count();
+        console.log(`Seeded specializations. Total in DB: ${count}`);
+    } catch (error) {
+        console.error("Error seeding specializations:", error);
         throw error;
     }
 }
@@ -89,6 +126,7 @@ async function seedDepartments() {
                 departmentId: department.departmentId,
                 name: department.name,
                 description: department.description,
+                type: department.type,
             })),
             skipDuplicates: true,
         });
@@ -99,16 +137,49 @@ async function seedDepartments() {
     }
 }
 
+async function seedDepartmentSpecializations() {
+    try {
+        const existingSpecializations = await prisma.specialization.findMany({
+            select: { specializationId: true },
+        });
+        const validSpecIds = new Set(existingSpecializations.map(s => s.specializationId));
+
+        const filtered = departmentSpecializations.filter(ds => validSpecIds.has(ds.specializationId));
+
+        await prisma.departmentSpecialization.createMany({
+            data: filtered.map((ds) => ({
+                departmentId: ds.departmentId,
+                specializationId: ds.specializationId,
+                createdAt: ds.createdAt || randomPastDate(),
+                updatedAt: ds.updatedAt || randomPastDate(),
+            })),
+            skipDuplicates: true,
+        });
+
+        const count = await prisma.departmentSpecialization.count();
+        console.log(`Seeded department specializations. Total in DB: ${count}`);
+    } catch (error) {
+        console.error("Error seeding department specializations:", error);
+        throw error;
+    }
+}
+
 async function seedHospitalDepartments() {
     try {
         await prisma.hospitalDepartment.createMany({
             data: hospitalDepartments.map((hospitalDepartment) => ({
                 hospitalId: hospitalDepartment.hospitalId,
                 departmentId: hospitalDepartment.departmentId,
+                headOfDepartment: hospitalDepartment.headOfDepartment,
+                contactEmail: hospitalDepartment.contactEmail,
+                contactPhone: hospitalDepartment.contactPhone,
+                location: hospitalDepartment.location,
+                establishedYear: hospitalDepartment.establishedYear,
+                description: hospitalDepartment.description,
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded hospital departments`);
+        console.log("Seeded hospital departments");
     } catch (error) {
         console.error("Error seeding hospital departments:", error);
         throw error;
@@ -132,23 +203,52 @@ async function seedServices() {
     }
 }
 
-async function seedDepartmentServices() {
+async function seedHospitalServices() {
     try {
-        await prisma.departmentService.createMany({
-            data: departmentServices.map((departmentService) => ({
-                departmentId: departmentService.departmentId,
-                serviceId: departmentService.serviceId,
-                price: departmentService.price,
+        await prisma.hospitalService.createMany({
+            data: hospitalServices.map((hospitalService) => ({
+                hospitalId: hospitalService.hospitalId,
+                serviceId: hospitalService.serviceId,
+                departmentId: hospitalService.departmentId,
+                maxAppointmentsPerDay:
+                    hospitalService.maxAppointmentsPerDay || null,
+                requiresReferral: hospitalService.requiresReferral || false,
+                isWalkInAllowed: hospitalService.isWalkInAllowed || true,
+                basePrice: hospitalService.basePrice || null,
+                discount: hospitalService.discount || null,
+                equipmentRequired: hospitalService.equipmentRequired || null,
+                minStaffRequired: hospitalService.minStaffRequired || null,
+                duration: hospitalService.duration || null,
+                createdAt: hospitalService.createdAt || randomPastDate(),
+                updatedAt: hospitalService.updatedAt || randomPastDate(),
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded department services`);
+        console.log("Seeded hospital services");
     } catch (error) {
-        const truncatedData =
-            JSON.stringify(error, null, 2).slice(0, 1000) + "...";
+        console.error("Error seeding hospital services:", error);
+        throw error;
+    }
+}
 
-        console.error("Error seeding department services:", truncatedData);
-        throw truncatedData;
+async function seedAppointmentServices() {
+    try {
+        await prisma.appointmentService.createMany({
+            data: appointmentServices.map((appointmentService) => ({
+                appointmentId: appointmentService.appointmentId,
+                hospitalId: appointmentService.hospitalId,
+                patientId: appointmentService.patientId,
+                serviceId: appointmentService.serviceId,
+                departmentId: appointmentService.departmentId || null, // Optional field
+                createdAt: appointmentService.createdAt || randomPastDate(),
+                updatedAt: appointmentService.updatedAt || randomPastDate(),
+            })),
+            skipDuplicates: true,
+        });
+        console.log("Seeded appointment services");
+    } catch (error) {
+        console.error("Error seeding appointment services:", error);
+        throw error;
     }
 }
 
@@ -162,14 +262,16 @@ async function seedUsers() {
                     email: user.email,
                     password: await bcrypt.hash(user.password, 10),
                     role: user.role,
-                    hospitalId: user.hospitalId,
+                    hospitalId: user.hospitalId || null,
                     isActive: user.isActive,
-                    lastLogin: user.lastLogin,
-                    mustResetPassword: false,
-                    resetToken: null,
-                    resetTokenExpiry: null,
-                    createdAt: randomPastDate(730),
-                    updatedAt: randomPastDate(365),
+                    lastLogin: user.lastLogin || null,
+                    mustResetPassword: user.mustResetPassword || false,
+                    resetToken: user.resetToken || null,
+                    resetTokenExpiry: user.resetTokenExpiry || null,
+                    twoFactorEnabled: user.twoFactorEnabled || false,
+                    autoLogoutTimeout: user.autoLogoutTimeout || 30,
+                    createdAt: user.createdAt || randomPastDate(730),
+                    updatedAt: user.updatedAt || randomPastDate(365),
                 }))
             ),
             skipDuplicates: true,
@@ -183,20 +285,30 @@ async function seedUsers() {
 
 async function seedNotifications() {
     try {
+        const existingUsers = await prisma.user.findMany({
+            select: { userId: true },
+        });
+        const validUserIds = new Set(existingUsers.map(u => u.userId));
+
+        const filtered = notifications.filter(n => validUserIds.has(n.userId));
+
         await prisma.notification.createMany({
-            data: notifications.map((notification) => ({
+            data: filtered.map((notification) => ({
                 notificationId: notification.notificationId,
                 userId: notification.userId,
                 type: notification.type,
                 message: notification.message,
-                isRead: notification.isRead,
-                metadata: notification.metadata,
-                createdAt: notification.createdAt,
-                updatedAt: notification.updatedAt,
+                isRead: notification.isRead || false,
+                metadata: notification.metadata || {},
+                actionUrl: notification.actionUrl || null,
+                createdAt: notification.createdAt || randomPastDate(365),
+                updatedAt: notification.updatedAt || randomPastDate(180),
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded notifications`);
+
+        const count = await prisma.notification.count();
+        console.log(`Seeded notifications. Total in DB: ${count}`);
     } catch (error) {
         console.error("Error seeding notifications:", error);
         throw error;
@@ -205,8 +317,15 @@ async function seedNotifications() {
 
 async function seedNotificationSettings() {
     try {
+        const existingUsers = await prisma.user.findMany({
+            select: { userId: true },
+        });
+        const validUserIds = new Set(existingUsers.map(u => u.userId));
+
+        const filtered = notificationSettings.filter(n => validUserIds.has(n.userId));
+
         await prisma.notificationSettings.createMany({
-            data: notificationSettings.map((settings) => ({
+            data: filtered.map((settings) => ({
                 notificationSettingsId: settings.notificationSettingsId,
                 userId: settings.userId,
                 appointmentAlerts: settings.appointmentAlerts,
@@ -217,7 +336,9 @@ async function seedNotificationSettings() {
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded notification settings`);
+
+        const count = await prisma.notificationSettings.count();
+        console.log(`Seeded notification settings. Total in DB: ${count}`);
     } catch (error) {
         console.error("Error seeding notification settings:", error);
         throw error;
@@ -226,8 +347,15 @@ async function seedNotificationSettings() {
 
 async function seedProfiles() {
     try {
+        const existingUsers = await prisma.user.findMany({
+            select: { userId: true },
+        });
+        const validUserIds = new Set(existingUsers.map(u => u.userId));
+
+        const filtered = profiles.filter(p => validUserIds.has(p.userId));
+
         await prisma.profile.createMany({
-            data: profiles.map((profile) => ({
+            data: filtered.map((profile) => ({
                 profileId: profile.profileId,
                 userId: profile.userId,
                 firstName: profile.firstName,
@@ -236,8 +364,8 @@ async function seedProfiles() {
                 phoneNo: profile.phoneNo,
                 address: profile.address,
                 dateOfBirth: profile.dateOfBirth,
-                city: profile.city,
-                state: profile.state,
+                cityOrTown: profile.cityOrTown,
+                county: profile.county,
                 imageUrl: profile.imageUrl,
                 nextOfKin: profile.nextOfKin,
                 nextOfKinPhoneNo: profile.nextOfKinPhoneNo,
@@ -245,7 +373,9 @@ async function seedProfiles() {
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded profiles`);
+
+        const count = await prisma.profile.count();
+        console.log(`Seeded profiles. Total in DB: ${count}`);
     } catch (error) {
         console.error("Error seeding profiles:", error);
         throw error;
@@ -270,15 +400,24 @@ async function seedSuperAdmins() {
 
 async function seedAdmins() {
     try {
+        const existingUsers = await prisma.user.findMany({
+            select: { userId: true },
+        });
+        const validUserIds = new Set(existingUsers.map(u => u.userId));
+
+        const filtered = admins.filter(a => validUserIds.has(a.userId));
+
         await prisma.admin.createMany({
-            data: admins.map((admin) => ({
+            data: filtered.map((admin) => ({
                 adminId: admin.adminId,
                 userId: admin.userId,
                 hospitalId: admin.hospitalId,
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded admins`);
+
+        const count = await prisma.admin.count();
+        console.log(`Seeded admins. Total in DB: ${count}`);
     } catch (error) {
         console.error("Error seeding admins:", error);
         throw error;
@@ -287,53 +426,239 @@ async function seedAdmins() {
 
 async function seedPatients() {
     try {
+        const existingUsers = await prisma.user.findMany({
+            select: { userId: true },
+        });
+        const validUserIds = new Set(existingUsers.map(u => u.userId));
+
+        const filtered = patients.filter(p => validUserIds.has(p.userId));
+
         await prisma.patient.createMany({
-            data: patients.map((patient) => ({
+            data: filtered.map((patient) => ({
                 patientId: patient.patientId,
+                userId: patient.userId,
                 hospitalId: patient.hospitalId,
-                name: patient.name,
-                phoneNo: patient.phoneNo,
-                email: patient.email,
-                dateOfBirth: patient.dateOfBirth,
-                gender: patient.gender,
+                maritalStatus: patient.maritalStatus || null,
+                occupation: patient.occupation || null,
+                nextOfKinName: patient.nextOfKinName || null,
+                nextOfKinRelationship: patient.nextOfKinRelationship || null,
+                nextOfKinHomeAddress: patient.nextOfKinHomeAddress || null,
+                nextOfKinPhoneNo: patient.nextOfKinPhoneNo || null,
+                nextOfKinEmail: patient.nextOfKinEmail || null,
                 reasonForConsultation: patient.reasonForConsultation,
-                admissionDate: patient.admissionDate,
-                dischargeDate: patient.dischargeDate,
+                admissionDate: patient.admissionDate || null,
+                dischargeDate: patient.dischargeDate || null,
                 status: patient.status,
                 createdAt: randomPastDate(730),
                 updatedAt: randomPastDate(365),
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded patients`);
+
+        const count = await prisma.patient.count();
+        console.log(`Seeded patients. Total in DB: ${count}`);
     } catch (error) {
         console.error("Error seeding patients:", error);
         throw error;
     }
 }
 
-async function seedMedicalInformations() {
+async function seedConversations() {
     try {
-        await prisma.medicalInformation.createMany({
-            data: medicalInformations.map((medicalInformation) => ({
-                infoId: medicalInformation.infoId,
-                patientId: medicalInformation.patientId,
-                height: medicalInformation.height,
-                weight: medicalInformation.weight,
-                bloodGroup: medicalInformation.bloodGroup,
-                allergies: medicalInformation.allergies,
-                bmi: medicalInformation.bmi,
-                bodyType: medicalInformation.bodyType,
-                alcohol: medicalInformation.alcohol,
-                drugs: medicalInformation.drugs,
-                createdAt: medicalInformation.createdAt,
-                updatedAt: medicalInformation.updatedAt,
+        const validAppointmentIds = new Set(
+            (
+                await prisma.appointment.findMany({
+                    select: { appointmentId: true },
+                })
+            ).map((a) => a.appointmentId)
+        );
+
+        const validHospitalIds = new Set(
+            (
+                await prisma.hospital.findMany({ select: { hospitalId: true } })
+            ).map((h) => h.hospitalId)
+        );
+
+        const skipped = [];
+
+        const filtered = conversations.filter((c) => {
+            const isValid =
+                validAppointmentIds.has(c.appointmentId) &&
+                validHospitalIds.has(c.hospitalId);
+            if (!isValid) skipped.push(c);
+            return isValid;
+        });
+
+        await prisma.conversation.createMany({
+            data: filtered.map((c) => ({
+                conversationId: c.conversationId,
+                appointmentId: c.appointmentId,
+                hospitalId: c.hospitalId,
+                subject: c.subject || null,
+                status: c.status || "ACTIVE",
+                lastMessageAt: c.lastMessageAt || null,
+                createdAt: c.createdAt || randomPastDate(),
+                updatedAt: c.updatedAt || randomPastDate(),
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded MedicalInformation`);
+
+        console.log(
+            `Seeded conversations. Skipped ${skipped.length} invalid records.`
+        );
+        if (skipped.length > 0) {
+            console.log("Skipped conversation records:", skipped);
+        }
     } catch (error) {
-        console.error("Error seeding MedicalInformation:", error);
+        console.error("Error seeding conversations:", error);
+        throw error;
+    }
+}
+
+async function seedConversationParticipants() {
+    try {
+        const validUserIds = new Set(
+            (await prisma.user.findMany({ select: { userId: true } })).map(
+                (u) => u.userId
+            )
+        );
+
+        const validConversationIds = new Set(
+            (
+                await prisma.conversation.findMany({
+                    select: { conversationId: true },
+                })
+            ).map((c) => c.conversationId)
+        );
+
+        const skipped = [];
+
+        const filtered = conversationParticipants.filter((cp) => {
+            const isValid =
+                validUserIds.has(cp.userId) &&
+                validConversationIds.has(cp.conversationId);
+            if (!isValid) skipped.push(cp);
+            return isValid;
+        });
+
+        await prisma.conversationParticipant.createMany({
+            data: filtered.map((cp) => ({
+                conversationId: cp.conversationId,
+                hospitalId: cp.hospitalId,
+                appointmentId: cp.appointmentId,
+                userId: cp.userId,
+                joinedAt: cp.joinedAt || randomPastDate(),
+                participantRole: cp.participantRole || null,
+            })),
+            skipDuplicates: true,
+        });
+
+        console.log(
+            `Seeded conversation participants. Skipped ${skipped.length} invalid records.`
+        );
+        if (skipped.length > 0) {
+            console.log("Skipped conversation participant records:", skipped);
+        }
+    } catch (error) {
+        console.error("Error seeding conversation participants:", error);
+        throw error;
+    }
+}
+
+async function seedMessages() {
+    try {
+        const validConversationIds = new Set(
+            (
+                await prisma.conversation.findMany({
+                    select: { conversationId: true },
+                })
+            ).map((c) => c.conversationId)
+        );
+
+        const validUserIds = new Set(
+            (await prisma.user.findMany({ select: { userId: true } })).map(
+                (u) => u.userId
+            )
+        );
+
+        const validAppointmentIds = new Set(
+            (
+                await prisma.appointment.findMany({
+                    select: { appointmentId: true },
+                })
+            ).map((a) => a.appointmentId)
+        );
+
+        const skipped = [];
+
+        const filtered = messages.filter((m) => {
+            const isValid =
+                validConversationIds.has(m.conversationId) &&
+                validUserIds.has(m.senderId) &&
+                validAppointmentIds.has(m.appointmentId);
+
+            if (!isValid) skipped.push(m);
+            return isValid;
+        });
+
+        await prisma.message.createMany({
+            data: filtered.map((message) => ({
+                messageId: message.messageId,
+                conversationId: message.conversationId,
+                hospitalId: message.hospitalId,
+                appointmentId: message.appointmentId,
+                senderId: message.senderId,
+                content: message.content,
+                messageType: message.messageType || "TEXT",
+                isRead: message.isRead || false,
+                createdAt: message.createdAt || randomPastDate(),
+                updatedAt: message.updatedAt || randomPastDate(),
+            })),
+            skipDuplicates: true,
+        });
+
+        console.log(
+            `Seeded messages. Skipped ${skipped.length} invalid records.`
+        );
+        if (skipped.length > 0) {
+            console.log("Skipped message records:", skipped);
+        }
+    } catch (error) {
+        console.error("Error seeding messages:", error);
+        throw error;
+    }
+}
+
+async function seedMedicalInformations() {
+    try {
+        const existingPatients = await prisma.patient.findMany({
+            select: { patientId: true },
+        });
+        const validPatientIds = new Set(existingPatients.map(p => p.patientId));
+
+        const filtered = medicalInformations.filter(m => validPatientIds.has(m.patientId));
+
+        await prisma.medicalInformation.createMany({
+            data: filtered.map((m) => ({
+                medicalInformationId: m.medicalInformationId,
+                patientId: m.patientId,
+                bloodType: m.bloodType,
+                genotype: m.genotype,
+                underlyingConditions: m.underlyingConditions,
+                allergies: m.allergies,
+                currentMedications: m.currentMedications,
+                familyMedicalHistory: m.familyMedicalHistory,
+                surgicalHistory: m.surgicalHistory,
+                createdAt: m.createdAt || randomPastDate(730),
+                updatedAt: m.updatedAt || randomPastDate(365),
+            })),
+            skipDuplicates: true,
+        });
+
+        const count = await prisma.medicalInformation.count();
+        console.log(`Seeded medical informations. Total in DB: ${count}`);
+    } catch (error) {
+        console.error("Error seeding medical informations:", error);
         throw error;
     }
 }
@@ -346,23 +671,21 @@ async function seedDoctors() {
                 userId: doctor.userId,
                 hospitalId: doctor.hospitalId,
                 departmentId: doctor.departmentId,
-                serviceId: doctor.serviceId,
                 specializationId: doctor.specializationId,
-                qualifications: doctor.qualifications,
-                about: doctor.about,
-                status: doctor.status,
+                qualifications: doctor.qualifications || null,
+                status: doctor.status || "Offline",
                 phoneNo: doctor.phoneNo,
-                workingHours: doctor.workingHours,
-                averageRating: doctor.averageRating,
-                skills: doctor.skills || [],
-                bio: doctor.bio,
-                yearsOfExperience: doctor.yearsOfExperience,
-                createdAt: randomPastDate(730),
-                updatedAt: randomPastDate(365),
+                workingHours: doctor.workingHours || "Not specified",
+                averageRating: doctor.averageRating || 0.0,
+                skills: doctor.skills || null,
+                bio: doctor.bio || null,
+                yearsOfExperience: doctor.yearsOfExperience || null,
+                createdAt: doctor.createdAt || randomPastDate(730),
+                updatedAt: doctor.updatedAt || randomPastDate(365),
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded doctors`);
+        console.log("Seeded doctors");
     } catch (error) {
         console.error("Error seeding doctors:", error);
         throw error;
@@ -383,29 +706,39 @@ async function seedDoctorLicenses() {
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded licenses`);
+        console.log(`Seeded doctor licenses`);
     } catch (error) {
-        console.error("Error seeding licenses:", error);
+        console.error("Error seeding doctor licenses:", error);
         throw error;
     }
 }
 
 async function seedDoctorReviews() {
     try {
+        const existingPatients = await prisma.patient.findMany({
+            select: { patientId: true },
+        });
+        const validPatientIds = new Set(existingPatients.map(p => p.patientId));
+
+        const filtered = doctorReviews.filter(r => validPatientIds.has(r.patientId));
+
         await prisma.doctorReview.createMany({
-            data: doctorReviews.map((doctorReview) => ({
-                reviewId: doctorReview.reviewId,
-                doctorId: doctorReview.doctorId,
-                patientId: doctorReview.patientId,
-                rating: doctorReview.rating,
-                comment: doctorReview.comment,
-                createdAt: doctorReview.createdAt,
+            data: filtered.map((review) => ({
+                doctorReviewId: review.doctorReviewId,
+                doctorId: review.doctorId,
+                patientId: review.patientId,
+                rating: review.rating,
+                comment: review.comment,
+                createdAt: review.createdAt || randomPastDate(180),
+                updatedAt: review.updatedAt || randomPastDate(90),
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded reviews`);
+
+        const count = await prisma.doctorReview.count();
+        console.log(`Seeded doctor reviews. Total in DB: ${count}`);
     } catch (error) {
-        console.error("Error seeding reviews:", error);
+        console.error("Error seeding doctor reviews:", error);
         throw error;
     }
 }
@@ -419,10 +752,14 @@ async function seedNurses() {
                 hospitalId: nurse.hospitalId,
                 departmentId: nurse.departmentId,
                 specializationId: nurse.specializationId,
+                qualifications: nurse.qualifications || null,
                 status: nurse.status,
                 phoneNo: nurse.phoneNo,
                 workingHours: nurse.workingHours,
                 averageRating: nurse.averageRating,
+                skills: nurse.skills || null,
+                bio: nurse.bio || null,
+                yearsOfExperience: nurse.yearsOfExperience || null,
                 createdAt: randomPastDate(730),
                 updatedAt: randomPastDate(365),
             })),
@@ -437,8 +774,15 @@ async function seedNurses() {
 
 async function seedStaff() {
     try {
+        const existingSpecializations = await prisma.specialization.findMany({
+            select: { specializationId: true },
+        });
+        const validSpecializationIds = new Set(existingSpecializations.map(s => s.specializationId));
+
+        const filteredStaff = staff.filter(s => validSpecializationIds.has(s.specializationId));
+
         await prisma.staff.createMany({
-            data: staff.map((staff) => ({
+            data: filteredStaff.map((staff) => ({
                 staffId: staff.staffId,
                 userId: staff.userId,
                 hospitalId: staff.hospitalId,
@@ -448,32 +792,74 @@ async function seedStaff() {
                 phoneNo: staff.phoneNo,
                 workingHours: staff.workingHours,
                 averageRating: staff.averageRating,
+                skills: staff.skills || null,
+                bio: staff.bio || null,
+                yearsOfExperience: staff.yearsOfExperience || null,
                 createdAt: randomPastDate(730),
                 updatedAt: randomPastDate(365),
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded staff`);
+
+        const count = await prisma.staff.count();
+        console.log(`Seeded staff. Total in DB: ${count}`);
     } catch (error) {
         console.error("Error seeding staff:", error);
         throw error;
     }
 }
 
-async function seedBeds() {
+async function seedBedCapacities() {
     try {
-        await prisma.bed.createMany({
-            data: beds.map((bed) => ({
-                bedId: bed.bedId,
-                hospitalId: bed.hospitalId,
-                patientId: bed.patientId,
-                type: bed.type, // e.g., ICU, General
-                ward: bed.ward,
-                availability: bed.availability, // e.g., Occupied, Available
+        await prisma.bedCapacity.createMany({
+            data: bedCapacityRecords.map((bedCapacity) => ({
+                bedCapacityId: bedCapacity.bedCapacityId,
+                hospitalId: bedCapacity.hospitalId,
+                totalInpatientBeds: bedCapacity.totalInpatientBeds,
+                generalInpatientBeds: bedCapacity.generalInpatientBeds,
+                cots: bedCapacity.cots,
+                maternityBeds: bedCapacity.maternityBeds,
+                emergencyCasualtyBeds: bedCapacity.emergencyCasualtyBeds,
+                intensiveCareUnitBeds: bedCapacity.intensiveCareUnitBeds,
+                highDependencyUnitBeds: bedCapacity.highDependencyUnitBeds,
+                isolationBeds: bedCapacity.isolationBeds,
+                generalSurgicalTheatres: bedCapacity.generalSurgicalTheatres,
+                maternitySurgicalTheatres: bedCapacity.maternitySurgicalTheatres,
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded beds`);
+        console.log(`Seeded bed capacities`);
+    } catch (error) {
+        console.error("Error seeding bed capacities:", error);
+        throw error;
+    }
+}
+
+async function seedBeds() {
+    try {
+        const existingPatients = await prisma.patient.findMany({
+            select: { patientId: true },
+        });
+        const validPatientIds = new Set(existingPatients.map(p => p.patientId));
+
+        const filteredBeds = beds.filter(bed =>
+            bed.patientId === null || validPatientIds.has(bed.patientId)
+        );
+
+        await prisma.bed.createMany({
+            data: filteredBeds.map((bed) => ({
+                bedId: bed.bedId,
+                hospitalId: bed.hospitalId,
+                patientId: bed.patientId ?? null,
+                type: bed.type,
+                ward: bed.ward,
+                availability: bed.availability,
+            })),
+            skipDuplicates: true,
+        });
+
+        const count = await prisma.bed.count();
+        console.log(`Seeded beds. Total in DB: ${count}`);
     } catch (error) {
         console.error("Error seeding beds:", error);
         throw error;
@@ -482,8 +868,30 @@ async function seedBeds() {
 
 async function seedAppointments() {
     try {
+        const validPatientIds = new Set(
+            (await prisma.patient.findMany({ select: { patientId: true } }))
+                .map((p) => p.patientId)
+        );
+
+        const validDoctorIds = new Set(
+            (await prisma.doctor.findMany({ select: { doctorId: true } }))
+                .map((d) => d.doctorId)
+        );
+
+        const validHospitalIds = new Set(
+            (await prisma.hospital.findMany({ select: { hospitalId: true } }))
+                .map((h) => h.hospitalId)
+        );
+
+        const filtered = appointments.filter(
+            (a) =>
+                validPatientIds.has(a.patientId) &&
+                validDoctorIds.has(a.doctorId) &&
+                validHospitalIds.has(a.hospitalId)
+        );
+
         await prisma.appointment.createMany({
-            data: appointments.map((appointment) => ({
+            data: filtered.map((appointment) => ({
                 appointmentId: appointment.appointmentId,
                 doctorId: appointment.doctorId,
                 patientId: appointment.patientId,
@@ -491,7 +899,7 @@ async function seedAppointments() {
                 appointmentDate: appointment.appointmentDate,
                 type: appointment.type,
                 action: appointment.action,
-                status: appointment.status, // (Pending, Confirmed, Completed, Cancelled)
+                status: appointment.status,
                 consultationFee: appointment.consultationFee,
                 treatment: appointment.treatment,
                 isPaid: appointment.isPaid,
@@ -501,130 +909,437 @@ async function seedAppointments() {
                 commissionPercentage: appointment.commissionPercentage,
                 appointmentEndAt: appointment.appointmentEndAt,
                 appointmentReminderSent: appointment.appointmentReminderSent,
-                appointmentReminderSentLTF:
-                    appointment.appointmentReminderSentLTF,
-                doctorAppointmentNotes: appointment.doctorAppointmentNotes,
-                patientAppointmentNotes: appointment.patientAppointmentNotes,
+                appointmentReminderSentLTF: appointment.appointmentReminderSentLTF,
                 reasonForVisit: appointment.reasonForVisit,
+                rescheduledDate: appointment.rescheduledDate,
+                cancellationReason: appointment.cancellationReason,
+                pendingReason: appointment.pendingReason,
+                diagnosis: appointment.diagnosis,
+                prescription: appointment.prescription,
                 createdAt: randomPastDate(730),
                 updatedAt: randomPastDate(365),
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded appointments`);
+
+        const count = await prisma.appointment.count();
+        console.log(`Seeded appointments. Total in DB: ${count}`);
     } catch (error) {
         console.error("Error seeding appointments:", error.message);
         throw error;
     }
 }
 
+async function seedAppointmentNotes() {
+    try {
+        const validUserIds = new Set(
+            (await prisma.user.findMany({ select: { userId: true } }))
+                .map((u) => u.userId)
+        );
+
+        const validAppointmentIds = new Set(
+            (await prisma.appointment.findMany({ select: { appointmentId: true } }))
+                .map((a) => a.appointmentId)
+        );
+
+        const filtered = appointmentNotes.filter(
+            (n) =>
+                validUserIds.has(n.authorId) &&
+                validAppointmentIds.has(n.appointmentId)
+        );
+
+        await prisma.appointmentNote.createMany({
+            data: filtered.map((note) => ({
+                appointmentNoteId: note.appointmentNoteId,
+                appointmentId: note.appointmentId,
+                hospitalId: note.hospitalId,
+                authorId: note.authorId,
+                authorRole: note.authorRole,
+                content: note.content,
+                createdAt: note.createdAt || randomPastDate(),
+                updatedAt: note.updatedAt || randomPastDate(),
+            })),
+            skipDuplicates: true,
+        });
+
+        const count = await prisma.appointmentNote.count();
+        console.log(`Seeded appointment notes. Total in DB: ${count}`);
+    } catch (error) {
+        console.error("Error seeding appointment notes:", error.message);
+        throw error;
+    }
+}
+
 async function seedPayments() {
     try {
+        const validPatientIds = new Set(
+            (await prisma.patient.findMany({ select: { patientId: true } }))
+                .map((p) => p.patientId)
+        );
+
+        const validServiceIds = new Set(
+            (await prisma.service.findMany({ select: { serviceId: true } }))
+                .map((s) => s.serviceId)
+        );
+
+        const validHospitalIds = new Set(
+            (await prisma.hospital.findMany({ select: { hospitalId: true } }))
+                .map((h) => h.hospitalId)
+        );
+
+        const validAppointmentIds = new Set(
+            (await prisma.appointment.findMany({ select: { appointmentId: true } }))
+                .map((a) => a.appointmentId)
+        );
+
+        const skipped = [];
+
+        const filtered = payments.filter((p) => {
+            const isValid =
+                validPatientIds.has(p.patientId) &&
+                validServiceIds.has(p.serviceId) &&
+                validHospitalIds.has(p.hospitalId) &&
+                validAppointmentIds.has(p.appointmentId);
+            if (!isValid) skipped.push(p);
+            return isValid;
+        });
+
         await prisma.payment.createMany({
-            data: payments.map((payment) => ({
+            data: filtered.map((payment) => ({
                 paymentId: payment.paymentId,
                 patientId: payment.patientId,
                 serviceId: payment.serviceId,
                 hospitalId: payment.hospitalId,
                 appointmentId: payment.appointmentId,
                 amount: payment.amount,
-                createdAt: payment.createdAt,
-                updatedAt: payment.updatedAt,
+                createdAt: payment.createdAt || new Date(),
+                updatedAt: payment.updatedAt || new Date(),
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded payments`);
-    } catch (error) {
-        const truncatedData =
-            JSON.stringify(error.message, null, 2).slice(0, 500) + "...";
 
-        console.error("Error seeding payments:", truncatedData);
-        throw truncatedData;
+        console.log(`Seeded payments. Skipped ${skipped.length} invalid records.`);
+        if (skipped.length > 0) {
+            console.log("Skipped payments:", skipped);
+        }
+
+        const count = await prisma.payment.count();
+        console.log(`Seeded payments. Total in DB: ${count}`);
+    } catch (error) {
+        console.error("Error seeding payments:", error.message);
+        throw error;
     }
 }
 
 async function seedReferrals() {
     try {
+        const validPatientIds = new Set(
+            (await prisma.patient.findMany({ select: { patientId: true } }))
+                .map((p) => p.patientId)
+        );
+
+        const validDoctorIds = new Set(
+            (await prisma.doctor.findMany({ select: { doctorId: true } }))
+                .map((d) => d.doctorId)
+        );
+
+        const validHospitalIds = new Set(
+            (await prisma.hospital.findMany({ select: { hospitalId: true } }))
+                .map((h) => h.hospitalId)
+        );
+
+        const skipped = [];
+
+        const filtered = referrals.filter((r) => {
+            const isValid =
+                validPatientIds.has(r.patientId) &&
+                validDoctorIds.has(r.referringDoctorId) &&
+                validHospitalIds.has(r.originHospitalId) &&
+                validHospitalIds.has(r.destinationHospitalId);
+            if (!isValid) skipped.push(r);
+            return isValid;
+        });
+
         await prisma.referral.createMany({
-            data: referrals.map((referral) => ({
-                referralId: referral.referralId,
-                patientId: referral.patientId,
-                hospitalId: referral.hospitalId,
-                effectiveDate: referral.effectiveDate,
-                type: referral.type,
-                primaryCareProvider: referral.primaryCareProvider,
-                referralAddress: referral.referralAddress,
-                referralPhone: referral.referralPhone,
-                reasonForConsultation: referral.reasonForConsultation,
-                diagnosis: referral.diagnosis,
-                physicianName: referral.physicianName,
-                physicianDepartment: referral.physicianDepartment,
-                physicianSpecialty: referral.physicianSpecialty,
-                physicianEmail: referral.physicianEmail,
-                physicianPhoneNumber: referral.physicianPhoneNumber,
-                createdAt: randomPastDate(730),
-                updatedAt: randomPastDate(365),
+            data: filtered.map((ref) => ({
+                referralId: ref.referralId,
+                patientId: ref.patientId,
+                referringDoctorId: ref.referringDoctorId,
+                originHospitalId: ref.originHospitalId,
+                destinationHospitalId: ref.destinationHospitalId,
+                previousReferralId: ref.previousReferralId || null,
+                type: ref.type,
+                status: ref.status || "PENDING",
+                priority: ref.priority || "ROUTINE",
+                effectiveDate: ref.effectiveDate,
+                urgency: ref.urgency || null,
+                isTransportRequired: ref.isTransportRequired,
+                diagnosis: ref.diagnosis,
+                outcomeStatus: ref.outcomeStatus,
+                outcomeNotes: ref.outcomeNotes,
+                closedAt: ref.closedAt,
+                createdAt: ref.createdAt || randomPastDate(730),
+                updatedAt: ref.updatedAt || randomPastDate(365),
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded referrals`);
-    } catch (error) {
-        const truncatedData =
-            JSON.stringify(error.message, null, 2).slice(0, 500) + "...";
 
-        console.error("Error seeding payments:", truncatedData);
-        throw truncatedData;
+        console.log(`Seeded referrals. Skipped ${skipped.length} invalid records.`);
+        if (skipped.length > 0) {
+            console.log("Skipped referrals:", skipped);
+        }
+    } catch (error) {
+        console.error("Error seeding referrals:", error.message);
+        throw error;
+    }
+}
+
+async function seedReferralDocuments() {
+    try {
+        const validReferralIds = new Set(
+            (await prisma.referral.findMany({ select: { referralId: true } }))
+                .map((r) => r.referralId)
+        );
+
+        const validUserIds = new Set(
+            (await prisma.user.findMany({ select: { userId: true } }))
+                .map((u) => u.userId)
+        );
+
+        const skipped = [];
+
+        const filtered = referralDocuments.filter((d) => {
+            const isValid =
+                validReferralIds.has(d.referralId) &&
+                validUserIds.has(d.uploadedBy) &&
+                typeof d.fileData === 'string' &&
+                /^[A-Za-z0-9+/=]+$/.test(d.fileData);
+            if (!isValid) skipped.push(d);
+            return isValid;
+        });
+
+        await prisma.referralDocument.createMany({
+            data: filtered.map((doc) => ({
+                referralDocId: doc.referralDocId,
+                referralId: doc.referralId,
+                fileName: doc.fileName,
+                fileType: doc.fileType,
+                fileSize: doc.fileSize,
+                fileData: doc.fileData,
+                uploadedAt: doc.uploadedAt,
+                uploadedBy: doc.uploadedBy,
+                isEncrypted: doc.isEncrypted,
+                initializationVector: doc.initializationVector,
+            })),
+            skipDuplicates: true,
+        });
+
+        console.log(`Seeded referral documents. Skipped ${skipped.length} invalid records.`);
+        if (skipped.length > 0) {
+            console.log("Skipped documents:", skipped);
+        }
+    } catch (error) {
+        console.error("Error seeding referral documents:", error.message);
+        throw error;
     }
 }
 
 async function seedDoctorReferrals() {
     try {
-        await prisma.doctorReferral.createMany({
-            data: doctorReferrals.map((doctorReferral) => ({
-                doctorId: doctorReferral.doctorId,
-                referralId: doctorReferral.referralId,
-                patientId: doctorReferral.patientId,
+        const validReferralIds = new Set(
+            (await prisma.referral.findMany({ select: { referralId: true } }))
+                .map((r) => r.referralId)
+        );
+
+        const validDoctorIds = new Set(
+            (await prisma.doctor.findMany({ select: { doctorId: true } }))
+                .map((d) => d.doctorId)
+        );
+
+        const skipped = [];
+
+        const filtered = referralDoctors.filter((rd) => {
+            const isValid =
+                validReferralIds.has(rd.referralId) &&
+                validDoctorIds.has(rd.doctorId) &&
+                rd.role !== undefined &&
+                rd.assignedAt !== undefined &&
+                rd.note !== undefined;
+            if (!isValid) skipped.push(rd);
+            return isValid;
+        });
+
+        await prisma.referralDoctor.createMany({
+            data: filtered.map((ref) => ({
+                referralId: ref.referralId,
+                doctorId: ref.doctorId,
+                role: ref.role,
+                assignedAt: ref.assignedAt,
+                note: ref.note,
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded doctor referrals`);
+
+        console.log(`Seeded referral doctors. Skipped ${skipped.length} invalid records.`);
+        if (skipped.length > 0) {
+            console.log("Skipped referral doctor records:", skipped);
+        }
     } catch (error) {
-        console.error("Error seeding doctor referrals:", error);
+        console.error("Error seeding doctor referrals:", error.message);
+        throw error;
+    }
+}
+
+async function seedTransportations() {
+    try {
+        const validReferralIds = new Set(
+            (await prisma.referral.findMany({ select: { referralId: true } }))
+                .map((r) => r.referralId)
+        );
+
+        const skipped = [];
+
+        const filtered = transportations.filter((t) => {
+            const isValid =
+                validReferralIds.has(t.referralId) &&
+                t.pickupLocation !== undefined &&
+                t.status !== undefined;
+            if (!isValid) skipped.push(t);
+            return isValid;
+        });
+
+        await prisma.transportation.createMany({
+            data: filtered.map((t) => ({
+                transportationId: t.transportationId,
+                referralId: t.referralId,
+                pickupLocation: t.pickupLocation,
+                dropoffLocation: t.dropoffLocation || null,
+                pickupTime: t.pickedUpAt || null,
+                dropoffTime: t.droppedOffAt || null,
+                driverName: t.transporterName || "Unknown",
+                driverContact: t.transporterPhone || "N/A",
+                ambulanceRegNo: t.vehicleNumber || "N/A",
+                status: t.status,
+                notes: t.notes || null,
+                createdAt: t.createdAt,
+                updatedAt: t.updatedAt,
+            })),
+            skipDuplicates: true,
+        });
+
+        console.log(`Seeded transportations. Skipped ${skipped.length} invalid records.`);
+        if (skipped.length > 0) {
+            console.log("Skipped transportation records:", skipped);
+        }
+    } catch (error) {
+        console.error("Error seeding transportations:", error.message);
         throw error;
     }
 }
 
 async function seedAppointmentServices() {
     try {
+        const validAppointmentIds = new Set(
+            (await prisma.appointment.findMany({ select: { appointmentId: true } }))
+                .map((a) => a.appointmentId)
+        );
+
+        const validServiceIds = new Set(
+            (await prisma.service.findMany({ select: { serviceId: true } }))
+                .map((s) => s.serviceId)
+        );
+
+        const validPatientIds = new Set(
+            (await prisma.patient.findMany({ select: { patientId: true } }))
+                .map((p) => p.patientId)
+        );
+
+        const validHospitalIds = new Set(
+            (await prisma.hospital.findMany({ select: { hospitalId: true } }))
+                .map((h) => h.hospitalId)
+        );
+
+        const validDepartmentIds = new Set(
+            (await prisma.department.findMany({ select: { departmentId: true } }))
+                .map((d) => d.departmentId)
+        );
+
+        const skipped = [];
+
+        const filtered = appointmentServices.filter((s) => {
+            const isValid =
+                validAppointmentIds.has(s.appointmentId) &&
+                validServiceIds.has(s.serviceId) &&
+                validPatientIds.has(s.patientId) &&
+                validHospitalIds.has(s.hospitalId) &&
+                (s.departmentId === undefined || validDepartmentIds.has(s.departmentId));
+            if (!isValid) skipped.push(s);
+            return isValid;
+        });
+
         await prisma.appointmentService.createMany({
-            data: appointmentServices.map((appointmentService) => ({
-                appointmentId: appointmentService.appointmentId,
-                serviceId: appointmentService.serviceId,
-                patientId: appointmentService.patientId,
+            data: filtered.map((s) => ({
+                appointmentId: s.appointmentId,
+                hospitalId: s.hospitalId,
+                patientId: s.patientId,
+                serviceId: s.serviceId,
+                departmentId: s.departmentId || null,
+                createdAt: s.createdAt,
+                updatedAt: s.updatedAt,
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded appointment services`);
+
+        console.log(`Seeded appointment services. Skipped ${skipped.length} invalid records.`);
+        if (skipped.length > 0) {
+            console.log("Skipped appointmentService records:", skipped);
+        }
     } catch (error) {
-        console.error("Error seeding appointment services:", error);
+        console.error("Error seeding appointment services:", error.message);
         throw error;
     }
 }
 
 async function seedServiceUsages() {
     try {
+        const validPatientIds = new Set(
+            (await prisma.patient.findMany({ select: { patientId: true } }))
+                .map((p) => p.patientId)
+        );
+
+        const validServiceIds = new Set(
+            (await prisma.service.findMany({ select: { serviceId: true } }))
+                .map((s) => s.serviceId)
+        );
+
+        const skipped = [];
+
+        const filtered = serviceUsages.filter((su) => {
+            const isValid =
+                validPatientIds.has(su.patientId) &&
+                validServiceIds.has(su.serviceId);
+            if (!isValid) skipped.push(su);
+            return isValid;
+        });
+
         await prisma.serviceUsage.createMany({
-            data: serviceUsages.map((serviceUsage) => ({
-                usageId: serviceUsage.usageId,
-                serviceId: serviceUsage.serviceId,
-                patientId: serviceUsage.patientId,
-                date: serviceUsage.date,
+            data: filtered.map((su) => ({
+                usageId: su.usageId,
+                appointmentId: su.appointmentId,
+                serviceId: su.serviceId,
+                patientId: su.patientId,
+                createdAt: su.createdAt,
+                updatedAt: su.updatedAt,
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded service usages`);
+
+        console.log(`Seeded service usages. Skipped ${skipped.length} invalid records.`);
+        if (skipped.length > 0) {
+            console.log("Skipped service usage records:", skipped);
+        }
     } catch (error) {
-        console.error("Error seeding service usages:", error);
+        console.error("Error seeding service usages:", error.message);
         throw error;
     }
 }
@@ -650,20 +1365,36 @@ async function seedDoctorEarnings() {
 
 async function seedSessions() {
     try {
+        const validUserIds = new Set(
+            (await prisma.user.findMany({ select: { userId: true } })).map((u) => u.userId)
+        );
+
+        const skipped = [];
+
+        const filtered = sessions.filter((s) => {
+            const isValid = validUserIds.has(s.userId);
+            if (!isValid) skipped.push(s);
+            return isValid;
+        });
+
         await prisma.session.createMany({
-            data: sessions.map((session) => ({
+            data: filtered.map((session) => ({
                 sessionId: session.sessionId,
                 sessionToken: session.sessionToken,
                 userId: session.userId,
                 expires: session.expires,
-                createdAt: randomPastDate(730),
-                updatedAt: randomPastDate(365),
+                createdAt: session.createdAt || randomPastDate(730),
+                updatedAt: session.updatedAt || randomPastDate(365),
             })),
             skipDuplicates: true,
         });
-        console.log(`Seeded sessions`);
+
+        console.log(`Seeded sessions. Skipped ${skipped.length} invalid records.`);
+        if (skipped.length > 0) {
+            console.log("Skipped session records:", skipped);
+        }
     } catch (error) {
-        console.error("Error seeding sessions:", error);
+        console.error("Error seeding sessions:", error.message);
         throw error;
     }
 }
@@ -686,30 +1417,31 @@ async function seedVerificationTokens() {
     }
 }
 
-// async function seedRoleConstraints() {
-//     try {
-//         await prisma.roleConstraints.create({
-//             data: {
-//                 constraintId: roleConstraints[0].constraintId,
-//                 role: roleConstraints[0].role,
-//                 count: roleConstraints[0].count,
-//             },
-//         });
-//         console.log(`Seeded role constraint`);
-//     } catch (error) {
-//         console.error("Error seeding role constraint:", error);
-//         throw error;
-//     }
-// }
+async function seedRoleConstraints() {
+    try {
+        await prisma.roleConstraints.create({
+            data: {
+                constraintId: roleConstraints[0].constraintId,
+                role: roleConstraints[0].role,
+                count: roleConstraints[0].count,
+            },
+        });
+        console.log(`Seeded role constraint`);
+    } catch (error) {
+        console.error("Error seeding role constraint:", error);
+        throw error;
+    }
+}
 
 async function main() {
-    // Seed database
-    await seedSpecializations();
     await seedHospitals();
+    await seedSpecializations();
     await seedDepartments();
+    await seedDepartmentSpecializations();
     await seedHospitalDepartments();
     await seedServices();
-    await seedDepartmentServices();
+    await seedHospitalServices();
+    await seedBedCapacities();
     await seedUsers();
     await seedNotifications();
     await seedNotificationSettings();
@@ -725,15 +1457,21 @@ async function main() {
     await seedStaff();
     await seedBeds();
     await seedAppointments();
+    await seedAppointmentNotes();
     await seedPayments();
     await seedReferrals();
+    await seedReferralDocuments();
     await seedDoctorReferrals();
+    await seedTransportations();
     await seedAppointmentServices();
     await seedServiceUsages();
     await seedDoctorEarnings();
+    await seedConversations();
+    await seedConversationParticipants();
+    await seedMessages();
     await seedSessions();
     await seedVerificationTokens();
-    // await seedRoleConstraints();
+    await seedRoleConstraints();
 }
 
 main()

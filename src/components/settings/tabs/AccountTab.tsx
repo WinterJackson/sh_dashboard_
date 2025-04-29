@@ -241,54 +241,53 @@ export default function AccountTab({
                                     Profile Picture
                                 </label>
 
-                            <div className="justify-items-center w-full p-2 pb-4 rounded-[5px] border-2 bg-black/5">
-                                <div className="justify-center items-center p-3">
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleProfileImageChange}
-                                        className="bg-white border-2 rounded-[10px] block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/80"
-                                        ref={imageFileInputRef}
-                                    />
-                                    {previewImage && (
-                                        <div className="mt-2 border-2 bg-white py-4 rounded-[10px] justify-items-center">
-                                            <Image
-                                                src={imageSource}
-                                                alt="Profile Preview"
-                                                width={96}
-                                                height={96}
-                                                className="w-[96px] h-[96px] object-cover rounded-full border-2 border-primary m-2"
-                                                onError={(e) => {
-                                                    (
-                                                        e.target as HTMLImageElement
-                                                    ).src =
-                                                        "/images/default-avatar.png";
-                                                }}
-                                            />
-                                        </div>
-                                    )}
+                                <div className="justify-items-center w-full p-2 pb-4 rounded-[5px] border-2 bg-black/5">
+                                    <div className="justify-center items-center p-3">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleProfileImageChange}
+                                            className="bg-white border-2 rounded-[10px] block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/80"
+                                            ref={imageFileInputRef}
+                                        />
+                                        {previewImage && (
+                                            <div className="mt-2 border-2 bg-white py-4 rounded-[10px] justify-items-center">
+                                                <Image
+                                                    src={imageSource}
+                                                    alt="Profile Preview"
+                                                    width={96}
+                                                    height={96}
+                                                    className="w-[96px] h-[96px] object-cover rounded-full border-2 border-primary m-2"
+                                                    onError={(e) => {
+                                                        (
+                                                            e.target as HTMLImageElement
+                                                        ).src =
+                                                            "/images/default-avatar.png";
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Cancel Button */}
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setPreviewImage(
+                                                profile.imageUrl || null
+                                            );
+                                            setProfileImageData(null);
+                                            // Clear image file input value
+                                            if (imageFileInputRef.current) {
+                                                imageFileInputRef.current.value =
+                                                    "";
+                                            }
+                                        }}
+                                        className="bg-primary p-2 px-4 w-[110px] rounded-[10px] mt-2 text-sm text-white font-semibold hover:text-white hover:bg-red-700"
+                                    >
+                                        Cancel
+                                    </button>
                                 </div>
-
-                                {/* Cancel Button */}
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setPreviewImage(
-                                            profile.imageUrl || null
-                                        );
-                                        setProfileImageData(null);
-                                        // Clear image file input value
-                                        if (imageFileInputRef.current) {
-                                            imageFileInputRef.current.value =
-                                                "";
-                                        }
-                                    }}
-                                    className="bg-primary p-2 px-4 w-[110px] rounded-[10px] mt-2 text-sm text-white font-semibold hover:text-white hover:bg-red-700"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-
                             </div>
                         </div>
                     </div>
@@ -456,27 +455,27 @@ export default function AccountTab({
                             </div>
                             <div>
                                 <label
-                                    htmlFor="city"
+                                    htmlFor="cityOrTown"
                                     className="block p-2 pl-1 text-gray-600 text-sm font-medium"
                                 >
                                     City
                                 </label>
                                 <Input
-                                    id="city"
-                                    {...register("city")}
+                                    id="cityOrTown"
+                                    {...register("cityOrTown")}
                                     placeholder="Enter your city"
                                 />
                             </div>
                             <div>
                                 <label
-                                    htmlFor="state"
+                                    htmlFor="county"
                                     className="block p-2 pl-1 text-gray-600 text-sm font-medium"
                                 >
                                     State
                                 </label>
                                 <Input
-                                    id="state"
-                                    {...register("state")}
+                                    id="county"
+                                    {...register("county")}
                                     placeholder="Enter your state"
                                 />
                             </div>

@@ -41,7 +41,7 @@ export async function fetchTopDoctors(user?: {
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
+            hospitalId: session.user.hospitalId ?? null,
         };
     }
 
@@ -53,24 +53,23 @@ export async function fetchTopDoctors(user?: {
     switch (role) {
         case "SUPER_ADMIN":
             // Fetch all doctors across hospitals
-            whereClause = {};
             break;
 
         case "ADMIN":
         case "DOCTOR":
         case "NURSE":
         case "STAFF":
-            if (!hospitalId) {
+            if (hospitalId === null) {
                 console.error(`${role}s must have a valid hospital ID.`);
-                return []; // Return an empty array instead of throwing an error
+                return [];
             }
             // Restrict results to the specified hospital
-            whereClause = { hospitalId };
+            whereClause.hospitalId = hospitalId;
             break;
 
         default:
             console.error("Invalid role for fetching top doctors.");
-            return []; // Return an empty array instead of throwing an error
+            return [];
     }
 
     try {
@@ -78,7 +77,7 @@ export async function fetchTopDoctors(user?: {
         const topDoctors = await prisma.doctor.findMany({
             where: whereClause,
             orderBy: {
-                averageRating: "desc", // Sort by highest average rating
+                averageRating: "desc",
             },
             take: 5, // Limit to the top 5 doctors
             select: {
@@ -119,7 +118,7 @@ export async function fetchTopDoctors(user?: {
             }) => ({
                 doctorId: doctor.doctorId,
                 imageUrl:
-                    doctor.user?.profile?.imageUrl || "/default-profile.png", // Fallback to default image
+                    doctor.user?.profile?.imageUrl || "/default-profile.png",
                 name: `Dr. ${doctor.user?.profile?.firstName || "Unknown"} ${
                     doctor.user?.profile?.lastName || "Name"
                 }`,
@@ -153,23 +152,41 @@ export async function fetchOnlineDoctors(user?: {
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
+            hospitalId: session.user.hospitalId ?? null,
         };
     }
 
     const { role, hospitalId } = user;
 
     try {
-        if (role !== "SUPER_ADMIN" && !hospitalId) {
-            console.error("Unauthorized access: Hospital ID is required.");
-            return [];
+        let whereClause: any = { status: "Online" };
+
+        // Define the filter clause based on the user role
+        switch (role) {
+            case "SUPER_ADMIN":
+                // No additional filtering for SUPER_ADMIN, see all online doctors
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (hospitalId === null) {
+                    console.error(`${role}s must have an associated hospital ID.`);
+                    return [];
+                }
+                // Filter by hospitalId for other roles
+                whereClause.hospitalId = hospitalId;
+                break;
+
+            default:
+                console.error("Invalid role provided.");
+                return [];
         }
 
+        // Fetch online doctors based on the filter criteria
         const onlineDoctors = await prisma.doctor.findMany({
-            where: {
-                status: "Online",
-                ...(hospitalId && { hospitalId }),
-            },
+            where: whereClause,
             include: {
                 user: {
                     include: {
@@ -177,13 +194,13 @@ export async function fetchOnlineDoctors(user?: {
                             select: {
                                 firstName: true,
                                 lastName: true,
-                                imageUrl: true,
                                 gender: true,
-                                dateOfBirth: true,
                                 phoneNo: true,
                                 address: true,
-                                city: true,
-                                state: true,
+                                dateOfBirth: true,
+                                cityOrTown: true,
+                                county: true,
+                                imageUrl: true,
                                 nextOfKin: true,
                                 nextOfKinPhoneNo: true,
                                 emergencyContact: true,
@@ -191,13 +208,21 @@ export async function fetchOnlineDoctors(user?: {
                         },
                     },
                 },
-                hospital: true,
-                department: true,
-                specialization: {
-                    select: { name: true },
+                hospital: {
+                    select: {
+                        hospitalId: true,
+                        hospitalName: true,
+                    },
                 },
-                service: {
-                    select: { serviceName: true },
+                department: {
+                    select: {
+                        name: true,
+                    },
+                },
+                specialization: {
+                    select: {
+                        name: true,
+                    },
                 },
             },
         });
@@ -205,7 +230,7 @@ export async function fetchOnlineDoctors(user?: {
         return onlineDoctors;
     } catch (error) {
         const errorMessage = getErrorMessage(error);
-        Sentry.captureException(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
         console.error("Failed to fetch online doctors:", errorMessage);
         return [];
     }
@@ -229,34 +254,45 @@ export async function fetchOnlineDoctorsCount(user?: {
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
+            hospitalId: session.user.hospitalId ?? null,
         };
     }
 
     const { role, hospitalId } = user;
 
     try {
-        let onlineDoctorsCount = 0;
+        let whereClause: any = { status: "Online" };
 
-        if (role === "SUPER_ADMIN") {
-            // Count all online doctors for SUPER_ADMIN
-            onlineDoctorsCount = await prisma.doctor.count({
-                where: { status: "Online" },
-            });
-        } else if (hospitalId) {
-            // Count online doctors for other roles based on hospitalId
-            onlineDoctorsCount = await prisma.doctor.count({
-                where: {
-                    status: "Online",
-                    hospitalId: hospitalId,
-                },
-            });
+        // Define the filter clause based on the user role
+        switch (role) {
+            case "SUPER_ADMIN":
+                // No additional filtering for SUPER_ADMIN, see all online doctors
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (hospitalId === null) {
+                    throw new Error(`${role}s must have an associated hospital ID.`);
+                }
+                // Filter by hospitalId for other roles
+                whereClause.hospitalId = hospitalId;
+                break;
+
+            default:
+                throw new Error("Invalid role provided.");
         }
+
+        // Count online doctors based on the filter criteria
+        const onlineDoctorsCount = await prisma.doctor.count({
+            where: whereClause,
+        });
 
         return onlineDoctorsCount;
     } catch (error) {
         const errorMessage = getErrorMessage(error);
-        Sentry.captureException(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
         console.error("Error fetching online doctors count:", errorMessage);
         return 0;
     }
@@ -275,7 +311,7 @@ export async function fetchDoctorDetails(
           user: { profile: Profile };
           specialization: { name: string };
           department: { name: string };
-          hospital: { name: string };
+          hospital: { hospitalName: string };
       })
     | null
 > {
@@ -287,7 +323,7 @@ export async function fetchDoctorDetails(
         }
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
+            hospitalId: session.user.hospitalId ?? null,
         };
     }
 
@@ -326,7 +362,12 @@ export async function fetchDoctorDetails(
                 },
                 specialization: { select: { name: true } },
                 department: { select: { name: true } },
-                hospital: { select: { name: true } },
+                hospital: {
+                    select: {
+                        hospitalId: true,
+                        hospitalName: true,
+                    },
+                },
             },
         });
 
@@ -343,13 +384,11 @@ export async function fetchDoctorDetails(
             yearsOfExperience:
                 doctorDetails.yearsOfExperience ||
                 new Date().getFullYear() -
-                    new Date(
-                        doctorDetails.user.profile.dateOfBirth
-                    ).getFullYear(),
+                    new Date(doctorDetails.user.profile.dateOfBirth).getFullYear(),
         };
     } catch (error) {
         const errorMessage = getErrorMessage(error);
-        Sentry.captureException(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
         console.error("Doctor details fetch failed:", errorMessage);
         return null;
     }
@@ -375,8 +414,8 @@ export async function fetchDoctorIdByUserId(
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
-            userId: session.user.id,
+            hospitalId: session.user.hospitalId ?? null,
+            userId: session.user.id ?? null,
         };
     }
 
@@ -386,19 +425,53 @@ export async function fetchDoctorIdByUserId(
             return null;
         }
 
+        switch (user.role) {
+            case "SUPER_ADMIN":
+                // SUPER_ADMIN can fetch any doctor's ID
+                break;
+
+            case "ADMIN":
+                if (user.hospitalId === null) {
+                    throw new Error("Admins must have an associated hospital ID.");
+                }
+                break;
+
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (user.hospitalId === null) {
+                    throw new Error(`${user.role}s must have an associated hospital ID.`);
+                }
+                break;
+
+            default:
+                throw new Error("Invalid role provided.");
+        }
+
+        // Fetch the doctor ID based on the provided userId
         const doctor = await prisma.doctor.findUnique({
             where: { userId },
-            select: { doctorId: true },
+            select: { doctorId: true, hospitalId: true },
         });
 
         if (!doctor) {
-            return null; // Return null if the doctor is not found
+            return null;
         }
 
-        return doctor; // Return the doctorId
+        // Validate hospital association for non-SUPER_ADMIN roles
+        if (
+            user.role !== "SUPER_ADMIN" &&
+            user.hospitalId !== null &&
+            doctor.hospitalId !== user.hospitalId
+        ) {
+            console.error("Unauthorized access: Doctor does not belong to the user's hospital.");
+            return null;
+        }
+
+        return { doctorId: doctor.doctorId };
     } catch (error) {
         const errorMessage = getErrorMessage(error);
-        Sentry.captureException(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
         console.error("Failed to fetch doctor ID by user ID:", errorMessage);
         return null;
     }
@@ -423,19 +496,40 @@ export async function fetchAllDoctors(
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
-            userId: session.user.id,
+            hospitalId: session.user.hospitalId ?? null,
+            userId: session.user.id ?? null,
         };
     }
 
     try {
-        if (role !== "SUPER_ADMIN" && !hospitalId) {
-            console.error("Unauthorized access");
-            return [];
+        let whereClause: any = {};
+
+        // Define the filter clause based on the user role
+        switch (role) {
+            case "SUPER_ADMIN":
+                // No additional filtering for SUPER_ADMIN, see all doctors
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (hospitalId === null) {
+                    console.error(`${role}s must have an associated hospital ID.`);
+                    return [];
+                }
+                // Filter by hospitalId for other roles
+                whereClause.hospitalId = hospitalId;
+                break;
+
+            default:
+                console.error("Invalid role provided.");
+                return [];
         }
 
+        // Fetch all doctors based on the filter criteria
         const doctors = await prisma.doctor.findMany({
-            where: hospitalId ? { hospitalId } : undefined,
+            where: whereClause,
             include: {
                 user: {
                     include: {
@@ -448,8 +542,8 @@ export async function fetchAllDoctors(
                                 dateOfBirth: true,
                                 phoneNo: true,
                                 address: true,
-                                city: true,
-                                state: true,
+                                cityOrTown: true,
+                                county: true,
                                 nextOfKin: true,
                                 nextOfKinPhoneNo: true,
                                 emergencyContact: true,
@@ -457,13 +551,21 @@ export async function fetchAllDoctors(
                         },
                     },
                 },
-                hospital: true,
-                department: true,
-                specialization: {
-                    select: { name: true },
+                hospital: {
+                    select: {
+                        hospitalId: true,
+                        hospitalName: true,
+                    },
                 },
-                service: {
-                    select: { serviceName: true },
+                department: {
+                    select: {
+                        name: true,
+                    },
+                },
+                specialization: {
+                    select: {
+                        name: true,
+                    },
                 },
             },
         });
@@ -471,7 +573,7 @@ export async function fetchAllDoctors(
         return doctors;
     } catch (error) {
         const errorMessage = getErrorMessage(error);
-        Sentry.captureException(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
         console.error("Failed to fetch all doctors:", errorMessage);
         return [];
     }
@@ -563,14 +665,43 @@ export async function fetchDoctorsByHospital(
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
-            userId: session.user.id,
+            hospitalId: session.user.hospitalId ?? null,
+            userId: session.user.id ?? null,
         };
     }
 
     try {
+        let whereClause: any = {};
+
+        // Define the filter clause based on the user role
+        switch (role) {
+            case "SUPER_ADMIN":
+                // SUPER_ADMIN can fetch doctors from any hospital
+                whereClause = { hospitalId };
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (user.hospitalId === null) {
+                    throw new Error(`${role}s must have an associated hospital ID.`);
+                }
+                // Ensure the hospitalId matches the user's associated hospital
+                if (hospitalId !== user.hospitalId) {
+                    console.error("Unauthorized access: Hospital ID mismatch.");
+                    return [];
+                }
+                whereClause = { hospitalId };
+                break;
+
+            default:
+                throw new Error("Invalid role provided.");
+        }
+
+        // Fetch doctors based on the filter criteria
         const doctors = await prisma.doctor.findMany({
-            where: { hospitalId },
+            where: whereClause,
             include: {
                 user: {
                     include: {
@@ -583,8 +714,8 @@ export async function fetchDoctorsByHospital(
                                 dateOfBirth: true,
                                 phoneNo: true,
                                 address: true,
-                                city: true,
-                                state: true,
+                                cityOrTown: true,
+                                county: true,
                                 nextOfKin: true,
                                 nextOfKinPhoneNo: true,
                                 emergencyContact: true,
@@ -592,13 +723,21 @@ export async function fetchDoctorsByHospital(
                         },
                     },
                 },
-                hospital: true,
-                department: true,
-                specialization: {
-                    select: { name: true },
+                hospital: {
+                    select: {
+                        hospitalId: true,
+                        hospitalName: true,
+                    },
                 },
-                service: {
-                    select: { serviceName: true },
+                department: {
+                    select: {
+                        name: true,
+                    },
+                },
+                specialization: {
+                    select: {
+                        name: true,
+                    },
                 },
             },
         });
@@ -606,7 +745,7 @@ export async function fetchDoctorsByHospital(
         return doctors;
     } catch (error) {
         const errorMessage = getErrorMessage(error);
-        Sentry.captureException(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
         console.error("Failed to fetch doctors by hospital:", errorMessage);
         return [];
     }
@@ -625,11 +764,10 @@ export async function addDoctorAPI(
         hospitalId: number;
         departmentId: number;
         specializationId: number;
-        serviceId?: number;
         phoneNo: string;
         dateOfBirth: string;
         qualifications?: string;
-        about?: string;
+        bio?: string;
         status?: string;
         profileImageUrl?: string;
     },
@@ -646,8 +784,8 @@ export async function addDoctorAPI(
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
-            userId: session.user.id,
+            hospitalId: session.user.hospitalId ?? null,
+            userId: session.user.id ?? null,
         };
     }
 
@@ -657,7 +795,6 @@ export async function addDoctorAPI(
             hospitalExists,
             departmentExists,
             specializationExists,
-            serviceExists,
         ] = await prisma.$transaction([
             prisma.hospital.findUnique({
                 where: { hospitalId: doctorData.hospitalId },
@@ -671,10 +808,6 @@ export async function addDoctorAPI(
                 where: { specializationId: doctorData.specializationId },
                 select: { specializationId: true },
             }),
-            prisma.service.findUnique({
-                where: { serviceId: doctorData.serviceId || -1 },
-                select: { serviceId: true },
-            }),
         ]);
 
         if (!hospitalExists || !departmentExists || !specializationExists) {
@@ -682,13 +815,8 @@ export async function addDoctorAPI(
             return null;
         }
 
-        if (doctorData.serviceId && !serviceExists) {
-            console.error("Invalid service selected");
-            return null;
-        }
-
-        let user = null;
-        let doctor = null;
+        let userRecord = null;
+        let doctorRecord = null;
         let resetToken = null;
 
         // Transaction for user and doctor creation
@@ -703,9 +831,9 @@ export async function addDoctorAPI(
                     .createHash("sha256")
                     .update(resetToken)
                     .digest("hex");
-                const expiryDate = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+                const expiryDate = new Date(Date.now() + 60 * 60 * 1000);
 
-                user = await tx.user.create({
+                userRecord = await tx.user.create({
                     data: {
                         username: `${doctorData.firstName}_${doctorData.lastName}`,
                         email: doctorData.email,
@@ -720,21 +848,27 @@ export async function addDoctorAPI(
 
                 await tx.profile.create({
                     data: {
-                        userId: user.userId,
+                        userId: userRecord.userId,
                         firstName: doctorData.firstName,
                         lastName: doctorData.lastName,
                         gender: doctorData.gender || null,
                         phoneNo: doctorData.phoneNo,
                         dateOfBirth: new Date(doctorData.dateOfBirth),
                         imageUrl: doctorData.profileImageUrl || null,
+                        address: null,
+                        cityOrTown: null,
+                        county: null,
+                        nextOfKin: null,
+                        nextOfKinPhoneNo: null,
+                        emergencyContact: null,
                     },
                 });
             } else {
-                user = existingUser;
+                userRecord = existingUser;
 
                 // Check if doctor record already exists
                 const existingDoctor = await tx.doctor.findUnique({
-                    where: { userId: user.userId },
+                    where: { userId: userRecord.userId },
                 });
 
                 if (existingDoctor) {
@@ -743,25 +877,26 @@ export async function addDoctorAPI(
                 }
             }
 
-            doctor = await tx.doctor.create({
+            doctorRecord = await tx.doctor.create({
                 data: {
-                    userId: user.userId,
+                    userId: userRecord.userId,
                     hospitalId: doctorData.hospitalId,
                     departmentId: doctorData.departmentId,
                     specializationId: doctorData.specializationId,
-                    serviceId: doctorData.serviceId || undefined,
                     qualifications: doctorData.qualifications || null,
-                    about: doctorData.about || null,
+                    bio: doctorData.bio || null,
                     status: doctorData.status || "Offline",
                     phoneNo: doctorData.phoneNo,
                     workingHours: "Mon-Fri: 9AM-5PM",
                     averageRating: 0,
+                    skills: null,
+                    yearsOfExperience: null,
                 },
             });
         });
 
         // Send reset email
-        if (resetToken && user) {
+        if (resetToken && userRecord) {
             const resetUrl = `${process.env.BASE_URL}/reset-password/${resetToken}`;
 
             await sendEmail({
@@ -773,10 +908,10 @@ export async function addDoctorAPI(
             });
         }
 
-        return doctor;
+        return doctorRecord;
     } catch (error) {
         const errorMessage = getErrorMessage(error);
-        Sentry.captureException(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
         console.error("Error adding doctor:", errorMessage);
         return null;
     }
@@ -805,22 +940,45 @@ export async function getDoctorsBySpecialization(
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId,
-            userId: session.user.id,
+            hospitalId: session.user.hospitalId ?? null,
+            userId: session.user.id ?? null,
         };
     }
 
     try {
-        if (role !== "SUPER_ADMIN" && (!hospitalId || role !== "ADMIN")) {
-            console.error("Unauthorized access");
-            return [];
+        let whereClause: any = { specializationId };
+
+        // Define the filter clause based on the user role
+        switch (role) {
+            case "SUPER_ADMIN":
+                // No additional filtering for SUPER_ADMIN, see all doctors with the given specialization
+                break;
+
+            case "ADMIN":
+                if (hospitalId === null) {
+                    throw new Error("Admins must have an associated hospital ID.");
+                }
+                // Admins see doctors within their associated hospital
+                whereClause.hospitalId = hospitalId;
+                break;
+
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (hospitalId === null) {
+                    throw new Error(`${role}s must have an associated hospital ID.`);
+                }
+                // Staff members see doctors within their associated hospital
+                whereClause.hospitalId = hospitalId;
+                break;
+
+            default:
+                throw new Error("Invalid role provided.");
         }
 
+        // Fetch doctors based on the filter criteria
         const doctors = await prisma.doctor.findMany({
-            where: {
-                specializationId,
-                ...(hospitalId ? { hospitalId } : {}),
-            },
+            where: whereClause,
             include: {
                 user: {
                     include: {
@@ -833,8 +991,8 @@ export async function getDoctorsBySpecialization(
                                 dateOfBirth: true,
                                 phoneNo: true,
                                 address: true,
-                                city: true,
-                                state: true,
+                                cityOrTown: true,
+                                county: true,
                                 nextOfKin: true,
                                 nextOfKinPhoneNo: true,
                                 emergencyContact: true,
@@ -842,13 +1000,21 @@ export async function getDoctorsBySpecialization(
                         },
                     },
                 },
-                hospital: true,
-                department: true,
-                specialization: {
-                    select: { name: true },
+                hospital: {
+                    select: {
+                        hospitalId: true,
+                        hospitalName: true,
+                    },
                 },
-                service: {
-                    select: { serviceName: true },
+                department: {
+                    select: {
+                        name: true,
+                    },
+                },
+                specialization: {
+                    select: {
+                        name: true,
+                    },
                 },
             },
         });
@@ -856,11 +1022,8 @@ export async function getDoctorsBySpecialization(
         return doctors;
     } catch (error) {
         const errorMessage = getErrorMessage(error);
-        Sentry.captureException(error);
-        console.error(
-            "Failed to fetch doctors by specialization:",
-            errorMessage
-        );
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Failed to fetch doctors by specialization:", errorMessage);
         return [];
     }
 }

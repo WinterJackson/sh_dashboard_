@@ -528,7 +528,18 @@ export async function fetchPatientDetails(
     const { role, hospitalId } = user;
 
     try {
-        let whereClause: Record<string, any> = { name };
+        // Split the input name into firstName and lastName
+        const [firstName, ...lastNameParts] = name.trim().split(" ");
+        const lastName = lastNameParts.join(" ") || undefined;
+
+        let whereClause: Record<string, any> = {
+            user: {
+                profile: {
+                    firstName: firstName,
+                    ...(lastName && { lastName }),
+                },
+            },
+        };
 
         // Apply role-based restrictions if necessary
         switch (role) {
@@ -556,7 +567,18 @@ export async function fetchPatientDetails(
 
         const patient = await prisma.patient.findFirst({
             where: whereClause,
-            include: { hospital: true },
+            include: {
+                user: {
+                    include: {
+                        profile: {
+                            select: {
+                                dateOfBirth: true,
+                            },
+                        },
+                    },
+                },
+                hospital: true,
+            },
         });
 
         if (!patient) {
@@ -574,7 +596,9 @@ export async function fetchPatientDetails(
 }
 
 // Fetch patients details using the patient ID
-export async function fetchPatientDetailsById(patientId: number): Promise<Patient | null> {
+export async function fetchPatientDetailsById(
+    patientId: number
+): Promise<Patient | null> {
     try {
         const patient = await prisma.patient.findUnique({
             where: { patientId },
@@ -587,8 +611,6 @@ export async function fetchPatientDetailsById(patientId: number): Promise<Patien
                         appointmentDate: true,
                         type: true,
                         status: true,
-                        doctorAppointmentNotes: true,
-                        patientAppointmentNotes: true,
                         doctor: {
                             include: {
                                 user: {
@@ -596,9 +618,31 @@ export async function fetchPatientDetailsById(patientId: number): Promise<Patien
                                 },
                             },
                         },
+                        notes: {
+                            include: {
+                                author: {
+                                    include: {
+                                        profile: {
+                                            select: {
+                                                firstName: true,
+                                                lastName: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                            orderBy: { createdAt: "desc" },
+                        },
+                        services: true,
+                        payments: true,
                     },
                 },
                 hospital: true,
+                user: {
+                    include: {
+                        profile: true,
+                    },
+                },
             },
         });
 
@@ -624,9 +668,11 @@ export async function updateMedicalInfo(
     try {
         // BMI CALCULATION BY height and weight provided
         if (data.height && data.weight) {
-            const heightInMeters = data.height
+            const heightInMeters = data.height;
             const weightInKg = data.weight;
-            data.bmi = parseFloat((weightInKg / (heightInMeters * heightInMeters)).toFixed(1));
+            data.bmi = parseFloat(
+                (weightInKg / (heightInMeters * heightInMeters)).toFixed(1)
+            );
         }
 
         const updatedMedicalInfo = await prisma.medicalInformation.upsert({
@@ -638,7 +684,9 @@ export async function updateMedicalInfo(
         return updatedMedicalInfo;
     } catch (error) {
         const errorMessage = getErrorMessage(error);
-        Sentry.captureException(error, { extra: { errorMessage, patientId, data } });
+        Sentry.captureException(error, {
+            extra: { errorMessage, patientId, data },
+        });
         console.error("Failed to update medical information:", errorMessage);
         throw new Error("Medical information update failed");
     }

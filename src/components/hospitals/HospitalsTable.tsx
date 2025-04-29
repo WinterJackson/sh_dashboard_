@@ -98,7 +98,7 @@ const HospitalsTable: React.FC<HospitalsTableProps> = ({ hospitals, totalHospita
 
                                   </td>
                                   <td className="px-4 py-2 text-sm text-black">
-                                      {hospital.name}
+                                      {hospital.hospitalName}
                                   </td>
                                   <td className="px-4 py-2 text-center whitespace-nowrap text-sm text-black">
                                       {hospital.hospitalId}
@@ -107,10 +107,10 @@ const HospitalsTable: React.FC<HospitalsTableProps> = ({ hospitals, totalHospita
                                       {hospital.phone}
                                   </td>
                                   <td className="px-4 py-2 text-center whitespace-nowrap text-sm text-black">
-                                      {hospital.country}
+                                      {hospital.county}
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap text-sm text-black">
-                                      {hospital.city}
+                                      {hospital.town}
                                   </td>
                                   <td className="px-4 py-2 text-center whitespace-nowrap text-sm text-black">
                                       {hospital.referralCode}

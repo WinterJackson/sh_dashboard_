@@ -51,27 +51,29 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
 
     useEffect(() => {
         if (fetchedPatientDetails) {
+            const profile = fetchedPatientDetails.user?.profile;
+
             setValue("patientId", fetchedPatientDetails.patientId);
-            setValue("gender", fetchedPatientDetails.gender);
+            setValue("gender", profile?.gender || "");
             setValue(
                 "dateOfBirth",
-                fetchedPatientDetails.dateOfBirth
-                    ? new Date(fetchedPatientDetails.dateOfBirth)
+                profile?.dateOfBirth
+                    ? new Date(profile.dateOfBirth)
                           .toISOString()
                           .split("T")[0]
                     : ""
             ); // Date format 'YYYY-MM-DD'
-            setValue("homeAddress", fetchedPatientDetails.homeAddress);
-            setValue("state", fetchedPatientDetails.state);
-            setValue("phoneNo", fetchedPatientDetails.phoneNo);
-            setValue("email", fetchedPatientDetails.email);
+            setValue("homeAddress", profile?.address || "");
+            setValue("county", profile?.county || "");
+            setValue("phoneNo", profile?.phoneNo || "");
+            setValue("email", fetchedPatientDetails.user?.email || "");
             setValue("status", fetchedPatientDetails.status);
         } else if (isError) {
             setValue("patientId", "");
             setValue("gender", "");
             setValue("dateOfBirth", "");
             setValue("homeAddress", "");
-            setValue("state", "");
+            setValue("county", "");
             setValue("phoneNo", "");
             setValue("email", "");
             setValue("status", "");
@@ -102,8 +104,8 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                 "";
 
             const hospital =
-                user?.doctor?.hospital?.name ||
-                user?.nurse?.hospital?.name ||
+                user?.doctor?.hospital?.hospitalName ||
+                user?.nurse?.hospital?.hospitalName ||
                 "";
 
             // Auto-fill the form fields
@@ -137,19 +139,22 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
 
             // Prepare referral data
             const referralData = {
-                patientId: data.patientId,
-                patientName: data.patientName,
-                gender: data.gender,
+                patientId: Number(data.patientId),
+                patientName: `${fetchedPatientDetails?.user?.profile?.firstName || ""} ${
+                    fetchedPatientDetails?.user?.profile?.lastName || ""
+                }`,
+                gender: fetchedPatientDetails?.user?.profile?.gender || "",
                 dateOfBirth: data.dateOfBirth,
-                homeAddress: data.homeAddress,
-                state: data.state,
-                phoneNo: data.phoneNo,
-                email: data.email,
-                physicianName: data.physicianName,
-                physicianDepartment: data.physicianDepartment,
-                physicianSpecialty: data.physicianSpecialty,
-                physicianEmail: data.physicianEmail,
-                physicianPhoneNumber: data.physicianPhoneNumber,
+                homeAddress:
+                    fetchedPatientDetails?.user?.profile?.address || "",
+                county: fetchedPatientDetails?.user?.profile?.county || "",
+                phoneNo: fetchedPatientDetails?.user?.profile?.phoneNo || "",
+                email: fetchedPatientDetails?.user?.email || "",
+                referringDoctorName: data.physicianName,
+                departmentName: data.physicianDepartment,
+                specializationName: data.physicianSpecialty,
+                referringDoctorEmail: data.physicianEmail,
+                referringDoctorPhoneNo: data.physicianPhoneNumber,
                 hospitalName: data.hospitalName,
                 type: data.type,
                 primaryCareProvider: data.primaryCareProvider,
@@ -398,7 +403,11 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                         id="hospitalName"
                         className="bg-[#EFEFEF]"
                         {...register("hospitalName", { required: true })}
-                        value={(user?.hospital as Hospital | null)?.name || ""} 
+                        value={
+                            (user?.doctor?.hospital?.hospitalName ||
+                                user?.nurse?.hospital?.hospitalName ||
+                                "") as string
+                        }
                         readOnly
                     />
                 </div>

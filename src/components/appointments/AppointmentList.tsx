@@ -28,13 +28,16 @@ export default function AppointmentList({
     hospitals,
 }: AppointmentListProps) {
     const [currentPage, setCurrentPage] = useState(1);
-    const [filteredAppointments, setFilteredAppointments] = useState(appointments);
+    const [filteredAppointments, setFilteredAppointments] =
+        useState(appointments);
     const [typeText, setTypeText] = useState<{ [key: string]: string }>({});
     const [actionText, setActionText] = useState<{ [key: string]: string }>({});
     const [openDialog, setOpenDialog] = useState(false);
     const [dialogType, setDialogType] = useState<string | undefined>(undefined);
-    const [dialogAppointmentId, setDialogAppointmentId] = useState<string | undefined>(undefined);
-    const [ searchTerm ] = useState("");
+    const [dialogAppointmentId, setDialogAppointmentId] = useState<
+        string | undefined
+    >(undefined);
+    const [searchTerm] = useState("");
 
     // Initialize hooks for mutations
     const { mutate: updateType } = useUpdateAppointmentType();
@@ -50,7 +53,10 @@ export default function AppointmentList({
     }, [appointments, currentPage]);
 
     // Handler to update appointment type
-    const handleUpdateAppointmentType = async (appointmentId: string, newType: string) => {
+    const handleUpdateAppointmentType = async (
+        appointmentId: string,
+        newType: string
+    ) => {
         setTypeText((prev) => ({ ...prev, [appointmentId]: newType }));
 
         updateType(
@@ -81,7 +87,10 @@ export default function AppointmentList({
                     console.error("Failed to update appointment type");
                     setTypeText((prev) => ({
                         ...prev,
-                        [appointmentId]: appointments.find((a) => a.appointmentId === appointmentId)?.type || newType,
+                        [appointmentId]:
+                            appointments.find(
+                                (a) => a.appointmentId === appointmentId
+                            )?.type || newType,
                     }));
                 },
             }
@@ -103,11 +112,18 @@ export default function AppointmentList({
     };
 
     // Handler to update appointment status
-    const handleUpdateStatus = async (appointmentId: string, status: string, reason?: string) => {
+    const handleUpdateStatus = async (
+        appointmentId: string,
+        status: string,
+        reason?: string
+    ) => {
+        // Normalize the status to uppercase to match AppointmentStatus enum
+        const normalizedStatus = status.toUpperCase();
+
         updateStatus(
             {
                 appointmentId,
-                updateData: { status, reason: reason || "" },
+                updateData: { status: normalizedStatus, reason: reason || "" },
                 user: session?.user
                     ? {
                           role: session.user.role as Role,
@@ -119,11 +135,14 @@ export default function AppointmentList({
             {
                 onSuccess: (updatedAppointment) => {
                     if (updatedAppointment) {
-                        handleActionChange(appointmentId, status);
+                        handleActionChange(appointmentId, normalizedStatus); // Use normalized status here
                     }
                 },
                 onError: (error) => {
-                    console.error(`Failed to update status for ${appointmentId}:`, error);
+                    console.error(
+                        `Failed to update status for ${appointmentId}:`,
+                        error
+                    );
                 },
             }
         );
@@ -132,12 +151,14 @@ export default function AppointmentList({
     // Handle action change for dropdown actions
     const handleActionChange = (appointmentId: string, action: string) => {
         setActionText((prev) => ({ ...prev, [appointmentId]: action }));
-    
-        // Update the background for the 'Cancelled' option
+
         setFilteredAppointments((prevAppointments) =>
             prevAppointments.map((appointment) =>
                 appointment.appointmentId === appointmentId
-                    ? { ...appointment, status: action }
+                    ? {
+                          ...appointment,
+                          status: action.toUpperCase() as Appointment["status"],
+                      }
                     : appointment
             )
         );
@@ -157,7 +178,9 @@ export default function AppointmentList({
     const searchFilteredAppointments = useMemo(() => {
         const term = searchTerm.toLowerCase();
         return filteredAppointments.filter((appointment) => {
-            const patientName = appointment.patient?.name?.toLowerCase() || ""; // Optional chaining for patient.name
+            const patientName = appointment.patient?.user?.profile
+                ? `${appointment.patient.user.profile.firstName} ${appointment.patient.user.profile.lastName}`.toLowerCase()
+                : "";
             const doctorUsername =
                 appointment.doctor?.user?.username?.toLowerCase() || ""; // Optional chaining for doctor.user.username
             return patientName.includes(term) || doctorUsername.includes(term);
@@ -171,7 +194,9 @@ export default function AppointmentList({
         return searchFilteredAppointments.slice(start, end);
     }, [searchFilteredAppointments, currentPage]);
 
-    const totalPages = Math.ceil(searchFilteredAppointments.length / ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(
+        searchFilteredAppointments.length / ITEMS_PER_PAGE
+    );
 
     // Handle page change for pagination component
     const handlePageChange = (page: number) => {
@@ -184,7 +209,6 @@ export default function AppointmentList({
 
     return (
         <div className="flex-grow">
-
             <AppointmentFilters
                 appointments={appointments}
                 session={session}

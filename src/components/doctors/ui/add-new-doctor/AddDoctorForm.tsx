@@ -511,7 +511,7 @@ const AddDoctorFormComponent: React.FC<AddDoctorFormProps> = ({
                                                             (h) =>
                                                                 h.hospitalId ===
                                                                 selectedHospital
-                                                        )?.name ||
+                                                        )?.hospitalName ||
                                                             "Select Hospital"}
                                                     </span>
                                                     <ChevronRight
@@ -535,7 +535,7 @@ const AddDoctorFormComponent: React.FC<AddDoctorFormProps> = ({
                                                         className="rounded-[5px] truncate"
                                                     >
                                                         <span className="truncate">
-                                                            {h.name}
+                                                            {h.hospitalName}
                                                         </span>
                                                     </DropdownMenuItem>
                                                 ))}

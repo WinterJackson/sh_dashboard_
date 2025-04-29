@@ -33,52 +33,52 @@ export async function fetchDepartments(
     }
 
     try {
-        let departments = [];
+        let whereClause: any = {};
 
-        if (user.role === "SUPER_ADMIN") {
-            // SUPER_ADMIN gets access to all departments
-            departments = await prisma.department.findMany({
-                select: {
-                    departmentId: true,
-                    name: true,
-                    hospitals: {
-                        select: {
-                            hospitalId: true,
-                            hospital: {
-                                select: {
-                                    name: true,
-                                },
-                            },
-                        },
+        // Define the filter clause based on the user role
+        switch (user.role) {
+            case "SUPER_ADMIN":
+                // No filtering for SUPER_ADMIN, see all departments
+                break;
+
+            case "ADMIN":
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (!user.hospitalId) {
+                    throw new Error(`${user.role}s must have an associated hospital ID.`);
+                }
+                // Filter departments by hospitalId for other roles
+                whereClause.hospitals = {
+                    some: {
+                        hospitalId: parseInt(user.hospitalId, 10),
                     },
-                },
-            });
-        } else if (user.hospitalId) {
-            // Other roles get access to departments tied to their hospital
-            departments = await prisma.department.findMany({
-                where: {
-                    hospitals: {
-                        some: {
-                            hospitalId: parseInt(user.hospitalId, 10), // Ensure hospitalId is an integer
-                        },
-                    },
-                },
-                select: {
-                    departmentId: true,
-                    name: true,
-                    hospitals: {
-                        select: {
-                            hospitalId: true,
-                            hospital: {
-                                select: {
-                                    name: true,
-                                },
-                            },
-                        },
-                    },
-                },
-            });
+                };
+                break;
+
+            default:
+                throw new Error("Invalid role provided.");
         }
+
+        // Fetch departments based on the filter criteria
+        const departments = await prisma.department.findMany({
+            where: whereClause,
+            select: {
+                departmentId: true,
+                name: true,
+                hospitals: {
+                    select: {
+                        hospitalId: true,
+                        hospital: {
+                            select: {
+                                hospitalName: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
         return departments;
     } catch (error) {
         const errorMessage = getErrorMessage(error);

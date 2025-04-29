@@ -50,65 +50,65 @@ export default function PatientProfile({ patient }: { patient: Patient }) {
     if (isLoading) return <div className="p-6">Loading patient details...</div>;
     if (!data) return <div className="p-6">Patient not found</div>;
 
-    // Get most recent appointment
-    const lastAppointment = data.appointments[0];
+    // Get most recent and second-to-last appointments
+    const lastTwoAppointments = data.appointments.slice(0, 2);
+    const allNotes = lastTwoAppointments.flatMap(
+        (appointment) => appointment.notes || []
+    );
+
+    const profile = data.user?.profile;
+    const fullName = `${profile?.firstName ?? ""} ${
+        profile?.lastName ?? ""
+    }`.trim();
 
     return (
         <div className="flex flex-col gap-1">
-            
-                {/* Breadcrumb Navigation */}
-                <nav className="breadcrumbs text-sm px-4">
-                    <ul className="flex  gap-2">
-                        <li>
-                            <Link
-                                href="/dashboard/patients"
-                                className="text-primary hover:text-blue-700"
-                            >
-                                Patients
-                            </Link>
-                        </li>
-                        |
-                        <li>
-                            <Link
-                                href={`/dashboard/patients/${patient.patientId}`}
-                                className="font-semibold text-gray-600 hover:text-primary"
-                            >
-                                {patient.name}
-                            </Link>
-                        </li>
-                    </ul>
-                </nav>
+            {/* Breadcrumb Navigation */}
+            <nav className="breadcrumbs text-sm px-4">
+                <ul className="flex  gap-2">
+                    <li>
+                        <Link
+                            href="/dashboard/patients"
+                            className="text-primary hover:text-blue-700"
+                        >
+                            Patients
+                        </Link>
+                    </li>
+                    |
+                    <li>
+                        <Link
+                            href={`/dashboard/patients/${patient.patientId}`}
+                            className="font-semibold text-gray-600 hover:text-primary"
+                        >
+                            {fullName || "Unnamed Patient"}
+                        </Link>
+                    </li>
+                </ul>
+            </nav>
 
             <div className="flex flex-col md:flex-row gap-6 p-4">
-            {/* Left Sidebar */}
-            <div className="w-auto md:w-auto">
-                <PatientSidebar patient={data} />
-            </div>
+                {/* Left Sidebar */}
+                <div className="w-auto md:w-auto">
+                    <PatientSidebar patient={data} />
+                </div>
 
-            {/* Main Content */}
-            <div className="w-full md:w-full space-y-8">
-                <MedicalInfoSection data={data.medicalInformation?.[0]} />
-                <AppointmentsTimeline appointments={data.appointments} />
-                <div className="flex flex-row gap-4 w-full h-full">
-                    <div className="w-1/2 h-full">
-                        <PatientNotes
-                            doctorNotes={
-                                lastAppointment?.doctorAppointmentNotes ||
-                                "No doctor notes available"
-                            }
-                            patientNotes={
-                                lastAppointment?.patientAppointmentNotes ||
-                                "No patient notes available"
-                            }
-                        />
-                    </div>
-                    <div className="w-1/2 h-full">
-                        <DocumentsSection patientId={data.patientId} />
+                {/* Main Content */}
+                <div className="w-full md:w-full space-y-8">
+                    <MedicalInfoSection data={data.medicalInformation?.[0]} />
+                    <AppointmentsTimeline appointments={data.appointments} />
+                    <div className="flex flex-row gap-4 w-full h-full">
+                        <div className="w-1/2 h-full">
+                            <PatientNotes
+                                notes={allNotes}
+                                appointments={lastTwoAppointments}
+                            />
+                        </div>
+                        <div className="w-1/2 h-full">
+                            <DocumentsSection patientId={data.patientId} />
+                        </div>
                     </div>
                 </div>
             </div>
-            </div>
-
         </div>
     );
 }
