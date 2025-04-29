@@ -5,6 +5,7 @@ import { fetchSpecializations } from "@/lib/data-access/specializations/data";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import * as Sentry from "@sentry/nextjs";
+import { Role } from "@/lib/definitions";
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +18,7 @@ export async function GET() {
 
         const user = session?.user
             ?   {
-                    role: session.user.role,
+                    role: session.user.role as Role,
                     hospitalId: session.user.hospitalId,
                 }
             : undefined;
