@@ -67,7 +67,7 @@ export default async function AddNewDoctorPage() {
                 hospitals={hospitals}
                 services={services}
                 filteredServices={filteredServices}
-                userRole={user.role}
+                userRole={user.role as Role}
                 userHospitalId={user.hospitalId?.toString() || null}
                 sessionUser={user}
             />
