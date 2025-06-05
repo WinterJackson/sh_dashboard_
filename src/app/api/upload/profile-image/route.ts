@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { Role } from "@/lib/definitions";
 
-const prisma = require("@/lib/prisma");
+import prisma from "@/lib/prisma";
 
 export async function GET(
     req: NextRequest,
@@ -134,7 +134,7 @@ export async function GET(
 
 //             try {
 //                 // Save uploaded file URL to the user's profile in the database
-//                 const prisma = require("@/lib/prisma");
+//                 import prisma from "@/lib/prisma";
 //                 await prisma.user.update({
 //                     where: { userId },
 //                     data: {

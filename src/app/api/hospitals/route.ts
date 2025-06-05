@@ -6,6 +6,7 @@ import { fetchHospitals } from "@/lib/data-access/hospitals/data";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { Role } from "@/lib/definitions";
+import prisma from "@/lib/prisma";
 
 export const dynamic = 'force-dynamic';
 

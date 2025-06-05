@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { Role } from "@/lib/definitions";
 
-const prisma = require("@/lib/prisma");
+import prisma from "@/lib/prisma";
 
 export async function GET(
     req: NextRequest,

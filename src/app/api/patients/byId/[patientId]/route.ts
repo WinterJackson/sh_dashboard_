@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
-const prisma = require("@/lib/prisma");
+import prisma from "@/lib/prisma";
 
 /**
  * Fetches details of a specific patient.

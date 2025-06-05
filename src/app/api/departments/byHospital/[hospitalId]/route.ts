@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server';
 
-const prisma = require("@/lib/prisma");
+import prisma from "@/lib/prisma";
 
 export async function GET(req: Request, { params }: { params: { hospitalId: string } }) {
     const { hospitalId } = params;

@@ -1,6 +1,6 @@
 // src/app/api/profile/[userId]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-const prisma = require("@/lib/prisma")
+import prisma from "@/lib/prisma";
 
 /**
  * GET user profile by userId.
