@@ -26,7 +26,6 @@ interface HospitalMapProps {
     longitude?: number | null;
     hospitalName: string;
     userRole?: Role;
-    userId?: string;
 }
 
 export default function HospitalMap({
@@ -34,8 +33,7 @@ export default function HospitalMap({
     latitude,
     longitude,
     hospitalName,
-    userRole, // Destructure role
-    userId,
+    userRole,
 }: HospitalMapProps) {
     // const userRole = role;
     const { toast } = useToast();
@@ -147,12 +145,12 @@ export default function HospitalMap({
 
     return (
         <div className="h-full w-full rounded-[10px] overflow-hidden bg-white shadow-md flex flex-col">
-            <div className="flex flex-row justify-between items-center bg-bluelight rounded-t-[10px] mb-4 p-6">
+            <div className="flex flex-row justify-between items-center bg-bluelight rounded-t-[10px] mb-4 p-4">
                 <span className="text-lg font-semibold whitespace-nowrap">
                     Hospital Location
                 </span>
                 {userRole === "SUPER_ADMIN" && (
-                    <div className="mb-2 flex justify-end gap-2 p-1">
+                    <div className=" flex justify-end gap-2 p-1">
                         <Button
                             size="sm"
                             className={`rounded-[10px] whitespace-nowrap ${

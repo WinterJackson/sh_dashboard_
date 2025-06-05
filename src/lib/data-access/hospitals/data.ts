@@ -2,7 +2,14 @@
 
 "use server";
 
-import { Department, DepartmentType, Hospital, Role } from "@/lib/definitions";
+import {
+    BedCapacity,
+    Department,
+    DepartmentType,
+    Hospital,
+    HospitalDepartment,
+    Role,
+} from "@/lib/definitions";
 import { loadHospitals } from "./loaders";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
@@ -623,4 +630,235 @@ export async function fetchHospitalDetailsById(
         Sentry.captureException(error, { extra: { errorMessage, hospitalId } });
         throw new Error("Failed to load hospital details");
     }
+}
+
+/**
+ * Given a hospitalId and (optionally) a userOverride, verify:
+ *  1. There is a valid session.
+ *  2. If role is SUPER_ADMIN or ADMIN, MFA must be verified.
+ *  3. The role is one of SUPER_ADMIN, ADMIN, DOCTOR, NURSE, STAFF.
+ *  4. If not SUPER_ADMIN, ensure user.hospitalId === hospitalId.
+ *
+ * Throws or redirects if unauthorized.
+ * Returns the session’s user payload when valid.
+ */
+async function authorizeHospitalAccess(
+    hospitalId: number,
+    userOverride?: {
+        role: Role;
+        hospitalId: number | null;
+        userId: string | null;
+    }
+) {
+    const session = await getServerSession(authOptions);
+
+    let user = userOverride;
+    if (!user) {
+        if (!session?.user) {
+            redirect("/sign-in");
+            throw new Error("Redirecting to sign-in");
+        }
+        user = {
+            role: session.user.role as Role,
+            hospitalId: session.user.hospitalId ?? null,
+            userId: session.user.id ?? null,
+        };
+    }
+
+    // If SUPER_ADMIN or ADMIN, MFA must be verified
+    if (
+        [Role.SUPER_ADMIN, Role.ADMIN].includes(user.role) &&
+        !session?.user?.mfaVerified
+    ) {
+        redirect("/verify-token");
+        throw new Error("Redirecting to verify-token");
+    }
+
+    // Only these roles may fetch hospital data
+    if (
+        ![
+            Role.SUPER_ADMIN,
+            Role.ADMIN,
+            Role.DOCTOR,
+            Role.NURSE,
+            Role.STAFF,
+        ].includes(user.role)
+    ) {
+        throw new Error("Unauthorized");
+    }
+
+    // Non-SUPER_ADMINs may only see their own hospital
+    if (
+        user.role !== Role.SUPER_ADMIN &&
+        (user.hospitalId === null || user.hospitalId !== hospitalId)
+    ) {
+        throw new Error("Unauthorized to view this hospital");
+    }
+
+    return user;
+}
+
+/**
+ * Fetch complete Hospital record
+ */
+export async function fetchHospitalBasicInfo(
+    hospitalId: number,
+    userOverride?: {
+        role: Role;
+        hospitalId: number | null;
+        userId: string | null;
+    }
+): Promise<Hospital> {
+    await authorizeHospitalAccess(hospitalId, userOverride);
+
+    const hospital = await prisma.hospital.findUniqueOrThrow({
+        where: { hospitalId },
+        select: {
+            // Scalars
+            hospitalId: true,
+            hospitalName: true,
+            hospitalLink: true,
+            phone: true,
+            email: true,
+            kephLevel: true,
+            regulatoryBody: true,
+            ownershipType: true,
+            facilityType: true,
+            nhifAccreditation: true,
+            open24Hours: true,
+            openWeekends: true,
+            regulated: true,
+            regulationStatus: true,
+            regulatingBody: true,
+            registrationNumber: true,
+            licenseNumber: true,
+            category: true,
+            owner: true,
+            county: true,
+            subCounty: true,
+            ward: true,
+            latitude: true,
+            longitude: true,
+            town: true,
+            streetAddress: true,
+            referralCode: true,
+            description: true,
+            emergencyPhone: true,
+            emergencyEmail: true,
+            website: true,
+            logoUrl: true,
+            operatingHours: true,
+            nearestLandmark: true,
+            plotNumber: true,
+            createdAt: true,
+            updatedAt: true,
+
+            // ─── Array relations ───
+            appointments: true,
+            beds: true,
+            doctors: true,
+            nurses: true,
+            departments: true,
+            patients: true,
+            payments: true,
+            users: true,
+            admins: true,
+            staffs: true,
+            conversations: true,
+            bedCapacity: true,
+            hospitalServices: true,
+            appointmentServices: true,
+            receivedReferrals: true,
+            sentReferrals: true,
+        },
+    });
+
+    return hospital as Hospital;
+}
+
+/**
+ * Fetch all BedCapacity rows for a given hospital.
+ */
+export async function fetchBedCapacity(
+    hospitalId: number,
+    userOverride?: {
+        role: Role;
+        hospitalId: number | null;
+        userId: string | null;
+    }
+): Promise<BedCapacity[]> {
+    await authorizeHospitalAccess(hospitalId, userOverride);
+
+    const rows = await prisma.bedCapacity.findMany({
+        where: { hospitalId },
+        select: {
+            bedCapacityId: true,
+            hospitalId: true,
+            totalInpatientBeds: true,
+            generalInpatientBeds: true,
+            cots: true,
+            maternityBeds: true,
+            emergencyCasualtyBeds: true,
+            intensiveCareUnitBeds: true,
+            highDependencyUnitBeds: true,
+            isolationBeds: true,
+            generalSurgicalTheatres: true,
+            maternitySurgicalTheatres: true,
+            createdAt: true,
+            updatedAt: true,
+        },
+    });
+
+    return rows as BedCapacity[];
+}
+
+/**
+ * Fetch HospitalDepartment rows, nested department and specializationLinks.
+ */
+export async function fetchHospitalDepartments(
+    hospitalId: number,
+    userOverride?: {
+        role: Role;
+        hospitalId: number | null;
+        userId: string | null;
+    }
+): Promise<HospitalDepartment[]> {
+    await authorizeHospitalAccess(hospitalId, userOverride);
+
+    const rows = await prisma.hospitalDepartment.findMany({
+        where: { hospitalId },
+        select: {
+            hospitalId: true,
+            departmentId: true,
+            headOfDepartment: true,
+            contactEmail: true,
+            contactPhone: true,
+            location: true,
+            establishedYear: true,
+            description: true,
+            createdAt: true,
+            updatedAt: true,
+            department: {
+                select: {
+                    departmentId: true,
+                    name: true,
+                    description: true,
+                    type: true,
+                    specializationLinks: {
+                        select: {
+                            specialization: {
+                                select: {
+                                    specializationId: true,
+                                    name: true,
+                                    description: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    });
+
+    return rows as HospitalDepartment[];
 }

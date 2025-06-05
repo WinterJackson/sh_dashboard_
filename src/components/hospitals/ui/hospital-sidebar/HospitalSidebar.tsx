@@ -1,20 +1,31 @@
 // src/components/hospitals/ui/hospital-sidebar/HospitalSidebar.tsx
+
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Hospital } from "@/lib/definitions";
+import { Hospital, Role } from "@/lib/definitions";
 import { useState } from "react";
-// import hospitalPlaceholder from "@/public/images/logo.png";
 import { EditHospitalDialog } from "./EditHospitalDialog";
 import { AddDepartmentDialog } from "./AddDepartmentDialog";
-import { useSession } from "next-auth/react";
-import { Role } from "@/lib/definitions";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 
-export default function HospitalSidebar({ hospital }: { hospital: Hospital }) {
+interface HospitalSidebarProps {
+    hospital: Hospital;
+    userRole: Role;
+}
+
+export default function HospitalSidebar({
+    hospital,
+    userRole,
+}: HospitalSidebarProps) {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isAddDeptOpen, setIsAddDeptOpen] = useState(false);
-    const { data: session } = useSession();
-    const userRole = session?.user?.role as Role;
 
     const placeholderSrc = "/images/logo.png";
 
@@ -38,42 +49,86 @@ export default function HospitalSidebar({ hospital }: { hospital: Hospital }) {
                 <h3 className="p-2 font-semibold text-base text-primary bg-bluelight/10 rounded-[10px]">
                     General Info
                 </h3>
-                <div className="mt-2 space-y-2 p-2">
-                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px]">
+                <div className="mt-2 space-y-2">
+                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px] p-2">
                         <strong>Facility Type:</strong>{" "}
                         {hospital.facilityType || "N/A"}
                     </p>
-                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px]">
+                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px] p-2">
                         <strong>NHIF Accreditation:</strong>{" "}
                         {hospital.nhifAccreditation || "N/A"}
                     </p>
-                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px]">
+                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px] p-2">
                         <strong>Open 24 Hours:</strong>{" "}
                         {hospital.open24Hours || "N/A"}
                     </p>
-                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px]">
+                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px] p-2">
                         <strong>Open Weekends:</strong>{" "}
                         {hospital.openWeekends || "N/A"}
                     </p>
-                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px]">
+                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px] p-2">
                         <strong>Operating Hours:</strong>{" "}
                         {hospital.operatingHours || "N/A"}
                     </p>
-                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px]">
+                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px] p-2">
                         <strong>Is Regulated?:</strong>{" "}
                         {hospital.regulated || "N/A"}
                     </p>
-                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px]">
+                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px] p-2">
                         <strong>Regulation Status:</strong>{" "}
                         {hospital.regulationStatus || "N/A"}
                     </p>
-                    <p className="text-[13px] flex gap-2 justify-between overflow-hidden bg-white rounded-[5px]">
-                        <strong>Regulating Body:</strong>{" "}
+                    <p className="text-[13px] flex gap-2 justify-between overflow-hidden bg-white rounded-[5px] p-2">
+                        <div className="flex items-center gap-1">
+                            <strong>Regulating Body:</strong>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className="cursor-pointer">
+                                            <Info size={14} />
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>
+                                            The entity that performs the act of
+                                            regulating or supervising a
+                                            healthcare institution or activity.
+                                        </p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
                         <span className="text-[13px]">
                             {hospital.regulatingBody || "N/A"}
                         </span>
                     </p>
-                    <p className="text-[13px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px]">
+
+                    <p className="text-[13px] flex gap-2 justify-between overflow-hidden bg-white rounded-[5px] p-2">
+                        <div className="flex items-center gap-1">
+                            <strong>Regulatory Body:</strong>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className="cursor-pointer">
+                                            <Info size={14} />
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>
+                                            The official authority or organization that enforces
+                                            rules or standards in the healthcare
+                                            sector.
+                                        </p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
+                        <span className="text-[13px]">
+                            {hospital.regulatoryBody || "N/A"}
+                        </span>
+                    </p>
+
+                    <p className="text-[13px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px] p-2">
                         <span className="font-semibold">Website:</span>
                         {hospital.hospitalLink ? (
                             <a
@@ -121,32 +176,32 @@ export default function HospitalSidebar({ hospital }: { hospital: Hospital }) {
                         </Button>
                     )}
                 </h3>
-                <div className="mt-2 space-y-2 p-2">
-                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px]">
+                <div className="mt-2 space-y-2">
+                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px] p-2">
                         <strong>Referral Code:</strong>{" "}
                         {hospital.referralCode || "N/A"}
                     </p>
-                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px]">
+                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px] p-2">
                         <strong>Registration #:</strong>{" "}
                         {hospital.registrationNumber || "N/A"}
                     </p>
-                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px]">
+                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px] p-2">
                         <strong>License #:</strong>{" "}
                         {hospital.licenseNumber || "N/A"}
                     </p>
-                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px]">
+                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px] p-2">
                         <strong>Admin Count:</strong>{" "}
                         {hospital.admins?.length || 0}
                     </p>
-                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px]">
+                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px] p-2">
                         <strong>Doctor Count:</strong>{" "}
                         {hospital.doctors?.length || 0}
                     </p>
-                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px]">
+                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px] p-2">
                         <strong>Nurse Count:</strong>{" "}
                         {hospital.nurses?.length || 0}
                     </p>
-                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px]">
+                    <p className="text-[15px] flex gap-2 justify-between whitespace-nowrap bg-white rounded-[5px] p-2">
                         <strong>Department Count:</strong>{" "}
                         {hospital.departments?.length || 0}
                     </p>

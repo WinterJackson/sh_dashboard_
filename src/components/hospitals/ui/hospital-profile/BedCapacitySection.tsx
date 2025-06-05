@@ -2,7 +2,7 @@
 
 "use client";
 
-import { Hospital } from "@/lib/definitions";
+import { BedCapacity, Role } from "@/lib/definitions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     Table,
@@ -13,24 +13,27 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { useSession } from "next-auth/react";
-import { Role } from "@/lib/definitions";
 import { EditBedCapacityDialog } from "./EditBedCapacityDialog";
 import { useState } from "react";
 
+interface BedCapacitySectionProps {
+    bedCapacity: BedCapacity[];
+    hospitalId: number;
+    userRole: Role;
+}
+
 export default function BedCapacitySection({
-    hospital,
-}: {
-    hospital: Hospital;
-}) {
-    const { data: session } = useSession();
-    const userRole = session?.user?.role as Role;
+    bedCapacity,
+    hospitalId,
+    userRole,
+}: BedCapacitySectionProps) {
     const [isEditOpen, setIsEditOpen] = useState(false);
 
-    if (!hospital.bedCapacity || hospital.bedCapacity.length === 0) {
+    // If no bed capacity rows exist
+    if (!bedCapacity || bedCapacity.length === 0) {
         return (
             <Card className="bg-white shadow-md rounded-[10px]">
-                <CardHeader className="flex flex-row justify-between items-center bg-bluelight rounded-t-[10px] mb-4">
+                <CardHeader className="flex flex-row justify-between items-center bg-bluelight rounded-t-[10px] mb-4 p-4">
                     <CardTitle className="text-xl font-semibold">
                         Bed Capacity
                     </CardTitle>
@@ -43,18 +46,19 @@ export default function BedCapacitySection({
                         </Button>
                     )}
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4">
                     <p>No bed capacity information available.</p>
                 </CardContent>
             </Card>
         );
     }
 
-    const bedCapacity = hospital.bedCapacity[0];
+    // Only one BedCapacity per hospital in our schema
+    const capacity = bedCapacity[0];
 
     return (
         <Card className="bg-white shadow-md rounded-[10px] w-full">
-                <CardHeader className="flex flex-row justify-between items-center bg-bluelight rounded-t-[10px] mb-4">
+            <CardHeader className="flex flex-row justify-between items-center bg-bluelight rounded-t-[10px] mb-4 p-4">
                 <CardTitle className="text-lg font-semibold">
                     Bed Capacity
                 </CardTitle>
@@ -73,63 +77,73 @@ export default function BedCapacitySection({
                 <Table>
                     <TableHeader className="bg-black/5">
                         <TableRow>
-                            <TableHead className="font-semibold">Bed Type</TableHead>
-                            <TableHead className="text-right font-semibold">Capacity</TableHead>
+                            <TableHead className="font-semibold">
+                                Bed Type
+                            </TableHead>
+                            <TableHead className="text-right font-semibold">
+                                Capacity
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         <TableRow>
                             <TableCell>Total Inpatient Beds</TableCell>
                             <TableCell className="text-right">
-                                {bedCapacity.totalInpatientBeds}
+                                {capacity.totalInpatientBeds}
                             </TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>General Inpatient Beds</TableCell>
                             <TableCell className="text-right">
-                                {bedCapacity.generalInpatientBeds}
+                                {capacity.generalInpatientBeds}
                             </TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Cots</TableCell>
-                            <TableCell className="text-right">{bedCapacity.cots}</TableCell>
+                            <TableCell className="text-right">
+                                {capacity.cots}
+                            </TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Maternity Beds</TableCell>
-                            <TableCell className="text-right">{bedCapacity.maternityBeds}</TableCell>
+                            <TableCell className="text-right">
+                                {capacity.maternityBeds}
+                            </TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Emergency Casualty Beds</TableCell>
                             <TableCell className="text-right">
-                                {bedCapacity.emergencyCasualtyBeds}
+                                {capacity.emergencyCasualtyBeds}
                             </TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>ICU Beds</TableCell>
                             <TableCell className="text-right">
-                                {bedCapacity.intensiveCareUnitBeds}
+                                {capacity.intensiveCareUnitBeds}
                             </TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>HDU Beds</TableCell>
                             <TableCell className="text-right">
-                                {bedCapacity.highDependencyUnitBeds}
+                                {capacity.highDependencyUnitBeds}
                             </TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Isolation Beds</TableCell>
-                            <TableCell className="text-right">{bedCapacity.isolationBeds}</TableCell>
+                            <TableCell className="text-right">
+                                {capacity.isolationBeds}
+                            </TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>General Surgical Theatres</TableCell>
                             <TableCell className="text-right">
-                                {bedCapacity.generalSurgicalTheatres || "N/A"}
+                                {capacity.generalSurgicalTheatres || "N/A"}
                             </TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Maternity Surgical Theatres</TableCell>
                             <TableCell className="text-right">
-                                {bedCapacity.maternitySurgicalTheatres || "N/A"}
+                                {capacity.maternitySurgicalTheatres || "N/A"}
                             </TableCell>
                         </TableRow>
                     </TableBody>
@@ -137,8 +151,8 @@ export default function BedCapacitySection({
             </CardContent>
 
             <EditBedCapacityDialog
-                hospitalId={hospital.hospitalId}
-                bedCapacity={bedCapacity}
+                hospitalId={hospitalId}
+                bedCapacity={capacity}
                 open={isEditOpen}
                 onOpen={() => setIsEditOpen(true)}
                 onClose={() => setIsEditOpen(false)}

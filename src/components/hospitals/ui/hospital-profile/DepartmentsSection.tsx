@@ -2,7 +2,7 @@
 
 "use client";
 
-import { Hospital, Department } from "@/lib/definitions";
+import { HospitalDepartment, Role } from "@/lib/definitions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     Table,
@@ -14,25 +14,32 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { Role } from "@/lib/definitions";
 import { useDeleteDepartment } from "@/hooks/useDeleteDepartment";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
 
+interface DepartmentsSectionProps {
+    departments: HospitalDepartment[];
+    hospitalId: number;
+    userRole: Role;
+}
+
 export default function DepartmentsSection({
-    hospital,
-}: {
-    hospital: Hospital;
-}) {
+    departments,
+    hospitalId,
+    userRole,
+}: DepartmentsSectionProps) {
     const router = useRouter();
-    const { data: session } = useSession();
-    const userRole = session?.user?.role as Role;
     const deleteDepartment = useDeleteDepartment();
 
     const handleViewDepartment = (departmentId: number) => {
         router.push(
-            `/dashboard/hospitals/${hospital.hospitalId}/departments/${departmentId}`
+            `/dashboard/hospitals/${hospitalId}/departments/${departmentId}`
         );
     };
 
@@ -40,7 +47,7 @@ export default function DepartmentsSection({
         if (confirm("Are you sure you want to delete this department?")) {
             try {
                 await deleteDepartment.mutateAsync({
-                    hospitalId: hospital.hospitalId,
+                    hospitalId,
                     departmentId,
                 });
             } catch (error) {
@@ -49,7 +56,7 @@ export default function DepartmentsSection({
         }
     };
 
-    if (!hospital.departments || hospital.departments.length === 0) {
+    if (!departments || departments.length === 0) {
         return (
             <Card className="bg-white shadow-md rounded-[10px]">
                 <CardHeader>
@@ -57,7 +64,7 @@ export default function DepartmentsSection({
                         Departments
                     </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4">
                     <p>No departments found for this hospital.</p>
                 </CardContent>
             </Card>
@@ -66,22 +73,34 @@ export default function DepartmentsSection({
 
     return (
         <Card className="bg-white shadow-md rounded-[10px] w-full">
-                <CardHeader className="flex flex-row justify-between items-center bg-bluelight rounded-t-[10px] mb-4">
+            <CardHeader className="flex flex-row justify-between items-center bg-bluelight rounded-t-[10px] mb-4 p-6">
                 <CardTitle className="text-xl font-semibold">
                     Departments
                 </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4">
                 <Table>
                     <TableHeader className="bg-bluelight/5">
                         <TableRow>
                             <TableHead className="font-semibold">ID</TableHead>
-                            <TableHead className="font-semibold">Name</TableHead>
-                            <TableHead className="font-semibold">Type</TableHead>
-                            <TableHead className="font-semibold">Description</TableHead>
-                            <TableHead className="font-semibold">Head</TableHead>
-                            <TableHead className="font-semibold">Location</TableHead>
-                            <TableHead className="font-semibold">Established</TableHead>
+                            <TableHead className="font-semibold">
+                                Name
+                            </TableHead>
+                            <TableHead className="font-semibold">
+                                Type
+                            </TableHead>
+                            <TableHead className="font-semibold">
+                                Description
+                            </TableHead>
+                            <TableHead className="font-semibold">
+                                Head
+                            </TableHead>
+                            <TableHead className="font-semibold">
+                                Location
+                            </TableHead>
+                            <TableHead className="font-semibold">
+                                Established
+                            </TableHead>
                             <TableHead className="font-semibold">
                                 <div className="flex items-center">
                                     Specializations
@@ -91,20 +110,25 @@ export default function DepartmentsSection({
                                                 <Info size={14} />
                                             </TooltipTrigger>
                                             <TooltipContent>
-                                                <p>Hover to see specializations</p>
+                                                <p>
+                                                    Hover to see specializations
+                                                </p>
                                             </TooltipContent>
                                         </Tooltip>
                                     </TooltipProvider>
                                 </div>
                             </TableHead>
-                            <TableHead className="font-semibold">Actions</TableHead>
+                            <TableHead className="font-semibold">
+                                Actions
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {hospital.departments.map((deptLink) => {
+                        {departments.map((deptLink) => {
                             const department = deptLink.department;
-                            const specializations = department.specializationLinks || [];
-                            
+                            const specializations =
+                                department.specializationLinks || [];
+
                             return (
                                 <TableRow key={department.departmentId}>
                                     <TableCell>
@@ -159,7 +183,9 @@ export default function DepartmentsSection({
                                                                     (link) => (
                                                                         <li
                                                                             key={
-                                                                                link.specializationId
+                                                                                link
+                                                                                    .specialization
+                                                                                    .specializationId
                                                                             }
                                                                         >
                                                                             {
