@@ -1,19 +1,18 @@
 /* src/styles/global.css */
 
 @tailwind base;
-  @tailwind components;
-  @tailwind utilities;
+@tailwind components;
+@tailwind utilities;
 
-  .truncate-lines {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3; /* Number of lines */
-    line-clamp: 3; /* Number of lines */
-    
-  }
+.truncate-lines {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3; /* Number of lines */
+  line-clamp: 3; /* Number of lines */
+}
 
-  /* Custom vertical scrollbar (y-axis) */
+/* Custom vertical scrollbar (y-axis) */
 .scrollbar-custom {
   scrollbar-width: none; /* For Firefox */
   scrollbar-color: #8d8d8d7e #f7fafc; /* Scrollbar thumb and track colors */
@@ -41,8 +40,7 @@
   width: 2px;
 }
 
- /* Custom calender */
-
+/* Custom calendar */
 .custom-datepicker {
   padding: 5px;
   margin-top: 5px;
@@ -50,18 +48,16 @@
   border-radius: 10px !important;
 }
 
- /* Customize header */
+/* Customize header */
 .custom-datepicker .react-datepicker__header {
   @apply bg-bluelight/10 text-black;
 }
-
 
 /* Style for selected day */
 .custom-datepicker .react-datepicker__day--selected,
 .custom-datepicker__day--keyboard-selected {
   @apply bg-bluelight text-black;
 }
-
 
 /* Hover effect */
 .custom-datepicker .react-datepicker__day:hover {
@@ -86,75 +82,91 @@
   @apply p-2 hover:bg-primary hover:text-white rounded-md;
 }
 
-  /* @layer base {
-    :root {
-      --background: 0 0% 100%;
-      --foreground: 222.2 84% 4.9%;
+/* ─── Map Styling ───────────────────────────────────────────────────────────────── */
 
-      --card: 0 0% 100%;
-      --card-foreground: 222.2 84% 4.9%;
+/* Wrapper around the MapContainer to apply padding, background, shadow, and fixed height */
+.map-wrapper {
+  @apply rounded-[10px] overflow-hidden bg-white shadow-md p-4 h-[400px] w-full;
+}
 
-      --popover: 0 0% 100%;
-      --popover-foreground: 222.2 84% 4.9%;
+/* Ensure the Leaflet map fills its container and has rounded corners */
+.leaflet-container {
+  border-radius: 10px;
+  height: 100%;
+  width: 100%;
+  outline: none; /* Removes focus ring */
+  font-family: inherit;
+}
 
-      --primary: 222.2 47.4% 11.2%;
-      --primary-foreground: 210 40% 98%;
+/* Smooth tile loading transition */
+.leaflet-container .leaflet-tile {
+  transition: filter 0.2s ease;
+}
 
-      --secondary: 210 40% 96.1%;
-      --secondary-foreground: 222.2 47.4% 11.2%;
+/* Customize popup appearance */
+.leaflet-popup-content-wrapper {
+  @apply bg-white rounded-[8px] shadow-lg text-sm;
+}
 
-      --muted: 210 40% 96.1%;
-      --muted-foreground: 215.4 16.3% 46.9%;
+/* Position zoom control further from edges if needed */
+.leaflet-top.leaflet-right {
+  top: 1rem;
+  right: 1rem;
+}
 
-      --accent: 210 40% 96.1%;
-      --accent-foreground: 222.2 47.4% 11.2%;
 
-      --destructive: 0 84.2% 60.2%;
-      --destructive-foreground: 210 40% 98%;
-
-      --border: 214.3 31.8% 91.4%;
-      --input: 214.3 31.8% 91.4%;
-      --ring: 222.2 84% 4.9%;
-
-      --radius: 0.5rem;
-    }
-
-    .dark {
-      --background: 222.2 84% 4.9%;
-      --foreground: 210 40% 98%;
-
-      --card: 222.2 84% 4.9%;
-      --card-foreground: 210 40% 98%;
-
-      --popover: 222.2 84% 4.9%;
-      --popover-foreground: 210 40% 98%;
-
-      --primary: 210 40% 98%;
-      --primary-foreground: 222.2 47.4% 11.2%;
-
-      --secondary: 217.2 32.6% 17.5%;
-      --secondary-foreground: 210 40% 98%;
-
-      --muted: 217.2 32.6% 17.5%;
-      --muted-foreground: 215 20.2% 65.1%;
-
-      --accent: 217.2 32.6% 17.5%;
-      --accent-foreground: 210 40% 98%;
-
-      --destructive: 0 62.8% 30.6%;
-      --destructive-foreground: 210 40% 98%;
-
-      --border: 217.2 32.6% 17.5%;
-      --input: 217.2 32.6% 17.5%;
-      --ring: 212.7 26.8% 83.9%;
-    }
+/* @layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
   }
 
-  @layer base {
-    * {
-      @apply border-border;
-    }
-    body {
-      @apply bg-background text-foreground;
-    }
-  } */
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+} */

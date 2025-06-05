@@ -1,4 +1,4 @@
-// File: src/app/(auth)/dashboard/loading.tsx
+// src/app/(auth)/dashboard/loading.tsx
 
 "use client"
 

@@ -9,7 +9,7 @@ import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import { getErrorMessage } from "@/hooks/getErrorMessage";
 
-const prisma = require("@/lib/prisma");
+import prisma from "@/lib/prisma";
 
 /**
  * Fetches a list of specializations.
@@ -52,7 +52,7 @@ export async function fetchSpecializations(
                 }
                 // Filter by hospitalId for ADMIN
                 whereClause = {
-                    departments: {
+                    departmentLinks: {
                         some: {
                             department: {
                                 hospitals: {
@@ -72,7 +72,7 @@ export async function fetchSpecializations(
                 }
                 // Filter by hospitalId for other roles
                 whereClause = {
-                    departments: {
+                    departmentLinks: {
                         some: {
                             department: {
                                 hospitals: {
@@ -95,12 +95,12 @@ export async function fetchSpecializations(
                 specializationId: true,
                 name: true,
                 description: true,
-                departments: {
+                departmentLinks: {
                     select: {
                         departmentId: true,
                         department: {
                             select: {
-                                departmentName: true,
+                                name: true,
                             },
                         },
                     },

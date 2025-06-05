@@ -2,12 +2,12 @@
 
 "use client";
 
+import AddAppointmentDialog from "@/components/appointments/ui/appointment-modals/AddAppointmentDialog"; // Import the appointment dialog
+import { Doctor, Role } from "@/lib/definitions";
+import { Rating } from "@mui/material";
+import Image from "next/image";
 import React, { useState } from "react";
 import DoctorBio from "./DoctorBio";
-import Image from "next/image";
-import { Rating } from "@mui/material";
-import AddAppointmentDialog from "@/components/appointments/AddAppointmentDialog"; // Import the appointment dialog
-import { Doctor, Role } from "@/lib/definitions";
 
 interface DoctorsCardProps {
     doctor: Doctor;
@@ -60,8 +60,13 @@ const DoctorsCard: React.FC<DoctorsCardProps> = ({
                     <div className="w-1/2 flex justify-center items-center">
                         <div className="w-[80px] h-[80px] rounded-full overflow-hidden">
                             <Image
-                                src={doctor.user?.profile?.imageUrl || "/images/doctor.svg"}
-                                alt={`Profile picture of Dr. ${doctor.user?.profile?.firstName || "Doctor"} ${doctor.user?.profile?.lastName || ""}`}
+                                src={
+                                    doctor.user?.profile?.imageUrl ||
+                                    "/images/doctor.svg"
+                                }
+                                alt={`Profile picture of Dr. ${
+                                    doctor.user?.profile?.firstName || "Doctor"
+                                } ${doctor.user?.profile?.lastName || ""}`}
                                 width={80}
                                 height={80}
                                 className="w-full h-full object-cover rounded-[50%] border-4 border-gray-300"

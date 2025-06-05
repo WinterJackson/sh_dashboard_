@@ -114,17 +114,6 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
                         <GearIcon className="mr-2 text-xl" />
                         Settings
                     </Link>
-                    <Link
-                        href="/dashboard/profile"
-                        className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center border-2 ${
-                            isActive("/dashboard/profile")
-                                ? "bg-primary text-white"
-                                : "hover:bg-bluelight hover:text-black"
-                        }`}
-                    >
-                        <PersonIcon className="mr-2 text-xl" />
-                        Profile
-                    </Link>
                 </nav>
             </div>
             <div className="p-4">
@@ -132,7 +121,7 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
                     <div className="flex-grow items-start bg-slate-100 py-1 px-2 hover:bg-bluelight/10 rounded-[10px] shadow-sm shadow-gray-400">
                         {username !== "Guest User" && role !== "Guest" ? (
                             <>
-                                <p className="font-semibold text-nowrap">
+                                <p className="font-semibold text-nowrap uppercase">
                                     {firstName}
                                 </p>
                                 <p className="text-xs text-nowrap text-gray-400">

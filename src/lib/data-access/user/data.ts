@@ -1,4 +1,4 @@
-// File: src/lib/data-access/user/data.ts
+// src/lib/data-access/user/data.ts
 
 "use server";
 
@@ -7,7 +7,7 @@ import { getErrorMessage } from "@/hooks/getErrorMessage";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 
-const prisma = require("@/lib/prisma");
+import prisma from "@/lib/prisma";
 
 export type UserProfile = {
     id: string;
@@ -194,4 +194,34 @@ export async function fetchUserProfile(userId?: string): Promise<UserProfile> {
             hospitalName: null,
         };
     }
+}
+
+export async function markOnboardingComplete(userId: string) {
+    try {
+        const updatedUser = await prisma.user.update({
+            where: { userId },
+            data: { hasCompletedOnboarding: true },
+        });
+        return updatedUser;
+    } catch (error) {
+        console.error("Error marking onboarding complete:", error);
+        throw new Error("Failed to update onboarding status");
+    }
+}
+
+/**
+ * Fetch a user profile with necessary details only.
+ */
+export async function getUserProfile(userId: string) {
+    return await prisma.profile.findUnique({
+        where: { userId },
+        include: {
+            user: {
+                select: {
+                    role: true,
+                    username: true,
+                },
+            },
+        },
+    });
 }

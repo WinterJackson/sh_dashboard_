@@ -10,9 +10,13 @@ import * as Sentry from "@sentry/nextjs";
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { NotificationSettings, User, Profile, Doctor, Nurse, Staff } from "@/lib/definitions";
+import { NotificationSettings, User, Profile, Doctor, Nurse, Staff, AuditAction, UserSettingsData } from "@/lib/definitions";
+import { updatePassword } from "@/lib/utils/updatePassword";
+import { sendEmail } from "@/lib/email";
+import { getClientIP } from "@/lib/utils/getClientIP";
+import { anonymizeIP } from "@/lib/utils/anonymizeIP";
 
-const prisma = require("@/lib/prisma");
+import prisma from "@/lib/prisma";
 
 // Types
 export type ProfileUpdateData = {
@@ -55,12 +59,12 @@ export type SecuritySettings = Pick<
 };
 
 // Fetch complete user settings data
-export async function fetchUserSettings(userId?: string) {
+export async function fetchUserSettings(userId?: string): Promise<UserSettingsData> {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user) redirect("/sign-in");
 
-        const user = await prisma.user.findUnique({
+        const dbUser = await prisma.user.findUnique({
             where: { userId: userId || session.user.id },
             include: {
                 profile: true,
@@ -71,40 +75,98 @@ export async function fetchUserSettings(userId?: string) {
             },
         });
 
-        if (!user) throw new Error("User not found");
+        if (!dbUser) throw new Error("User not found");
 
-        return {
+        // Convert Prisma types to plain objects + format dates
+        const user: User = {
+            userId: dbUser.userId,
+            username: dbUser.username,
+            email: dbUser.email,
+            password: dbUser.password,
+            role: dbUser.role,
+            hospitalId: dbUser.hospitalId ?? undefined,
+            isActive: dbUser.isActive,
+            lastLogin: dbUser.lastLogin ?? undefined,
+            mustResetPassword: dbUser.mustResetPassword,
+            resetToken: dbUser.resetToken ?? undefined,
+            resetTokenExpiry: dbUser.resetTokenExpiry ?? undefined,
+            createdAt: dbUser.createdAt,
+            updatedAt: dbUser.updatedAt,
+            twoFactorEnabled: dbUser.twoFactorEnabled,
+            autoLogoutTimeout: dbUser.autoLogoutTimeout ?? 30,
+            hasCompletedOnboarding: dbUser.hasCompletedOnboarding,
+            doctor: dbUser.doctor ? { ...dbUser.doctor } : undefined,
+            profile: dbUser.profile ? { ...dbUser.profile } : undefined,
+            sessions: [],
+            hospital: undefined,
+            superAdmin: undefined,
+            admin: undefined,
+            nurse: dbUser.nurse ? { ...dbUser.nurse } : undefined,
+            staff: dbUser.staff ? { ...dbUser.staff } : undefined,
+            patient: undefined,
+            notifications: [],
+            notificationSettings: dbUser.notificationSettings
+                ? { ...dbUser.notificationSettings }
+                : undefined,
+            conversationParticipant: [],
+            messages: [],
+            notes: [],
+            uploadedDocuments: [],
+            auditLog: [],
+        };
+
+        const profile: Profile = {
+            profileId: user.profile?.profileId ?? "",
+            userId: user.userId,
+            firstName: user.profile?.firstName ?? "",
+            lastName: user.profile?.lastName ?? "",
+            gender: user.profile?.gender ?? undefined,
+            phoneNo: user.profile?.phoneNo ?? "",
+            address: user.profile?.address ?? "",
+            dateOfBirth: user.profile?.dateOfBirth
+                ? new Date(user.profile.dateOfBirth)
+                : null,
+            cityOrTown: user.profile?.cityOrTown ?? "",
+            county: user.profile?.county ?? "",
+            imageUrl: user.profile?.imageUrl ?? "",
+            nextOfKin: user.profile?.nextOfKin ?? "",
+            nextOfKinPhoneNo: user.profile?.nextOfKinPhoneNo ?? "",
+            emergencyContact: user.profile?.emergencyContact ?? "",
+            user,
+        };
+
+        const roleSpecific = {
+            doctor: user.doctor ?? {},
+            nurse: user.nurse ?? {},
+            staff: user.staff ?? {},
+        };
+
+        const notificationSettings: NotificationSettings = user.notificationSettings
+            ? {
+                  ...user.notificationSettings,
+                  user,
+              }
+            : {
+                  notificationSettingsId: "",
+                  userId: user.userId,
+                  appointmentAlerts: true,
+                  emailAlerts: true,
+                  securityAlerts: true,
+                  systemUpdates: true,
+                  newDeviceLogin: true,
+                  user,
+              };
+
+        // structured settings object `UserSettingsData`
+        const result: UserSettingsData = {
             profile: {
-                firstName: user.profile?.firstName || "",
-                lastName: user.profile?.lastName || "",
-                phoneNo: user.profile?.phoneNo || "",
-                cityOrTown: user.profile?.cityOrTown || "",
-                county: user.profile?.county || "",
-                gender: user.profile?.gender || "",
-                dateOfBirth: user.profile?.dateOfBirth?.toISOString() || "",
-                address: user.profile?.address || "",
-                emergencyContact: user.profile?.emergencyContact || "",
-                nextOfKin: user.profile?.nextOfKin || "",
-                nextOfKinPhoneNo: user.profile?.nextOfKinPhoneNo || "",
-                imageUrl: user.profile?.imageUrl || "",
-
-                ...user.profile,
+                ...profile,
                 username: user.username,
                 email: user.email,
             },
-            roleSpecific: {
-                doctor: user.doctor || {},
-                nurse: user.nurse || {},
-                staff: user.staff || {},
-            },
+            roleSpecific,
             role: user.role,
-            notificationSettings: user.notificationSettings || {
-                appointmentAlerts: true,
-                emailAlerts: true,
-                securityAlerts: true,
-                systemUpdates: true,
-                newDeviceLogin: true,
-            },
+            notificationSettings,
             securitySettings: {
                 twoFactorEnabled: user.twoFactorEnabled,
                 autoLogoutTimeout: user.autoLogoutTimeout,
@@ -112,6 +174,8 @@ export async function fetchUserSettings(userId?: string) {
             username: user.username,
             email: user.email,
         };
+
+        return result;
     } catch (error) {
         Sentry.captureException(error);
         throw new Error(getErrorMessage(error));
@@ -279,52 +343,106 @@ export async function updateNotificationSettings(
     }
 }
 
-// Update security settings
+/**
+ * Update security settings for a user
+ */
 export async function updateSecuritySettings(settings: SecuritySettings) {
+    const session = await getServerSession(authOptions);
+
     try {
-        const session = await getServerSession(authOptions);
         if (!session?.user) {
             redirect("/sign-in");
         }
 
-        // Prepare the data object for updating
+        const userId = session.user.id;
+
+        // Fetch current user to check for changes
+        const currentUser = await prisma.user.findUnique({
+            where: { userId },
+        });
+
+        if (!currentUser) {
+            throw new Error("User not found");
+        }
+
+        // Early exit if nothing changed
+        if (
+            currentUser.twoFactorEnabled === settings.twoFactorEnabled &&
+            currentUser.autoLogoutTimeout === settings.autoLogoutTimeout &&
+            !settings.newPassword
+        ) {
+            return currentUser; // No changes, skip DB update
+        }
+
+        // Prepare update object
         const updateData: Partial<User> = {
             twoFactorEnabled: settings.twoFactorEnabled,
             autoLogoutTimeout: settings.autoLogoutTimeout,
         };
 
-        // If updating password, hash it before saving
+        // Hash new password if provided
         if (settings.newPassword) {
             const hashedPassword = await bcrypt.hash(settings.newPassword, 12);
             updateData.password = hashedPassword;
+
+            // Revoke all sessions if password changed
+            await prisma.session.deleteMany({ where: { userId } });
         }
 
-        // Update user's security settings
+        // Update user
         const updatedUser = await prisma.user.update({
-            where: { userId: session.user.id },
+            where: { userId },
             data: updateData,
+        });
+
+        // Log audit
+        await prisma.auditLog.create({
+            data: {
+                action: settings.newPassword
+                    ? AuditAction.RESET_PASSWORD
+                    : AuditAction.MFA_ENABLED,
+                userId,
+                status: "SUCCESS",
+                meta: {
+                    method: settings.newPassword ? "manual_change" : "mfa_change",
+                    revokedSessions: Boolean(settings.newPassword),
+                    timestamp: new Date().toISOString(),
+                },
+            },
         });
 
         revalidatePath("/settings");
         return updatedUser;
     } catch (error) {
+        // Log failed attempt
+        await prisma.auditLog.create({
+            data: {
+                action: settings.newPassword
+                    ? AuditAction.RESET_PASSWORD
+                    : AuditAction.MFA_ENABLED,
+                userId: session?.user?.id ?? null,
+                status: "FAILED",
+                meta: {
+                    error: error instanceof Error ? error.message : String(error),
+                    attemptedAt: new Date().toISOString(),
+                },
+            },
+        });
+
         Sentry.captureException(error);
         throw new Error(getErrorMessage(error));
     }
 }
 
+
 // Change password
-export async function changePassword(
-    currentPassword: string,
-    newPassword: string
-) {
+export async function changePassword(currentPassword: string, newPassword: string) {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user) {
             redirect("/sign-in");
         }
 
-        // Fetch the current user
         const user = await prisma.user.findUnique({
             where: { userId: session.user.id },
         });
@@ -333,20 +451,57 @@ export async function changePassword(
             throw new Error("User not found");
         }
 
-        // Validate the current password
-        const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        const isPasswordValid = await bcrypt.compare(
+            currentPassword,
+            user.password
+        );
         if (!isPasswordValid) {
             throw new Error("Current password is incorrect");
         }
 
-        // Hash the new password
-        const hashedPassword = await bcrypt.hash(newPassword, 12);
-
-        // Update the user's password
-        const updatedUser = await prisma.user.update({
-            where: { userId: session.user.id },
-            data: { password: hashedPassword },
+        // Update password and revoke sessions
+        const updatedUser = await updatePassword({
+            userId: session.user.id,
+            newPassword,
+            reason: "manual_change",
+            shouldRevokeSessions: true,
         });
+
+        // Send email notification
+        if (user.email) {
+            const subject = "Your Password Has Been Changed";
+            const text = `Hello,\n\nYour password has been changed successfully.\n\nYou have been logged out from all devices.\n\nIf this wasn't you, please contact support immediately.\n\nBest regards,\nThe SecureTeam`;
+            const html = `<p>Hello,</p>
+                <p>Your password has been changed successfully.</p>
+                <p>You have been logged out from all devices.</p>
+                <p>If this wasn't you, please contact support immediately.</p>
+                <p>Best regards,<br/>SNARK HEALTH</p>`;
+
+            try {
+                await sendEmail({ to: user.email, subject, text, html });
+            } catch (emailError) {
+                console.error(
+                    "Failed to send password change email:",
+                    emailError
+                );
+
+                // Log email failure in audit logs
+                await prisma.auditLog.create({
+                    data: {
+                        action: AuditAction.RESET_PASSWORD,
+                        userId: session.user.id,
+                        status: "EMAIL_FAILED",
+                        meta: {
+                            reason: "Failed to send email after password change",
+                            error:
+                                emailError instanceof Error
+                                    ? emailError.message
+                                    : String(emailError),
+                        },
+                    },
+                });
+            }
+        }
 
         return updatedUser;
     } catch (error) {

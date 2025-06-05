@@ -13,7 +13,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { getErrorMessage } from "@/hooks/getErrorMessage";
 
-const prisma = require("@/lib/prisma");
+import prisma from "@/lib/prisma";
 
 /**
  * Fetch top doctors based on user's role and hospitalId.
@@ -333,7 +333,7 @@ export async function fetchDoctorDetails(
         // Authorization check
         if (
             role !== Role.SUPER_ADMIN &&
-            (!hospitalId || ![Role.ADMIN, Role.DOCTOR].includes(role))
+            (!hospitalId || ![Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.STAFF].includes(role))
         ) {
             console.error("Unauthorized doctor details access");
             return null;

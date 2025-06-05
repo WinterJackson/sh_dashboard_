@@ -1,9 +1,11 @@
 // src/app/api/users/route.ts
 
+export const runtime = "nodejs";
+
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { sendEmail } from "@/lib/email"; // To send the reset email
-const prisma = require("@/lib/prisma");
+import { sendEmail } from "@/lib/email";
+import prisma from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
     try {

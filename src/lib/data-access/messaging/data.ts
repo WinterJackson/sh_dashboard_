@@ -9,7 +9,7 @@ import { authOptions } from "@/lib/authOptions";
 import { Conversation, Message, Role } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
 
-const prisma = require("@/lib/prisma");
+import prisma from "@/lib/prisma";
 
 /**
  * Fetch conversations for the logged-in user

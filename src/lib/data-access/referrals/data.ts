@@ -9,7 +9,7 @@ import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import { getErrorMessage } from "@/hooks/getErrorMessage";
 
-const prisma = require("@/lib/prisma");
+import prisma from "@/lib/prisma";
 
 /**
  * Fetches inward referrals based on user role and hospitalId.

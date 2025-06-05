@@ -7,6 +7,7 @@
         "strict": true,
         "noEmit": true,
         "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
         "module": "commonjs",
         "moduleResolution": "node",
         "resolveJsonModule": true,
@@ -29,8 +30,9 @@
         "**/*.tsx",
         ".next/types/**/*.ts",
         "src/lib/prisma.js",
-        "src/components/appointments/DateRangePicker.tsx",
-        "src/scripts/seed.js"
-    ],
+        "src/components/appointments/ui/appointments-table/DateRangePicker.tsx",
+        "src/scripts/seed.js",
+        ".next/types/**/*.ts"
+, "src/lib/data-access/appointments/data copy 2.js", "src/lib/data-access/appointments/data copy 5.js", "src/lib/email copy.js"    ],
     "exclude": ["node_modules"]
 }

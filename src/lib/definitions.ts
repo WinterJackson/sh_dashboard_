@@ -33,7 +33,7 @@ export enum ConversationStatus {
     DELETED = "DELETED",
 }
 
-export enum HospitalType {
+export enum HospitalOwnershipType {
     PUBLIC = "PUBLIC",
     PRIVATE = "PRIVATE",
     MISSION = "MISSION",
@@ -103,6 +103,19 @@ export enum BedAvailability {
     AVAILABLE = "AVAILABLE",
 }
 
+export enum AuditAction {
+    CREATE = "CREATE",
+    UPDATE = "UPDATE",
+    DELETE = "DELETE",
+    LOGIN = "LOGIN",
+    LOGOUT = "LOGOUT",
+    ACCESS = "ACCESS",
+    MFA_ENABLED = "MFA_ENABLED",
+    MFA_VERIFIED = "MFA_VERIFIED",
+    RESET_PASSWORD = "RESET_PASSWORD",
+    ONBOARDED = "ONBOARDED",
+}
+
 export interface User {
     userId: string;
     username: string;
@@ -112,13 +125,14 @@ export interface User {
     hospitalId?: number | null;
     isActive?: boolean;
     lastLogin?: Date | null;
-    mustResetPassword?: boolean;
     resetToken?: string | null;
+    mustResetPassword?: boolean;
     resetTokenExpiry?: Date | null;
     createdAt: Date;
     updatedAt: Date;
     twoFactorEnabled?: boolean;
     autoLogoutTimeout?: number;
+    hasCompletedOnboarding: boolean;
     doctor?: Doctor;
     profile?: Profile;
     sessions?: Session[];
@@ -134,6 +148,7 @@ export interface User {
     messages?: Message[];
     notes?: AppointmentNote[];
     uploadedDocuments?: ReferralDocument[];
+    auditLog?: AuditLog[];
 }
 
 export interface Notification {
@@ -142,9 +157,11 @@ export interface Notification {
     type: NotificationType;
     message: string;
     isRead: boolean;
+    metadata?: Record<string, any>; // Optional additional data
+    actionUrl?: string | null;
+
     createdAt: Date;
     updatedAt: Date;
-    metadata?: Record<string, any>; // Optional additional data
     user: User;
 }
 
@@ -180,6 +197,8 @@ export interface Profile {
 export interface SuperAdmin {
     superAdminId: number;
     userId: string;
+    createdAt: Date;
+    updatedAt: Date;
     user: User;
 }
 
@@ -187,6 +206,8 @@ export interface Admin {
     adminId: number;
     userId: string;
     hospitalId: number;
+    createdAt: Date;
+    updatedAt: Date;
     user: User;
     hospital: Hospital;
 }
@@ -409,7 +430,6 @@ export interface Appointment {
 export interface AppointmentNote {
     appointmentNoteId: string;
     appointmentId: string;
-    hospitalId: number;
     authorId: string;
     authorRole: Role;
     content: string;
@@ -417,7 +437,6 @@ export interface AppointmentNote {
     updatedAt: Date;
     appointment: Appointment;
     author: User;
-    hospital: Hospital;
 }
 
 export interface DoctorEarning {
@@ -442,6 +461,8 @@ export interface BedCapacity {
     isolationBeds: number;
     generalSurgicalTheatres?: number | null;
     maternitySurgicalTheatres?: number | null;
+    createdAt: Date;
+    updatedAt: Date;
     hospital: Hospital;
 }
 
@@ -452,6 +473,8 @@ export interface Bed {
     type: string;
     ward: string;
     availability: BedAvailability;
+    createdAt: Date;
+    updatedAt: Date;
     hospital: Hospital;
     patient?: Patient;
 }
@@ -464,7 +487,7 @@ export interface Hospital {
     email?: string | null;
     kephLevel?: KEPHLevel | null;
     regulatoryBody?: string | null;
-    hospitalType?: HospitalType | null;
+    ownershipType?: HospitalOwnershipType | null;
     facilityType?: string | null;
     nhifAccreditation?: string | null;
     open24Hours?: string | null;
@@ -492,6 +515,8 @@ export interface Hospital {
     operatingHours?: string | null;
     nearestLandmark?: string | null;
     plotNumber?: string | null;
+    createdAt: Date;
+    updatedAt: Date;
     appointments: Appointment[];
     beds: Bed[];
     doctors: Doctor[];
@@ -503,7 +528,6 @@ export interface Hospital {
     admins: Admin[];
     staffs: Staff[];
     conversations: Conversation[];
-    appointmentNotes: AppointmentNote[];
     bedCapacity: BedCapacity[];
     hospitalServices: HospitalService[];
     appointmentServices: AppointmentService[];
@@ -515,6 +539,8 @@ export interface Specialization {
     specializationId: number;
     name: string;
     description?: string | null;
+    createdAt: Date;
+    updatedAt: Date;
     doctors: Doctor[];
     nurses: Nurse[];
     staff: Staff[];
@@ -526,6 +552,8 @@ export interface Department {
     name: string;
     description?: string | null;
     type: DepartmentType;
+    createdAt: Date;
+    updatedAt: Date;
     hospitalServices: HospitalService[];
     doctors: Doctor[];
     nurses: Nurse[];
@@ -533,6 +561,7 @@ export interface Department {
     hospitals: HospitalDepartment[];
     appointmentServices: AppointmentService[];
     specializationLinks: DepartmentSpecialization[];
+    services: DepartmentService [];
 }
 
 export interface DepartmentSpecialization {
@@ -563,17 +592,28 @@ export interface Service {
     serviceId: number;
     serviceName: string;
     type: ServiceType;
+    createdAt: Date;
+    updatedAt: Date;
     appointments: AppointmentService[];
-    doctors: Doctor[];
     payments: Payment[];
     serviceUsages: ServiceUsage[];
-    hospitalServices: HospitalService[];
+    hospitals: HospitalService[];
+    departments: DepartmentService[];
+}
+
+export interface DepartmentService {
+    departmentId: number;
+    serviceId: number;
+    createdAt: Date;
+    updatedAt: Date;
+    department: Department;
+    service: Service;
 }
 
 export interface HospitalService {
     hospitalId: number;
-    serviceId: number;
     departmentId: number;
+    serviceId: number;
     maxAppointmentsPerDay?: number | null;
     requiresReferral: boolean;
     isWalkInAllowed: boolean;
@@ -593,8 +633,8 @@ export interface AppointmentService {
     appointmentId: string;
     hospitalId: number;
     patientId: number;
-    serviceId: number;
     departmentId?: number | null;
+    serviceId: number;
     createdAt: Date;
     updatedAt: Date;
     appointment: Appointment;
@@ -603,9 +643,10 @@ export interface AppointmentService {
     department?: Department | null;
     hospital: Hospital;
 }
-
 export interface ServiceUsage {
     usageId: string;
+    hospitalId: number;
+    departmentId?: number | null;
     appointmentId: string;
     serviceId: number;
     patientId: number;
@@ -617,10 +658,10 @@ export interface ServiceUsage {
 
 export interface Payment {
     paymentId: string;
-    patientId: number;
-    serviceId: number;
     hospitalId: number;
     appointmentId: string;
+    patientId: number;
+    serviceId: number;
     amount: number;
     createdAt: Date;
     updatedAt: Date;
@@ -633,9 +674,9 @@ export interface Payment {
 export interface Referral {
     referralId: number;
     patientId: number;
-    referringDoctorId: number;
     originHospitalId: number;
     destinationHospitalId: number;
+    referringDoctorId: number;
     previousReferralId?: number | null;
     type: ReferralType;
     status: ReferralStatus;
@@ -680,6 +721,7 @@ export interface ReferralDoctor {
     doctorId: number;
     referralId: number;
     patientId: number;
+    previousReferralId?: number | null;
     referralRole: ReferralDoctorRole;
     doctor: Doctor;
     referral: Referral;
@@ -722,6 +764,13 @@ export interface Session {
     };
 }
 
+export interface PasswordHistory {
+    id: string;
+    userId: string;
+    password: string;
+    createdAt: Date;
+}
+
 export interface VerificationToken {
     tokenId: number;
     identifier: string;
@@ -729,8 +778,40 @@ export interface VerificationToken {
     expires: Date;
 }
 
+export interface AuditLog {
+    id: string;
+    action: AuditAction;
+    userId?: string | null;
+    ipAddress?: string | null;
+    userAgent?: string | null;
+    resourceType?: string | null;
+    resourceId?: string | null;
+    meta?: Record<string, any> | null;
+    status?: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    user?: User | null;
+}
+
 export interface RoleConstraints {
     constraintId: number;
     role: Role;
     count: number;
+}
+
+export interface UserSettingsData {
+    profile: Partial<Profile> & {
+        username?: string;
+        email?: string;
+    };
+    roleSpecific: {
+        doctor: Partial<Doctor>;
+        nurse: Partial<Nurse>;
+        staff: Partial<Staff>;
+    };
+    role: User["role"];
+    notificationSettings: NotificationSettings;
+    securitySettings: Pick<User, "twoFactorEnabled" | "autoLogoutTimeout">;
+    username: User["username"];
+    email: User["email"];
 }

@@ -1,26 +1,32 @@
-// File: src/components/header/HeaderWrapper.tsx
+// src/components/header/HeaderWrapper.tsx
 
 import React from "react";
 import Header from "./ui/Header";
-import { getUserProfile } from "@/lib/session";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 
-const HeaderWrapper: React.FC = async () => {
-    // Fetch user profile and filter necessary data
-    const session = await getServerSession(authOptions);
-    const profile = session?.user ? await getUserProfile(session?.user?.id) : null;
+import prisma from "@/lib/prisma";
 
-    // Filter the required fields
-    const profileData = profile
-        ? {
-              firstName: profile?.firstName,
-              imageUrl: profile?.imageUrl,
-              role: profile?.user?.role,
-          }
+const HeaderWrapper: React.FC = async () => {
+    const session = await getServerSession(authOptions);
+    const username = session?.user?.username || "Guest User";
+    const role = session?.user?.role || "Guest";
+
+    // 1) Fetch user record, including imageUrl
+    const userWithProfile = session?.user?.email
+        ? await prisma.user.findUnique({
+              where: { email: session.user.email },
+              select: {
+                  profile: {
+                      select: { imageUrl: true },
+                  },
+              },
+          })
         : null;
 
-    return <Header profileData={profileData} />;
+    const imageUrl = userWithProfile?.profile?.imageUrl ?? undefined;
+
+    return <Header username={username} role={role} imageUrl={imageUrl} />;
 };
 
 export default HeaderWrapper;

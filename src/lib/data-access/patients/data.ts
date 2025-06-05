@@ -9,7 +9,7 @@ import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import { getErrorMessage } from "@/hooks/getErrorMessage";
 
-const prisma = require("@/lib/prisma");
+import prisma from "@/lib/prisma";
 
 // Fetch today's patients
 export async function fetchPatientsToday(user?: {
@@ -424,7 +424,25 @@ export async function fetchPatients(user?: {
                 patients = await prisma.patient.findMany({
                     include: {
                         hospital: true,
-                        appointments: { orderBy: { appointmentDate: "desc" } },
+                        user: {
+                            include: {
+                                profile: true,
+                            },
+                        },
+                        appointments: {
+                            orderBy: { appointmentDate: "desc" },
+                            include: {
+                                doctor: {
+                                    include: {
+                                        user: {
+                                            include: {
+                                                profile: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
                     },
                 });
                 totalPatients = await prisma.patient.count();
@@ -442,7 +460,25 @@ export async function fetchPatients(user?: {
                     where: { hospitalId },
                     include: {
                         hospital: true,
-                        appointments: { orderBy: { appointmentDate: "desc" } },
+                        user: {
+                            include: {
+                                profile: true,
+                            },
+                        },
+                        appointments: {
+                            orderBy: { appointmentDate: "desc" },
+                            include: {
+                                doctor: {
+                                    include: {
+                                        user: {
+                                            include: {
+                                                profile: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
                     },
                 });
 
@@ -466,9 +502,25 @@ export async function fetchPatients(user?: {
                     },
                     include: {
                         hospital: true,
+                        user: {
+                            include: {
+                                profile: true,
+                            },
+                        },
                         appointments: {
                             where: { doctor: { userId } },
                             orderBy: { appointmentDate: "desc" },
+                            include: {
+                                doctor: {
+                                    include: {
+                                        user: {
+                                            include: {
+                                                profile: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
                         },
                     },
                 });
@@ -501,6 +553,115 @@ export async function fetchPatients(user?: {
         Sentry.captureException(error, { extra: { errorMessage } });
         console.error("Error fetching patients:", errorMessage);
         return { patients: [], totalPatients: 0 };
+    }
+}
+
+/**
+ * Update basic patient information (marital status, occupation)
+ * along with the user's profile (address, phoneNo) and email.
+ */
+export async function updateBasicInfo(
+    patientId: number,
+    data: {
+        maritalStatus?: string;
+        occupation?: string;
+        address?: string;
+        phoneNo?: string;
+        email?: string;
+    }
+): Promise<Patient> {
+    try {
+        // Ensure the user is signed in
+        const session = await getServerSession(authOptions);
+        if (!session?.user) {
+            // Redirect to sign-in if not authenticated
+            redirect("/sign-in");
+            throw new Error("Not authenticated");
+        }
+
+        // Lookup patient to get userId
+        const patient = await prisma.patient.findUnique({
+            where: { patientId },
+            select: { userId: true },
+        });
+        if (!patient) {
+            throw new Error(`Patient with ID ${patientId} not found`);
+        }
+        const { userId } = patient;
+
+        // Transactionally update patient, profile, and user records
+        const [updatedPatient] = await prisma.$transaction([
+            // Patient table
+            prisma.patient.update({
+                where: { patientId },
+                data: {
+                    maritalStatus: data.maritalStatus,
+                    occupation: data.occupation,
+                },
+            }),
+            // Profile table
+            prisma.profile.update({
+                where: { userId },
+                data: {
+                    address: data.address,
+                    phoneNo: data.phoneNo,
+                },
+            }),
+            // User table
+            prisma.user.update({
+                where: { userId },
+                data: {
+                    email: data.email,
+                },
+            }),
+        ]);
+
+        return updatedPatient;
+    } catch (error) {
+        const message = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { message } });
+        throw error;
+    }
+}
+
+/**
+ * Update next-of-kin patient information.
+ */
+export async function updateKinInfo(
+    patientId: number,
+    data: {
+        nextOfKinName?: string;
+        nextOfKinRelationship?: string;
+        nextOfKinHomeAddress?: string;
+        nextOfKinPhoneNo?: string;
+        nextOfKinEmail?: string;
+    }
+): Promise<Patient> {
+    try {
+        // Ensure the user is signed in
+        const session = await getServerSession(authOptions);
+        if (!session?.user) {
+            redirect("/sign-in");
+            throw new Error("Not authenticated");
+        }
+
+        // Update patient next-of-kin fields
+        const updatedPatient = await prisma.patient.update({
+            where: { patientId },
+            data: {
+                nextOfKinName: data.nextOfKinName,
+                nextOfKinRelationship: data.nextOfKinRelationship,
+                nextOfKinHomeAddress: data.nextOfKinHomeAddress,
+                nextOfKinPhoneNo: data.nextOfKinPhoneNo,
+                nextOfKinEmail: data.nextOfKinEmail,
+            },
+        });
+
+        return updatedPatient;
+    } catch (error) {
+        const message = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { message } });
+        throw error;
     }
 }
 
@@ -600,11 +761,57 @@ export async function fetchPatientDetailsById(
     patientId: number
 ): Promise<Patient | null> {
     try {
+        // Ensure user is signed in
+        const session = await getServerSession(authOptions);
+        if (!session?.user) {
+            redirect("/sign-in");
+            throw new Error("Not authenticated");
+        }
+
+        const { role, hospitalId, id: userId } = session.user;
+
+        // role where clause for appointments
+        const appointmentWhere: any = { patientId };
+
+        switch (role as Role) {
+            case "SUPER_ADMIN":
+                // no additional filters
+                break;
+
+            case "ADMIN":
+            case "NURSE":
+            case "STAFF":
+                // only appointments at the same hospital
+                if (hospitalId == null) {
+                    throw new Error(`${role} missing hospitalId`);
+                }
+                appointmentWhere.hospitalId = hospitalId;
+                break;
+
+            case "DOCTOR":
+                // only at their hospital AND assigned to them
+                if (hospitalId == null) {
+                    throw new Error("DOCTOR missing hospitalId");
+                }
+                appointmentWhere.hospitalId = hospitalId;
+                // doctor relation filter by doctor.userId
+                appointmentWhere.doctor = { userId };
+                break;
+
+            default:
+                // PATIENT or any other: only their own appointments
+                // (for patients to see only their own records)
+                appointmentWhere.patient = { user: { id: userId } };
+                break;
+        }
+
+        // Fetch patient with filtered appointments
         const patient = await prisma.patient.findUnique({
             where: { patientId },
             include: {
                 medicalInformation: true,
                 appointments: {
+                    where: appointmentWhere,
                     orderBy: { appointmentDate: "desc" },
                     select: {
                         appointmentId: true,
@@ -633,8 +840,49 @@ export async function fetchPatientDetailsById(
                             },
                             orderBy: { createdAt: "desc" },
                         },
-                        services: true,
-                        payments: true,
+                        services: {
+                            include: {
+                                service: {
+                                    select: {
+                                        serviceId: true,
+                                        serviceName: true,
+                                        type: true,
+                                    },
+                                },
+                                department: {
+                                    select: {
+                                        departmentId: true,
+                                        name: true,
+                                    },
+                                },
+                                hospital: {
+                                    select: {
+                                        hospitalId: true,
+                                        hospitalName: true,
+                                    },
+                                },
+                            },
+                        },
+                        payments: {
+                            include: {
+                                service: {
+                                    select: {
+                                        serviceName: true,
+                                        serviceId: true,
+                                    },
+                                },
+                                hospital: {
+                                    select: {
+                                        hospitalName: true,
+                                        hospitalId: true,
+                                    },
+                                },
+                            },
+                            orderBy: { createdAt: "desc" },
+                        },
+                        diagnosis: true,
+                        prescription: true,
+                        consultationFee: true,
                     },
                 },
                 hospital: true,
@@ -723,7 +971,7 @@ export async function fetchPatientsByRole(user?: {
 
         switch (role) {
             case "SUPER_ADMIN":
-                // Fetch all patients for SUPER_ADMIN
+                // all patients for SUPER_ADMIN
                 whereClause = {};
                 break;
 
@@ -731,7 +979,7 @@ export async function fetchPatientsByRole(user?: {
             case "DOCTOR":
             case "NURSE":
             case "STAFF":
-                // Fetch patients only for the user's hospital
+                // patients only for the user's hospital
                 if (!hospitalId) {
                     console.error(
                         `${role}s must have an associated hospital ID.`
@@ -752,7 +1000,7 @@ export async function fetchPatientsByRole(user?: {
             include: {
                 hospital: true,
                 appointments: {
-                    orderBy: { appointmentDate: "desc" }, // Sort appointments by date
+                    orderBy: { appointmentDate: "desc" },
                 },
             },
         });

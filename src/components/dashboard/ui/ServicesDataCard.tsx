@@ -97,6 +97,16 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
             : undefined
     );
 
+    const [searchText, setSearchText] = useState("");
+
+    // Filter hospitals by search text
+    const filteredHospitals = useMemo(() => {
+        if (!searchText) return hospitals;
+        return hospitals.filter((h) =>
+            h.hospitalName.toLowerCase().includes(searchText.toLowerCase())
+        );
+    }, [hospitals, searchText]);
+
     // Get hospital ID for services fetch
     const targetHospitalId =
         userRole === Role.SUPER_ADMIN ? selectedHospitalId : userHospitalId;
@@ -175,26 +185,46 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
                                     <ChevronRight className="h-4 w-4 ml-2 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-[200px] rounded-[5px]">
-                                <DropdownMenuItem
-                                    onClick={() => setSelectedHospitalId(null)}
-                                    className="cursor-pointer bg-bluelight rounded-[5px] mb-2"
-                                >
-                                    All Hospitals
-                                </DropdownMenuItem>
-                                {hospitals.map((hospital) => (
+
+                            <DropdownMenuContent className="w-[200px] rounded-[5px] p-2">
+                                {/* Search input */}
+                                <input
+                                    type="text"
+                                    placeholder="Search..."
+                                    value={searchText}
+                                    onChange={(e) =>
+                                        setSearchText(e.target.value)
+                                    }
+                                    className="w-full mb-2 px-2 py-1 border rounded"
+                                />
+
+                                {/* Scrollable list */}
+                                <div className="max-h-[300px] overflow-y-auto">
                                     <DropdownMenuItem
-                                        key={hospital.hospitalId}
-                                        onClick={() =>
-                                            setSelectedHospitalId(
-                                                hospital.hospitalId
-                                            )
-                                        }
-                                        className="cursor-pointer rounded-[5px] mb-1"
+                                        onClick={() => {
+                                            setSelectedHospitalId(null);
+                                            setSearchText("");
+                                        }}
+                                        className="cursor-pointer bg-bluelight rounded-[5px] mb-2"
                                     >
-                                        {hospital.hospitalName}
+                                        All Hospitals
                                     </DropdownMenuItem>
-                                ))}
+
+                                    {filteredHospitals.map((hospital) => (
+                                        <DropdownMenuItem
+                                            key={hospital.hospitalId}
+                                            onClick={() => {
+                                                setSelectedHospitalId(
+                                                    hospital.hospitalId
+                                                );
+                                                setSearchText("");
+                                            }}
+                                            className="cursor-pointer rounded-[5px] mb-1 truncate"
+                                        >
+                                            {hospital.hospitalName}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </div>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
@@ -206,7 +236,9 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
                 <div className="mb-4">
                     <p className="text-sm p-2 bg-bluelight/5 rounded-[5px]">
                         <span>Data for: </span>
-                        <span className="font-medium">{displayedHospitalName}</span>
+                        <span className="font-medium">
+                            {displayedHospitalName}
+                        </span>
                     </p>
                 </div>
             )}
@@ -236,7 +268,11 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
                                         {processedData.map((entry, index) => (
                                             <Cell
                                                 key={`cell-${index}`}
-                                                fill={COLORS[index % COLORS.length]}
+                                                fill={
+                                                    COLORS[
+                                                        index % COLORS.length
+                                                    ]
+                                                }
                                             />
                                         ))}
                                     </Pie>
@@ -252,43 +288,41 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
                         Services
                     </span>
                     <div className="space-y-4 overflow-x-auto p-2 scrollbar-custom w-full">
-                        {isLoading ? (
-                            Array.from({ length: 7 }).map((_, index) => (
-                                <div
-                                    key={index}
-                                    className="grid grid-cols-[5px_1fr_15px] min-w-[260px] items-center gap-3 bg-slate-200 rounded-[5px] p-1"
-                                >
-                                    <Skeleton className="w-3 h-2 rounded-full" />
-                                    <Skeleton className="h-2 w-[80%]" />
-                                    <Skeleton className="h-2 w-[20%]" />
-                                </div>
-                            ))
-                        ) : (
-                            processedData.map((entry, index) => (
-                                <div
-                                    key={entry.name}
-                                    className="grid grid-cols-[5px_1fr_15px] min-w-[260px] items-center gap-4 bg-slate-200 rounded-[5px] p-1"
-                                >
-                                    <div
-                                        className="w-3 h-3 rounded-full flex-shrink-0"
-                                        style={{
-                                            backgroundColor:
-                                                COLORS[index % COLORS.length],
-                                        }}
-                                    ></div>
-                                    <div className="flex justify-start overflow-hidden">
-                                        <span className="text-sm font-medium whitespace-nowrap truncate">
-                                            {entry.name}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-end">
-                                        <span className="text-sm text-gray-600 whitespace-nowrap">
-                                            {entry.percentage}%
-                                        </span>
-                                    </div>
-                                </div>
-                            ))
-                        )}
+                        {isLoading
+                            ? Array.from({ length: 7 }).map((_, index) => (
+                                  <div
+                                      key={index}
+                                      className="grid grid-cols-[5px_1fr_15px] min-w-[260px] items-center gap-3 bg-slate-200 rounded-[5px] p-1"
+                                  >
+                                      <Skeleton className="w-3 h-2 rounded-full" />
+                                      <Skeleton className="h-2 w-[80%]" />
+                                      <Skeleton className="h-2 w-[20%]" />
+                                  </div>
+                              ))
+                            : processedData.map((entry, index) => (
+                                  <div
+                                      key={entry.name}
+                                      className="grid grid-cols-[5px_1fr_15px] min-w-[260px] items-center gap-4 bg-slate-200 rounded-[5px] p-1"
+                                  >
+                                      <div
+                                          className="w-3 h-3 rounded-full flex-shrink-0"
+                                          style={{
+                                              backgroundColor:
+                                                  COLORS[index % COLORS.length],
+                                          }}
+                                      ></div>
+                                      <div className="flex justify-start overflow-hidden">
+                                          <span className="text-sm font-medium whitespace-nowrap truncate">
+                                              {entry.name}
+                                          </span>
+                                      </div>
+                                      <div className="flex justify-end">
+                                          <span className="text-sm text-gray-600 whitespace-nowrap">
+                                              {entry.percentage}%
+                                          </span>
+                                      </div>
+                                  </div>
+                              ))}
                     </div>
                 </div>
             </div>

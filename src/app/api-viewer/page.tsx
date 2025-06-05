@@ -6,9 +6,7 @@ import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { JSONTree } from "react-json-tree";
 import LoadingSpinner from "@/components/ui/loading";
-import Image from "next/image";
 import Link from "next/link";
-import logo from "../../../public/images/logo.png";
 
 // Theme styling
 const theme = {
@@ -83,9 +81,9 @@ const ApiViewerContent = () => {
                 <div className="bg-secondary p-4 mb-8 w-[300px] h-[80px] flex">
                     {/* Logo Image */}
                     <Link href="/api-landing">
-                        <Image
-                            src={logo}
-                            alt="SnarkHealth Logo"
+                        <img
+                            src="/images/logo.png"
+                            alt="Snark Health Logo"
                             width={120}
                             height={80}
                             className="cursor-pointer mb-4"

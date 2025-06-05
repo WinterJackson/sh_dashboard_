@@ -1,78 +1,45 @@
-// src/app/(auth)/reset-password/[token]/page.tsx
+// file: src/app/(auth)/reset-password/[token]/page.tsx
 
-"use client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
+import { redirect } from "next/navigation";
+import AuthLayout from "../../layout";
+import ResetPasswordForm from "@/components/form/ResetPasswordForm";
 
-import { useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+const ResetPasswordPage = async () => {
+    const session = await getServerSession(authOptions);
 
-const ResetPasswordPage = () => {
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
-    const router = useRouter();
-    const { token } = useParams();
-
-    console.log("Token from URL:", token);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (password !== confirmPassword) {
-            setError("Passwords do not match");
-            return;
-        }
-
-        try {
-            const response = await fetch(`${process.env.API_URL}/reset-password`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ token, newPassword: password }),
-            });
-
-            if (response.ok) {
-                setSuccess("Password updated successfully! Redirecting to sign-in...");
-                setTimeout(() => {
-                    router.push("/sign-in");
-                }, 2000); // Redirect after 2 seconds
-            } else {
-                const data = await response.json();
-                setError(data.error || "Failed to reset password. Please try again.");
-            }
-        } catch (error) {
-            setError("An unexpected error occurred. Please try again.");
-        }
-    };
+    if (session) {
+        redirect("/dashboard");
+    }
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen">
-            <h1 className="text-2xl mb-6">Set Your Password</h1>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="New Password"
-                    className="p-2 border rounded-md"
-                />
-                <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirm Password"
-                    className="p-2 border rounded-md"
-                />
-                {error && <p className="text-red-500">{error}</p>}
-                {success && <p className="text-green-500">{success}</p>}
-                <button type="submit" className="p-2 bg-blue-500 text-white rounded-md">
-                    Set Password
-                </button>
-            </form>
-        </div>
+        <AuthLayout>
+            <div className="flex gap-10">
+                <div className="flex items-center">
+                    <div className="p-8 my-auto bg-secondary rounded-2xl ">
+                        <img
+                            src="/images/logo.png"
+                            alt="Hospital Logo"
+                            width={300}
+                            height={300}
+                            className="p-1 object-contain"
+                            loading="lazy"
+                        />
+                    </div>
+                </div>
+
+                <div className="w-px h-auto bg-secondary"></div>
+
+                <div className="p-10 bg-secondary items-center rounded-2xl w-[450px]">
+                    <p className="text-white font-semibold mb-4 px-1 bg-primary w-[45%] py-2 rounded-[10px]">
+                        Set/Reset Password
+                    </p>
+                    <ResetPasswordForm />
+                </div>
+            </div>
+        </AuthLayout>
     );
 };
 
 export default ResetPasswordPage;
-

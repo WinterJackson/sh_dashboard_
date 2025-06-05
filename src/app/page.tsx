@@ -1,8 +1,6 @@
 // src/app/page.tsx file
 
 import Link from "next/link";
-import Image from "next/image";
-import logo from "../../public/images/logo.png";
 
 const HomePage = () => {
     return (
@@ -10,11 +8,12 @@ const HomePage = () => {
             <div className="bg-secondary flex items-center justify-center"></div>
             <div className="flex flex-col justify-center items-center">
                 <div className="p-10 bg-secondary rounded-2xl">
-                    <Image
-                        src={logo}
+                    <img
+                        src="/images/logo.png"
                         alt="Hospital Logo"
                         width={500}
                         height={200}
+                        className="p-1 object-contain"
                         loading="lazy"
                     />
                 </div>

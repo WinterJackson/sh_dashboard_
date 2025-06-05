@@ -1,22 +1,22 @@
-// src/lib/prisma.js file
+// src/lib/prisma.Js file
 
-const { PrismaClient } = require("@prisma/client");
-const Sentry = require("@sentry/nextjs");
+import { PrismaClient } from "@prisma/client";
+import * as Sentry from "@sentry/nextjs";
 
-// singleton global reference
+// Global singleton reference (to avoid reinitializing in development)
 const globalForPrisma = globalThis;
 
-// Initialize, with error handling
 const prisma =
     globalForPrisma.prisma ||
     new PrismaClient({
         log:
             process.env.NODE_ENV === "production"
                 ? ["warn", "error"]
-                : ["query", "info", "warn", "error"],
+                : ["query", "info", "warn", "error"], // with prisma logs on terminal
+                // : [], // with no logs on terminal
     });
 
-// middleware for error tracking
+// Global error tracking
 prisma.$use(async (params, next) => {
     try {
         return await next(params);
@@ -27,9 +27,9 @@ prisma.$use(async (params, next) => {
     }
 });
 
-// Preserve instance in development
+// Avoid creating new client on every hot reload
 if (process.env.NODE_ENV !== "production") {
     globalForPrisma.prisma = prisma;
 }
 
-module.exports = prisma;
+export default prisma;

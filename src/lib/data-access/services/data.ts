@@ -7,10 +7,9 @@ import * as Sentry from "@sentry/nextjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
-import { Prisma } from "@prisma/client";
 import { getErrorMessage } from "@/hooks/getErrorMessage";
 
-const prisma = require("@/lib/prisma");
+import prisma from "@/lib/prisma";
 
 /**
  * Fetches a list of services based on the user's role and hospital/department filters.

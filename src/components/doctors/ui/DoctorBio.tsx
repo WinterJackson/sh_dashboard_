@@ -51,6 +51,20 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
               totalReviews
             : 0;
 
+    const skillsList: string[] = React.useMemo(() => {
+        const skills = doctor?.skills;
+        if (Array.isArray(skills)) {
+            return skills;
+        }
+        if (typeof skills === "string") {
+            return skills
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean);
+        }
+        return [];
+    }, [doctor?.skills]);
+
     return (
         <div className="absolute top-0 left-0 z-30 flex justify-center items-center h-full w-screen">
             <div className="relative flex flex-col gap-8 p-6 bg-slate-100 opacity-100 lg:w-fit rounded-2xl h-full lg:max-h-[800px] overflow-y-scroll scrollbar-custom w-full lg:max-w-[1000px]">
@@ -182,21 +196,20 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                                                 </p>
                                             </div>
                                             <div className="w-[400px] flex-shrink-0">
-                                                {doctor?.skills
-                                                    ?.split(",")
-                                                    .map(
-                                                        (
-                                                            skill: string,
-                                                            index: number
-                                                        ) => (
+                                                {isLoading ? (
+                                                    <Skeleton className="h-24 w-full" />
+                                                ) : (
+                                                    skillsList.map(
+                                                        (skill, index) => (
                                                             <p
                                                                 key={index}
                                                                 className="font-medium capitalize"
                                                             >
-                                                                {skill.trim()}
+                                                                {skill}
                                                             </p>
                                                         )
-                                                    )}
+                                                    )
+                                                )}
                                             </div>
                                             <div className="w-[400px] flex-shrink-0">
                                                 <p className="flex gap-10">

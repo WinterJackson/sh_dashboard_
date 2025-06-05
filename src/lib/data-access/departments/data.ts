@@ -2,21 +2,22 @@
 
 "use server";
 
-import { Department, Role } from "@/lib/definitions";
+import { Department, DepartmentType, Role } from "@/lib/definitions";
 import * as Sentry from "@sentry/nextjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import { getErrorMessage } from "@/hooks/getErrorMessage";
 
-const prisma = require("@/lib/prisma");
+import prisma from "@/lib/prisma";
 
 /**
  * Fetches a list of departments based on the user's role and hospital association.
  */
-export async function fetchDepartments(
-    user?: { role: Role; hospitalId: string | null }
-): Promise<Department[]> {
+export async function fetchDepartments(user?: {
+    role: Role;
+    hospitalId: string | null;
+}): Promise<Department[]> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -28,7 +29,9 @@ export async function fetchDepartments(
 
         user = {
             role: session.user.role as Role,
-            hospitalId: session.user.hospitalId ? session.user.hospitalId.toString() : null,
+            hospitalId: session.user.hospitalId
+                ? session.user.hospitalId.toString()
+                : null,
         };
     }
 
@@ -46,7 +49,9 @@ export async function fetchDepartments(
             case "NURSE":
             case "STAFF":
                 if (!user.hospitalId) {
-                    throw new Error(`${user.role}s must have an associated hospital ID.`);
+                    throw new Error(
+                        `${user.role}s must have an associated hospital ID.`
+                    );
                 }
                 // Filter departments by hospitalId for other roles
                 whereClause.hospitals = {
@@ -87,3 +92,90 @@ export async function fetchDepartments(
         return [];
     }
 }
+
+/**
+ * Add department.
+ */
+export interface CreateDepartmentInput {
+    name: string;
+    type: DepartmentType;
+    description?: string;
+
+    // HospitalDepartment-specific fields:
+    headOfDepartment?: string;
+    contactEmail?: string;
+    contactPhone?: string;
+    location?: string;
+    establishedYear?: number;
+}
+
+export const addDepartment = async (
+    hospitalId: number,
+    departmentData: CreateDepartmentInput
+) => {
+    try {
+        // 1) Create the Department row
+        const newDepartment = await prisma.department.create({
+            data: {
+                name: departmentData.name,
+                type: departmentData.type,
+                description: departmentData.description,
+            },
+        });
+
+        // 2) Link it in HospitalDepartment
+        await prisma.hospitalDepartment.create({
+            data: {
+                hospitalId: hospitalId,
+                departmentId: newDepartment.departmentId,
+                headOfDepartment: departmentData.headOfDepartment,
+                contactEmail: departmentData.contactEmail,
+                contactPhone: departmentData.contactPhone,
+                location: departmentData.location,
+                establishedYear: departmentData.establishedYear,
+                description: departmentData.description,
+            },
+        });
+
+        return newDepartment;
+    } catch (error) {
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, {
+            extra: { errorMessage, hospitalId, departmentData },
+        });
+        throw new Error("Failed to create department");
+    }
+};
+
+/**
+ * Delete department.
+ */
+export const deleteDepartment = async (
+    hospitalId: number,
+    departmentId: number
+) => {
+    try {
+        // Remove hospital association first
+        await prisma.hospitalDepartment.delete({
+            where: {
+                hospitalId_departmentId: {
+                    hospitalId,
+                    departmentId,
+                },
+            },
+        });
+
+        // delete department
+        await prisma.department.delete({
+            where: { departmentId },
+        });
+
+        return { success: true };
+    } catch (error) {
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, {
+            extra: { errorMessage, hospitalId, departmentId },
+        });
+        throw new Error("Failed to delete department");
+    }
+};

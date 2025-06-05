@@ -4,8 +4,6 @@ import SignUpForm from "@/components/form/SignUpForm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
-import logo from "../../../../public/images/logo.png";
-import Image from "next/image";
 import AuthLayout from "../layout";
 
 const SignUpPage = async () => {
@@ -20,12 +18,12 @@ const SignUpPage = async () => {
             <div className="flex gap-10">
                 <div className="flex items-center">
                     <div className="p-8 my-auto bg-secondary rounded-2xl">
-                        <Image
-                            src={logo}
+                        <img
+                            src="/images/logo.png"
                             alt="Hospital Logo"
                             width={300}
                             height={300}
-                            className="p-1"
+                            className="p-1 object-contain"
                             loading="lazy"
                         />
                     </div>

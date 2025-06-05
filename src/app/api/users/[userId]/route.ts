@@ -1,7 +1,9 @@
 // src/app/api/users/[userId]/route.ts
 
+export const runtime = "nodejs";
+
 import { NextRequest, NextResponse } from "next/server";
-const prisma = require("@/lib/prisma");
+import prisma from "@/lib/prisma";
 
 export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
     const { userId } = params;

@@ -2,21 +2,22 @@
 
 "use server";
 
-import { Bed, BedAvailability, Role } from "@/lib/definitions";
+import { Bed, BedAvailability, BedCapacity, Role } from "@/lib/definitions";
 import * as Sentry from "@sentry/nextjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import { getErrorMessage } from "@/hooks/getErrorMessage";
 
-const prisma = require("@/lib/prisma");
+import prisma from "@/lib/prisma";
 
 /**
  * Fetch available beds based on user's role and hospitalId.
  */
-export async function fetchAvailableBeds(
-    user?: { role: Role; hospitalId: number | null }
-): Promise<{ beds: Bed[] }> {
+export async function fetchAvailableBeds(user?: {
+    role: Role;
+    hospitalId: number | null;
+}): Promise<{ beds: Bed[] }> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -48,7 +49,9 @@ export async function fetchAvailableBeds(
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
-                    throw new Error(`${role}s must have an associated hospital ID.`);
+                    throw new Error(
+                        `${role}s must have an associated hospital ID.`
+                    );
                 }
                 // Filter by hospitalId for other roles
                 whereClause.hospitalId = hospitalId;
@@ -83,9 +86,10 @@ export async function fetchAvailableBeds(
 /**
  * Fetch count of available beds based on user's role and hospitalId.
  */
-export async function fetchAvailableBedsCount(
-    user?: { role: Role; hospitalId: number | null }
-): Promise<number> {
+export async function fetchAvailableBedsCount(user?: {
+    role: Role;
+    hospitalId: number | null;
+}): Promise<number> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -117,7 +121,9 @@ export async function fetchAvailableBedsCount(
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
-                    throw new Error(`${role}s must have an associated hospital ID.`);
+                    throw new Error(
+                        `${role}s must have an associated hospital ID.`
+                    );
                 }
                 // Filter by hospitalId for other roles
                 whereClause.hospitalId = hospitalId;
@@ -144,9 +150,10 @@ export async function fetchAvailableBedsCount(
 /**
  * Fetch occupied beds based on user's role and hospitalId.
  */
-export async function fetchOccupiedBeds(
-    user?: { role: Role; hospitalId: number | null }
-): Promise<{ beds: Bed[] }> {
+export async function fetchOccupiedBeds(user?: {
+    role: Role;
+    hospitalId: number | null;
+}): Promise<{ beds: Bed[] }> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -178,7 +185,9 @@ export async function fetchOccupiedBeds(
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
-                    throw new Error(`${role}s must have an associated hospital ID.`);
+                    throw new Error(
+                        `${role}s must have an associated hospital ID.`
+                    );
                 }
                 // Filter by hospitalId for other roles
                 whereClause.hospitalId = hospitalId;
@@ -213,9 +222,10 @@ export async function fetchOccupiedBeds(
 /**
  * Fetch count of occupied beds based on user's role and hospitalId.
  */
-export async function fetchOccupiedBedsCount(
-    user?: { role: Role; hospitalId: number | null }
-): Promise<number> {
+export async function fetchOccupiedBedsCount(user?: {
+    role: Role;
+    hospitalId: number | null;
+}): Promise<number> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -247,7 +257,9 @@ export async function fetchOccupiedBedsCount(
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
-                    throw new Error(`${role}s must have an associated hospital ID.`);
+                    throw new Error(
+                        `${role}s must have an associated hospital ID.`
+                    );
                 }
                 // Filter by hospitalId for other roles
                 whereClause.hospitalId = hospitalId;
@@ -274,9 +286,10 @@ export async function fetchOccupiedBedsCount(
 /**
  * Fetch all beds based on user's role and hospitalId.
  */
-export async function fetchAllBeds(
-    user?: { role: Role; hospitalId: number | null }
-): Promise<{ beds: Bed[] }> {
+export async function fetchAllBeds(user?: {
+    role: Role;
+    hospitalId: number | null;
+}): Promise<{ beds: Bed[] }> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -308,7 +321,9 @@ export async function fetchAllBeds(
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
-                    throw new Error(`${role}s must have an associated hospital ID.`);
+                    throw new Error(
+                        `${role}s must have an associated hospital ID.`
+                    );
                 }
                 // Filter by hospitalId for other roles
                 whereClause.hospitalId = hospitalId;
@@ -343,9 +358,10 @@ export async function fetchAllBeds(
 /**
  * Fetch count of all beds based on user's role and hospitalId.
  */
-export async function fetchAllBedsCount(
-    user?: { role: Role; hospitalId: number | null }
-): Promise<{ count: number }> {
+export async function fetchAllBedsCount(user?: {
+    role: Role;
+    hospitalId: number | null;
+}): Promise<{ count: number }> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -377,7 +393,9 @@ export async function fetchAllBedsCount(
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
-                    throw new Error(`${role}s must have an associated hospital ID.`);
+                    throw new Error(
+                        `${role}s must have an associated hospital ID.`
+                    );
                 }
                 // Filter by hospitalId for other roles
                 whereClause.hospitalId = hospitalId;
@@ -400,3 +418,36 @@ export async function fetchAllBedsCount(
         return { count: 0 };
     }
 }
+
+/**
+ * Update bed capacities.
+ */
+export const updateBedCapacity = async (
+    bedCapacityId: string,
+    data: Partial<BedCapacity>
+) => {
+    try {
+        const updatedCapacity = await prisma.bedCapacity.update({
+            where: { bedCapacityId },
+            data: {
+                totalInpatientBeds: data.totalInpatientBeds,
+                generalInpatientBeds: data.generalInpatientBeds,
+                cots: data.cots,
+                maternityBeds: data.maternityBeds,
+                emergencyCasualtyBeds: data.emergencyCasualtyBeds,
+                intensiveCareUnitBeds: data.intensiveCareUnitBeds,
+                highDependencyUnitBeds: data.highDependencyUnitBeds,
+                isolationBeds: data.isolationBeds,
+                generalSurgicalTheatres: data.generalSurgicalTheatres,
+                maternitySurgicalTheatres: data.maternitySurgicalTheatres,
+            },
+        });
+        return updatedCapacity;
+    } catch (error) {
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, {
+            extra: { errorMessage, bedCapacityId, data },
+        });
+        throw new Error("Failed to update bed capacity");
+    }
+};

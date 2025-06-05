@@ -6,7 +6,7 @@ import { useFetchPatientDetailsById } from "@/hooks/useFetchPatientDetailsById";
 import { useUpdateMedicalInfo } from "@/hooks/useUpdateMedicalInfo";
 import { MedicalInformation, Patient } from "@/lib/definitions";
 import { useState, useEffect } from "react";
-import PatientSidebar from "./ui/patient-profile/PatientSidebar";
+import PatientSidebar from "./ui/patient-sidebar/PatientSidebar";
 import AppointmentsTimeline from "./ui/patient-profile/AppointmentsTimeline";
 import PatientNotes from "./ui/patient-profile/PatientAppointmentNotes";
 import DocumentsSection from "./ui/patient-profile/DocumentsSection";

@@ -1,5 +1,4 @@
-// src/components/patients/AppointmentsTimeline.tsx
-
+ 
 "use client";
 
 import { Appointment } from "@/lib/definitions";
@@ -12,7 +11,7 @@ export default function AppointmentsTimeline({
     appointments: Appointment[];
 }) {
     return (
-        <div className="bg-white p-4 rounded-[10px] shadow-md">
+        <div className="bg-white p-4 rounded-[10px] shadow-md w-auto">
             <Tabs defaultValue="upcoming" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="upcoming" className="hover:bg-primary hover:text-white p-2 border-r-2 border-gray-400 rounded-l-[10px] bg-black/5">Upcoming Appointments</TabsTrigger>

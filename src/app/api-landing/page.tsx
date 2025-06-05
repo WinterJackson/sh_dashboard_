@@ -23,8 +23,6 @@ import {
     FaUpload,
     FaUsers,
 } from "react-icons/fa";
-import Image from "next/image";
-import logo from "../../../public/images/logo.png";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
@@ -88,9 +86,9 @@ export default async function ApiLandingPage() {
                 <div className="bg-secondary p-4 mb-8 w-[300px] h-[80px]">
                     {/* Logo Image */}
                     <Link href="/api-landing">
-                        <Image
-                            src={logo}
-                            alt="SnarkHealth Logo"
+                        <img
+                            src="/images/logo.png"
+                            alt="Snark Health Logo"
                             width={120}
                             height={80}
                             className="cursor-pointer mb-4"

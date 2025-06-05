@@ -16,7 +16,7 @@ interface DoctorsListProps {
     hospitals: Hospital[];
 }
 
-const ITEMS_PER_PAGE = 2;
+const ITEMS_PER_PAGE = 10;
 
 const DoctorsList: React.FC<DoctorsListProps> = React.memo(
     ({ role, hospitalId, doctors, hospitals, departments }) => {

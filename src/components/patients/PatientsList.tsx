@@ -5,14 +5,14 @@
 import { useState, useMemo } from "react";
 import { useSearch } from "@/app/context/SearchContext";
 import { Patient, Hospital, Role } from "@/lib/definitions";
-import PatientRow from "@/components/patients/ui/patient-table/PatientRow";
-import PatientsPagination from "@/components/patients/ui/patient-table/PatientsPagination";
-import PatientsFilters from "@/components/patients/ui/patient-table/PatientsFilters";
+import PatientRow from "@/components/patients/ui/patients-table/PatientRow";
+import PatientsPagination from "@/components/patients/ui/patients-table/PatientsPagination";
+import PatientsFilters from "@/components/patients/ui/patients-table/PatientsFilters";
 import { format } from "date-fns";
 import { useDeletePatients } from "@/hooks/useDeletePatients";
 import Delete from "@mui/icons-material/Delete";
 import { useSession } from "next-auth/react";
-import ConfirmationModal from "@/components/patients/ui/patient-table/ConfirmationModal";
+import ConfirmationModal from "@/components/patients/ui/patient-modals/ConfirmationModal";
 
 interface PatientsListProps {
     patients: Patient[];
@@ -127,14 +127,18 @@ export default function PatientsList({
 
         const profile = patientToDelete.user?.profile;
         const user = patientToDelete.user;
-    
-        const fullName =
-            `${profile?.firstName ?? ""} ${profile?.lastName ?? ""}`.trim();
+
+        const fullName = `${profile?.firstName ?? ""} ${
+            profile?.lastName ?? ""
+        }`.trim();
 
         // Open confirmation modal for single delete
         setModalConfig({
             title: "Delete Patient",
-            message: `Are you sure you want to delete patient "${fullName}" (ID: ${patientToDelete.patientId})? This action cannot be undone.`,
+            message:
+                `Are you sure you want to delete the patient:\n` +
+                `**${fullName} (Patient ID: ${patientToDelete.patientId})**\n` +
+                `This action cannot be undone.`,
             onConfirm: () => {
                 deletePatients(
                     {
@@ -173,15 +177,16 @@ export default function PatientsList({
         return filteredPatients.filter((patient) => {
             const profile = patient.user?.profile;
             const user = patient.user;
-    
-            const fullName =
-                `${profile?.firstName ?? ""} ${profile?.lastName ?? ""}`.toLowerCase();
-    
+
+            const fullName = `${profile?.firstName ?? ""} ${
+                profile?.lastName ?? ""
+            }`.toLowerCase();
+
             // Format date of birth
             const formattedDateOfBirth = profile?.dateOfBirth
                 ? format(new Date(profile.dateOfBirth), "MM/dd/yyyy")
                 : "";
-    
+
             // Gender match logic
             const genderMatch =
                 term === "other"
@@ -189,7 +194,7 @@ export default function PatientsList({
                           profile?.gender?.toLowerCase() || ""
                       )
                     : profile?.gender?.toLowerCase() === term;
-    
+
             return (
                 fullName.includes(term) ||
                 user?.email?.toLowerCase().includes(term) ||
@@ -217,10 +222,6 @@ export default function PatientsList({
 
     const onFilterChange = (filteredPatients: Patient[]) => {
         setFilteredPatients(filteredPatients);
-    };
-
-    const onEdit = async (patientId: number) => {
-        // Implement edit functionality if needed
     };
 
     return (
@@ -311,38 +312,42 @@ export default function PatientsList({
                         <th className="text-center p-2 w-[15%]">Last Appt</th>
                         <th className="text-center p-2 w-[15%]">Next Appt</th>
                         <th className="text-center p-2 w-[15%]">Reason</th>
-                        <th className="text-center p-2 w-[2%]">
-                            <div className="flex flex-col items-center justify-center gap-1 p-2 rounded-[10px] bg-white shadow-sm shadow-gray-400 ">
-                                <input
-                                    type="checkbox"
-                                    className="w-4 h-4"
-                                    onChange={(e) =>
-                                        handleSelectAll(e.target.checked)
-                                    }
-                                    checked={
-                                        selectedPatients.length > 0 &&
-                                        selectedPatients.length ===
-                                            paginatedPatients.length
-                                    }
-                                    ref={(el) => {
-                                        if (el) {
-                                            el.indeterminate =
-                                                selectedPatients.length > 0 &&
-                                                selectedPatients.length <
-                                                    paginatedPatients.length;
+                        {(userRole === Role.ADMIN ||
+                            userRole === Role.SUPER_ADMIN) && (
+                            <th className="text-center p-2 w-[2%]">
+                                <div className="flex flex-col items-center justify-center gap-1 p-2 rounded-[10px] bg-white shadow-sm shadow-gray-400 ">
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4"
+                                        onChange={(e) =>
+                                            handleSelectAll(e.target.checked)
                                         }
-                                    }}
-                                />
-                                <button
-                                    onClick={handleBulkDelete}
-                                    disabled={selectedPatients.length === 0}
-                                    className="text-primary hover:text-red-700"
-                                    aria-label="Delete selected patients"
-                                >
-                                    <Delete className="w-7 h-7" />
-                                </button>
-                            </div>
-                        </th>
+                                        checked={
+                                            selectedPatients.length > 0 &&
+                                            selectedPatients.length ===
+                                                paginatedPatients.length
+                                        }
+                                        ref={(el) => {
+                                            if (el) {
+                                                el.indeterminate =
+                                                    selectedPatients.length >
+                                                        0 &&
+                                                    selectedPatients.length <
+                                                        paginatedPatients.length;
+                                            }
+                                        }}
+                                    />
+                                    <button
+                                        onClick={handleBulkDelete}
+                                        disabled={selectedPatients.length === 0}
+                                        className="text-primary hover:text-red-700"
+                                        aria-label="Delete selected patients"
+                                    >
+                                        <Delete className="w-7 h-7" />
+                                    </button>
+                                </div>
+                            </th>
+                        )}
                     </tr>
                 </thead>
                 <tbody>
@@ -350,9 +355,6 @@ export default function PatientsList({
                         <PatientRow
                             key={patient.patientId}
                             patient={patient}
-                            userRole={userRole}
-                            hospitalId={hospitalId}
-                            onEdit={onEdit}
                             onDelete={() => onDelete(patient.patientId)}
                             onSelect={handleSingleSelect}
                             isSelected={selectedPatients.includes(

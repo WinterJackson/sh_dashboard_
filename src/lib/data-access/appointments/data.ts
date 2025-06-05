@@ -9,7 +9,7 @@ import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import { getErrorMessage } from "@/hooks/getErrorMessage";
 
-const prisma = require("@/lib/prisma");
+import prisma from "@/lib/prisma";
 
 export async function fetchAppointments(
     user?: {
@@ -69,7 +69,7 @@ export async function fetchAppointments(
                 whereClause = { doctorId: doctor.doctorId };
                 break;
             default:
-                throw new Error("Invalid role provided.");
+                throw new Error("Invalid role.");
         }
 
         // Fetch appointments with nested relations
@@ -117,7 +117,123 @@ export async function fetchAppointments(
     }
 }
 
-// Fetch appointment details by ID
+// // Fetch all appointment details by ID
+// export async function fetchAppointmentById(
+//     appointmentId: string,
+//     user?: { role: Role; hospitalId: number | null; userId: string | null }
+// ): Promise<Appointment | null> {
+//     if (!user) {
+//         const session = await getServerSession(authOptions);
+//         if (!session?.user) {
+//             redirect("/sign-in");
+//             return null;
+//         }
+//         user = {
+//             role: session.user.role as Role,
+//             hospitalId: session.user.hospitalId ?? null,
+//             userId: session.user.id ?? null,
+//         };
+//     }
+
+//     try {
+//         // get appointments
+//         const appointment = await prisma.appointment.findUnique({
+//             where: { appointmentId },
+//             include: {
+//                 // patient → user → profile
+//                 patient: {
+//                     include: {
+//                         user: { include: { profile: true } },
+//                     },
+//                 },
+//                 // doctor → user → profile
+//                 doctor: {
+//                     include: {
+//                         user: { include: { profile: true } },
+//                     },
+//                 },
+//                 // hospital
+//                 hospital: true,
+//                 // notes (with author.profile),
+//                 notes: {
+//                     include: {
+//                         author: { include: { profile: true } },
+//                         hospital: true,
+//                     },
+//                     orderBy: { createdAt: "desc" },
+//                 },
+//                 // appointment services → service, department, hospital
+//                 services: {
+//                     include: {
+//                         service: true,
+//                         department: true,
+//                         hospital: true,
+//                     },
+//                 },
+//                 // payments → service, hospital
+//                 payments: {
+//                     include: {
+//                         service: true,
+//                         hospital: true,
+//                     },
+//                     orderBy: { createdAt: "desc" },
+//                 },
+//             },
+//         });
+
+//         if (!appointment) {
+//             console.error(`Appointment ${appointmentId} not found.`);
+//             return null;
+//         }
+
+//         // role permissions
+//         const { role, hospitalId, userId } = user;
+//         switch (role) {
+//             case Role.SUPER_ADMIN:
+//                 // full access
+//                 break;
+
+//             case Role.ADMIN:
+//             case Role.NURSE:
+//             case Role.STAFF:
+//                 if (hospitalId !== appointment.hospitalId) {
+//                     throw new Error("Not permitted to view this appointment");
+//                 }
+//                 break;
+
+//             case Role.DOCTOR:
+//                 if (
+//                     hospitalId !== appointment.hospitalId ||
+//                     String(appointment.doctor?.userId) !== String(userId)
+//                 ) {
+//                     throw new Error("Not permitted to view this appointment");
+//                 }
+//                 break;
+
+//             case Role.PATIENT:
+//                 if (String(appointment.patient.userId) !== String(userId)) {
+//                     throw new Error(
+//                         "Only patients can view their own appointments"
+//                     );
+//                 }
+//                 break;
+
+//             default:
+//                 throw new Error(`Role ${role} cannot access appointments`);
+//         }
+
+//         return appointment;
+//     } catch (err) {
+//         const message = getErrorMessage(err);
+//         Sentry.captureException(err, {
+//             extra: { appointmentId, message },
+//         });
+//         console.error("fetchAppointmentById error:", message);
+//         return null;
+//     }
+// }
+
+// Fetch all appointment details by ID
 export async function fetchAppointmentById(
     appointmentId: string,
     user?: { role: Role; hospitalId: number | null; userId: string | null }
@@ -125,7 +241,6 @@ export async function fetchAppointmentById(
     if (!user) {
         const session = await getServerSession(authOptions);
         if (!session?.user) {
-            console.error("Session fetch failed:", session);
             redirect("/sign-in");
             return null;
         }
@@ -137,6 +252,7 @@ export async function fetchAppointmentById(
     }
 
     try {
+        // get appointments
         const appointment = await prisma.appointment.findUnique({
             where: { appointmentId },
             include: {
@@ -144,58 +260,152 @@ export async function fetchAppointmentById(
                     include: {
                         user: {
                             include: {
-                                profile: true,
+                                profile: {
+                                    select: {
+                                        firstName: true,
+                                        lastName: true,
+                                        dateOfBirth: true,
+                                        gender: true,
+                                        phoneNo: true,
+                                        address: true,
+                                        cityOrTown: true,
+                                        county: true,
+                                        imageUrl: true,
+                                        nextOfKin: true,
+                                        nextOfKinPhoneNo: true,
+                                        emergencyContact: true,
+                                    },
+                                },
                             },
                         },
                     },
                 },
                 doctor: {
-                    include: {
+                    select: {
+                        doctorId: true,
+                        phoneNo: true,
+                        status: true,
+                        workingHours: true,
+                        averageRating: true,
+                        yearsOfExperience: true,
+                        qualifications: true,
                         user: {
+                            include: {
+                                profile: {
+                                    select: {
+                                        firstName: true,
+                                        lastName: true,
+                                        imageUrl: true,
+                                        phoneNo: true,
+                                    },
+                                },
+                            },
+                        },
+                        specialization: true,
+                        department: true,
+                        hospital: true,
+                    },
+                },
+                hospital: {
+                    select: {
+                        hospitalId: true,
+                        hospitalName: true,
+                        facilityType: true,
+                        logoUrl: true,
+                        kephLevel: true,
+                        category: true,
+                        regulatoryBody: true,
+                        nhifAccreditation: true,
+                        referralCode: true,
+                        emergencyPhone: true,
+                        emergencyEmail: true,
+                        phone: true,
+                        email: true,
+                        website: true,
+                        streetAddress: true,
+                        town: true,
+                        county: true,
+                        subCounty: true,
+                        ward: true,
+                        open24Hours: true,
+                        openWeekends: true,
+                    },
+                },
+                notes: {
+                    include: {
+                        author: {
                             include: {
                                 profile: true,
                             },
                         },
                     },
+                    orderBy: { createdAt: "desc" },
                 },
-                hospital: true,
+                services: {
+                    include: {
+                        service: true,
+                        department: true,
+                        hospital: true,
+                    },
+                },
+                payments: {
+                    include: {
+                        service: true,
+                        hospital: true,
+                    },
+                    orderBy: { createdAt: "desc" },
+                },
             },
         });
 
         if (!appointment) {
-            console.error(`Appointment with ID ${appointmentId} not found.`);
+            console.error(`Appointment ${appointmentId} not found.`);
             return null;
         }
 
-        // Ensure that the user has access to this appointment based on their role
-        switch (user.role) {
-            case "SUPER_ADMIN":
-                break; // SUPER_ADMIN can access any appointment
-            case "ADMIN":
-            case "NURSE":
-            case "STAFF":
-                if (user.hospitalId !== appointment.hospitalId) {
+        // role permissions
+        const { role, hospitalId, userId } = user;
+        switch (role) {
+            case Role.SUPER_ADMIN:
+                // full access
+                break;
+
+            case Role.ADMIN:
+            case Role.NURSE:
+            case Role.STAFF:
+                if (hospitalId !== appointment.hospitalId) {
+                    throw new Error("Not permitted to view this appointment");
+                }
+                break;
+
+            case Role.DOCTOR:
+                if (
+                    hospitalId !== appointment.hospitalId ||
+                    String(appointment.doctor?.userId) !== String(userId)
+                ) {
+                    throw new Error("Not permitted to view this appointment");
+                }
+                break;
+
+            case Role.PATIENT:
+                if (String(appointment.patient.userId) !== String(userId)) {
                     throw new Error(
-                        "You do not have permission to access this appointment."
+                        "Only patients can view their own appointments"
                     );
                 }
                 break;
-            case "DOCTOR":
-                if (user.userId !== appointment.doctor?.userId) {
-                    throw new Error(
-                        "You do not have permission to access this appointment."
-                    );
-                }
-                break;
+
             default:
-                throw new Error("Invalid role provided.");
+                throw new Error(`Role ${role} cannot access appointments`);
         }
 
         return appointment;
-    } catch (error) {
-        const errorMessage = getErrorMessage(error);
-        Sentry.captureException(error, { extra: { errorMessage } });
-        console.error("Error fetching appointment details:", errorMessage);
+    } catch (err) {
+        const message = getErrorMessage(err);
+        Sentry.captureException(err, {
+            extra: { appointmentId, message },
+        });
+        console.error("fetchAppointmentById error:", message);
         return null;
     }
 }

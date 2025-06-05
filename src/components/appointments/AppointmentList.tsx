@@ -2,16 +2,16 @@
 
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
-import { Appointment, Session, Hospital, Role } from "@/lib/definitions";
-import AppointmentFilters from "./../appointments/ui/AppointmentsFilters";
-import AppointmentRow from "./../appointments/ui/AppointmentRow";
-import AppointmentsPagination from "./../appointments/ui/AppointmentsPagination";
-import RescheduleDialog from "@/components/appointments/RescheduleDialog";
-import CancelDialog from "@/components/appointments/CancelDialog";
-import PendingDialog from "@/components/appointments/PendingDialog";
+import CancelDialog from "@/components/appointments/ui/appointment-modals/CancelDialog";
+import PendingDialog from "@/components/appointments/ui/appointment-modals/PendingDialog";
+import RescheduleDialog from "@/components/appointments/ui/appointment-modals/RescheduleDialog";
 import { useUpdateAppointmentStatus } from "@/hooks/useUpdateAppointmentStatus";
 import { useUpdateAppointmentType } from "@/hooks/useUpdateAppointmentType";
+import { Appointment, Hospital, Role, Session } from "@/lib/definitions";
+import { useEffect, useMemo, useState } from "react";
+import AppointmentRow from "./ui/appointments-table/AppointmentRow";
+import AppointmentFilters from "./ui/appointments-table/AppointmentsFilters";
+import AppointmentsPagination from "./ui/appointments-table/AppointmentsPagination";
 
 const ITEMS_PER_PAGE = 15;
 

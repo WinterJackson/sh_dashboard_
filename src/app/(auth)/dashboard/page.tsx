@@ -11,7 +11,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
-    // Fetch session using NextAuth's getServerSession
+
     const session = await getServerSession(authOptions);
 
     if (!session || !session?.user) {

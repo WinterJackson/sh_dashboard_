@@ -2,11 +2,12 @@
 
 "use client";
 
-import React, { useState } from "react";
-import AppointmentsPagination from "@/components/appointments/ui/AppointmentsPagination";
+import AppointmentsPagination from "@/components/appointments/ui/appointments-table/AppointmentsPagination";
 import { Appointment } from "@/lib/definitions";
-import { MapPin as PlaceIcon, Video } from "lucide-react";
 import { differenceInYears } from "date-fns";
+import { MapPin as PlaceIcon, Video } from "lucide-react";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface DashboardAppointmentsProps {
     appointments: Appointment[];
@@ -20,6 +21,7 @@ const DashboardAppointments: React.FC<DashboardAppointmentsProps> = ({
     totalAppointments,
 }) => {
     const [currentPage, setCurrentPage] = useState<number>(1);
+    const router = useRouter();
 
     const totalPages = Math.ceil(totalAppointments / ITEMS_PER_PAGE);
 
@@ -36,80 +38,87 @@ const DashboardAppointments: React.FC<DashboardAppointmentsProps> = ({
         currentPage * ITEMS_PER_PAGE
     );
 
-    const renderTableRows = () => {
-        return currentAppointments.map((appointment) => (
-            <tr
-                key={appointment.appointmentId}
-                className={`text-center ${
-                    appointment.status === "CANCELLED" ? "bg-red-100" : "" // Use uppercase status value
-                }`}
-            >
-                {/* Patient Name */}
-                <td className="px-4 py-4 text-sm font-semibold text-gray-900 text-left whitespace-nowrap">
-                    {appointment.patient?.user?.profile?.firstName &&
-                    appointment.patient?.user?.profile?.lastName
-                        ? `${appointment.patient.user.profile.firstName} ${appointment.patient.user.profile.lastName}`
-                        : "N/A"}
-                </td>
+    const renderTableRows = () =>
+        currentAppointments.map((appointment) => {
+            const isCancelled = appointment.status === "CANCELLED";
+            const rowClass = isCancelled ? "bg-red-100" : "bg-white";
 
-                {/* Age */}
-                <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                    {appointment.patient?.user?.profile?.dateOfBirth
-                        ? differenceInYears(
-                              new Date(),
-                              new Date(
-                                  appointment.patient.user.profile.dateOfBirth
+            const onRowClick = () => {
+                router.push(
+                    `/dashboard/appointments/${appointment.appointmentId}`
+                );
+            };
+
+            return (
+                <tr
+                    key={appointment.appointmentId}
+                    className={`text-center cursor-pointer ${rowClass} hover:bg-gray-100 active:bg-blue-100/50`}
+                    onClick={onRowClick}
+                >
+                    <td className="px-4 py-4 text-sm font-semibold text-gray-900 text-left whitespace-nowrap">
+                        {appointment.patient?.user?.profile?.firstName &&
+                        appointment.patient?.user?.profile?.lastName
+                            ? `${appointment.patient.user.profile.firstName} ${appointment.patient.user.profile.lastName}`
+                            : "N/A"}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                        {appointment.patient?.user?.profile?.dateOfBirth
+                            ? differenceInYears(
+                                  new Date(),
+                                  new Date(
+                                      appointment.patient.user.profile.dateOfBirth
+                                  )
                               )
-                          )
-                        : "N/A"}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                    {appointment.patient?.patientId || "N/A"}
-                </td>
-                <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
-                    {new Date(appointment.appointmentDate).toLocaleTimeString(
-                        [],
-                        {
+                            : "N/A"}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                        {appointment.patient?.patientId || "N/A"}
+                    </td>
+                    <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
+                        {new Date(
+                            appointment.appointmentDate
+                        ).toLocaleTimeString([], {
                             hour: "2-digit",
                             minute: "2-digit",
-                        }
-                    )}
-                </td>
-                <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
-                    {new Date(appointment.appointmentDate).toLocaleDateString()}
-                </td>
-                <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
-                    {appointment.doctor?.user?.profile
-                        ? `Dr. ${appointment.doctor.user.profile.firstName} ${appointment.doctor.user.profile.lastName}`
-                        : "N/A"}
-                </td>
-                <td className="px-4 py-4 text-sm flex items-center justify-center gap-2 whitespace-nowrap">
-                    {appointment.type === "Virtual" ? (
-                        <>
-                            <Video className="text-primary" />
-                            <span className="text-primary">
-                                {appointment.type}
-                            </span>
-                        </>
-                    ) : (
-                        <>
-                            <PlaceIcon className="text-black/70" />
-                            <span className="text-black/70">
-                                {appointment.type}
-                            </span>
-                        </>
-                    )}
-                </td>
-                <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
-                    {appointment.status}
-                </td>
-            </tr>
-        ));
-    };
+                        })}
+                    </td>
+                    <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
+                        {new Date(
+                            appointment.appointmentDate
+                        ).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
+                        {appointment.doctor?.user?.profile
+                            ? `Dr. ${appointment.doctor.user.profile.firstName} ${appointment.doctor.user.profile.lastName}`
+                            : "N/A"}
+                    </td>
+                    <td className="px-4 py-4 text-sm flex items-center justify-center gap-2 whitespace-nowrap">
+                        {appointment.type === "Virtual" ? (
+                            <>
+                                <Video className="text-primary" />
+                                <span className="text-primary">
+                                    {appointment.type}
+                                </span>
+                            </>
+                        ) : (
+                            <>
+                                <PlaceIcon className="text-black/70" />
+                                <span className="text-black/70">
+                                    {appointment.type}
+                                </span>
+                            </>
+                        )}
+                    </td>
+                    <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
+                        {appointment.status}
+                    </td>
+                </tr>
+            );
+        });
 
     return (
-        <div className="flex flex-col min-w-full shadow-lg shadow-gray-300 rounded-[20px] bg-slate-100">
-            <div className="overflow-x-auto w-full">
+        <div className="flex flex-col min-w-full min-h-[90%] shadow-lg shadow-gray-300 rounded-[20px] bg-slate-100">
+            <div className="overflow-x-auto w-full min-h-[90%]">
                 <h2 className="py-4 px-4 font-semibold">
                     Appointments Details
                 </h2>

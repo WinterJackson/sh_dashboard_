@@ -2,6 +2,7 @@
 
 "use client";
 
+import { useMarkOnboardingComplete } from "@/hooks/useMarkOnboardingComplete";
 import { useUpdateProfile } from "@/hooks/useUpdateProfile";
 import { useUpdateUser } from "@/hooks/useUpdateUser";
 import { useForm } from "react-hook-form";
@@ -9,19 +10,23 @@ import { ProfileUpdateData } from "@/lib/data-access/settings/data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
 import { Role } from "@/lib/definitions";
 import Image from "next/image";
 import { useEdgeStore } from "@/lib/edgestore";
 import { useState, useEffect } from "react";
 import { base64ToFile } from "@/lib/utils";
 import { useRef } from "react";
+import { useSession } from "next-auth/react";
+import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
 
-interface ExtendedProfileUpdateData extends ProfileUpdateData {
+export interface ExtendedProfileUpdateData extends ProfileUpdateData {
+    profileId?: string;
     username: string;
     email: string;
     imageUrl?: string;
     userId: string;
+    hasCompletedOnboarding?: boolean;
 }
 
 interface AccountTabProps {
@@ -61,10 +66,12 @@ export default function AccountTab({
     roleSpecific = {},
     role,
 }: AccountTabProps) {
+    const { data: session, update } = useSession();
     const { mutateAsync: updateProfile, isPending: isProfilePending } =
         useUpdateProfile();
     const { mutateAsync: updateUser, isPending: isUserPending } =
         useUpdateUser();
+    const { mutateAsync: markOnboardingComplete } = useMarkOnboardingComplete();
     const isPending = isProfilePending || isUserPending;
 
     const { edgestore } = useEdgeStore();
@@ -73,8 +80,10 @@ export default function AccountTab({
     );
     const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-    // reference for the image file input
     const imageFileInputRef = useRef<HTMLInputElement>(null);
+
+    const { toast } = useToast();
+    const router = useRouter();
 
     const {
         register,
@@ -111,7 +120,6 @@ export default function AccountTab({
                 const ctx = canvas.getContext("2d");
                 if (!ctx) return;
 
-                // Crop to square
                 const size = Math.min(img.width, img.height);
                 canvas.width = size;
                 canvas.height = size;
@@ -138,9 +146,25 @@ export default function AccountTab({
 
     const onSubmit = async (data: ExtendedProfileUpdateData) => {
         try {
+            const { firstName, lastName, phoneNo } = data;
+
+            if (!firstName?.trim()) {
+                toast({ title: "First Name Required", description: "First name is required.", variant: "destructive" });
+                return;
+            }
+
+            if (!lastName?.trim()) {
+                toast({ title: "Last Name Required", description: "Last name is required.", variant: "destructive" });
+                return;
+            }
+
+            if (!phoneNo?.trim()) {
+                toast({ title: "Phone Number Required", description: "Phone number is required.", variant: "destructive" });
+                return;
+            }
+
             let imageUrl = data.imageUrl;
 
-            // Upload new image if exists
             if (profileImageData) {
                 const file = base64ToFile(profileImageData, "profile.jpg");
                 const res = await edgestore.doctorImages.upload({
@@ -152,20 +176,34 @@ export default function AccountTab({
             }
 
             const { username, email, ...profileData } = data;
-            // Update user credentials
+
             await updateUser({ username, email });
-            // Update profile information
             await updateProfile({
                 ...profileData,
                 imageUrl,
             } as ProfileUpdateData & { imageUrl?: string });
-            toast.success("Account updated successfully");
+
+            // Handle onboarding completion
+            if (session?.user?.hasCompletedOnboarding === false) {
+                await markOnboardingComplete(profile.userId);
+                await update(); // refresh session
+                // Redirect so OnboardingToast detects completion
+                router.push("/dashboard");
+                router.refresh();
+              }
+
+            await update();
+            toast({ title: "Account Updated", description: "🎉 Account updated successfully", variant: "default" });
         } catch (error) {
-            toast.error(
-                error instanceof Error
-                    ? error.message
-                    : "Failed to update account"
-            );
+            console.error("Error during account update:", error);
+            toast({
+                title: "Update Failed",
+                description:
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to update account",
+                variant: "destructive",
+            });
         }
     };
 
@@ -189,7 +227,6 @@ export default function AccountTab({
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="space-y-4 ">
                     <div className="bg-white p-4 rounded-[10px] shadow-sm shadow-gray-400">
-                        {/* Username and Email */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="p-2 pl-1 block text-gray-600 text-sm font-medium">
@@ -234,7 +271,6 @@ export default function AccountTab({
                             </div>
                         </div>
 
-                        {/* Profile Picture */}
                         <div className="gap-4">
                             <div>
                                 <label className="p-2 pl-1 block text-gray-600 text-sm font-medium">
@@ -269,7 +305,6 @@ export default function AccountTab({
                                         )}
                                     </div>
 
-                                    {/* Cancel Button */}
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -277,7 +312,6 @@ export default function AccountTab({
                                                 profile.imageUrl || null
                                             );
                                             setProfileImageData(null);
-                                            // Clear image file input value
                                             if (imageFileInputRef.current) {
                                                 imageFileInputRef.current.value =
                                                     "";
@@ -292,9 +326,7 @@ export default function AccountTab({
                         </div>
                     </div>
 
-                    {/* Bio and Contact Information */}
                     <div className="grid grid-cols-2 gap-4">
-                        {/* Bio Section */}
                         <div className="col-span-1 space-y-2 bg-white p-4 rounded-[10px] shadow-sm shadow-gray-400">
                             <h3 className="text-base text-primary font-semibold border-b-2 border-gray-300 p-1 pb-0 bg-bluelight/5">
                                 Bio
@@ -415,7 +447,6 @@ export default function AccountTab({
                             )}
                         </div>
 
-                        {/* Contact Information Section */}
                         <div className="col-span-1 space-y-2 pb-6 bg-white p-4 rounded-[10px] shadow-sm shadow-gray-400">
                             <h3 className="text-base text-primary font-semibold border-b-2 border-gray-300 p-1 pb-0 bg-bluelight/5">
                                 Contact Information
@@ -521,7 +552,6 @@ export default function AccountTab({
                         </div>
                     </div>
 
-                    {/* Save Changes Button */}
                     <Button
                         type="submit"
                         onClick={handleSubmit(onSubmit)}
