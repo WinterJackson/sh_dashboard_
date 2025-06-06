@@ -10,8 +10,8 @@ import {
     ChevronRightIcon,
     DashboardIcon,
     GearIcon,
-    PersonIcon,
 } from "@radix-ui/react-icons";
+import { MessageSquare } from 'lucide-react';
 import DoctorsDropdown from "./DoctorsDropdown";
 import HospitalsDropdown from "./HospitalsDropdown";
 import LogoutButton from "./LogoutButton";
@@ -83,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
                                 : "hover:bg-bluelight hover:text-black"
                         }`}
                     >
-                        <CalendarIcon className="mr-2 text-xl" />
+                        <MessageSquare className="mr-2 text-xl" />
                         Messaging
                     </Link>
 
