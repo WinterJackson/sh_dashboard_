@@ -83,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
                                 : "hover:bg-bluelight hover:text-black"
                         }`}
                     >
-                        <MessageSquare className="mr-2 text-xl" />
+                        <MessageSquare className="mr-2 text-lg" />
                         Messaging
                     </Link>
 

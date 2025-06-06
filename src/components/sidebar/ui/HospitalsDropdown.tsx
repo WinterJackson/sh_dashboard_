@@ -30,7 +30,7 @@ const HospitalsDropdown: React.FC<HospitalsDropdownProps> = ({
                 className="py-2 px-4 pt-4 pb-4 font-semibold flex items-center cursor-pointer hover:bg-bluelight hover:text-black"
             >
                 <div className="flex items-center">
-                    <LocalHospitalIcon className="mr-2 text-md" />
+                    <LocalHospitalIcon className="mr-2 text-base" />
                     Hospitals
                 </div>
                 <ChevronRightIcon
