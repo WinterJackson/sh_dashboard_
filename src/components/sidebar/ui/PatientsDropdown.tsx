@@ -36,7 +36,7 @@ const PatientsDropdown: React.FC<PatientsDropdownProps> = ({
         <>
             <div
                 onClick={togglePatients}
-                className="py-2 px-4 pt-4 pb-4 font-semibold flex items-center cursor-pointer hover:bg-bluelight hover:text-black"
+                className="py-2 px-4 pt-4 pb-4 font-semibold flex items-center cursor-pointer hover:bg-bluelight hover:text-black border-2"
             >
                 <div className="flex items-center">
                     <PersonIcon className="mr-2 text-xl" />

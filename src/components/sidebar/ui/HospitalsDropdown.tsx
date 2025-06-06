@@ -27,10 +27,10 @@ const HospitalsDropdown: React.FC<HospitalsDropdownProps> = ({
         <>
             <div
                 onClick={toggleHospitals}
-                className="py-2 px-4 pt-4 pb-4 font-semibold flex items-center cursor-pointer hover:bg-bluelight hover:text-black"
+                className="py-2 px-4 pt-4 pb-4 font-semibold flex items-center cursor-pointer hover:bg-bluelight hover:text-black border-2"
             >
                 <div className="flex items-center">
-                    <LocalHospitalIcon className="mr-2 text-base" />
+                    <LocalHospitalIcon className="mr-2 !text-base" />
                     Hospitals
                 </div>
                 <ChevronRightIcon

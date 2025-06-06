@@ -30,7 +30,7 @@ const SignInPage = async () => {
                             src="/images/logo.png"
                             alt="Hospital Logo"
                             width={300}
-                            height={300}
+                            height={200}
                             className="p-1 object-contain"
                             loading="lazy"
                         />

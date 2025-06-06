@@ -8,31 +8,24 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import type { Session } from "next-auth";
 
-/**
- * VerifyTokenPage:
- * 1. Redirects to /sign-in if there is no valid session or no session.user.
- * 2. Reads the "mfaVerified" cookie to determine if 2FA has already been completed.
- * 3. Redirects to /dashboard only if session.user.twoFactorEnabled === true AND mfaVerified === true.
- * 4. Otherwise, renders the 2FA form.
- */
 export default async function VerifyTokenPage({
     searchParams,
 }: {
     searchParams: { [key: string]: string | string[] | undefined };
 }) {
-    // 1) Get the NextAuth session
+    // Get session
     const session: Session | null = await getServerSession(authOptions);
 
-    // 2) If there’s no session or session.user is undefined, redirect to /sign-in
+    // Redirect if no session or user
     if (!session || !session.user) {
         redirect("/sign-in");
     }
 
-    // 3) Read the "mfaVerified" cookie (set by /api/auth/mfa/verify on successful TOTP)
+    // Check if MFA was already verified
     const cookieStore = cookies();
     const mfaVerified = cookieStore.get("mfaVerified")?.value === "true";
 
-    // 4) Derive callbackUrl (or default to /dashboard)
+    // Extract callback URL or fallback to /dashboard
     const rawCallback = Array.isArray(searchParams.callbackUrl)
         ? searchParams.callbackUrl[0]
         : searchParams.callbackUrl;
@@ -41,12 +34,12 @@ export default async function VerifyTokenPage({
             ? decodeURIComponent(rawCallback)
             : "/dashboard";
 
-    // 5) If MFA is already verified, send to the original callback
+    // Redirect if MFA already verified
     if (session.user.twoFactorEnabled && mfaVerified) {
         redirect(callbackUrl);
     }
 
-    // 5) Otherwise, render the 2FA form
+    // Render 2FA form
     return (
         <AuthLayout>
             <div className="flex items-center justify-center min-h-screen">
@@ -56,8 +49,8 @@ export default async function VerifyTokenPage({
                             <img
                                 src="/images/logo.png"
                                 alt="Hospital Logo"
-                                width={300}
-                                height={300}
+                                width={500}
+                                height={200}
                                 className="p-1 object-contain"
                                 loading="lazy"
                             />
@@ -67,7 +60,7 @@ export default async function VerifyTokenPage({
                     <div className="w-px h-auto bg-secondary"></div>
 
                     <div className="p-10 w-full max-w-md bg-secondary rounded-[20px]">
-                        <p className="text-white font-semibold pl-4 bg-primary w-[60%] py-2 mb-6 rounded-[10px]">
+                        <p className="text-white font-semibold pl-4 bg-primary w-[60%] py-2 mb-6 rounded-[5px]">
                             2FA Verification
                         </p>
                         <VerifyTokenForm callbackUrl={callbackUrl} />

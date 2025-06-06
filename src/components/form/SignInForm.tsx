@@ -131,7 +131,7 @@ const SignInForm = () => {
                                             <button
                                                 type="button"
                                                 onClick={togglePasswordVisibility}
-                                                className="absolute right-2 top-2 text-gray-500"
+                                                className="absolute right-2 top-2"
                                             >
                                                 {showPassword ? (
                                                     <EyeOff size={18} />
