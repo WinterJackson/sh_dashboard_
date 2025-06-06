@@ -10,7 +10,6 @@ import HospitalsPagination from "./ui/hospitals-table/HospitalsPagination";
 import HospitalsFilters from "./ui/hospitals-table/HospitalsFilters";
 import { useDeleteHospitals } from "@/hooks/useDeleteHospitals";
 import Delete from "@mui/icons-material/Delete";
-import { useSession } from "next-auth/react";
 import ConfirmationModal from "./ui/hospital-modals/ConfirmationModal";
 
 interface HospitalsListProps {
@@ -26,7 +25,6 @@ export default function HospitalsList({
     totalHospitals,
     userRole,
 }: HospitalsListProps) {
-    const { data: session } = useSession();
     const { mutate: deleteHospitals, isPending: isDeleting } =
         useDeleteHospitals();
     const [selectedHospitals, setSelectedHospitals] = useState<number[]>([]);
@@ -38,11 +36,13 @@ export default function HospitalsList({
     } | null>(null);
 
     const [currentPage, setCurrentPage] = useState(1);
+
     const [filteredHospitals, setFilteredHospitals] =
-        useState(initialHospitals);
+        useState<Hospital[]>(initialHospitals);
+
     const { searchTerm } = useSearch();
 
-    // State for the confirmation modal
+    // Confirmation-modal state
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] =
         useState(false);
     const [modalConfig, setModalConfig] = useState<{
@@ -74,9 +74,8 @@ export default function HospitalsList({
     };
 
     const handleBulkDelete = () => {
-        if (!selectedHospitals.length) return;
+        if (selectedHospitals.length === 0) return;
 
-        // Open the confirmation modal for bulk delete
         setModalConfig({
             title: "Delete Hospitals",
             message: `Are you sure you want to delete ${selectedHospitals.length} hospital(s)? This action cannot be undone.`,
@@ -104,14 +103,11 @@ export default function HospitalsList({
     };
 
     const onDelete = async (hospitalId: number) => {
-        // Find the hospital to be deleted
         const hospitalToDelete = filteredHospitals.find(
-            (hospital) => hospital.hospitalId === hospitalId
+            (h) => h.hospitalId === hospitalId
         );
-
         if (!hospitalToDelete) return;
 
-        // Open confirmation modal for single delete
         setModalConfig({
             title: "Delete Hospital",
             message:
@@ -122,9 +118,7 @@ export default function HospitalsList({
                 deleteHospitals([hospitalId], {
                     onSuccess: () => {
                         setFilteredHospitals((prev) =>
-                            prev.filter(
-                                (hospital) => hospital.hospitalId !== hospitalId
-                            )
+                            prev.filter((h) => h.hospitalId !== hospitalId)
                         );
                         setShowDeleteSuccess(true);
                         setShowDeleteError(false);
@@ -141,9 +135,16 @@ export default function HospitalsList({
         setIsConfirmationModalOpen(true);
     };
 
-    const searchFilteredHospitals = useMemo(() => {
+    /**
+     *    - filter by searchTerm
+     *    - sort filtered result by hospitalId ascending
+     *    - return sorted array for pagination
+     */
+    const searchFilteredSortedHospitals = useMemo(() => {
         const term = searchTerm.toLowerCase();
-        return filteredHospitals.filter((hospital) => {
+
+        // Filter
+        const filtered = filteredHospitals.filter((hospital) => {
             return (
                 hospital.hospitalName.toLowerCase().includes(term) ||
                 (hospital.county || "").toLowerCase().includes(term) ||
@@ -152,24 +153,27 @@ export default function HospitalsList({
                 hospital.hospitalId.toString().includes(term)
             );
         });
+
+        // Sort by hospitalId ascending
+        return [...filtered].sort((a, b) => a.hospitalId - b.hospitalId);
     }, [searchTerm, filteredHospitals]);
 
     const paginatedHospitals = useMemo(() => {
         const start = (currentPage - 1) * ITEMS_PER_PAGE;
         const end = start + ITEMS_PER_PAGE;
-        return searchFilteredHospitals.slice(start, end);
-    }, [searchFilteredHospitals, currentPage]);
+        return searchFilteredSortedHospitals.slice(start, end);
+    }, [searchFilteredSortedHospitals, currentPage]);
 
     const totalPages = Math.ceil(
-        searchFilteredHospitals.length / ITEMS_PER_PAGE
+        searchFilteredSortedHospitals.length / ITEMS_PER_PAGE
     );
 
     const onSetHospitals = (updatedHospitals: Hospital[]) => {
         setFilteredHospitals(updatedHospitals);
     };
 
-    const onFilterChange = (filteredHospitals: Hospital[]) => {
-        setFilteredHospitals(filteredHospitals);
+    const onFilterChange = (newFiltered: Hospital[]) => {
+        setFilteredHospitals(newFiltered);
     };
 
     return (
@@ -224,7 +228,7 @@ export default function HospitalsList({
                 </div>
             )}
 
-            {/* Selected Hospitals Count */}
+            {/* Selected Hospitals Count + Bulk Delete Button */}
             {selectedHospitals.length > 0 && (
                 <div className="bg-bluelight/5 border border-primary text-gray-700 p-3 rounded-[10px] relative mb-2">
                     {selectedHospitals.length === 1
@@ -252,36 +256,22 @@ export default function HospitalsList({
                         <th className="text-left p-2 w-[8%] text-[13px]">
                             {totalHospitals} Hospitals
                         </th>
-                        <th className="text-center p-2 w-[15%]">
-                            Logo
-                        </th>
-                        <th className="text-left p-2 w-[20%]">
-                            Name
-                        </th>
-                        <th className="text-center p-2 w-[10%]">
-                            ID
-                        </th>
+                        <th className="text-center p-2 w-[15%]">Logo</th>
+                        <th className="text-left p-2 w-[20%]">Name</th>
+                        <th className="text-center p-2 w-[10%]">ID</th>
                         <th className="text-center p-2 w-[20%] whitespace-nowrap">
                             Phone
                         </th>
-                        <th className="text-center p-2 w-[10%]">
-                            County
-                        </th>
-                        <th className="text-center p-2 w-[10%]">
-                            Town
-                        </th>
-                        <th className="text-center p-2 w-[12%]">
-                            Type
-                        </th>
-                        <th className="text-center p-2 w-[10%]">
-                            Level
-                        </th>
+                        <th className="text-center p-2 w-[10%]">County</th>
+                        <th className="text-center p-2 w-[10%]">Town</th>
+                        <th className="text-center p-2 w-[12%]">Type</th>
+                        <th className="text-center p-2 w-[10%]">Level</th>
                         <th className="text-center p-2 w-[10%] whitespace-nowrap">
-                            Ref Code
+                            Ref. Code
                         </th>
                         {userRole === Role.SUPER_ADMIN && (
                             <th className="text-center p-2 w-[5%]">
-                                <div className="flex flex-col items-center justify-center gap-1 p-2 rounded-[10px] bg-white shadow-sm shadow-gray-400 ">
+                                <div className="flex flex-col items-center justify-center gap-1 p-2 rounded-[10px] bg-white shadow-sm shadow-gray-400">
                                     <input
                                         type="checkbox"
                                         className="w-4 h-4"

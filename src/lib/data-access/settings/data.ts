@@ -10,7 +10,7 @@ import * as Sentry from "@sentry/nextjs";
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { NotificationSettings, User, Profile, Doctor, Nurse, Staff, AuditAction, UserSettingsData } from "@/lib/definitions";
+import { NotificationSettings, User, Profile, AuditAction, UserSettingsData } from "@/lib/definitions";
 import { updatePassword } from "@/lib/utils/updatePassword";
 import { sendEmail } from "@/lib/email";
 import { getClientIP } from "@/lib/utils/getClientIP";
@@ -433,7 +433,6 @@ export async function updateSecuritySettings(settings: SecuritySettings) {
         throw new Error(getErrorMessage(error));
     }
 }
-
 
 // Change password
 export async function changePassword(currentPassword: string, newPassword: string) {

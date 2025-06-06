@@ -2,6 +2,7 @@
 
 "use client";
 
+import { useMemo } from "react";
 import { HospitalDepartment, Role } from "@/lib/definitions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -56,6 +57,13 @@ export default function DepartmentsSection({
         }
     };
 
+    // Sort departments by departmentId in ascending order
+    const sortedDepartments = useMemo(() => {
+        return [...departments].sort(
+            (a, b) => a.department.departmentId - b.department.departmentId
+        );
+    }, [departments]);
+
     if (!departments || departments.length === 0) {
         return (
             <Card className="bg-white shadow-md rounded-[10px]">
@@ -84,22 +92,31 @@ export default function DepartmentsSection({
                         <TableRow>
                             <TableHead className="font-semibold">ID</TableHead>
                             <TableHead className="font-semibold">
-                                Name
+                                <div className="flex items-center">
+                                    Name
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger className="ml-1">
+                                                <Info size={14} />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>
+                                                    Hover over the department
+                                                    name to see the description
+                                                </p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </div>
                             </TableHead>
                             <TableHead className="font-semibold">
                                 Type
                             </TableHead>
-                            <TableHead className="font-semibold">
-                                Description
+                            <TableHead className="font-semibold whitespace-nowrap">
+                                Head Of Department
                             </TableHead>
-                            <TableHead className="font-semibold">
-                                Head
-                            </TableHead>
-                            <TableHead className="font-semibold">
-                                Location
-                            </TableHead>
-                            <TableHead className="font-semibold">
-                                Established
+                            <TableHead className="font-semibold whitespace-nowrap">
+                                Established Year
                             </TableHead>
                             <TableHead className="font-semibold">
                                 <div className="flex items-center">
@@ -124,41 +141,42 @@ export default function DepartmentsSection({
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {departments.map((deptLink) => {
+                        {sortedDepartments.map((deptLink) => {
                             const department = deptLink.department;
                             const specializations =
                                 department.specializationLinks || [];
 
                             return (
-                                <TableRow key={department.departmentId}>
+                                <TableRow
+                                    key={department.departmentId}
+                                    className="hover:bg-gray-100 transition-colors duration-200"
+                                >
                                     <TableCell>
                                         {department.departmentId}
                                     </TableCell>
                                     <TableCell className="font-medium">
-                                        {department.name}
-                                    </TableCell>
-                                    <TableCell>{department.type}</TableCell>
-                                    <TableCell className="max-w-[200px] truncate">
                                         <TooltipProvider>
                                             <Tooltip>
-                                                <TooltipTrigger>
-                                                    {department.description ||
-                                                        "N/A"}
+                                                <TooltipTrigger className="whitespace-nowrap cursor-pointer text-center p-2 bg-white rounded-[5px]">
+                                                    {department.name}
                                                 </TooltipTrigger>
                                                 <TooltipContent>
                                                     <p className="max-w-xs">
+                                                        <span className="font-semibold">
+                                                            Description:
+                                                        </span>
+                                                        <br />
+                                                        <br />
                                                         {department.description ||
-                                                            "No description"}
+                                                            "No description available"}
                                                     </p>
                                                 </TooltipContent>
                                             </Tooltip>
                                         </TooltipProvider>
                                     </TableCell>
+                                    <TableCell>{department.type}</TableCell>
                                     <TableCell>
                                         {deptLink.headOfDepartment || "N/A"}
-                                    </TableCell>
-                                    <TableCell>
-                                        {deptLink.location || "N/A"}
                                     </TableCell>
                                     <TableCell>
                                         {deptLink.establishedYear || "N/A"}
@@ -166,19 +184,21 @@ export default function DepartmentsSection({
                                     <TableCell>
                                         <TooltipProvider>
                                             <Tooltip>
-                                                <TooltipTrigger>
-                                                    {specializations.length ||
-                                                        0}
+                                                <TooltipTrigger asChild>
+                                                    <div className="cursor-pointer text-center p-2 bg-white rounded-[5px] font-semibold">
+                                                        {specializations.length ||
+                                                            0}
+                                                    </div>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
                                                     <div className="max-w-xs">
                                                         <p className="font-semibold">
-                                                            List of
                                                             Specializations
                                                         </p>
+                                                        <br />
                                                         {specializations.length >
                                                         0 ? (
-                                                            <ul className="list-disc list-inside mt-1">
+                                                            <ul className="list-disc list-inside">
                                                                 {specializations.map(
                                                                     (link) => (
                                                                         <li
@@ -198,7 +218,7 @@ export default function DepartmentsSection({
                                                                 )}
                                                             </ul>
                                                         ) : (
-                                                            <p className="mt-1">
+                                                            <p className="">
                                                                 No
                                                                 specializations
                                                             </p>
@@ -208,6 +228,7 @@ export default function DepartmentsSection({
                                             </Tooltip>
                                         </TooltipProvider>
                                     </TableCell>
+
                                     <TableCell>
                                         <div className="flex gap-2">
                                             <Button

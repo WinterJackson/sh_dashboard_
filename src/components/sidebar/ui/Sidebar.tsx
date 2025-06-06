@@ -1,4 +1,4 @@
-// File: src/components/sidebar/ui/Sidebar.tsx
+// src/components/sidebar/ui/Sidebar.tsx
 
 "use client";
 
@@ -12,14 +12,16 @@ import {
     GearIcon,
     PersonIcon,
 } from "@radix-ui/react-icons";
-import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import DoctorsDropdown from "./DoctorsDropdown";
+import HospitalsDropdown from "./HospitalsDropdown";
 import LogoutButton from "./LogoutButton";
 import Skeleton from "@mui/material/Skeleton";
+import { Role } from "@/lib/definitions";
+import PatientsDropdown from "./PatientsDropdown";
 
 type SidebarProps = {
     username: string;
-    role: string;
+  role?: Role;
 };
 
 const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
@@ -28,7 +30,6 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
     // Extract first name from username
     const firstName = username.split(" ")[0] || "";
     const nameWidth = firstName ? firstName.length * 10 : 100;
-    const userRole = role;
 
     const isActive = (href: string) => pathname === href;
 
@@ -47,6 +48,11 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
                         <DashboardIcon className="mr-2 text-xl" />
                         Dashboard
                     </Link>
+
+                    {(role === Role.ADMIN || role === Role.SUPER_ADMIN) && (
+                        <HospitalsDropdown isActive={isActive} role={role} />
+                    )}
+
                     <Link
                         href="/dashboard/appointments"
                         className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center border-2 ${
@@ -60,38 +66,15 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
                         <ChevronRightIcon className="ml-auto text-xl" />
                     </Link>
 
-                    {role !== "DOCTOR" && (
+                    {role !== Role.DOCTOR && (
                         <DoctorsDropdown
                             isActive={isActive}
                             currentPath="/dashboard/doctors"
                         />
                     )}
-                    <Link
-                        href="/dashboard/patients"
-                        className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center border-2 ${
-                            isActive("/dashboard/patients")
-                                ? "bg-primary text-white"
-                                : "hover:bg-bluelight hover:text-black"
-                        }`}
-                    >
-                        <PersonIcon className="mr-2 text-xl" />
-                        Patients
-                        <ChevronRightIcon className="ml-auto text-xl" />
-                    </Link>
-                    {role === "SUPER_ADMIN" && (
-                        <Link
-                            href="/dashboard/hospitals"
-                            className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center border-2 ${
-                                isActive("/dashboard/hospitals")
-                                    ? "bg-primary text-white"
-                                    : "hover:bg-bluelight hover:text-black"
-                            }`}
-                        >
-                            <LocalHospitalIcon className="mr-2 text-xl" />
-                            Hospitals
-                            <ChevronRightIcon className="ml-auto text-xl" />
-                        </Link>
-                    )}
+
+                    <PatientsDropdown isActive={isActive} role={role} />
+
                     <Link
                         href="/dashboard/messaging"
                         className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center border-2 ${
@@ -103,6 +86,7 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
                         <CalendarIcon className="mr-2 text-xl" />
                         Messaging
                     </Link>
+
                     <Link
                         href="/dashboard/settings"
                         className={`py-2 px-4 pt-4 pb-4 font-semibold flex items-center border-2 ${
@@ -119,13 +103,13 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
             <div className="p-4">
                 <div className="flex flex-col gap-4">
                     <div className="flex-grow items-start bg-slate-100 py-1 px-2 hover:bg-bluelight/10 rounded-[10px] shadow-sm shadow-gray-400">
-                        {username !== "Guest User" && role !== "Guest" ? (
+            {username !== "Guest User" && role != null ? (
                             <>
                                 <p className="font-semibold text-nowrap uppercase">
                                     {firstName}
                                 </p>
                                 <p className="text-xs text-nowrap text-gray-400">
-                                    {userRole}
+                                    {role}
                                 </p>
                             </>
                         ) : (

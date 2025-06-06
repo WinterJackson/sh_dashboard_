@@ -1,4 +1,5 @@
 // src/components/hospitals/ui/hospitals-table/HospitalsFilters.tsx
+
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -13,8 +14,6 @@ import {
     DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
 import { Hospital, KEPHLevel, HospitalOwnershipType } from "@/lib/definitions";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import { useSearch } from "@/app/context/SearchContext";
 import { ChevronRight, CircleX as CancelledIcon } from "lucide-react";
 import { SymbolIcon } from "@radix-ui/react-icons";
