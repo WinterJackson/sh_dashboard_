@@ -8,39 +8,60 @@
   overflow: hidden;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3; /* Number of lines */
-  line-clamp: 3; /* Number of lines */
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
 }
 
-/* Custom vertical scrollbar (y-axis) */
+.bg-radial-theme {
+  position: absolute;
+  inset: 0;
+  z-index: -10;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+
+  background: radial-gradient(
+    125% 125% at 50% 10%,
+    hsl(var(--background)) 40%,
+    hsl(var(--primary)) 100%
+  );
+}
+
 .scrollbar-custom {
-  scrollbar-width: none; /* For Firefox */
-  scrollbar-color: #8d8d8d7e #f7fafc; /* Scrollbar thumb and track colors */
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--text-subtle)) hsl(var(--background));
 }
 
 .scrollbar-custom::-webkit-scrollbar {
-  width: 0px; /* Width for vertical scrollbar */
-  height: 0px; /* Height for horizontal scrollbar */
-  display: none;
+  width: 6px;
+  height: 6px;
 }
 
 .scrollbar-custom::-webkit-scrollbar-thumb {
-  background-color: #8d8d8d7e; /* Scrollbar thumb (draggable part) color */
-  border-radius: 4px; /* Roundness of scrollbar thumb */
+  background-color: hsl(var(--text-subtle));
+  border-radius: 8px;
 }
 
 .scrollbar-custom::-webkit-scrollbar-track {
-  background-color: #f7fafc; /* Scrollbar track color */
+  background-color: hsl(var(--background));
+  border-radius: 8px;
 }
 
-/* Custom horizontal scrollbar (x-axis) */
 .scrollbar-custom::-webkit-scrollbar-thumb:horizontal {
-  background-color: #8d8d8d7e; /* Scrollbar thumb color for horizontal axis */
-  border-radius: 4px;
-  width: 2px;
+  background-color: hsl(var(--text-subtle));
+  border-radius: 8px;
+  height: 6px;
 }
 
-/* Custom calendar */
+.custom-scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-scrollbar-hide {
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none;    /* Firefox */
+}
+
 .custom-datepicker {
   padding: 5px;
   margin-top: 5px;
@@ -48,28 +69,23 @@
   border-radius: 10px !important;
 }
 
-/* Customize header */
 .custom-datepicker .react-datepicker__header {
-  @apply bg-bluelight/10 text-black;
+  @apply bg-light-accent text-black;
 }
 
-/* Style for selected day */
 .custom-datepicker .react-datepicker__day--selected,
 .custom-datepicker__day--keyboard-selected {
-  @apply bg-bluelight text-black;
+  @apply bg-accent text-black;
 }
 
-/* Hover effect */
 .custom-datepicker .react-datepicker__day:hover {
   @apply bg-primary text-white;
 }
 
-/* Month display style */
 .custom-datepicker .react-datepicker__current-month {
   @apply font-bold text-lg text-gray-800;
 }
 
-/* Style for days outside the current month */
 .custom-datepicker .react-datepicker__day--outside-month {
   @apply text-gray-400;
 }
@@ -82,91 +98,144 @@
   @apply p-2 hover:bg-primary hover:text-white rounded-md;
 }
 
-/* ─── Map Styling ───────────────────────────────────────────────────────────────── */
-
-/* Wrapper around the MapContainer to apply padding, background, shadow, and fixed height */
 .map-wrapper {
   @apply rounded-[10px] overflow-hidden bg-white shadow-md p-4 h-[400px] w-full;
 }
 
-/* Ensure the Leaflet map fills its container and has rounded corners */
 .leaflet-container {
   border-radius: 10px;
   height: 100%;
   width: 100%;
-  outline: none; /* Removes focus ring */
+  outline: none;
   font-family: inherit;
 }
 
-/* Smooth tile loading transition */
 .leaflet-container .leaflet-tile {
   transition: filter 0.2s ease;
 }
 
-/* Customize popup appearance */
 .leaflet-popup-content-wrapper {
   @apply bg-white rounded-[8px] shadow-lg text-sm;
 }
 
-/* Position zoom control further from edges if needed */
 .leaflet-top.leaflet-right {
   top: 1rem;
   right: 1rem;
 }
 
-
-/* @layer base {
+@layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background-muted: 0 0% 90%;
+    --foreground: 0 0% 0%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 0 0% 0%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --popover-foreground: 221 64% 19%;
+    --primary: 211 99% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 221 64% 19%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 40% 95%;
+    --muted-foreground: 215 19% 48%;
+    --accent: 210 100% 45% / 0.2;
+    --accent-foreground: 0 0% 0%;
+    --light-accent: 210 100% 45% / 0.05;
+    --constructive: 122, 39%, 49%;
+    --constructive-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --alt-border: 215 10% 34%;
+    --input: 214 32% 91%;
+    --ring: 221 64% 19%;
+    --shadow-main: 210 16% 83%;
+    --shadow-dark: 217.89 10.61% 64.9%;
+    --text-main: 0 0% 0%;
+    --text-muted: 220 9% 46%;
+    --text-subtle: 215 13% 64%;
+    --slate: 210 40% 96%;
+    --slate-two: 214 32% 91%;
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 222 47% 11%;
+    --background-muted: 215 30% 15%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 222 45% 13%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 222 45% 13%;
     --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
+    --primary: 211 99% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 215 28% 21%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+    --muted: 215 28% 21%;
+    --muted-foreground: 215 19% 72%;
+    --accent: 215 28% 21%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --light-accent: 215 28% 21%;
+    --constructive: 122 39% 60%;
+    --constructive-foreground: 0 0% 100%;
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 215 20% 30%;
+    --alt-border: 215 15% 40%;
+    --input: 215 28% 21%;
+    --ring: 210 40% 98%;
+    --shadow-main: 215 20% 35%;
+    --shadow-dark: 0 0% 100%;
+    --text-main: 210 40% 98%;
+    --text-muted: 215 16% 64%;
+    --text-subtle: 215 13% 44%;
+    --slate: 215 20% 20%;
+    --slate-two: 215 20% 25%;
+    --radius: 0.5rem;
+  }
+
+  .red {
+    --background: 0 0% 100%;
+    --background-muted: 0 100% 95%;
+    --foreground: 0 62% 30%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 62% 30%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 62% 30%;
+    --primary: 0 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 85% 95%;
+    --secondary-foreground: 0 62% 30%;
+    --muted: 0 85% 97%;
+    --muted-foreground: 0 72% 43%;
+    --accent: 0 91% 70%;
+    --accent-foreground: 0 0% 100%;
+    --light-accent: 0 91% 70% / 0.05;
+    --constructive: 122 39% 49%;
+    --constructive-foreground: 0 0% 100%;
+    --destructive: 0 82% 35%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 100% 93%;
+    --alt-border: 0 92% 80%;
+    --input: 0 96% 90%;
+    --ring: 0 62% 30%;
+    --shadow-main: 0 0% 90%;
+    --shadow-dark: 0 0% 70%;
+    --text-main: 0 62% 30%;
+    --text-muted: 0 50% 50%;
+    --text-subtle: 0 30% 60%;
+    --slate: 0 0% 98%;
+    --slate-two: 0 0% 95%;
+    --radius: 0.5rem;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
-} */
+}

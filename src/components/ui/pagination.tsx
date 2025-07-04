@@ -1,4 +1,4 @@
-// File: src/components/ui/pagination.tsx
+// src/components/ui/pagination.tsx
 
 import * as React from "react"
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
@@ -36,7 +36,7 @@ const PaginationItem = React.forwardRef<
     ref={ref}
     className={cn(
       "cursor-pointer",
-      isActive ? "bg-primary text-white" : "text-black", // Customize the active state styles here
+      isActive ? "bg-primary text-primary-foreground" : "text-black", // Customize the active state styles here
       className
     )}
     {...props}

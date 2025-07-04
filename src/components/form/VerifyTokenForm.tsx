@@ -78,7 +78,7 @@ const MFAVerifyForm = ({
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit(onSubmit)}
-                    className="flex flex-col gap-4 w-full max-w-sm bg-white p-6 rounded-[10px] shadow-md"
+                    className="flex flex-col gap-4 w-full max-w-sm bg-background p-6 rounded-[10px] shadow-md"
                 >
                     <FormField
                         control={form.control}

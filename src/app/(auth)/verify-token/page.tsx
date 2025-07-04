@@ -13,58 +13,50 @@ export default async function VerifyTokenPage({
 }: {
     searchParams: { [key: string]: string | string[] | undefined };
 }) {
-    // Get session
     const session: Session | null = await getServerSession(authOptions);
 
-    // Redirect if no session or user
     if (!session || !session.user) {
         redirect("/sign-in");
     }
 
-    // Check if MFA was already verified
-    const cookieStore = cookies();
-    const mfaVerified = cookieStore.get("mfaVerified")?.value === "true";
-
-    // Extract callback URL or fallback to /dashboard
     const rawCallback = Array.isArray(searchParams.callbackUrl)
         ? searchParams.callbackUrl[0]
         : searchParams.callbackUrl;
+
     const callbackUrl =
         rawCallback && typeof rawCallback === "string"
             ? decodeURIComponent(rawCallback)
             : "/dashboard";
 
-    // Redirect if MFA already verified
+    const cookieStore = cookies();
+    const mfaVerified = cookieStore.get("mfaVerified")?.value === "true";
+
     if (session.user.twoFactorEnabled && mfaVerified) {
         redirect(callbackUrl);
     }
 
-    // Render 2FA form
     return (
         <AuthLayout>
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="flex gap-10">
-                    <div className="flex items-center">
-                        <div className="p-8 my-auto bg-secondary rounded-2xl">
-                            <img
-                                src="/images/logo.png"
-                                alt="Hospital Logo"
-                                width={500}
-                                height={200}
-                                className="p-1 object-contain"
-                                loading="lazy"
-                            />
-                        </div>
+            <div className="flex flex-col sm:flex-row justify-center items-center px-4 py-8 w-full max-w-screen-xl min-h-screen">
+                {/* ✅ Only show logo on md+ */}
+                <div className="hidden md:flex items-center justify-center mb-6 sm:mb-0 sm:mr-10 w-full max-w-sm sm:max-w-md md:max-w-xs">
+                    <div className="p-6 sm:p-8 md:p-10 bg-secondary rounded-2xl w-full">
+                        <img
+                            src="/images/logo.png"
+                            alt="Hospital Logo"
+                            width={300}
+                            height={200}
+                            className="p-1 object-contain max-w-full h-auto mx-auto"
+                            loading="lazy"
+                        />
                     </div>
+                </div>
 
-                    <div className="w-px h-auto bg-secondary"></div>
-
-                    <div className="p-10 w-full max-w-md bg-secondary rounded-[20px]">
-                        <p className="text-white font-semibold pl-4 bg-primary w-[60%] py-2 mb-6 rounded-[5px]">
-                            2FA Verification
-                        </p>
-                        <VerifyTokenForm callbackUrl={callbackUrl} />
-                    </div>
+                <div className="p-6 sm:p-8 md:p-10 bg-secondary rounded-2xl w-full max-w-sm sm:max-w-md md:max-w-md">
+                    <p className="text-white text-xs sm:text-sm font-semibold pl-4 bg-primary w-[60%] py-2 mb-6 rounded-[5px]">
+                        2FA Verification
+                    </p>
+                    <VerifyTokenForm callbackUrl={callbackUrl} />
                 </div>
             </div>
         </AuthLayout>

@@ -29,11 +29,11 @@ const AppointmentsPagination: React.FC<AppointmentsPaginationProps> = ({
         }
     };
     return (
-        <Pagination className="bg-bluelight p-4 rounded-b-2xl">
+        <Pagination className="bg-light-accent p-4 rounded-b-2xl">
             <PaginationPrevious
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="px-3 py-1 mx-1 bg-gray-300 text-black rounded-[10px] mr-4 hover:bg-primary hover:text-white disabled:opacity-50 cursor-pointer"
+                className="px-3 py-1 mx-1 bg-background-muted text-text-main rounded-[10px] mr-4 hover:bg-primary hover:text-primary-foreground disabled:opacity-50 cursor-pointer"
             >
                 Previous
             </PaginationPrevious>
@@ -43,18 +43,18 @@ const AppointmentsPagination: React.FC<AppointmentsPaginationProps> = ({
                     <>
                         <PaginationItem
                             onClick={() => handlePageChange(1)}
-                            className="px-3 py-1 rounded-[10px] cursor-pointer transition-colors bg-gray-100 text-gray-700 hover:bg-blue-200"
+                            className="px-3 py-1 rounded-[10px] cursor-pointer transition-colors bg-card text-card-foreground hover:bg-accent border"
                         >
                             1
                         </PaginationItem>
-                        <PaginationEllipsis className="px-3 py-1 text-gray-500" />
+                        <PaginationEllipsis className="px-3 py-1 text-text-main" />
                     </>
                 )}
 
                 {currentPage > 2 && (
                     <PaginationItem
                         onClick={() => handlePageChange(currentPage - 1)}
-                        className="px-3 py-1 rounded-[10px] cursor-pointer transition-colors bg-gray-100 text-gray-700 hover:bg-blue-200"
+                        className="px-3 py-1 rounded-[10px] cursor-pointer transition-colors bg-card text-card-foreground hover:bg-accent border"
                     >
                         {currentPage - 1}
                     </PaginationItem>
@@ -62,7 +62,7 @@ const AppointmentsPagination: React.FC<AppointmentsPaginationProps> = ({
 
                 <PaginationItem
                     isActive={true}
-                    className="px-3 py-1 rounded-[10px] bg-primary text-white cursor-pointer"
+                    className="px-3 py-1 rounded-[10px] bg-primary text-primary-foreground cursor-pointer"
                 >
                     {currentPage}
                 </PaginationItem>
@@ -70,7 +70,7 @@ const AppointmentsPagination: React.FC<AppointmentsPaginationProps> = ({
                 {currentPage < totalPages - 1 && (
                     <PaginationItem
                         onClick={() => handlePageChange(currentPage + 1)}
-                        className="px-3 py-1 rounded-[10px] cursor-pointer transition-colors bg-gray-100 text-gray-700 hover:bg-blue-200"
+                        className="px-3 py-1 rounded-[10px] cursor-pointer transition-colors bg-card text-card-foreground hover:bg-accent border"
                     >
                         {currentPage + 1}
                     </PaginationItem>
@@ -78,10 +78,10 @@ const AppointmentsPagination: React.FC<AppointmentsPaginationProps> = ({
 
                 {currentPage < totalPages - 2 && (
                     <>
-                        <PaginationEllipsis className="px-3 py-1 text-gray-500" />
+                        <PaginationEllipsis className="px-3 py-1 text-text-main" />
                         <PaginationItem
                             onClick={() => handlePageChange(totalPages)}
-                            className="px-3 py-1 rounded-[10px] cursor-pointer transition-colors bg-gray-100 text-gray-700 hover:bg-blue-200"
+                            className="px-3 py-1 rounded-[10px] cursor-pointer transition-colors bg-card text-card-foreground hover:bg-accent border"
                         >
                             {totalPages}
                         </PaginationItem>
@@ -92,7 +92,7 @@ const AppointmentsPagination: React.FC<AppointmentsPaginationProps> = ({
             <PaginationNext
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1 mx-1 bg-gray-300 text-black rounded-[10px] ml-4 hover:bg-primary hover:text-white disabled:opacity-50 cursor-pointer"
+                className="px-3 py-1 mx-1 bg-background-muted text-text-main rounded-[10px] ml-4 hover:bg-primary hover:text-primary-foreground disabled:opacity-50 cursor-pointer"
             >
                 Next
             </PaginationNext>

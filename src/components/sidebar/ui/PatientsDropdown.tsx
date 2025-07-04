@@ -3,8 +3,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronRightIcon } from "@radix-ui/react-icons";
-import { PersonIcon } from "@radix-ui/react-icons";
+import { ChevronRightIcon, PersonIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { Role } from "@/lib/definitions";
 
@@ -23,7 +22,6 @@ const PatientsDropdown: React.FC<PatientsDropdownProps> = ({
         setIsPatientsOpen(!isPatientsOpen);
     };
 
-    // roles that can add new patients
     const canAddPatients = [
         Role.SUPER_ADMIN,
         Role.ADMIN,
@@ -36,10 +34,10 @@ const PatientsDropdown: React.FC<PatientsDropdownProps> = ({
         <>
             <div
                 onClick={togglePatients}
-                className="py-2 px-4 pt-4 pb-4 font-semibold flex items-center cursor-pointer hover:bg-bluelight hover:text-black border-2"
+                className="py-2 px-4 pt-4 pb-4 font-semibold flex items-center cursor-pointer hover:bg-accent hover:text-accent-foreground border-b border-t border-border"
             >
-                <div className="flex items-center">
-                    <PersonIcon className="mr-2 text-xl" />
+                <div className="flex items-center text-xs sm:text-sm">
+                    <PersonIcon className="mr-2" />
                     Patients
                 </div>
                 <ChevronRightIcon
@@ -58,17 +56,17 @@ const PatientsDropdown: React.FC<PatientsDropdownProps> = ({
                 <div className="ml-10 flex flex-col space-y-2 py-2">
                     <Link
                         href="/dashboard/patients"
-                        className={`relative py-2 pl-10 pr-4 font-semibold flex items-center rounded-l-[15px] rounded-r-none ${
+                        className={`relative py-2 pl-10 pr-4 font-semibold flex items-center rounded-l-[15px] rounded-r-none text-xs sm:text-sm ${
                             isActive("/dashboard/patients")
-                                ? "bg-primary text-white"
-                                : "hover:bg-bluelight hover:text-black"
+                                ? "bg-primary text-primary-foreground"
+                                : "hover:bg-accent hover:text-accent-foreground"
                         }`}
                     >
                         <span
                             className={`absolute ml-2 left-0 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full ${
                                 isActive("/dashboard/patients")
-                                    ? "bg-white border-8 border-green-500"
-                                    : "bg-white border-8 border-primary"
+                                    ? "bg-background-muted border-8 border-constructive"
+                                    : "bg-background-muted border-8 border-primary"
                             }`}
                         ></span>
                         All Patients
@@ -76,10 +74,10 @@ const PatientsDropdown: React.FC<PatientsDropdownProps> = ({
                     {canAddPatients && (
                         <Link
                             href="/dashboard/patients/add-new-patient"
-                            className={`relative py-2 pl-10 pr-4 font-semibold flex items-center rounded-l-[15px] rounded-r-none ${
+                            className={`relative py-2 pl-10 pr-4 font-semibold flex items-center rounded-l-[15px] rounded-r-none text-xs sm:text-sm ${
                                 isActive("/dashboard/patients/add-new-patient")
-                                    ? "bg-primary text-white"
-                                    : "hover:bg-bluelight hover:text-black"
+                                    ? "bg-primary text-primary-foreground"
+                                    : "hover:bg-accent hover:text-accent-foreground"
                             }`}
                         >
                             <span
@@ -87,8 +85,8 @@ const PatientsDropdown: React.FC<PatientsDropdownProps> = ({
                                     isActive(
                                         "/dashboard/patients/add-new-patient"
                                     )
-                                        ? "bg-white border-8 border-green-500"
-                                        : "bg-white border-8 border-primary"
+                                        ? "bg-background-muted border-8 border-constructive"
+                                        : "bg-background-muted border-8 border-primary"
                                 }`}
                             ></span>
                             Add New Patient

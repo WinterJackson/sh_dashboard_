@@ -96,13 +96,14 @@ const SignInForm = () => {
                             name="email"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="text-white">
+                                    <FormLabel className="text-white text-xs sm:text-sm">
                                         Email
                                     </FormLabel>
                                     <FormControl>
                                         <Input
                                             placeholder="john.doe@example.com"
                                             {...field}
+                                            className="text-xs sm:text-sm"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -114,7 +115,7 @@ const SignInForm = () => {
                             name="password"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="text-white">
+                                    <FormLabel className="text-white text-xs sm:text-sm">
                                         Password
                                     </FormLabel>
                                     <FormControl>
@@ -127,11 +128,12 @@ const SignInForm = () => {
                                                 }
                                                 placeholder="Enter your password"
                                                 {...field}
+                                                className="text-xs sm:text-sm"
                                             />
                                             <button
                                                 type="button"
                                                 onClick={togglePasswordVisibility}
-                                                className="absolute right-2 top-2"
+                                                className="absolute right-2 top-2 text-xs sm:text-sm"
                                             >
                                                 {showPassword ? (
                                                     <EyeOff size={18} />
@@ -146,7 +148,7 @@ const SignInForm = () => {
                             )}
                         />
                     </div>
-                    <Button className="w-full text-white mt-6" type="submit">
+                    <Button className="w-full text-white text-xs sm:text-sm mt-6" type="submit">
                         Sign in
                     </Button>
                 </form>
@@ -156,7 +158,7 @@ const SignInForm = () => {
 
                 {/* <GoogleSignInButton>Sign in with Google</GoogleSignInButton> */}
 
-                <p className="text-center text-sm text-white mt-2">
+                <p className="text-center text-xs sm:text-sm text-white mt-2">
                     If you don&apos;t have an account, please &nbsp;
                     <Link
                         className="text-primary hover:underline"

@@ -84,7 +84,7 @@ export function AddDepartmentDialog(props: AddDepartmentDialogProps) {
         >
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Add New Department</DialogTitle>
+                    <DialogTitle className="mb-4">Add New Department</DialogTitle>
                     <DialogDescription>
                         Create a new department for this hospital.
                     </DialogDescription>
@@ -119,7 +119,7 @@ export function AddDepartmentDialog(props: AddDepartmentDialogProps) {
                                     <FormControl>
                                         <select
                                             {...field}
-                                            className="border rounded-md p-2 w-full"
+                                            className="border rounded-md p-2 w-full focus:outline outline-0 bg-background"
                                         >
                                             {Object.values(DepartmentType).map(
                                                 (type) => (

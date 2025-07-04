@@ -1,4 +1,4 @@
-// File: src/components/dashboard/ui/LearnMoreCard.tsx
+// src/components/dashboard/ui/LearnMoreCard.tsx
 
 import Link from "next/link";
 import React from "react";
@@ -7,7 +7,7 @@ type Props = {};
 
 function LearnMoreCard({}: Props) {
     return (
-        <div className="p-4 flex flex-col gap-6 bg-[#006FDBB2] text-white rounded-xl w-full shadow-lg shadow-gray-300">
+        <div className="cursor-pointer p-4 flex flex-col gap-6 h-full bg-primary/80 text-primary-foreground rounded-xl w-full shadow-md shadow-shadow-main">
             <h1 className="font-semibold capitalize text-wrap text-center">
                 Snark health is now available in 10 African countries
             </h1>

@@ -66,7 +66,7 @@ export default function DepartmentsSection({
 
     if (!departments || departments.length === 0) {
         return (
-            <Card className="bg-white shadow-md rounded-[10px]">
+            <Card className="bg-card shadow-md rounded-[10px]">
                 <CardHeader>
                     <CardTitle className="text-xl font-semibold">
                         Departments
@@ -80,15 +80,15 @@ export default function DepartmentsSection({
     }
 
     return (
-        <Card className="bg-white shadow-md rounded-[10px] w-full">
-            <CardHeader className="flex flex-row justify-between items-center bg-bluelight rounded-t-[10px] mb-4 p-6">
+        <Card className="bg-card shadow-md shadow-shadow-main rounded-[10px] w-full">
+            <CardHeader className="flex flex-row justify-between items-center bg-accent rounded-t-[10px] mb-4 p-6">
                 <CardTitle className="text-xl font-semibold">
                     Departments
                 </CardTitle>
             </CardHeader>
             <CardContent className="p-4">
                 <Table>
-                    <TableHeader className="bg-bluelight/5">
+                    <TableHeader className="bg-slate-two text-foreground">
                         <TableRow>
                             <TableHead className="font-semibold">ID</TableHead>
                             <TableHead className="font-semibold">
@@ -99,10 +99,10 @@ export default function DepartmentsSection({
                                             <TooltipTrigger className="ml-1">
                                                 <Info size={14} />
                                             </TooltipTrigger>
-                                            <TooltipContent>
+                                            <TooltipContent className="bg-background text-foreground">
                                                 <p>
                                                     Hover over the department
-                                                    name to see the description
+                                                    name to see the description.
                                                 </p>
                                             </TooltipContent>
                                         </Tooltip>
@@ -126,9 +126,9 @@ export default function DepartmentsSection({
                                             <TooltipTrigger className="ml-1">
                                                 <Info size={14} />
                                             </TooltipTrigger>
-                                            <TooltipContent>
+                                            <TooltipContent className="bg-background text-foreground">
                                                 <p>
-                                                    Hover to see specializations
+                                                    Hover to see the specializations list.
                                                 </p>
                                             </TooltipContent>
                                         </Tooltip>
@@ -149,7 +149,7 @@ export default function DepartmentsSection({
                             return (
                                 <TableRow
                                     key={department.departmentId}
-                                    className="hover:bg-gray-100 transition-colors duration-200"
+                                    className="hover:bg-primary hover:text-primary-foreground transition-colors duration-200"
                                 >
                                     <TableCell>
                                         {department.departmentId}
@@ -157,10 +157,10 @@ export default function DepartmentsSection({
                                     <TableCell className="font-medium">
                                         <TooltipProvider>
                                             <Tooltip>
-                                                <TooltipTrigger className="whitespace-nowrap cursor-pointer text-center p-2 bg-white rounded-[5px]">
+                                                <TooltipTrigger className="whitespace-nowrap cursor-pointer text-center p-2 bg-light-accent rounded-[5px]">
                                                     {department.name}
                                                 </TooltipTrigger>
-                                                <TooltipContent>
+                                                <TooltipContent className="bg-background text-foreground">
                                                     <p className="max-w-xs">
                                                         <span className="font-semibold">
                                                             Description:
@@ -185,12 +185,12 @@ export default function DepartmentsSection({
                                         <TooltipProvider>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <div className="cursor-pointer text-center p-2 bg-white rounded-[5px] font-semibold">
+                                                    <div className="cursor-pointer text-center p-2 bg-light-accent rounded-[5px] font-semibold">
                                                         {specializations.length ||
                                                             0}
                                                     </div>
                                                 </TooltipTrigger>
-                                                <TooltipContent>
+                                                <TooltipContent className="bg-background text-foreground">
                                                     <div className="max-w-xs">
                                                         <p className="font-semibold">
                                                             Specializations
@@ -233,7 +233,7 @@ export default function DepartmentsSection({
                                         <div className="flex gap-2">
                                             <Button
                                                 size="sm"
-                                                className="bg-primary text-white rounded-[10px]"
+                                                className="bg-primary text-primary-foreground rounded-[10px]"
                                                 onClick={() =>
                                                     handleViewDepartment(
                                                         department.departmentId
@@ -245,7 +245,7 @@ export default function DepartmentsSection({
                                             {userRole === Role.ADMIN && (
                                                 <Button
                                                     size="sm"
-                                                    className="bg-red-500 text-white rounded-[10px]"
+                                                    className="bg-destructive text-destructive-foreground rounded-[10px]"
                                                     onClick={() =>
                                                         handleDelete(
                                                             department.departmentId

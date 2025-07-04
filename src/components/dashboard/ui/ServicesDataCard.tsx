@@ -1,4 +1,4 @@
-// File: src/components/dashboard/ui/ServicesDataCard.tsx
+// src/components/dashboard/ui/ServicesDataCard.tsx
 
 "use client";
 
@@ -9,14 +9,15 @@ import Link from "next/link";
 import CustomTooltip from "@/components/ui/piechart-tooltip";
 import { useFetchHospitals } from "@/hooks/useFetchHospitals";
 import { useFetchHospitalServices } from "@/hooks/useFetchHospitalServices";
-import {
-    DropdownMenu,
-    DropdownMenuTrigger,
-    DropdownMenuContent,
-    DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Info } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+    Tooltip as UiTooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { HospitalCombobox } from "@/components/ui/hospital-combobox";
 
 const COLORS = [
     "#0088FE",
@@ -65,7 +66,7 @@ const renderCustomizedLabel = ({
         <text
             x={x}
             y={y}
-            fill="black"
+            fill="hsl(var(--foreground))"
             fontWeight={500}
             fontSize="12px"
             textAnchor={x > cx ? "start" : "end"}
@@ -86,7 +87,6 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
         null
     );
 
-    // Fetch hospitals for SUPER_ADMIN
     const {
         data: hospitals = [] as Hospital[],
         isLoading: isHospitalsLoading,
@@ -97,21 +97,9 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
             : undefined
     );
 
-    const [searchText, setSearchText] = useState("");
-
-    // Filter hospitals by search text
-    const filteredHospitals = useMemo(() => {
-        if (!searchText) return hospitals;
-        return hospitals.filter((h) =>
-            h.hospitalName.toLowerCase().includes(searchText.toLowerCase())
-        );
-    }, [hospitals, searchText]);
-
-    // Get hospital ID for services fetch
-    const targetHospitalId =
+    const targetHospitalId: number | null =
         userRole === Role.SUPER_ADMIN ? selectedHospitalId : userHospitalId;
 
-    // Fetch services data
     const {
         data: servicesData = [],
         isLoading: isServicesLoading,
@@ -126,7 +114,6 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
         isServicesLoading;
     const isError = isHospitalsError || isServicesError;
 
-    // Name of hospital being displayed
     const displayedHospitalName =
         userRole === Role.SUPER_ADMIN
             ? selectedHospitalId
@@ -135,120 +122,90 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
                 : "All Hospitals"
             : null;
 
-    // Memoize the processed data for the PieChart
     const processedData = useMemo(() => {
         if (!servicesData || servicesData.length === 0) return [];
 
         const top7Data = [...servicesData]
-            .sort((a, b) => b.value - a.value) // Sort by value in descending order
-            .slice(0, 7); // Take the top 7 services
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 7);
 
-        const top7Total = top7Data.reduce((sum, service) => sum + service.value, 0);
+        const top7Total = top7Data.reduce(
+            (sum, service) => sum + service.value,
+            0
+        );
 
         return top7Data.map((service) => ({
             name: service.name,
             value: service.value,
-            percentage: ((service.value / top7Total) * 100).toFixed(2), // Recalculate percentage
+            percentage: ((service.value / top7Total) * 100).toFixed(2),
         }));
     }, [servicesData]);
 
     if (isError || !servicesData) {
         return (
-            <div className="p-8 bg-slate-100 rounded-2xl shadow-lg shadow-gray-300">
+            <div className="p-8 bg-card rounded-2xl shadow-lg shadow-shadow-main">
                 Failed to load hospital services data.
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col p-4 w-full rounded-2xl xl:pb-5 bg-slate-100 shadow-lg shadow-gray-300">
+        <div className="flex flex-col p-4 w-full rounded-2xl bg-card shadow-md shadow-shadow-main cursor-pointer">
             <div className="flex justify-between items-center mb-6 mt-6">
-                <h1 className="text-sm xl:text-base font-semibold whitespace-nowrap">
-                    Hospital Services
-                </h1>
-
                 {userRole === Role.SUPER_ADMIN && (
-                    <div className="flex items-center">
-                        {/* DropdownMenu for hospitals */}
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild className="group">
-                                <button className="bg-bluelight/5 flex items-center justify-between p-2 border rounded max-w-[200px] text-sm text-right truncate">
-                                    <span className="truncate">
-                                        {selectedHospitalId
-                                            ? hospitals.find(
-                                                  (h) =>
-                                                      h.hospitalId ===
-                                                      selectedHospitalId
-                                              )?.hospitalName || "All Hospitals"
-                                            : "All Hospitals"}
-                                    </span>
-                                    <ChevronRight className="h-4 w-4 ml-2 transition-transform duration-200 group-data-[state=open]:rotate-90" />
-                                </button>
-                            </DropdownMenuTrigger>
-
-                            <DropdownMenuContent className="w-[200px] rounded-[5px] p-2">
-                                {/* Search input */}
-                                <input
-                                    type="text"
-                                    placeholder="Search..."
-                                    value={searchText}
-                                    onChange={(e) =>
-                                        setSearchText(e.target.value)
-                                    }
-                                    className="w-full mb-2 px-2 py-1 border rounded"
-                                />
-
-                                {/* Scrollable list */}
-                                <div className="max-h-[300px] overflow-y-auto">
-                                    <DropdownMenuItem
-                                        onClick={() => {
-                                            setSelectedHospitalId(null);
-                                            setSearchText("");
-                                        }}
-                                        className="cursor-pointer bg-bluelight rounded-[5px] mb-2"
-                                    >
-                                        All Hospitals
-                                    </DropdownMenuItem>
-
-                                    {filteredHospitals.map((hospital) => (
-                                        <DropdownMenuItem
-                                            key={hospital.hospitalId}
-                                            onClick={() => {
-                                                setSelectedHospitalId(
-                                                    hospital.hospitalId
-                                                );
-                                                setSearchText("");
-                                            }}
-                                            className="cursor-pointer rounded-[5px] mb-1 truncate"
-                                        >
-                                            {hospital.hospitalName}
-                                        </DropdownMenuItem>
-                                    ))}
-                                </div>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                    <div className="flex items-center w-[250px]">
+                        <HospitalCombobox
+                            hospitals={hospitals}
+                            isLoading={isHospitalsLoading}
+                            selectedHospitalId={selectedHospitalId}
+                            onSelectHospitalId={(id) =>
+                                setSelectedHospitalId(id)
+                            }
+                            className="w-full border bg-background-muted/50 hover:bg-background-muted/80"
+                            defaultLabel="All Hospitals"
+                            popoverWidthClass="w-[250px]"
+                        />
                     </div>
                 )}
+                <h1 className="text-xs sm:text-sm md:text-sm lg:text-base font-semibold whitespace-nowrap">
+                    Hospital Services
+                </h1>
             </div>
 
-            {/* hospital name */}
             {userRole === Role.SUPER_ADMIN && (
                 <div className="mb-4">
-                    <p className="text-sm p-2 bg-bluelight/5 rounded-[5px]">
+                    <p className="text-xs sm:text-sm p-2 bg-slate rounded-[5px]">
                         <span>Data for: </span>
-                        <span className="font-medium">
+                        <span className="font-semibold">
                             {displayedHospitalName}
                         </span>
                     </p>
                 </div>
             )}
 
-            <div className="flex items-center w-full">
-                <div className="w-1/2 p-2 pl-0">
-                    <span className="text-sm xl:text-base font-semibold p-2 pl-0">
+            <div className="grid grid-cols-1 lg:grid-cols-2 items-start w-full p-2 gap-6">
+                <div className="w-full p-2 pl-0">
+                    <span className="text-xs sm:text-sm md:text-sm lg:text-base font-semibold p-2 pl-0 flex items-center gap-1">
                         Pie Chart
+                        <TooltipProvider>
+                            <UiTooltip>
+                                <TooltipTrigger asChild>
+                                    <Info
+                                        size={14}
+                                        className="text-text-muted"
+                                    />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p className="font-normal">
+                                        Shows a proportional breakdown of the
+                                        top 7 most frequent hospital services
+                                        based on usage count.
+                                    </p>
+                                </TooltipContent>
+                            </UiTooltip>
+                        </TooltipProvider>
                     </span>
-                    <div className="w-full h-[310px] relative rounded-[10px] bg-slate-200">
+                    <div className="w-full h-[310px] relative rounded-[10px] bg-slate">
                         {isLoading ? (
                             <Skeleton className="w-full h-full absolute inset-0" />
                         ) : (
@@ -260,7 +217,7 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
                                         cy="50%"
                                         innerRadius={60}
                                         outerRadius={100}
-                                        fill="#8884d8"
+                                        fill="hsl(var(--primary))"
                                         dataKey="value"
                                         nameKey="name"
                                         label={renderCustomizedLabel}
@@ -283,16 +240,33 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
                     </div>
                 </div>
 
-                <div className="w-1/2 p-2 pr-0">
-                    <span className="text-sm xl:text-base font-semibold p-1">
+                <div className="w-full p-2 pr-0">
+                    <span className="text-xs sm:text-sm md:text-sm lg:text-base font-semibold p-1 flex items-center gap-1">
                         Services
+                        <TooltipProvider>
+                            <UiTooltip>
+                                <TooltipTrigger asChild>
+                                    <Info
+                                        size={14}
+                                        className="text-text-muted"
+                                    />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p className="font-normal">
+                                        Lists each of the top 7 services along
+                                        with their individual contribution
+                                        percentage.
+                                    </p>
+                                </TooltipContent>
+                            </UiTooltip>
+                        </TooltipProvider>
                     </span>
                     <div className="space-y-4 overflow-x-auto p-2 scrollbar-custom w-full">
                         {isLoading
                             ? Array.from({ length: 7 }).map((_, index) => (
                                   <div
                                       key={index}
-                                      className="grid grid-cols-[5px_1fr_15px] min-w-[260px] items-center gap-3 bg-slate-200 rounded-[5px] p-1"
+                                      className="grid grid-cols-[5px_1fr_15px] min-w-[200px] sm:min-w-[240px] md:min-w-[260px] items-center gap-3 bg-slate rounded-[5px] p-1"
                                   >
                                       <Skeleton className="w-3 h-2 rounded-full" />
                                       <Skeleton className="h-2 w-[80%]" />
@@ -302,7 +276,7 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
                             : processedData.map((entry, index) => (
                                   <div
                                       key={entry.name}
-                                      className="grid grid-cols-[5px_1fr_15px] min-w-[260px] items-center gap-4 bg-slate-200 rounded-[5px] p-1"
+                                      className="grid grid-cols-[5px_1fr_15px] min-w-[200px] sm:min-w-[240px] md:min-w-[260px] items-center gap-4 bg-slate rounded-[5px] p-1"
                                   >
                                       <div
                                           className="w-3 h-3 rounded-full flex-shrink-0"
@@ -312,12 +286,12 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
                                           }}
                                       ></div>
                                       <div className="flex justify-start overflow-hidden">
-                                          <span className="text-sm font-medium whitespace-nowrap truncate">
+                                          <span className="text-xs sm:text-sm font-medium text-text-main whitespace-nowrap max-w-[170px] truncate">
                                               {entry.name}
                                           </span>
                                       </div>
                                       <div className="flex justify-end">
-                                          <span className="text-sm text-gray-600 whitespace-nowrap">
+                                          <span className="text-xs sm:text-sm text-text-muted whitespace-nowrap">
                                               {entry.percentage}%
                                           </span>
                                       </div>
@@ -329,7 +303,7 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
 
             <Link
                 href=""
-                className="w-[60px] text-sm xl:text-sm text-primary hover:bg-primary hover:text-white rounded-[5px] p-1 mt-2"
+                className="w-[70px] justify-center text-xs sm:text-sm text-primary hover:bg-primary hover:text-primary-foreground rounded-[5px] p-1 m-2"
             >
                 View all
             </Link>

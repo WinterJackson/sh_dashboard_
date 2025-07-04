@@ -32,7 +32,7 @@ export default async function DashboardPage() {
     };
 
     return (
-        <div className="h-full">
+        <div className="h-full w-full">
             {user.role === "SUPER_ADMIN" ? (
                 <SuperAdminDashboard session={filteredSession} />
             ) : user.role === "ADMIN" ? (

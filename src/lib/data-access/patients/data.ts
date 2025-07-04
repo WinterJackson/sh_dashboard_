@@ -8,8 +8,247 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import { getErrorMessage } from "@/hooks/getErrorMessage";
-
 import prisma from "@/lib/prisma";
+
+
+export async function fetchPatientsOverview() {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+        redirect("/sign-in");
+    }
+
+    const { role, hospitalId } = session.user;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    const startOfThisWeek = new Date(today);
+    startOfThisWeek.setDate(today.getDate() - 6);
+
+    const startOfLastWeek = new Date(today);
+    startOfLastWeek.setDate(today.getDate() - 13);
+
+    const endOfLastWeek = new Date(today);
+    endOfLastWeek.setDate(today.getDate() - 6);
+
+    const filters = role !== Role.SUPER_ADMIN && hospitalId !== null ? { hospitalId } : {};
+
+    const [todayPatients, currentWeekPatients, previousWeekPatients] = await Promise.all([
+        prisma.appointment.findMany({
+            where: {
+                ...filters,
+                appointmentDate: { gte: today, lt: tomorrow },
+            },
+            select: { patientId: true },
+        }),
+        prisma.appointment.findMany({
+            where: {
+                ...filters,
+                appointmentDate: { gte: startOfThisWeek, lt: tomorrow },
+            },
+            select: { patientId: true },
+        }),
+        prisma.appointment.findMany({
+            where: {
+                ...filters,
+                appointmentDate: { gte: startOfLastWeek, lt: endOfLastWeek },
+            },
+            select: { patientId: true },
+        }),
+    ]);
+
+    const uniqueToday = new Set(todayPatients.map((a: { patientId: number }) => a.patientId)).size;
+    const uniqueCurrentWeek = new Set(currentWeekPatients.map((a: { patientId: number }) => a.patientId)).size;
+    const uniquePreviousWeek = new Set(previousWeekPatients.map((a: { patientId: number }) => a.patientId)).size;
+
+    const percentageChange =
+        uniquePreviousWeek > 0
+            ? ((uniqueCurrentWeek - uniquePreviousWeek) / uniquePreviousWeek) * 100
+            : null;
+
+    return {
+        patientsToday: uniqueToday,
+        percentageChange,
+    };
+}
+
+export type CreatePatientInput = {
+    user: {
+        username: string;
+        email: string;
+        password: string;
+    };
+    profile: {
+        firstName: string;
+        lastName: string;
+        gender?: string;
+        phoneNo?: string;
+        address?: string;
+        dateOfBirth?: string;
+        cityOrTown?: string;
+        county?: string;
+        imageUrl?: string;
+        nextOfKin?: string;
+        nextOfKinPhoneNo?: string;
+        emergencyContact?: string;
+    };
+    patient: {
+        maritalStatus?: string;
+        occupation?: string;
+        nextOfKinName?: string;
+        nextOfKinRelationship?: string;
+        nextOfKinHomeAddress?: string;
+        nextOfKinPhoneNo?: string;
+        nextOfKinEmail?: string;
+        reasonForConsultation: string;
+        admissionDate?: string;
+        dischargeDate?: string;
+        status?: string;
+    };
+    medical: Partial<MedicalInformation>;
+    hospitalId: number;
+    createdByRole: Role;
+};
+
+export async function createPatient(
+    input: CreatePatientInput
+): Promise<Patient> {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+        redirect("/sign-in");
+    }
+
+    const {
+        user: userData,
+        profile: profileData,
+        patient: patientData,
+        medical: medicalData,
+    } = input;
+
+    try {
+        const newPatient = await prisma.$transaction(
+            async (tx: typeof prisma) => {
+                const userRole = session?.user?.role as Role;
+
+                // Determine effective hospitalId based on role
+                const effectiveHospitalId =
+                    userRole === Role.SUPER_ADMIN
+                        ? input.hospitalId
+                        : session?.user?.hospitalId;
+
+                // Validate effective hospitalId is a positive integer
+                if (
+                    effectiveHospitalId === null ||
+                    effectiveHospitalId === undefined ||
+                    effectiveHospitalId < 1
+                ) {
+                    throw new Error("Valid hospital ID is required");
+                }
+
+                // Validate hospital exists
+                const hospitalExists = await tx.hospital.findUnique({
+                    where: { hospitalId: effectiveHospitalId },
+                });
+
+                if (!hospitalExists) {
+                    throw new Error(
+                        `Hospital with ID ${effectiveHospitalId} does not exist`
+                    );
+                }
+
+                // Create user with effective hospitalId
+                const createdUser = await tx.user.create({
+                    data: {
+                        username: userData.username,
+                        email: userData.email,
+                        password: userData.password,
+                        role: Role.PATIENT,
+                        hospitalId: effectiveHospitalId,
+                    },
+                });
+
+                // Create profile
+                await tx.profile.create({
+                    data: {
+                        userId: createdUser.userId,
+                        firstName: profileData.firstName,
+                        lastName: profileData.lastName,
+                        gender: profileData.gender,
+                        phoneNo: profileData.phoneNo,
+                        address: profileData.address,
+                        dateOfBirth: profileData.dateOfBirth
+                            ? new Date(profileData.dateOfBirth)
+                            : undefined,
+                        cityOrTown: profileData.cityOrTown,
+                        county: profileData.county,
+                        imageUrl: profileData.imageUrl,
+                        nextOfKin: profileData.nextOfKin,
+                        nextOfKinPhoneNo: profileData.nextOfKinPhoneNo,
+                        emergencyContact: profileData.emergencyContact,
+                    },
+                });
+
+                // Create patient record
+                const createdPatient = await tx.patient.create({
+                    data: {
+                        userId: createdUser.userId,
+                        hospitalId: effectiveHospitalId,
+                        maritalStatus: patientData.maritalStatus,
+                        occupation: patientData.occupation,
+                        nextOfKinName: patientData.nextOfKinName,
+                        nextOfKinRelationship:
+                            patientData.nextOfKinRelationship,
+                        nextOfKinHomeAddress: patientData.nextOfKinHomeAddress,
+                        nextOfKinPhoneNo: patientData.nextOfKinPhoneNo,
+                        nextOfKinEmail: patientData.nextOfKinEmail,
+                        reasonForConsultation:
+                            patientData.reasonForConsultation,
+                        admissionDate: patientData.admissionDate
+                            ? new Date(patientData.admissionDate)
+                            : undefined,
+                        dischargeDate: patientData.dischargeDate
+                            ? new Date(patientData.dischargeDate)
+                            : undefined,
+                        status: patientData.status ?? "Outpatient",
+                    },
+                });
+
+                // Upsert medical information if provided
+                if (Object.keys(medicalData).length > 0) {
+                    await tx.medicalInformation.upsert({
+                        where: {
+                            patientId: createdPatient.patientId,
+                        },
+                        create: {
+                            patientId: createdPatient.patientId,
+                            ...medicalData,
+                        },
+                        update: medicalData,
+                    });
+                }
+
+                return createdPatient;
+            }
+        );
+
+        return newPatient;
+    } catch (error) {
+        const message = getErrorMessage(error);
+        Sentry.captureException(error, {
+            extra: {
+                createInput: input,
+                errorMessage: message,
+                hospitalId: input.hospitalId,
+            },
+        });
+
+        throw new Error(`Failed to create patient: ${message}`);
+    }
+}
 
 // Fetch today's patients
 export async function fetchPatientsToday(user?: {

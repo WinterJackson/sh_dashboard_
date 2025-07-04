@@ -193,12 +193,12 @@ const HospitalsFilters: React.FC<HospitalsFiltersProps> = ({
     };
 
     return (
-        <div className="flex flex-col min-w-full">
+        <div className="flex flex-col min-w-full mb-3">
             <div className="flex items-center gap-4">
                 {/* Refresh Button */}
                 <button
                     onClick={handleRefreshClick}
-                    className="p-2 rounded-[10px] h-[50px] w-[120px] gap-2 hover:shadow-gray-400 shadow-lg shadow-gray-400 text-black hover:bg-primary hover:text-white focus:outline-none focus:ring-1 focus:ring-primary flex items-center justify-between"
+                    className="p-2 rounded-[10px] h-[50px] w-[120px] gap-2 hover:shadow-shadow-main shadow-md shadow-shadow-main text-foreground hover:bg-primary hover:text-primary-foreground focus:outline-none focus:ring-1 focus:ring-primary flex items-center justify-between"
                 >
                     Refresh
                     <SymbolIcon className="w-5 h-5" />
@@ -209,14 +209,14 @@ const HospitalsFilters: React.FC<HospitalsFiltersProps> = ({
                     {activeFilters.map((filter, index) => (
                         <div
                             key={index}
-                            className="bg-bluelight/5 text-primary p-2 rounded-[10px] h-[40px] w-auto gap-2 hover:shadow-gray-400 shadow-lg shadow-gray-400 hover:bg-bluelight hover:text-black focus:outline-none focus:ring-1 focus:ring-primary flex items-center justify-center"
+                            className="bg-light-accent text-accent-foreground p-2 rounded-[10px] h-[40px] w-auto gap-2 hover:shadow-shadow-main shadow-md shadow-shadow-main hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-1 focus:ring-primary flex items-center justify-center"
                         >
                             <span className="font-normal text-sm">
                                 {filter.label}
                             </span>
                             <button
                                 onClick={filter.onClear}
-                                className="flex items-center justify-center p-[2px] bg-white rounded-full"
+                                className="flex items-center justify-center p-[2px] bg-background rounded-full"
                             >
                                 <CancelledIcon className="h-5 w-5 text-center text-red-500 hover:text-white hover:bg-red-500 rounded-full" />
                             </button>
@@ -230,7 +230,7 @@ const HospitalsFilters: React.FC<HospitalsFiltersProps> = ({
                     {/* Dropdown Menu for Filters */}
                     <DropdownMenu onOpenChange={setShowOptions}>
                         <DropdownMenuTrigger asChild>
-                            <button className="focus:outline-none focus:ring-1 focus:ring-primary flex items-center gap-2 p-2 rounded-[10px] h-[50px] hover:shadow-gray-400 shadow-lg shadow-gray-400 justify-between w-[200px]">
+                            <button className="focus:outline-none focus:ring-1 focus:ring-primary flex items-center gap-2 p-2 rounded-[10px] h-[50px] hover:shadow-shadow-main shadow-md shadow-shadow-main justify-between w-[200px]">
                                 {filterType || "Filter By"}
                                 <ChevronRight
                                     className={`ml-auto text-xl transform transition-transform ${
@@ -240,13 +240,13 @@ const HospitalsFilters: React.FC<HospitalsFiltersProps> = ({
                             </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuPortal>
-                            <DropdownMenuContent className="bg-white rounded-[10px] p-2 w-[200px] mt-1">
+                            <DropdownMenuContent className="bg-background rounded-[10px] p-2 w-[200px] mt-1">
                                 {/* County Filter */}
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger>
                                         County
                                     </DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent className="bg-white rounded-[10px] shadow p-3 ml-4 max-h-60 overflow-y-auto">
+                                    <DropdownMenuSubContent className="bg-background rounded-[10px] shadow p-3 ml-4 max-h-60 overflow-y-auto">
                                         {counties.map((county) => (
                                             <DropdownMenuItem
                                                 key={county}
@@ -265,7 +265,7 @@ const HospitalsFilters: React.FC<HospitalsFiltersProps> = ({
                                     <DropdownMenuSubTrigger>
                                         KEPH Level
                                     </DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent className="bg-white rounded-[10px] shadow p-3 ml-4">
+                                    <DropdownMenuSubContent className="bg-background rounded-[10px] shadow p-3 ml-4">
                                         {kephLevels.map((level) => (
                                             <DropdownMenuItem
                                                 key={level}
@@ -284,7 +284,7 @@ const HospitalsFilters: React.FC<HospitalsFiltersProps> = ({
                                     <DropdownMenuSubTrigger>
                                         Hospital Type
                                     </DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent className="bg-white rounded-[10px] shadow p-3 ml-4">
+                                    <DropdownMenuSubContent className="bg-background rounded-[10px] shadow p-3 ml-4">
                                         {ownershipTypes.map((type) => (
                                             <DropdownMenuItem
                                                 key={type}

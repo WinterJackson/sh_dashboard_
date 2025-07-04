@@ -70,19 +70,19 @@ export default async function HospitalProfilePage({
                 {/* breadcrumb */}
                 <nav className="breadcrumbs text-sm px-4">
                     <ul className="flex gap-2">
-                        <li>
+                        <li className="bg-slate p-2">
                             <Link
                                 href="/dashboard/hospitals"
-                                className="text-primary hover:text-blue-700"
+                                className="text-primary hover:text-primary"
                             >
                                 Hospitals
                             </Link>
                         </li>
-                        <span>|</span>
-                        <li>
+                        <span className="bg-slate p-2">|</span>
+                        <li className="bg-slate p-2">
                             <Link
                                 href={`/dashboard/hospitals/${hospitalId}`}
-                                className="font-semibold text-gray-600 hover:text-primary"
+                                className="font-semibold text-text-muted hover:text-primary"
                             >
                                 {basicInfo.hospitalName || "Unnamed Hospital"}
                             </Link>

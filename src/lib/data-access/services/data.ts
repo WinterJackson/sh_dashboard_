@@ -59,7 +59,9 @@ export async function fetchServices(
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
-                    throw new Error(`${role}s must have an associated hospital ID.`);
+                    throw new Error(
+                        `${role}s must have an associated hospital ID.`
+                    );
                 }
                 // Filter by hospitalId for other roles
                 whereClause = {
@@ -149,7 +151,9 @@ export async function filteredServices(
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
-                    throw new Error(`${role}s must have an associated hospital ID.`);
+                    throw new Error(
+                        `${role}s must have an associated hospital ID.`
+                    );
                 }
                 // Filter by hospitalId for other roles
                 whereClause = {
@@ -213,7 +217,10 @@ export async function fetchHospitalServices(user?: {
     const { role, hospitalId } = user;
 
     try {
-        let appointmentServices: { service: { serviceName: string }; appointmentId: string }[] = [];
+        let appointmentServices: {
+            service: { serviceName: string };
+            appointmentId: string;
+        }[] = [];
         let totalAppointments = 0;
 
         if (role === "SUPER_ADMIN") {
@@ -223,7 +230,9 @@ export async function fetchHospitalServices(user?: {
                     service: {
                         type: "MEDICAL",
                     },
-                    appointment: hospitalId ? { hospitalId } : undefined,
+                    ...(hospitalId !== null && {
+                        appointment: { hospitalId },
+                    }),
                 },
                 select: {
                     service: {
@@ -238,7 +247,9 @@ export async function fetchHospitalServices(user?: {
                     service: {
                         type: "MEDICAL",
                     },
-                    appointment: hospitalId ? { hospitalId } : undefined,
+                    ...(hospitalId !== null && {
+                        appointment: { hospitalId },
+                    }),
                 },
             });
         } else if (hospitalId) {
@@ -273,14 +284,12 @@ export async function fetchHospitalServices(user?: {
         }
 
         // Calculate service counts
-        const serviceCounts: Record<string, number> = appointmentServices.reduce(
-            (acc: Record<string, number>, item) => {
+        const serviceCounts: Record<string, number> =
+            appointmentServices.reduce((acc: Record<string, number>, item) => {
                 const serviceName = item.service.serviceName;
                 acc[serviceName] = (acc[serviceName] || 0) + 1;
                 return acc;
-            },
-            {} as Record<string, number>
-        );
+            }, {} as Record<string, number>);
 
         // Transform data into the required output format
         const transformedData = Object.entries(serviceCounts)
@@ -288,7 +297,8 @@ export async function fetchHospitalServices(user?: {
             .map(([serviceName, count]) => ({
                 name: serviceName,
                 value: count,
-                percentage: ((count / totalAppointments) * 100).toFixed(2) + "%",
+                percentage:
+                    ((count / totalAppointments) * 100).toFixed(2) + "%",
             }));
 
         return transformedData;

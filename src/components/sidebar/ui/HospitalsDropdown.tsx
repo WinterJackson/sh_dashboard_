@@ -27,10 +27,10 @@ const HospitalsDropdown: React.FC<HospitalsDropdownProps> = ({
         <>
             <div
                 onClick={toggleHospitals}
-                className="py-2 px-4 pt-4 pb-4 font-semibold flex items-center cursor-pointer hover:bg-bluelight hover:text-black border-2"
+                className="py-2 px-4 pt-4 pb-4 font-semibold flex items-center cursor-pointer hover:bg-accent hover:text-accent-foreground text-xs sm:text-sm border-b border-t border-border"
             >
-                <div className="flex items-center">
-                    <LocalHospitalIcon className="mr-2 !text-base" />
+                <div className="flex items-center text-xs sm:text-sm">
+                    <LocalHospitalIcon className="mr-2 text-sm"/>
                     Hospitals
                 </div>
                 <ChevronRightIcon
@@ -49,17 +49,17 @@ const HospitalsDropdown: React.FC<HospitalsDropdownProps> = ({
                 <div className="ml-10 flex flex-col space-y-2 py-2">
                     <Link
                         href="/dashboard/hospitals"
-                        className={`relative py-2 pl-10 pr-4 font-semibold flex items-center rounded-l-[15px] rounded-r-none ${
+                        className={`relative py-2 pl-10 pr-4 font-semibold flex items-center rounded-l-[15px] rounded-r-none text-xs sm:text-sm ${
                             isActive("/dashboard/hospitals")
-                                ? "bg-primary text-white"
-                                : "hover:bg-bluelight hover:text-black"
+                                ? "bg-primary text-primary-foreground"
+                                : "hover:bg-accent hover:text-accent-foreground"
                         }`}
                     >
                         <span
                             className={`absolute ml-2 left-0 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full ${
                                 isActive("/dashboard/hospitals")
-                                    ? "bg-white border-8 border-green-500"
-                                    : "bg-white border-8 border-primary"
+                                    ? "bg-background-muted border-8 border-constructive"
+                                    : "bg-background-muted border-8 border-primary"
                             }`}
                         ></span>
                         All Hospitals
@@ -67,12 +67,12 @@ const HospitalsDropdown: React.FC<HospitalsDropdownProps> = ({
                     {role === Role.SUPER_ADMIN && (
                         <Link
                             href="/dashboard/hospitals/add-new-hospital"
-                            className={`relative py-2 pl-10 pr-4 font-semibold flex items-center rounded-l-[15px] rounded-r-none ${
+                            className={`relative py-2 pl-10 pr-4 font-semibold flex items-center rounded-l-[15px] rounded-r-none text-xs sm:text-sm ${
                                 isActive(
                                     "/dashboard/hospitals/add-new-hospital"
                                 )
-                                    ? "bg-primary text-white"
-                                    : "hover:bg-bluelight hover:text-black"
+                                    ? "bg-primary text-primary-foreground"
+                                    : "hover:bg-accent hover:text-accent-foreground"
                             }`}
                         >
                             <span
@@ -80,8 +80,8 @@ const HospitalsDropdown: React.FC<HospitalsDropdownProps> = ({
                                     isActive(
                                         "/dashboard/hospitals/add-new-hospital"
                                     )
-                                        ? "bg-white border-8 border-green-500"
-                                        : "bg-white border-8 border-primary"
+                                        ? "bg-background-muted border-8 border-constructive"
+                                        : "bg-background-muted border-8 border-primary"
                                 }`}
                             ></span>
                             Add New Hospital

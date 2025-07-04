@@ -1,4 +1,4 @@
-// File: src/components/ui/graph-tooltip.tsx
+// src/components/ui/graph-tooltip.tsx
 
 import React from "react";
 
@@ -19,14 +19,14 @@ const GraphTooltip: React.FC<GraphTooltipProps> = ({ active, payload, label }) =
         return null;
     }
 
-    const data = payload[0].payload; // Access the data for the hovered bar
+    const data = payload[0].payload;
 
     return (
-        <div className="bg-blue-100/95 p-3 rounded-[10px] shadow-md">
-            <p className="font-semibold text-sm text-gray-800">
+        <div className="bg-slate-two p-3 rounded-[10px] shadow-md">
+            <p className="font-semibold text-sm text-text-main">
                 {data.month}
             </p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-text-muted">
                 Patient Count: <span className="font-medium">{data.Count}</span>
             </p>
         </div>

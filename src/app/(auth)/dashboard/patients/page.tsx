@@ -46,7 +46,7 @@ export default async function PatientsPage() {
 
     return (
         <div className="flex flex-col gap-3 p-3 pt-0 w-full">
-            <div className="flex w-full justify-between gap-2 bg-bluelight/5 p-2 rounded-[10px]">
+            <div className="flex w-full gap-2 bg-bluelight/5 p-2 rounded-[10px]">
                 <h1 className="text-xl font-bold">Patients</h1>
                 <TooltipProvider>
                     <Tooltip>

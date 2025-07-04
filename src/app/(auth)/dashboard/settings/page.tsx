@@ -11,6 +11,13 @@ import SupportTab from "@/components/settings/tabs/SupportTab";
 import { fetchUserSettings } from "@/lib/data-access/settings/data";
 import { Role } from "@/lib/definitions";
 import type { ExtendedProfileUpdateData } from "@/components/settings/tabs/AccountTab";
+import {
+    TooltipProvider,
+    Tooltip,
+    TooltipTrigger,
+    TooltipContent,
+} from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 export default async function SettingsPage() {
     const session = await getServerSession(authOptions);
@@ -71,9 +78,43 @@ export default async function SettingsPage() {
 
     return (
         <>
-            <h1 className="text-xl font-bold bg-bluelight/5 p-2 rounded-[10px]">
-                Settings
-            </h1>
+            <div className="flex items-center gap-2 bg-bluelight/5">
+                <h1 className="text-xl font-bold  p-2 rounded-[10px]">
+                    Settings
+                </h1>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Info
+                                size={18}
+                                className="text-gray-600 cursor-pointer"
+                            />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>
+                                Manage your account settings across the
+                                following tabs:
+                                <br />
+                                <br />
+                                - <strong>Account</strong>: View and
+                                update personal profile and contact info.
+                                <br />
+                                <br />
+                                - <strong>Notifications</strong>: Control
+                                which types of notifications you receive.
+                                <br />
+                                <br />
+                                - <strong>Security</strong>: Manage
+                                password and two-factor authentication settings.
+                                <br />
+                                <br />
+                                - <strong>Support</strong>: Reach out to
+                                our help team for assistance.
+                            </p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            </div>
             <Tabs
                 defaultValue="account"
                 className="w-full bg-bluelight/5 p-2 rounded-[10px]"

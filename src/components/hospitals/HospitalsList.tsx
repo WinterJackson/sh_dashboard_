@@ -180,7 +180,7 @@ export default function HospitalsList({
         <div className="relative">
             {isDeleting && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg">
+                    <div className="bg-background p-6 rounded-lg shadow-lg">
                         Deleting {selectedHospitals.length} hospital(s)...
                     </div>
                 </div>
@@ -230,7 +230,7 @@ export default function HospitalsList({
 
             {/* Selected Hospitals Count + Bulk Delete Button */}
             {selectedHospitals.length > 0 && (
-                <div className="bg-bluelight/5 border border-primary text-gray-700 p-3 rounded-[10px] relative mb-2">
+                <div className="bg-light-accent border border-primary text-text-muted p-3 rounded-[10px] relative mb-2">
                     {selectedHospitals.length === 1
                         ? "1 hospital selected."
                         : `${selectedHospitals.length} hospitals selected.`}
@@ -250,9 +250,9 @@ export default function HospitalsList({
                 onSetHospitals={onSetHospitals}
             />
 
-            <table className="w-full bg-bluelight/5 p-1 rounded-t-2xl border-separate border-spacing-y-4">
+            <table className="w-full bg-slate-two p-1 rounded-t-2xl border-separate border-spacing-y-4">
                 <thead>
-                    <tr className="text-gray-800">
+                    <tr className="text-accent-foreground">
                         <th className="text-left p-2 w-[8%] text-[13px]">
                             {totalHospitals} Hospitals
                         </th>
@@ -271,10 +271,10 @@ export default function HospitalsList({
                         </th>
                         {userRole === Role.SUPER_ADMIN && (
                             <th className="text-center p-2 w-[5%]">
-                                <div className="flex flex-col items-center justify-center gap-1 p-2 rounded-[10px] bg-white shadow-sm shadow-gray-400">
+                                <div className="flex flex-col items-center justify-center gap-1 p-2 rounded-[10px] bg-background shadow-sm shadow-shadow-main">
                                     <input
                                         type="checkbox"
-                                        className="w-4 h-4"
+                                        className="w-4 h-4 accent-primary bg-background"
                                         onChange={(e) =>
                                             handleSelectAll(e.target.checked)
                                         }

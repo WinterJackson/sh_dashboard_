@@ -102,7 +102,7 @@ export function EditBedCapacityDialog(props: EditBedCapacityDialogProps) {
         >
             <DialogContent className="max-h-[90vh]">
                 <DialogHeader>
-                    <DialogTitle>Edit Bed Capacity</DialogTitle>
+                    <DialogTitle className="mb-4">Edit Bed Capacity</DialogTitle>
                     <DialogDescription>
                         Update bed capacity information for this hospital.
                     </DialogDescription>
@@ -112,7 +112,7 @@ export function EditBedCapacityDialog(props: EditBedCapacityDialogProps) {
                         onSubmit={form.handleSubmit(handleFormSubmit)}
                         className="space-y-4"
                     >
-                        <div className="max-h-[60vh] overflow-y-auto space-y-4 p-2">
+                        <div className="max-h-[60vh] overflow-y-auto scrollbar-custom space-y-4 p-2">
                         <FormField
                             control={form.control}
                             name="totalInpatientBeds"

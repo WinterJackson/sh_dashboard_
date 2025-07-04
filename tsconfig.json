@@ -33,6 +33,6 @@
         "src/components/appointments/ui/appointments-table/DateRangePicker.tsx",
         "src/scripts/seed.js",
         ".next/types/**/*.ts"
-, "src/lib/data-access/appointments/data copy 2.js", "src/lib/data-access/appointments/data copy 5.js", "src/lib/email copy.js"    ],
+, "src/lib/data-access/appointments/data copy 2.js", "src/lib/data-access/appointments/data copy 5.js", "src/lib/email copy.js", "src/components/sidebar/ui/SidebarLinks.tsx"    ],
     "exclude": ["node_modules"]
 }

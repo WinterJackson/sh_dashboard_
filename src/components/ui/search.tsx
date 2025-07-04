@@ -30,12 +30,12 @@ export default function Search({ placeholder = "Search" }: { placeholder: string
     }, [memoizedHandleSearch]);
 
     return (
-        <div className="w-1/2 ml-4 flex items-center bg-gray-100 p-2 rounded-2xl">
-            <label htmlFor="search" className="sr-only">Search</label>
+        <div className="w-1/2 ml-4 flex items-center bg-slate p-2 rounded-2xl shadow-inner shadow-shadow-dark">
+            <label htmlFor="search" className="sr-only text-text-muted">Search...</label>
             <input
                 type="text"
                 placeholder={placeholder}
-                className="ml-2 bg-gray-100 outline-none"
+                className="mx-2 rounded-[10px] bg-slate p-1 w-full outline-none"
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
             />

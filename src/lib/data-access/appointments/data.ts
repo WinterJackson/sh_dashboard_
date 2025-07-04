@@ -11,6 +11,71 @@ import { getErrorMessage } from "@/hooks/getErrorMessage";
 
 import prisma from "@/lib/prisma";
 
+export async function fetchAppointmentsOverview() {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+        redirect("/sign-in");
+    }
+
+    const { role, hospitalId } = session.user;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const weekAgo = new Date(today);
+    weekAgo.setDate(today.getDate() - 7);
+
+    const twoWeeksAgo = new Date(today);
+    twoWeeksAgo.setDate(today.getDate() - 14);
+
+    const filters =
+        role !== Role.SUPER_ADMIN && hospitalId !== null
+            ? { hospitalId: hospitalId }
+            : {}; // unrestricted for super admin
+
+    const [appointmentsToday, currentWeek, previousWeek] = await Promise.all([
+        prisma.appointment.count({
+            where: {
+                ...filters,
+                appointmentDate: {
+                    gte: today,
+                    lt: new Date(today.getTime() + 86400000), // next day
+                },
+            },
+        }),
+
+        prisma.appointment.count({
+            where: {
+                ...filters,
+                appointmentDate: {
+                    gte: weekAgo,
+                    lt: today,
+                },
+            },
+        }),
+
+        prisma.appointment.count({
+            where: {
+                ...filters,
+                appointmentDate: {
+                    gte: twoWeeksAgo,
+                    lt: weekAgo,
+                },
+            },
+        }),
+    ]);
+
+    const percentageChange =
+        previousWeek > 0
+            ? ((currentWeek - previousWeek) / previousWeek) * 100
+            : null;
+
+    return {
+        appointmentsToday,
+        percentageChange,
+    };
+}
+
 export async function fetchAppointments(
     user?: {
         role: Role;

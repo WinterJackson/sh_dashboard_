@@ -61,6 +61,9 @@ export default async function AddNewDoctorPage() {
             <h1 className="mx-2 mb-5 text-xl font-bold bg-bluelight/5 p-2 pl-4 rounded-[10px]">
                 Add New Doctor
             </h1>
+                <p className="text-gray-600 my-4 px-2 ml-4">
+                    Fill out the form below to register a new doctor
+                </p>
             <AddDoctorForm
                 specialties={specializations}
                 departments={departments}

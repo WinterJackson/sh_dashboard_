@@ -4,28 +4,28 @@ import Link from "next/link";
 
 const HomePage = () => {
     return (
-        <div className="min-h-screen flex flex-row justify-center items-center bg-gray-100">
-            <div className="bg-secondary flex items-center justify-center"></div>
-            <div className="flex flex-col justify-center items-center">
-                <div className="p-10 bg-secondary rounded-2xl">
+        <div className="min-h-screen flex flex-col md:flex-row justify-center items-center px-4 py-8">
+            <div className="flex flex-col justify-center items-center w-full max-w-md">
+                <div className="p-6 sm:p-8 md:p-10 bg-secondary rounded-2xl w-60 sm:w-full">
                     <img
                         src="/images/logo.png"
                         alt="Hospital Logo"
                         width={500}
                         height={200}
-                        className="p-1 object-contain"
+                        className="p-1 object-contain max-w-full h-auto mx-auto"
                         loading="lazy"
                     />
                 </div>
-                <div className="mt-8 flex flex-row justify-center space-x-4">
-                    <Link href="/sign-in">
-                        <button className="bg-secondary text-white py-2 px-20 rounded hover:bg-primary">
-                            Sign In
+                <div className="mt-8 flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 w-full">
+                    <Link href="/sign-in" className="w-full flex justify-center items-center sm:w-auto">
+                        <button className="w-60 sm:w-auto bg-secondary text-white py-2 px-8 sm:px-16 md:px-20 rounded hover:bg-primary">
+                            <span className="text-nowrap">
+                                Sign In
+                            </span>
                         </button>
                     </Link>
-                    <div className="w-px h-20 bg-secondary"></div>
-                    <Link href="/sign-up">
-                        <button className="bg-secondary text-white py-2 px-20 rounded hover:bg-primary">
+                    <Link href="/sign-up" className="w-full flex justify-center items-center sm:w-auto">
+                        <button className="w-60 sm:w-auto bg-secondary text-white py-2 px-8 sm:px-16 md:px-20 rounded hover:bg-primary">
                             Register
                         </button>
                     </Link>

@@ -1,4 +1,4 @@
-// File: src/components/dashboard/admin-dashboard/AdminDashboard.tsx
+// src/components/dashboard/admin-dashboard/AdminDashboard.tsx
 
 import React, { useMemo } from "react";
 import DashboardAppointments from "@/components/dashboard/ui/DashboardAppointments";
@@ -15,21 +15,17 @@ import ServicesDataCard from "../ui/ServicesDataCard";
 
 import {
     fetchAppointments,
-    fetchAppointmentsForLast14Days,
-    fetchAppointmentsTodayCount,
+    fetchAppointmentsOverview,
 } from "@/lib/data-access/appointments/data";
+import { fetchPatientsOverview } from "@/lib/data-access/patients/data";
 import { fetchAvailableBedsCount } from "@/lib/data-access/beds/data";
 import {
     fetchOnlineDoctorsCount,
     fetchTopDoctors,
 } from "@/lib/data-access/doctors/data";
 import {
-    fetchPatientsForLast14Days,
-    fetchPatientsTodayCount,
-} from "@/lib/data-access/patients/data";
-import {
-    fetchInwardReferrals,
-    fetchOutwardReferrals,
+    fetchOutwardReferralsOverview,
+    fetchInwardReferralsOverview,
 } from "@/lib/data-access/referrals/data";
 import { Role } from "@/lib/definitions";
 
@@ -50,7 +46,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = async ({ session }) => {
         [session.user.username]
     );
 
-    // params object for all fetch calls
     const params = useMemo(
         () => ({
             role: session.user.role,
@@ -61,32 +56,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = async ({ session }) => {
     );
 
     try {
-        // Fetch all data in parallel
         const [
             appointmentsResponse,
+            appointmentsOverview,
+            patientsOverview,
             availableBedsCount,
             onlineDoctorsCount,
-            inwardReferrals,
-            outwardReferrals,
-            appointmentsTodayCount,
-            last14DaysAppointments,
-            patientsTodayCount,
-            patientsLast14DaysResponse,
+            inwardReferralsOverview,
+            outwardReferralsOverview,
             topDoctors,
         ] = await Promise.all([
             fetchAppointments(params),
+            fetchAppointmentsOverview(),
+            fetchPatientsOverview(),
             fetchAvailableBedsCount(params),
             fetchOnlineDoctorsCount(params),
-            fetchInwardReferrals(params),
-            fetchOutwardReferrals(params),
-            fetchAppointmentsTodayCount(params),
-            fetchAppointmentsForLast14Days(params),
-            fetchPatientsTodayCount(params),
-            fetchPatientsForLast14Days(params),
+            fetchInwardReferralsOverview(),
+            fetchOutwardReferralsOverview(),
             fetchTopDoctors(params),
         ]);
 
-        // Transform appointments for graph card
         const transformedAppointments = appointmentsResponse.appointments.map(
             (appointment) => ({
                 appointmentDate: new Date(
@@ -99,13 +88,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = async ({ session }) => {
 
         return (
             <>
-                <div className="text-xl font-semibold p-4 mx-4 rounded-[10px] bg-bluelight/5">
+                <div className="text-sm sm:text-base md:text-lg lg:text-xl font-semibold p-4 mx-4 rounded-[10px] bg-slate">
                     Welcome, {firstName}
                 </div>
 
-                <div className="flex">
+                <div className="grid xl:flex">
                     <div className="grid w-full">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                        <div className="grid grid-cols-2 md:grid-cols-2 gap-4 p-4">
                             <AvailableDoctorsCard
                                 session={session}
                                 onlineDoctorsCount={onlineDoctorsCount}
@@ -114,52 +103,67 @@ const AdminDashboard: React.FC<AdminDashboardProps> = async ({ session }) => {
                                 availableBedsCount={availableBedsCount}
                             />
                         </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                        <div className="grid grid-cols-2 md:grid-cols-2 gap-4 p-4">
                             <AppointmentsTodayCard
-                                appointmentsTodayCount={appointmentsTodayCount}
-                                last14DaysAppointments={
-                                    last14DaysAppointments.appointments
+                                appointmentsTodayCount={
+                                    appointmentsOverview.appointmentsToday
+                                }
+                                percentageChange={
+                                    appointmentsOverview.percentageChange
                                 }
                             />
                             <PatientsTodayCard
-                                uniquePatientsTodayCount={patientsTodayCount}
-                                currentWeekPatients={
-                                    patientsLast14DaysResponse.currentWeekPatients
+                                uniquePatientsTodayCount={
+                                    patientsOverview.patientsToday
                                 }
-                                previousWeekPatients={
-                                    patientsLast14DaysResponse.previousWeekPatients
+                                percentageChange={
+                                    patientsOverview.percentageChange
                                 }
                             />
                         </div>
                     </div>
-
                     <div className="grid w-full">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                        <div className="grid grid-cols-2 md:grid-cols-2 gap-4 p-4">
                             <OutwardReferralsCard
-                                outwardReferrals={outwardReferrals}
+                                outwardReferralsToday={
+                                    outwardReferralsOverview.outwardReferralsToday
+                                }
+                                percentageChange={
+                                    outwardReferralsOverview.percentageChange
+                                }
+                                patientDelta={
+                                    outwardReferralsOverview.patientDelta
+                                }
                             />
                             <InwardReferralsCard
-                                inwardReferrals={inwardReferrals}
+                                inwardReferralsToday={
+                                    inwardReferralsOverview.inwardReferralsToday
+                                }
+                                percentageChange={
+                                    inwardReferralsOverview.percentageChange
+                                }
+                                patientDelta={
+                                    inwardReferralsOverview.patientDelta
+                                }
                             />
                         </div>
                     </div>
                 </div>
 
-                <div className="flex">
-                    <div className="grid w-1/2 p-4">
+                <div className="grid grid-cols-1 xl:flex">
+                    <div className="flex w-full xl:grid xl:w-1/2 p-4">
                         <PatientsGraphCard
                             session={session}
                             appointments={transformedAppointments}
                         />
                     </div>
-                    <div className="grid w-1/2 p-4">
+                    <div className="flex w-full xl:grid xl:w-1/2 p-4">
                         <ServicesDataCard session={session} />
                     </div>
                 </div>
 
-                <div className="flex flex-row w-full h-full mt-4">
-                    <div className="w-2/3 p-4 pr-2">
+                <div className="grid grid-cols-1 xl:flex xl:flex-row w-full h-full mt-4">
+                    <div className="w-full xl:w-2/3 p-4 xl:pr-2">
                         <DashboardAppointments
                             appointments={appointmentsResponse.appointments}
                             totalAppointments={
@@ -167,11 +171,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = async ({ session }) => {
                             }
                         />
                     </div>
-                    <div className="flex flex-col w-1/3 p-4 gap-4">
-                        <div className="">
+                    <div className="flex flex-col w-full xl:w-1/3 p-4 gap-6 h-full">
+                        <div>
                             <TopDoctorsCard topDoctors={topDoctors || []} />
                         </div>
-                        <div className="">
+                        <div>
                             <LearnMoreCard />
                         </div>
                     </div>
@@ -181,7 +185,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = async ({ session }) => {
     } catch (error) {
         console.error("Error loading dashboard data:", error);
         return (
-            <div className="text-red-500 text-center">
+            <div className="text-destructive text-center">
                 Failed to load dashboard data. Please try again later.
             </div>
         );

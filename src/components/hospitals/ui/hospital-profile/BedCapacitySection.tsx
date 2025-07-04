@@ -32,14 +32,14 @@ export default function BedCapacitySection({
     // If no bed capacity rows exist
     if (!bedCapacity || bedCapacity.length === 0) {
         return (
-            <Card className="bg-white shadow-md rounded-[10px]">
-                <CardHeader className="flex flex-row justify-between items-center bg-bluelight rounded-t-[10px] mb-4 p-4">
+            <Card className="bg-card shadow-md rounded-[10px]">
+                <CardHeader className="flex flex-row justify-between items-center bg-accent rounded-t-[10px] mb-4 p-4">
                     <CardTitle className="text-xl font-semibold">
                         Bed Capacity
                     </CardTitle>
                     {userRole === Role.SUPER_ADMIN && (
                         <Button
-                            className="bg-primary text-white rounded-[10px]"
+                            className="bg-primary text-primary-foreground rounded-[10px]"
                             onClick={() => setIsEditOpen(true)}
                         >
                             Add Capacity
@@ -57,15 +57,15 @@ export default function BedCapacitySection({
     const capacity = bedCapacity[0];
 
     return (
-        <Card className="bg-white shadow-md rounded-[10px] w-full">
-            <CardHeader className="flex flex-row justify-between items-center bg-bluelight rounded-t-[10px] mb-4 p-4">
+        <Card className="bg-card shadow-md shadow-shadow-main rounded-[10px] w-full">
+            <CardHeader className="flex flex-row justify-between items-center bg-accent rounded-t-[10px] mb-4 p-4">
                 <CardTitle className="text-lg font-semibold">
                     Bed Capacity
                 </CardTitle>
                 {userRole === Role.SUPER_ADMIN && (
                     <div className="flex gap-2">
                         <Button
-                            className="bg-primary text-white rounded-[10px]"
+                            className="bg-primary text-primary-foreground rounded-[10px]"
                             onClick={() => setIsEditOpen(true)}
                         >
                             Edit
@@ -75,7 +75,7 @@ export default function BedCapacitySection({
             </CardHeader>
             <CardContent className="p-3">
                 <Table>
-                    <TableHeader className="bg-black/5">
+                    <TableHeader className="bg-slate text-foreground">
                         <TableRow>
                             <TableHead className="font-semibold">
                                 Bed Type

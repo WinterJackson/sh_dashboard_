@@ -8,7 +8,7 @@ import Link from "next/link";
 
 type DoctorsDropdownProps = {
     isActive: (href: string) => boolean;
-    currentPath: string;
+    currentPath?: string;
 };
 
 const DoctorsDropdown: React.FC<DoctorsDropdownProps> = ({ isActive }) => {
@@ -22,10 +22,10 @@ const DoctorsDropdown: React.FC<DoctorsDropdownProps> = ({ isActive }) => {
         <>
             <div
                 onClick={toggleDoctors}
-                className="py-2 px-4 pt-4 pb-4 font-semibold flex items-center cursor-pointer hover:bg-bluelight hover:text-black border-2"
+                className="py-2 px-4 pt-4 pb-4 font-semibold flex items-center cursor-pointer hover:bg-accent hover:text-accent-foreground text-xs sm:text-sm border-b border-t border-border"
             >
-                <div className="flex items-center">
-                    <PersonIcon className="mr-2 text-xl" />
+                <div className="flex items-center text-xs sm:text-sm">
+                    <PersonIcon className="mr-2" />
                     Doctors
                 </div>
                 <ChevronRightIcon
@@ -40,38 +40,36 @@ const DoctorsDropdown: React.FC<DoctorsDropdownProps> = ({ isActive }) => {
                 }`}
             >
                 <div className="ml-10 flex flex-col space-y-2 py-2">
-                    {/* Link to All Doctors */}
                     <Link
                         href="/dashboard/doctors"
-                        className={`relative py-2 pl-10 pr-4 font-semibold flex items-center rounded-l-[15px] rounded-r-none ${
+                        className={`relative py-2 pl-10 pr-4 font-semibold flex items-center rounded-l-[15px] rounded-r-none text-xs sm:text-sm ${
                             isActive("/dashboard/doctors")
-                                ? "bg-primary text-white"
-                                : "hover:bg-bluelight hover:text-black"
+                                ? "bg-primary text-primary-foreground"
+                                : "hover:bg-accent hover:text-accent-foreground"
                         }`}
                     >
                         <span
                             className={`absolute ml-2 left-0 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full ${
                                 isActive("/dashboard/doctors")
-                                    ? "bg-white border-8 border-green-500"
-                                    : "bg-white border-8 border-primary"
+                                    ? "bg-background-muted border-8 border-constructive"
+                                    : "bg-background-muted border-8 border-primary"
                             }`}
                         ></span>
                         All Doctors
                     </Link>
-                    {/* Link to Add New Doctor */}
                     <Link
                         href="/dashboard/doctors/add-new-doctor"
-                        className={`relative py-2 pl-10 pr-4 font-semibold flex items-center rounded-l-[15px] rounded-r-none ${
+                        className={`relative py-2 pl-10 pr-4 font-semibold flex items-center rounded-l-[15px] rounded-r-none text-xs sm:text-sm ${
                             isActive("/dashboard/doctors/add-new-doctor")
-                                ? "bg-primary text-white"
-                                : "hover:bg-bluelight hover:text-black"
+                                ? "bg-primary text-primary-foreground"
+                                : "hover:bg-accent hover:text-accent-foreground"
                         }`}
                     >
                         <span
                             className={`absolute ml-2 left-0 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full ${
                                 isActive("/dashboard/doctors/add-new-doctor")
-                                    ? "bg-white border-8 border-green-500"
-                                    : "bg-white border-8 border-primary"
+                                    ? "bg-background-muted border-8 border-constructive"
+                                    : "bg-background-muted border-8 border-primary"
                             }`}
                         ></span>
                         Add New Doctor

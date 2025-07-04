@@ -252,7 +252,7 @@ const ResetPasswordForm = () => {
                 </Button>
 
                 {isSuccess && (
-                    <p className="text-sm bg-white py-1 rounded-[5px] hover:bg-green-400 text-center mt-4 text-muted-foreground">
+                    <p className="text-sm bg-background py-1 rounded-[5px] hover:bg-constructive text-center mt-4 text-muted-foreground">
                         Ready to sign in?{" "}
                         <Link
                             href="/sign-in"

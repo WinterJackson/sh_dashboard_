@@ -88,7 +88,7 @@ export function EditHospitalDialog(props: EditHospitalDialogProps) {
         >
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Edit Hospital Information</DialogTitle>
+                    <DialogTitle className="mb-4">Edit Hospital Information</DialogTitle>
                     <DialogDescription>
                         Update hospital details below.
                     </DialogDescription>

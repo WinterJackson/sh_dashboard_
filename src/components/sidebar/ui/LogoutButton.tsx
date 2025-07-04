@@ -46,7 +46,7 @@ export default function LogoutButton() {
         <Drawer open={open} onOpenChange={setOpen}>
             <DrawerTrigger asChild>
                 <div
-                    className="flex max-w-[110px] py-1 px-2 bg-slate-100 items-center rounded-[10px] shadow-sm shadow-gray-400 gap-2 group hover:bg-primary cursor-pointer"
+                    className="flex max-w-[110px] py-1 px-2 bg-slate items-center rounded-[10px] shadow-sm shadow-shadow-main gap-2 group hover:bg-primary cursor-pointer"
                     onClick={() => {
                         console.log(
                             "LogoutButton: opening confirmation drawer"
@@ -54,20 +54,20 @@ export default function LogoutButton() {
                         setOpen(true);
                     }}
                 >
-                    <ExitIcon className="text-primary group-hover:text-white" />
-                    <span className="text-primary group-hover:text-white">
+                    <ExitIcon className="text-primary group-hover:text-primary-foreground" />
+                    <span className="text-xs sm:text-base text-primary group-hover:text-primary-foreground">
                         Log Out
                     </span>
                 </div>
             </DrawerTrigger>
 
-            <DrawerContent className="bg-slate-100 m-2 h-[30vh]">
+            <DrawerContent className="bg-card m-2 h-[30vh]">
                 <div className="mx-auto my-auto w-full max-w-sm bg-secondary rounded-[10px] p-2">
                     <DrawerHeader>
-                        <DrawerTitle className="text-white mb-4">
+                        <DrawerTitle className="text-secondary-foreground mb-4">
                             Confirm Log Out
                         </DrawerTitle>
-                        <DrawerDescription className="text-white">
+                        <DrawerDescription className="text-secondary-foreground">
                             Are you sure you want to log out of your account?
                         </DrawerDescription>
                     </DrawerHeader>
@@ -75,7 +75,7 @@ export default function LogoutButton() {
                     <DrawerFooter className="flex-row gap-4">
                         <Button
                             variant="outline"
-                            className="w-full bg-white"
+                            className="w-full bg-background"
                             onClick={() => {
                                 console.log("LogoutButton: cancel logout");
                                 setOpen(false);
@@ -85,7 +85,7 @@ export default function LogoutButton() {
                             Cancel
                         </Button>
                         <Button
-                            className="w-full bg-red-500 hover:bg-red-600"
+                            className="w-full bg-destructive/80 text-destructive-foreground"
                             onClick={handleLogout}
                             disabled={isLoading}
                         >

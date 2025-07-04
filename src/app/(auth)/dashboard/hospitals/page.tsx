@@ -6,6 +6,13 @@ import { redirect } from "next/navigation";
 import { Role } from "@/lib/definitions";
 import { fetchHospitals } from "@/lib/data-access/hospitals/data";
 import HospitalsList from "@/components/hospitals/HospitalsList";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 export default async function HospitalsPage() {
     const session = await getServerSession(authOptions);
@@ -22,10 +29,20 @@ export default async function HospitalsPage() {
     });
 
     return (
-        <div className="flex flex-col gap-3 p-3 pt-0">
-            <h1 className="text-xl font-bold bg-bluelight/5 p-2 rounded-[10px]">
-                Hospitals
-            </h1>
+        <div className="cursor-pointer flex flex-col gap-3 p-3 pt-0">
+            <div className="flex items-center gap-2 bg-slate p-2 rounded-[10px] w-full">
+                <h1 className="text-xl font-bold">Hospitals</h1>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger className="ml-1">
+                            <Info size={16} className="text-text-muted" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Click on a hospital row to view hospital details</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            </div>
             <HospitalsList
                 hospitals={hospitals}
                 totalHospitals={hospitals.length}

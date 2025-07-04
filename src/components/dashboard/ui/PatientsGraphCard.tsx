@@ -1,4 +1,4 @@
-// File: src/components/dashboard/ui/PatientsGraphCard.tsx
+// src/components/dashboard/ui/PatientsGraphCard.tsx
 
 "use client";
 
@@ -143,16 +143,15 @@ const PatientsGraphCard: React.FC<PatientsGraphCardProps> = ({
     }, [year, role, hospitalId, appointments]);
 
     return (
-        <div className="w-full grid p-4 pt-0 rounded-2xl xl:pb-5 bg-slate-100 shadow-lg shadow-gray-300">
-            <div className="flex justify-between items-center mb-4">
-                <h3 className="text-sm xl:text-base font-semibold">
-                    Patients Per Month ({year})
-                </h3>
-
+        <div className="w-full grid p-4 pt-0 rounded-2xl bg-card shadow-md shadow-shadow-main cursor-pointer">
+            <div className="flex justify-between items-center mb-2 mt-3">
                 <div className="flex items-center">
                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild className="group">
-                            <button className="bg-bluelight/5 flex items-center justify-between p-2 border rounded max-w-[120px] text-sm text-right truncate">
+                        <DropdownMenuTrigger
+                            asChild
+                            className="group h-10 min-w-[130px]"
+                        >
+                            <button className="flex items-center justify-between p-2 border rounded-[10px] max-w-[120px] text-xs sm:text-sm bg-background-muted/50 hover:bg-background-muted/80">
                                 <span className="truncate">{year}</span>
                                 <ChevronRight className="h-4 w-4 ml-2 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                             </button>
@@ -162,7 +161,7 @@ const PatientsGraphCard: React.FC<PatientsGraphCardProps> = ({
                                 <DropdownMenuItem
                                     key={yearOption}
                                     onClick={() => setYear(yearOption)}
-                                    className="cursor-pointer rounded-[5px] mb-1 hover:bg-primary/10"
+                                    className="cursor-pointer rounded-[5px] mb-1 text-xs sm:text-sm hover:bg-primary/10"
                                 >
                                     {yearOption}
                                 </DropdownMenuItem>
@@ -170,34 +169,43 @@ const PatientsGraphCard: React.FC<PatientsGraphCardProps> = ({
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
+                <h3 className="text-xs sm:text-sm md:text-sm lg:text-base font-semibold">
+                    Patients Per Month ({year})
+                </h3>
             </div>
 
-            <ResponsiveContainer width="100%" height={300}>
-                <BarChart
-                    data={appointmentsData}
-                    margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
-                >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month">
-                        <Label
-                            value="Months"
-                            offset={-20}
-                            position="insideBottom"
+            <div className="bg-slate rounded-[10px]">
+                <ResponsiveContainer width="100%" height={380}>
+                    <BarChart
+                        data={appointmentsData}
+                        margin={{ top: 50, right: 30, left: 0, bottom: 0 }}
+                    >
+                        <CartesianGrid
+                            strokeDasharray="3 3"
+                            stroke="hsl(var(--border))"
                         />
-                    </XAxis>
-                    <YAxis />
-                    <Tooltip content={<GraphTooltip />} />
-                    <Legend align="right" />
-                    <Bar
-                        dataKey="Count"
-                        fill="#016BD2"
-                        background={{ fill: "#dbedff" }}
-                        maxBarSize={60}
-                        legendType="circle"
-                        radius={[10, 10, 0, 0]}
-                    />
-                </BarChart>
-            </ResponsiveContainer>
+                        <XAxis dataKey="month" stroke="hsl(var(--text-main))">
+                            <Label
+                                value="Months"
+                                offset={-20}
+                                position="insideBottom"
+                                fill="hsl(var(--text-muted))"
+                            />
+                        </XAxis>
+                        <YAxis stroke="hsl(var(--text-main))" />
+                        <Tooltip content={<GraphTooltip />} />
+                        <Legend align="right" />
+                        <Bar
+                            dataKey="Count"
+                            fill="hsl(var(--primary))"
+                            background={{ fill: "hsl(var(--light-accent))" }}
+                            maxBarSize={60}
+                            legendType="circle"
+                            radius={[10, 10, 0, 0]}
+                        />
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
         </div>
     );
 };

@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
     Form,
@@ -21,26 +21,26 @@ import LoadingSpinner from "@/components/ui/loading";
 import { Role } from "@/lib/definitions";
 import { useFetchAllHospitals } from "@/hooks/useFetchAllHospitals";
 import { useToast } from "@/components/ui/use-toast";
+import { HospitalCombobox } from "@/components/ui/hospital-combobox";
 
 const FormSchema = z.object({
     username: z.string().min(1).max(100),
     email: z.string().min(1).email(),
     role: z.nativeEnum(Role),
-    hospitalId: z.number().nonnegative(),
+    hospitalId: z
+        .number()
+        .nonnegative()
+        .refine((val) => val > 0, {
+            message: "Please select a hospital",
+        }),
 });
 
 const SignUpForm = () => {
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
-    const [searchTerm, setSearchTerm] = useState("");
 
     const { data: hospitals = [], isLoading: hospitalsLoading } =
         useFetchAllHospitals();
-    console.log("Fetched hospitals:", hospitals, "Loading:", hospitalsLoading);
-
-    const filteredHospitals = hospitals.filter((h) =>
-        h.hospitalName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
@@ -48,15 +48,9 @@ const SignUpForm = () => {
             username: "",
             email: "",
             role: Role.STAFF,
-            hospitalId: -1,
+            hospitalId: 0,
         },
     });
-
-    useEffect(() => {
-        if (!hospitalsLoading && hospitals.length > 0) {
-            form.setValue("hospitalId", hospitals[0].hospitalId);
-        }
-    }, [hospitals, hospitalsLoading]);
 
     const onSubmit = async (values: z.infer<typeof FormSchema>) => {
         setIsLoading(true);
@@ -84,28 +78,26 @@ const SignUpForm = () => {
                     title: "Registration Successful",
                     description:
                         "A password reset link has been sent to your email. Please check your inbox to set up your account password.",
-                    duration: 20000, // 20 seconds
+                    duration: 20000,
                 });
             } else {
                 const errorData = await response.json();
-                console.error("Registration failed:", errorData);
                 toast({
                     title: "Registration Failed",
                     description:
                         errorData.error ||
                         "Please check your information and try again.",
                     variant: "destructive",
-                    duration: 10000, // 10 seconds
+                    duration: 10000,
                 });
             }
         } catch (error) {
-            console.error("Registration error:", error);
             toast({
                 title: "Network Error",
                 description:
                     "Could not connect to the server. Please check your internet connection.",
                 variant: "destructive",
-                duration: 10000, // 10 seconds
+                duration: 10000,
             });
         } finally {
             setIsLoading(false);
@@ -117,18 +109,19 @@ const SignUpForm = () => {
             {isLoading && <LoadingSpinner />}
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                         <FormField
                             control={form.control}
                             name="username"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="text-white">
+                                    <FormLabel className="text-white text-xs sm:text-sm">
                                         Username
                                     </FormLabel>
                                     <FormControl>
                                         <Input
                                             placeholder="John Doe"
+                                            className="focus:outline outline-1 outline-primary rounded-[5px] text-xs sm:text-sm"
                                             {...field}
                                         />
                                     </FormControl>
@@ -141,12 +134,13 @@ const SignUpForm = () => {
                             name="email"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="text-white">
+                                    <FormLabel className="text-white text-xs sm:text-sm">
                                         Email
                                     </FormLabel>
                                     <FormControl>
                                         <Input
                                             placeholder="john.doe@example.com"
+                                            className="focus:outline outline-1 outline-primary rounded-[5px] text-xs sm:text-sm"
                                             {...field}
                                         />
                                     </FormControl>
@@ -158,14 +152,14 @@ const SignUpForm = () => {
                             control={form.control}
                             name="role"
                             render={({ field }) => (
-                                <FormItem className="flex flex-col w-full">
-                                    <FormLabel className="text-white">
+                                <FormItem>
+                                    <FormLabel className="text-white text-xs sm:text-sm">
                                         Role
                                     </FormLabel>
-                                    <FormControl className="h-10 rounded-[5px] text-sm">
+                                    <FormControl>
                                         <select
                                             {...field}
-                                            className="focus:outline outline-2 outline-primary "
+                                            className="flex h-10 p-2 w-full rounded-[5px] focus:outline outline-0 bg-background text-xs sm:text-sm"
                                         >
                                             {Object.values(Role)
                                                 .filter(
@@ -198,66 +192,25 @@ const SignUpForm = () => {
                             control={form.control}
                             name="hospitalId"
                             render={({ field }) => (
-                                <FormItem className="flex flex-col w-full">
-                                    <FormLabel className="text-white">
+                                <FormItem>
+                                    <FormLabel className="text-white text-xs sm:text-sm">
                                         Hospital
                                     </FormLabel>
                                     <FormControl>
-                                        <div className="flex flex-col gap-2">
-                                            {/* Search input for hospital list filtering */}
-                                            <input
-                                                type="text"
-                                                value={searchTerm}
-                                                onChange={(e) =>
-                                                    setSearchTerm(
-                                                        e.target.value
-                                                    )
+                                        <HospitalCombobox
+                                            hospitals={hospitals}
+                                            isLoading={hospitalsLoading}
+                                            selectedHospitalId={
+                                                field.value ?? null
+                                            }
+                                            onSelectHospitalId={(id) => {
+                                                if (id !== null) {
+                                                    field.onChange(id);
                                                 }
-                                                placeholder="Search hospital name..."
-                                                className="px-3 py-1 border rounded-[5px] text-sm"
-                                            />
-                                            <select
-                                                {...field}
-                                                onChange={(e) => {
-                                                    const selectedId = Number(
-                                                        e.target.value
-                                                    );
-                                                    console.log(
-                                                        "🏥 Selected hospitalId:",
-                                                        selectedId
-                                                    );
-                                                    field.onChange(selectedId);
-                                                }}
-                                                className="p-2 focus:outline outline-2 outline-primary max-h-40 overflow-y-auto text-sm rounded-[5px]"
-                                            >
-                                                <option
-                                                    value=""
-                                                    disabled
-                                                    className="text-gray-400 text-sm"
-                                                >
-                                                    Select a hospital
-                                                </option>
-                                                {filteredHospitals.map(
-                                                    (hospital) => (
-                                                        <option
-                                                            key={
-                                                                hospital.hospitalId
-                                                            }
-                                                            value={
-                                                                hospital.hospitalId
-                                                            }
-                                                            className="text-sm"
-                                                        >
-                                                            <div className="">
-                                                                {
-                                                                    hospital.hospitalName
-                                                                }
-                                                            </div>
-                                                        </option>
-                                                    )
-                                                )}
-                                            </select>
-                                        </div>
+                                            }}
+                                            className="w-full h-10 rounded-[5px] bg-background text-xs sm:text-sm"
+                                            defaultLabel="Select a hospital"
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -265,7 +218,7 @@ const SignUpForm = () => {
                         />
                     </div>
                     <Button
-                        className="w-full text-white mt-6"
+                        className="w-full text-white text-xs sm:text-sm mt-6 rounded-[5px]"
                         type="submit"
                         disabled={isLoading}
                     >
@@ -277,9 +230,7 @@ const SignUpForm = () => {
                     or
                 </div>
 
-                {/* <GoogleSignInButton>Sign up with Google</GoogleSignInButton> */}
-
-                <p className="text-center text-sm text-white mt-2">
+                <p className="text-center text-white text-xs sm:text-sm mt-2">
                     If you already have an account, please&nbsp;
                     <Link
                         className="text-primary hover:underline"

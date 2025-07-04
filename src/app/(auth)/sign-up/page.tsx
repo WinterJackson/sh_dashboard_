@@ -15,21 +15,21 @@ const SignUpPage = async () => {
 
     return (
         <AuthLayout>
-            <div className="flex gap-10">
-                <div className="flex items-center">
-                    <div className="p-8 my-auto bg-secondary rounded-2xl">
+            <div className="flex flex-col sm:justify-center md:flex-row md:justify-center items-center px-4 py-8 w-full max-w-screen-xl">
+                <div className="hidden md:flex items-center justify-center mb-6 md:mb-0 md:mr-10">
+                    <div className="p-6 sm:p-8 md:p-10 bg-secondary rounded-2xl w-full max-w-sm sm:max-w-md md:max-w-xs">
                         <img
                             src="/images/logo.png"
                             alt="Hospital Logo"
                             width={300}
                             height={200}
-                            className="p-1 object-contain"
+                            className="p-1 object-contain max-w-full h-auto mx-auto"
                             loading="lazy"
                         />
                     </div>
                 </div>
-                <div className="w-px h-auto bg-secondary"></div>
-                <div className="p-10 bg-secondary items-center rounded-2xl w-[450px]">
+
+                <div className="p-6 sm:p-8 md:p-10 bg-secondary rounded-2xl w-full max-w-sm sm:max-w-md md:max-w-md">
                     <SignUpForm />
                 </div>
             </div>

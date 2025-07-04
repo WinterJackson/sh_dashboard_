@@ -44,13 +44,13 @@ const HospitalRow: React.FC<HospitalRowProps> = ({
     };
 
     return (
-        <tr className="bg-white shadow-md py-2 hover:bg-gray-100">
+        <tr className="group bg-background shadow-md py-2 hover:bg-primary hover:text-primary-foreground">
             {/* Checkbox Column */}
             {userRole === Role.SUPER_ADMIN && (
                 <td className="text-center w-[8%] p-2">
                     <input
                         type="checkbox"
-                        className="w-[15px] h-[15px]"
+                        className="w-[15px] h-[15px] accent-primary bg-background"
                         checked={isSelected}
                         onChange={(e) =>
                             onSelect(hospital.hospitalId, e.target.checked)
@@ -65,9 +65,9 @@ const HospitalRow: React.FC<HospitalRowProps> = ({
                     <img
                         src="/images/shlogo.png"
                         alt="Hospital logo"
-                        width={50}
-                        height={50}
-                        className="rounded-full object-cover"
+                        width={100}
+                        height={100}
+                        className="rounded-[5px] object-cover"
                         onError={(e) => {
                             (e.target as HTMLImageElement).src =
                                 "/images/default-hospital.png";
@@ -94,7 +94,7 @@ const HospitalRow: React.FC<HospitalRowProps> = ({
                                         {hospital.hospitalName}
                                     </p>
                                 </TooltipTrigger>
-                                <TooltipContent>
+                                <TooltipContent className="bg-background text-foreground">
                                     <p>{hospital.hospitalName}</p>
                                 </TooltipContent>
                             </Tooltip>
@@ -105,6 +105,7 @@ const HospitalRow: React.FC<HospitalRowProps> = ({
                                     <p
                                         className="
                                           text-sm text-primary
+                                          group-hover:text-primary-foreground
                                           truncate max-w-[150px]
                                           lg:truncate-none lg:max-w-full lg:whitespace-nowrap
                                           cursor-pointer
@@ -113,7 +114,7 @@ const HospitalRow: React.FC<HospitalRowProps> = ({
                                         {hospital.email || "N/A"}
                                     </p>
                                 </TooltipTrigger>
-                                <TooltipContent>
+                                <TooltipContent className="bg-background text-foreground">
                                     <p>{hospital.email || "No email"}</p>
                                 </TooltipContent>
                             </Tooltip>
@@ -182,7 +183,7 @@ const HospitalRow: React.FC<HospitalRowProps> = ({
                                 <MoreHorizIcon className="cursor-pointer" />
                             </button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="bg-white rounded-xl shadow-md p-2 w-24">
+                        <DropdownMenuContent className="bg-background rounded-xl shadow-md p-2 w-24">
                             <DropdownMenuItem
                                 onClick={handleEdit}
                                 className="rounded-[5px] flex items-center"

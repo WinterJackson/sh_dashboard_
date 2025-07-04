@@ -1,13 +1,19 @@
-// File: src/components/dashboard/ui/DashboardAppointments.tsx
+// src/components/dashboard/ui/DashboardAppointments.tsx
 
 "use client";
 
 import AppointmentsPagination from "@/components/appointments/ui/appointments-table/AppointmentsPagination";
 import { Appointment } from "@/lib/definitions";
 import { differenceInYears } from "date-fns";
-import { MapPin as PlaceIcon, Video } from "lucide-react";
+import { MapPin as PlaceIcon, Video, Info } from "lucide-react";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+    TooltipProvider,
+    Tooltip,
+    TooltipTrigger,
+    TooltipContent,
+} from "@/components/ui/tooltip";
 
 interface DashboardAppointmentsProps {
     appointments: Appointment[];
@@ -25,14 +31,12 @@ const DashboardAppointments: React.FC<DashboardAppointmentsProps> = ({
 
     const totalPages = Math.ceil(totalAppointments / ITEMS_PER_PAGE);
 
-    // Handle page changes for pagination
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= totalPages) {
             setCurrentPage(newPage);
         }
     };
 
-    // Get appointments for the current page
     const currentAppointments = appointments.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
         currentPage * ITEMS_PER_PAGE
@@ -41,7 +45,7 @@ const DashboardAppointments: React.FC<DashboardAppointmentsProps> = ({
     const renderTableRows = () =>
         currentAppointments.map((appointment) => {
             const isCancelled = appointment.status === "CANCELLED";
-            const rowClass = isCancelled ? "bg-red-100" : "bg-white";
+            const rowClass = isCancelled ? "bg-destructive/20" : "bg-card";
 
             const onRowClick = () => {
                 router.push(
@@ -52,16 +56,16 @@ const DashboardAppointments: React.FC<DashboardAppointmentsProps> = ({
             return (
                 <tr
                     key={appointment.appointmentId}
-                    className={`text-center cursor-pointer ${rowClass} hover:bg-gray-100 active:bg-blue-100/50`}
+                    className={`text-center cursor-pointer ${rowClass} hover:bg-primary active:bg-light-accent group`}
                     onClick={onRowClick}
                 >
-                    <td className="px-4 py-4 text-sm font-semibold text-gray-900 text-left whitespace-nowrap">
+                    <td className="px-4 py-4 text-sm font-semibold text-text-main group-hover:text-primary-foreground hover:text-primary-foreground text-left whitespace-nowrap">
                         {appointment.patient?.user?.profile?.firstName &&
                         appointment.patient?.user?.profile?.lastName
                             ? `${appointment.patient.user.profile.firstName} ${appointment.patient.user.profile.lastName}`
                             : "N/A"}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                    <td className="px-6 py-4 text-sm text-text-muted group-hover:text-primary-foreground whitespace-nowrap">
                         {appointment.patient?.user?.profile?.dateOfBirth
                             ? differenceInYears(
                                   new Date(),
@@ -71,10 +75,10 @@ const DashboardAppointments: React.FC<DashboardAppointmentsProps> = ({
                               )
                             : "N/A"}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                    <td className="px-6 py-4 text-sm text-text-muted group-hover:text-primary-foreground whitespace-nowrap">
                         {appointment.patient?.patientId || "N/A"}
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
+                    <td className="px-4 py-4 text-sm text-text-muted group-hover:text-primary-foreground whitespace-nowrap">
                         {new Date(
                             appointment.appointmentDate
                         ).toLocaleTimeString([], {
@@ -82,12 +86,12 @@ const DashboardAppointments: React.FC<DashboardAppointmentsProps> = ({
                             minute: "2-digit",
                         })}
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
+                    <td className="px-4 py-4 text-sm text-text-muted group-hover:text-primary-foreground whitespace-nowrap">
                         {new Date(
                             appointment.appointmentDate
                         ).toLocaleDateString()}
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
+                    <td className="px-4 py-4 text-sm text-text-muted group-hover:text-primary-foreground whitespace-nowrap">
                         {appointment.doctor?.user?.profile
                             ? `Dr. ${appointment.doctor.user.profile.firstName} ${appointment.doctor.user.profile.lastName}`
                             : "N/A"}
@@ -95,21 +99,21 @@ const DashboardAppointments: React.FC<DashboardAppointmentsProps> = ({
                     <td className="px-4 py-4 text-sm flex items-center justify-center gap-2 whitespace-nowrap">
                         {appointment.type === "Virtual" ? (
                             <>
-                                <Video className="text-primary" />
-                                <span className="text-primary">
+                                <Video className="text-primary group-hover:text-primary-foreground" />
+                                <span className="text-primary group-hover:text-primary-foreground">
                                     {appointment.type}
                                 </span>
                             </>
                         ) : (
                             <>
-                                <PlaceIcon className="text-black/70" />
-                                <span className="text-black/70">
+                                <PlaceIcon className="text-text-muted group-hover:text-primary-foreground" />
+                                <span className="text-text-muted group-hover:text-primary-foreground">
                                     {appointment.type}
                                 </span>
                             </>
                         )}
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
+                    <td className="px-4 py-4 text-sm text-text-muted group-hover:text-primary-foreground whitespace-nowrap">
                         {appointment.status}
                     </td>
                 </tr>
@@ -117,41 +121,66 @@ const DashboardAppointments: React.FC<DashboardAppointmentsProps> = ({
         });
 
     return (
-        <div className="flex flex-col min-w-full min-h-[90%] shadow-lg shadow-gray-300 rounded-[20px] bg-slate-100">
-            <div className="overflow-x-auto w-full min-h-[90%]">
-                <h2 className="py-4 px-4 font-semibold">
-                    Appointments Details
-                </h2>
-                <table className="min-w-full w-full border-collapse divide-y divide-gray-200 mt-2 table-auto">
-                    <thead className="bg-bluelight">
+<div className="flex flex-col cursor-pointer w-full rounded-[20px] bg-card shadow-md shadow-shadow-main overflow-hidden">
+  <div className="overflow-x-auto scrollbar-custom w-full max-h-[100vh]">
+                <div className="flex items-center gap-2 px-4 py-4">
+                    <h2 className="font-semibold">Appointments Details</h2>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Info
+                                    size={16}
+                                    className="text-text-muted cursor-pointer"
+                                />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>
+                                    This table shows all scheduled appointments.
+                                    <br />
+                                    <br />
+                                    Each row contains patient information,
+                                    appointment time and date, assigned doctor,
+                                    appointment type (Virtual/Physical), and
+                                    status.
+                                    <br />
+                                    <br />
+                                    Click on any row to view full
+                                    appointment details.
+                                </p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                </div>
+                <table className="min-w-full w-full border-collapse divide-y divide-border mt-2 table-auto">
+                    <thead className="bg-accent">
                         <tr>
-                            <th className="px-4 py-5 text-left text-sm font-bold text-black uppercase tracking-wider">
+                            <th className="px-4 py-5 text-left text-sm font-bold text-accent-foreground uppercase tracking-wider">
                                 Patient Name
                             </th>
-                            <th className="px-2 py-5 text-center text-sm font-bold text-black uppercase tracking-wider">
+                            <th className="px-2 py-5 text-center text-sm font-bold text-accent-foreground uppercase tracking-wider">
                                 Age
                             </th>
-                            <th className="px-2 py-5 text-center text-sm font-bold text-black uppercase tracking-wider">
+                            <th className="px-2 py-5 text-center text-sm font-bold text-accent-foreground uppercase tracking-wider">
                                 Id
                             </th>
-                            <th className="px-2 py-5 text-center text-sm font-bold text-black uppercase tracking-wider">
+                            <th className="px-2 py-5 text-center text-sm font-bold text-accent-foreground uppercase tracking-wider">
                                 Time
                             </th>
-                            <th className="px-2 py-5 text-center text-sm font-bold text-black uppercase tracking-wider">
+                            <th className="px-2 py-5 text-center text-sm font-bold text-accent-foreground uppercase tracking-wider">
                                 Date
                             </th>
-                            <th className="px-2 py-5 text-center text-sm font-bold text-black uppercase tracking-wider">
+                            <th className="px-2 py-5 text-center text-sm font-bold text-accent-foreground uppercase tracking-wider">
                                 Doctor&apos;s Name
                             </th>
-                            <th className="px-2 py-5 text-center text-sm font-bold text-black uppercase tracking-wider">
+                            <th className="px-2 py-5 text-center text-sm font-bold text-accent-foreground uppercase tracking-wider">
                                 Type
                             </th>
-                            <th className="px-2 py-5 text-center text-sm font-bold text-black uppercase tracking-wider">
+                            <th className="px-2 py-5 text-center text-sm font-bold text-accent-foreground uppercase tracking-wider">
                                 Status
                             </th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-card divide-y divide-border">
                         {renderTableRows()}
                     </tbody>
                 </table>

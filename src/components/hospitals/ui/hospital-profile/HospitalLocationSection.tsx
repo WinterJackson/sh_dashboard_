@@ -144,8 +144,8 @@ export default function HospitalMap({
     }
 
     return (
-        <div className="h-full w-full rounded-[10px] overflow-hidden bg-white shadow-md flex flex-col">
-            <div className="flex flex-row justify-between items-center bg-bluelight rounded-t-[10px] mb-4 p-4">
+        <div className="h-full w-full rounded-[10px] overflow-hidden bg-card shadow-md shadow-shadow-main flex flex-col">
+            <div className="flex flex-row justify-between items-center bg-accent rounded-t-[10px] mb-4 p-4">
                 <span className="text-lg font-semibold whitespace-nowrap">
                     Hospital Location
                 </span>
@@ -153,10 +153,10 @@ export default function HospitalMap({
                     <div className=" flex justify-end gap-2 p-1">
                         <Button
                             size="sm"
-                            className={`rounded-[10px] whitespace-nowrap ${
+                            className={`rounded-[10px] whitespace-nowrap h-[40px] ${
                                 isEditMode
-                                    ? "bg-red-600 hover:bg-red-700 text-white"
-                                    : "bg-primary hover:bg-primary/70 text-white"
+                                    ? "bg-destructive hover:bg-destructive/70 text-destructive-foreground"
+                                    : "bg-primary hover:bg-primary/70 text-primary-foreground"
                             }`}
                             onClick={() => setIsEditMode((prev) => !prev)}
                         >
@@ -166,7 +166,7 @@ export default function HospitalMap({
                             <Button
                                 size="sm"
                                 variant="outline"
-                                className="rounded-[10px] bg-primary text-white hover:bg-primary/70"
+                                className="rounded-[10px] h-[40px] bg-primary text-primary-foreground hover:bg-primary/70"
                                 onClick={onUndo}
                             >
                                 Undo
@@ -177,7 +177,7 @@ export default function HospitalMap({
             </div>
             <div className="flex-1 rounded-[10px] overflow-hidden p-1 relative z-[20]">
                 {/* Hospital name overlay */}
-                <div className="absolute top-8 left-8 z-[1000] bg-white/90 px-3 py-1 rounded-[8px] shadow text-sm font-semibold text-gray-800">
+                <div className="absolute top-8 left-8 z-[1000] bg-slate px-3 py-1 rounded-[8px] shadow text-sm font-semibold text-foreground">
                     {hospitalName}
                 </div>
 

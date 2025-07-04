@@ -2,7 +2,12 @@
 
 "use server";
 
-import { Referral, ReferralStatus, ReferralType, Role } from "@/lib/definitions";
+import {
+    Referral,
+    ReferralStatus,
+    ReferralType,
+    Role,
+} from "@/lib/definitions";
 import * as Sentry from "@sentry/nextjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
@@ -11,12 +16,165 @@ import { getErrorMessage } from "@/hooks/getErrorMessage";
 
 import prisma from "@/lib/prisma";
 
+
+export async function fetchInwardReferralsOverview() {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) redirect("/sign-in");
+
+  const { role, hospitalId } = session.user;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  const weekAgo = new Date(today);
+  weekAgo.setDate(today.getDate() - 7);
+
+  const twoWeeksAgo = new Date(today);
+  twoWeeksAgo.setDate(today.getDate() - 14);
+
+  const filters =
+    role !== Role.SUPER_ADMIN && hospitalId !== null
+      ? { destinationHospitalId: hospitalId }
+      : {};
+
+  const [todayReferrals, currentWeekReferrals, previousWeekReferrals] = await Promise.all([
+    prisma.referral.findMany({
+      where: {
+        ...filters,
+        effectiveDate: {
+          gte: today,
+          lt: tomorrow,
+        },
+      },
+      select: { patientId: true },
+    }),
+    prisma.referral.findMany({
+      where: {
+        ...filters,
+        effectiveDate: {
+          gte: weekAgo,
+          lt: today,
+        },
+      },
+      select: { patientId: true },
+    }),
+    prisma.referral.findMany({
+      where: {
+        ...filters,
+        effectiveDate: {
+          gte: twoWeeksAgo,
+          lt: weekAgo,
+        },
+      },
+      select: { patientId: true },
+    }),
+  ]);
+
+  const getUniquePatientCount = (data: { patientId: number }[]) => {
+    const ids = new Set(data.map((r) => r.patientId));
+    return ids.size;
+  };
+
+  const currentPatientCount = getUniquePatientCount(currentWeekReferrals);
+  const previousPatientCount = getUniquePatientCount(previousWeekReferrals);
+
+  const percentageChange =
+    previousPatientCount > 0 ? ((currentPatientCount - previousPatientCount) / previousPatientCount) * 100 : null;
+
+  const patientDelta = currentPatientCount - previousPatientCount;
+
+  return {
+    inwardReferralsToday: todayReferrals.length,
+    percentageChange,
+    patientDelta,
+  };
+}
+
+export async function fetchOutwardReferralsOverview() {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) redirect("/sign-in");
+
+  const { role, hospitalId } = session.user;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  const weekAgo = new Date(today);
+  weekAgo.setDate(today.getDate() - 7);
+
+  const twoWeeksAgo = new Date(today);
+  twoWeeksAgo.setDate(today.getDate() - 14);
+
+  const filters =
+    role !== Role.SUPER_ADMIN && hospitalId !== null
+      ? { originHospitalId: hospitalId }
+      : {};
+
+  const [todayReferrals, currentWeekReferrals, previousWeekReferrals] = await Promise.all([
+    prisma.referral.findMany({
+      where: {
+        ...filters,
+        effectiveDate: {
+          gte: today,
+          lt: tomorrow,
+        },
+      },
+      select: { patientId: true },
+    }),
+    prisma.referral.findMany({
+      where: {
+        ...filters,
+        effectiveDate: {
+          gte: weekAgo,
+          lt: today,
+        },
+      },
+      select: { patientId: true },
+    }),
+    prisma.referral.findMany({
+      where: {
+        ...filters,
+        effectiveDate: {
+          gte: twoWeeksAgo,
+          lt: weekAgo,
+        },
+      },
+      select: { patientId: true },
+    }),
+  ]);
+
+  const getUniquePatientCount = (data: { patientId: number }[]) => {
+    const ids = new Set(data.map((r) => r.patientId));
+    return ids.size;
+  };
+
+  const currentPatientCount = getUniquePatientCount(currentWeekReferrals);
+  const previousPatientCount = getUniquePatientCount(previousWeekReferrals);
+
+  const percentageChange =
+    previousPatientCount > 0 ? ((currentPatientCount - previousPatientCount) / previousPatientCount) * 100 : null;
+
+  const patientDelta = currentPatientCount - previousPatientCount;
+
+  return {
+    outwardReferralsToday: todayReferrals.length,
+    percentageChange,
+    patientDelta,
+  };
+}
+
+
 /**
  * Fetches inward referrals based on user role and hospitalId.
  */
-export const fetchInwardReferrals = async (
-    user?: { role: Role; hospitalId: number | null }
-): Promise<Referral[]> => {
+export const fetchInwardReferrals = async (user?: {
+    role: Role;
+    hospitalId: number | null;
+}): Promise<Referral[]> => {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -56,7 +214,9 @@ export const fetchInwardReferrals = async (
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
-                    throw new Error(`${role}s must have an associated hospital ID.`);
+                    throw new Error(
+                        `${role}s must have an associated hospital ID.`
+                    );
                 }
                 // Filter by destinationHospitalId for other roles
                 whereClause = {
@@ -110,9 +270,10 @@ export const fetchInwardReferrals = async (
 /**
  * Fetches the count of inward referrals based on user role and hospitalId.
  */
-export const fetchInwardReferralsCount = async (
-    user?: { role: Role; hospitalId: number | null }
-): Promise<number> => {
+export const fetchInwardReferralsCount = async (user?: {
+    role: Role;
+    hospitalId: number | null;
+}): Promise<number> => {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -152,7 +313,9 @@ export const fetchInwardReferralsCount = async (
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
-                    throw new Error(`${role}s must have an associated hospital ID.`);
+                    throw new Error(
+                        `${role}s must have an associated hospital ID.`
+                    );
                 }
                 // Filter by destinationHospitalId for other roles
                 whereClause = {
@@ -185,9 +348,10 @@ export const fetchInwardReferralsCount = async (
 /**
  * Fetches outward referrals based on user role and hospitalId.
  */
-export const fetchOutwardReferrals = async (
-    user?: { role: Role; hospitalId: number | null }
-): Promise<Referral[]> => {
+export const fetchOutwardReferrals = async (user?: {
+    role: Role;
+    hospitalId: number | null;
+}): Promise<Referral[]> => {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -228,7 +392,9 @@ export const fetchOutwardReferrals = async (
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
-                    throw new Error(`${role}s must have an associated hospital ID.`);
+                    throw new Error(
+                        `${role}s must have an associated hospital ID.`
+                    );
                 }
                 // Filter by originHospitalId for other roles
                 whereClause = {
@@ -282,9 +448,10 @@ export const fetchOutwardReferrals = async (
 /**
  * Fetches the count of outward referrals based on user role and hospitalId.
  */
-export const fetchOutwardReferralsCount = async (
-    user?: { role: Role; hospitalId: number | null }
-): Promise<number> => {
+export const fetchOutwardReferralsCount = async (user?: {
+    role: Role;
+    hospitalId: number | null;
+}): Promise<number> => {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -325,7 +492,9 @@ export const fetchOutwardReferralsCount = async (
             case "NURSE":
             case "STAFF":
                 if (hospitalId === null) {
-                    throw new Error(`${role}s must have an associated hospital ID.`);
+                    throw new Error(
+                        `${role}s must have an associated hospital ID.`
+                    );
                 }
                 // Filter by originHospitalId for other roles
                 whereClause = {
@@ -410,7 +579,9 @@ export async function createReferral(
         });
 
         if (!hospital || !hospital.hospitalId) {
-            console.error(`Hospital with name '${data.hospitalName}' not found.`);
+            console.error(
+                `Hospital with name '${data.hospitalName}' not found.`
+            );
             return null;
         }
 
@@ -421,7 +592,8 @@ export async function createReferral(
             where: { patientId: data.patientId },
             update: {
                 firstName: data.patientName.split(" ")[0],
-                lastName: data.patientName.split(" ").slice(1).join(" ") || null,
+                lastName:
+                    data.patientName.split(" ").slice(1).join(" ") || null,
                 gender: data.gender,
                 dateOfBirth: new Date(data.dateOfBirth),
                 address: data.homeAddress || null,
@@ -434,7 +606,8 @@ export async function createReferral(
             },
             create: {
                 firstName: data.patientName.split(" ")[0],
-                lastName: data.patientName.split(" ").slice(1).join(" ") || null,
+                lastName:
+                    data.patientName.split(" ").slice(1).join(" ") || null,
                 gender: data.gender,
                 dateOfBirth: new Date(data.dateOfBirth),
                 address: data.homeAddress || null,
@@ -470,10 +643,12 @@ export async function createReferral(
         const referringDoctor = await prisma.doctor.findFirst({
             where: {
                 userId: {
-                    in: await prisma.user.findMany({
-                        where: { email: data.referringDoctorEmail },
-                        select: { userId: true },
-                    }).then((users: any[]) => users.map(u => u.userId)),
+                    in: await prisma.user
+                        .findMany({
+                            where: { email: data.referringDoctorEmail },
+                            select: { userId: true },
+                        })
+                        .then((users: any[]) => users.map((u) => u.userId)),
                 },
             },
         });
