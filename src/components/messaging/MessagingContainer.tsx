@@ -24,6 +24,9 @@ interface MessagingContainerProps {
     onToggleInfoPanel: () => void;
     onAudioCall: () => void;
     onVideoCall: () => void;
+    searchQuery: string;
+    onSearchChange: (query: string) => void;
+    onSearchClose: () => void;
 }
 
 const MessagingContainer: React.FC<MessagingContainerProps> = ({
@@ -42,6 +45,9 @@ const MessagingContainer: React.FC<MessagingContainerProps> = ({
     onToggleInfoPanel,
     onAudioCall,
     onVideoCall,
+    searchQuery,
+    onSearchChange,
+    onSearchClose,
 }) => {
     const [selectedConversationId, setSelectedConversationId] = useState<
         string | null
@@ -62,6 +68,9 @@ const MessagingContainer: React.FC<MessagingContainerProps> = ({
                 onAudioCall={onAudioCall}
                 onVideoCall={onVideoCall}
                 onToggleInfoPanel={onToggleInfoPanel}
+                searchQuery={searchQuery}
+                onSearchChange={onSearchChange}
+                onSearchClose={onSearchClose}
             />
 
             <MessagePanel
