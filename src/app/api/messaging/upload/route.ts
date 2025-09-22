@@ -1,29 +1,39 @@
-// src/app/api/messaging/upload/route.ts
+// // src/app/api/messaging/upload/route.ts
 
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
-import { edgeStoreRouter } from "@/lib/edgestore-server";
+// import { NextRequest, NextResponse } from "next/server";
+// import { getServerSession } from "next-auth";
+// import { authOptions } from "@/lib/authOptions";
+// import { edgeStoreRouter } from "@/lib/edgestore-server";
+// import { initEdgeStore } from "@edgestore/server";
 
-export async function POST(req: NextRequest) {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+// const es = initEdgeStore.create();
 
-    const formData = await req.formData();
-    const file = formData.get("file") as File;
+// /**
+//  * Create a server-side caller for Edge Store
+//  */
+// const edgeStore = es.createCaller({
+//   router: edgeStoreRouter,
+// });
 
-    if (!file) {
-        return NextResponse.json({ error: "No file provided" }, { status: 400 });
-    }
+// export async function POST(req: NextRequest) {
+//     const session = await getServerSession(authOptions);
+//     if (!session?.user) {
+//         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+//     }
 
-    try {
-        const res = await edgeStoreRouter.publicFiles.upload({ file });
+//     const formData = await req.formData();
+//     const file = formData.get("file") as File;
 
-        return NextResponse.json({ url: res.url });
-    } catch (error) {
-        console.error("File upload error:", error);
-        return NextResponse.json({ error: "File upload failed" }, { status: 500 });
-    }
-}
+//     if (!file) {
+//         return NextResponse.json({ error: "No file provided" }, { status: 400 });
+//     }
+
+//     try {
+//         const res = await edgeStore.publicFiles.upload({ file });
+
+//         return NextResponse.json({ url: res.url });
+//     } catch (error) {
+//         console.error("File upload error:", error);
+//         return NextResponse.json({ error: "File upload failed" }, { status: 500 });
+//     }
+// }

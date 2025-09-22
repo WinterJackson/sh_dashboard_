@@ -25,6 +25,7 @@ import { HospitalCombobox } from "@/components/ui/hospital-combobox";
 import ConversationDetailsModal from "@/components/messaging/ConversationDetailsModal";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { useToast } from "@/components/ui/use-toast";
+import { useEdgeStore } from "@/lib/edgestore";
 
 const MessagingPage = () => {
     const { data: session, status } = useSession();
@@ -277,6 +278,7 @@ const MessagingPage = () => {
     }, [socket, userId, queryClient]);
 
     const { toast } = useToast();
+    const { edgestore } = useEdgeStore();
 
     const handleSendMessage = async (content: string, file?: File, isUrgent?: boolean) => {
         if (!selectedConversationId) return;
@@ -301,17 +303,9 @@ const MessagingPage = () => {
         }
 
         if (file) {
-            const formData = new FormData();
-            formData.append("file", file);
-
             try {
-                const response = await fetch("/api/messaging/upload", {
-                    method: "POST",
-                    body: formData,
-                });
-                if (!response.ok) throw new Error("File upload failed");
-
-                const { url } = await response.json();
+                const res = await edgestore.publicFiles.upload({ file });
+                const url = res.url;
                 if (file.type.startsWith("image/")) {
                     messageData.messageType = MessageType.IMAGE;
                 } else if (file.type.startsWith("video/")) {
