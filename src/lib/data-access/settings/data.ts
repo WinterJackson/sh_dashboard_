@@ -548,3 +548,27 @@ export async function updateEmail(newEmail: string) {
         throw new Error(getErrorMessage(error));
     }
 }
+
+export async function fetchSecuritySettings(userId?: string) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) redirect("/sign-in");
+
+    const dbUser = await prisma.user.findUnique({
+        where: { userId: userId || session.user.id },
+        select: {
+            email: true,
+            twoFactorEnabled: true,
+            autoLogoutTimeout: true,
+        },
+    });
+
+    if (!dbUser) throw new Error("User not found");
+
+    return {
+        email: dbUser.email,
+        securitySettings: {
+            twoFactorEnabled: dbUser.twoFactorEnabled,
+            autoLogoutTimeout: dbUser.autoLogoutTimeout ?? 30,
+        },
+    };
+}

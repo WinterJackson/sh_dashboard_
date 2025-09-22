@@ -1,4 +1,4 @@
-// src/app/components/settings/FAQs/FAQ.tsx
+// src/components/settings/FAQs/FAQ.tsx
 
 "use client";
 
@@ -11,19 +11,19 @@ type Props = {
     answer: string;
 };
 
-function FAQ({ question, answer }: Props) {
+const FAQ = React.memo(function FAQ({ question, answer }: Props) {
     const [isExtended, setIsExtended] = useState(false);
     return (
         <div
-            className={`flex flex-col px-6 py-3 transition-transform duration-700 gap-7 ${
+            className={`flex flex-col px-4 py-3 transition-all duration-500 gap-4 ${
                 isExtended
-                    ? "border border-bluelight rounded-2xl "
-                    : "border-b border-bluelight h-[50px] overflow-y-hidden"
-            } `}
+                    ? "bg-slate rounded-lg"
+                    : "border-b border-border h-[50px] overflow-y-hidden"
+            }`}
         >
             {/* Question */}
             <div className="flex justify-between items-center">
-                <h1 className="font-bold capitalize max-w-[70%] text-nowrap">{question}</h1>
+                <h1 className="font-semibold capitalize">{question}</h1>
                 <button
                     onClick={() => setIsExtended(!isExtended)}
                     className="text-primary"
@@ -31,9 +31,11 @@ function FAQ({ question, answer }: Props) {
                     {isExtended ? <RemoveIcon /> : <AddIcon />}
                 </button>
             </div>
-            <p className="max-w-full text-md bg-white p-2 rounded-[10px] shadow-sm shadow-gray-400">{answer}</p>
+            <p className="max-w-full text-sm text-muted-foreground bg-background p-2 rounded-md shadow-sm">{answer}</p>
         </div>
     );
-}
+});
+
+FAQ.displayName = 'FAQ';
 
 export default FAQ;

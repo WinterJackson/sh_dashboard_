@@ -15,12 +15,13 @@ import { Role } from "@/lib/definitions";
 import HospitalsDropdown from "./HospitalsDropdown";
 import DoctorsDropdown from "./DoctorsDropdown";
 import PatientsDropdown from "./PatientsDropdown";
+import React from "react";
 
 interface SidebarLinksProps {
     role?: Role;
 }
 
-const SidebarLinks: React.FC<SidebarLinksProps> = ({ role }) => {
+const SidebarLinks: React.FC<SidebarLinksProps> = React.memo(({ role }) => {
     const pathname = usePathname();
     const isActive = (href: string) => pathname === href;
 
@@ -92,6 +93,6 @@ const SidebarLinks: React.FC<SidebarLinksProps> = ({ role }) => {
             </Link>
         </div>
     );
-};
+});
 
 export default SidebarLinks;

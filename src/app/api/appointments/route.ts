@@ -27,11 +27,19 @@ export async function GET(req: NextRequest) {
             prisma.appointment.findMany({
                 where: whereClause,
                 include: {
-                    patient: { select: { name: true, patientId: true, dateOfBirth: true } },
+                    patient: {
+                        include: {
+                            user: {
+                                include: {
+                                    profile: true,
+                                },
+                            },
+                        },
+                    },
                     doctor: {
                         select: { user: { select: { profile: { select: { firstName: true, lastName: true } } } } },
                     },
-                    hospital: { select: { name: true, hospitalId: true } },
+                    hospital: { select: { hospitalName: true, hospitalId: true } },
                 },
                 orderBy: {
                     appointmentDate: 'desc',
@@ -75,7 +83,7 @@ export async function POST(req: NextRequest) {
         if (!hospitalId && hospitalName) {
             // Fetch hospitalId using hospitalName if not found in user session (for SUPER_ADMIN)
             const hospital = await prisma.hospital.findUnique({
-                where: { name: hospitalName },
+                where: { hospitalName: hospitalName },
             });
 
             if (!hospital) {

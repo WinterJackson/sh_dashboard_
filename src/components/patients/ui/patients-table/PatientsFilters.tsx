@@ -13,7 +13,7 @@ import {
     DropdownMenuSubContent,
     DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
-import { Patient, Hospital, Role } from "@/lib/definitions";
+import { Patient, Hospital, Role, FetchedPatient } from "@/lib/definitions";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useSearch } from "@/app/context/SearchContext";
@@ -26,12 +26,12 @@ import { useFetchPatientsByRole } from "@/hooks/useFetchPatientsByRole";
 import { SymbolIcon } from "@radix-ui/react-icons";
 
 interface PatientsFiltersProps {
-    patients: Patient[];
+    patients: FetchedPatient[];
     hospitals: Hospital[];
     userRole: Role;
     hospitalId: number | null;
-    onFilterChange: (filteredPatients: Patient[]) => void;
-    onSetPatients: (patients: Patient[]) => void;
+    onFilterChange: (filteredPatients: FetchedPatient[]) => void;
+    onSetPatients: (patients: FetchedPatient[]) => void;
 }
 
 const PatientsFilters: React.FC<PatientsFiltersProps> = ({
@@ -235,7 +235,7 @@ const filteredPatients = useMemo(() => {
                 {/* Refresh Button */}
                 <button
                     onClick={handleRefreshClick}
-                    className="p-2 rounded-[10px] h-[50px] w-[120px] gap-2 hover:shadow-gray-400 shadow-lg shadow-gray-400 text-black hover:bg-primary hover:text-white focus:outline-none focus:ring-1 focus:ring-primary flex items-center justify-between"
+                    className="p-2 rounded-[10px] h-[50px] w-[120px] gap-2 hover:shadow-shadow-main shadow-md shadow-shadow-main text-foreground hover:bg-primary hover:text-primary-foreground focus:outline-none focus:ring-1 focus:ring-primary flex items-center justify-between"
                 >
                     Refresh
                     <SymbolIcon className="w-5 h-5" />
@@ -246,14 +246,14 @@ const filteredPatients = useMemo(() => {
                     {activeFilters.map((filter, index) => (
                         <div
                             key={index}
-                            className="bg-bluelight/5 text-primary p-2 rounded-[10px] h-[40px] w-auto gap-2 hover:shadow-gray-400 shadow-lg shadow-gray-400 hover:bg-bluelight hover:text-black focus:outline-none focus:ring-1 focus:ring-primary flex items-center justify-center"
+                            className="bg-light-accent text-accent-foreground p-2 rounded-[10px] h-[40px] w-auto gap-2 hover:shadow-shadow-main shadow-md shadow-shadow-main hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-1 focus:ring-primary flex items-center justify-center"
                         >
                             <span className="font-normal text-sm">
                                 {filter.label}
                             </span>
                             <button
                                 onClick={filter.onClear}
-                                className="flex items-center justify-center p-[2px] bg-white rounded-full"
+                                className="flex items-center justify-center p-[2px] bg-background rounded-full"
                             >
                                 <CancelledIcon className="h-5 w-5 text-center text-red-500 hover:text-white hover:bg-red-500 rounded-full" />
                             </button>
@@ -267,7 +267,7 @@ const filteredPatients = useMemo(() => {
                     {/* Dropdown Menu for Filters */}
                     <DropdownMenu onOpenChange={setShowOptions}>
                         <DropdownMenuTrigger asChild>
-                            <button className="focus:outline-none focus:ring-1 focus:ring-primary flex items-center gap-2 p-2 rounded-[10px] h-[50px] hover:shadow-gray-400 shadow-lg shadow-gray-400 justify-between w-[200px]">
+                            <button className="focus:outline-none focus:ring-1 focus:ring-primary flex items-center gap-2 p-2 rounded-[10px] h-[50px] hover:shadow-shadow-main shadow-md shadow-shadow-main justify-between w-[200px]">
                                 {filterType || "Filter By"}
                                 <ChevronRight
                                     className={`ml-auto text-xl transform transition-transform ${
@@ -277,13 +277,13 @@ const filteredPatients = useMemo(() => {
                             </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuPortal>
-                            <DropdownMenuContent className="bg-white rounded-[10px] p-2 w-[200px] mt-1">
+                            <DropdownMenuContent className="bg-background rounded-[10px] p-2 w-[200px] mt-1">
                                 {isSuperAdmin && (
                                     <DropdownMenuSub>
                                         <DropdownMenuSubTrigger>
                                             Hospital
                                         </DropdownMenuSubTrigger>
-                                        <DropdownMenuSubContent className="bg-white rounded-[10px] shadow p-3 ml-4">
+                                        <DropdownMenuSubContent className="bg-background rounded-[10px] shadow p-3 ml-4 max-h-80 overflow-y-auto scrollbar-custom">
                                             {hospitals.map((hospital) => (
                                                 <DropdownMenuItem
                                                     key={hospital.hospitalId}
@@ -305,7 +305,7 @@ const filteredPatients = useMemo(() => {
                                     <DropdownMenuSubTrigger>
                                         Gender
                                     </DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent className="bg-white rounded-[10px] shadow p-2 ml-4 max-w-[150px]">
+                                    <DropdownMenuSubContent className="bg-background rounded-[10px] shadow p-2 ml-4 max-w-[150px]">
                                         <DropdownMenuItem
                                             onClick={() =>
                                                 handleGenderSelect("Male")
@@ -340,7 +340,7 @@ const filteredPatients = useMemo(() => {
                                     >
                                         Date of Birth
                                     </DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent className="bg-white rounded-[10px] shadow p-2 ml-4 max-w-[260px]">
+                                    <DropdownMenuSubContent className="bg-background rounded-[10px] shadow p-2 ml-4 max-w-[260px]">
                                         <DatePicker
                                             selected={selectedDate || undefined}
                                             onChange={handleDateSelect}
@@ -384,9 +384,9 @@ const filteredPatients = useMemo(() => {
 
                     {/* Latest Appointments Button */}
                     <button
-                        className={`flex items-center gap-2 p-3 font-semibold border-gray-300 text-black hover:bg-primary hover:text-white shadow-lg rounded-[10px] h-[50px] focus:outline-none focus:ring-1 focus:ring-primary ${
+                        className={`flex items-center gap-2 p-3 font-semibold text-foreground hover:bg-primary hover:text-primary-foreground shadow-md shadow-shadow-main rounded-[10px] h-[50px] focus:outline-none focus:ring-1 focus:ring-primary ${
                             latestAppointmentsActive
-                                ? "bg-primary text-white"
+                                ? "bg-primary text-primary-foreground"
                                 : ""
                         }`}
                     >

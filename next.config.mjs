@@ -54,14 +54,14 @@ const nextConfig = {
         ];
     },
     webpack(config, { isServer }) {
-        console.log(`🔧 Applying Webpack polyfills (server: ${isServer})`);
+        if (isServer) {
+            config.entry = config.entry;
+        }
 
-        // Polyfill Buffer for browser code
         config.resolve.fallback = {
             ...config.resolve.fallback,
             buffer: "buffer/",
         };
-        console.log("🔧 Added fallback for buffer");
 
         if (!isServer) {
             config.plugins.push(
@@ -69,7 +69,6 @@ const nextConfig = {
                     Buffer: ["buffer", "Buffer"],
                 })
             );
-            console.log("🔧 Provided global Buffer in client bundle");
         }
 
         return config;

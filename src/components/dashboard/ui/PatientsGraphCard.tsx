@@ -74,7 +74,7 @@ const mockAppointmentsData: Record<number, PatientCountPerMonth[]> = {
     ],
 };
 
-const PatientsGraphCard: React.FC<PatientsGraphCardProps> = ({
+const PatientsGraphCardComponent: React.FC<PatientsGraphCardProps> = ({
     session,
     appointments,
 }) => {
@@ -210,4 +210,25 @@ const PatientsGraphCard: React.FC<PatientsGraphCardProps> = ({
     );
 };
 
-export default PatientsGraphCard;
+// Custom props comparison to prevent unnecessary re-renders
+function propsAreEqual(
+    prevProps: PatientsGraphCardProps,
+    nextProps: PatientsGraphCardProps
+) {
+    return (
+        prevProps.session.user.role === nextProps.session.user.role &&
+        prevProps.session.user.hospitalId ===
+            nextProps.session.user.hospitalId &&
+        prevProps.appointments.length === nextProps.appointments.length &&
+        prevProps.appointments.every(
+            (appt, index) =>
+                appt.appointmentDate ===
+                    nextProps.appointments[index].appointmentDate &&
+                appt.hospitalId ===
+                    nextProps.appointments[index].hospitalId &&
+                appt.patientId === nextProps.appointments[index].patientId
+        )
+    );
+}
+
+export default React.memo(PatientsGraphCardComponent, propsAreEqual);

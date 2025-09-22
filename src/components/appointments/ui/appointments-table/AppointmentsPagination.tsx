@@ -29,7 +29,7 @@ const AppointmentsPagination: React.FC<AppointmentsPaginationProps> = ({
         }
     };
     return (
-        <Pagination className="bg-light-accent p-4 rounded-b-2xl">
+        <Pagination className="bg-slate-two p-4 rounded-b-2xl">
             <PaginationPrevious
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}

@@ -65,8 +65,8 @@ export default function PatientProfile({ patient }: { patient: Patient }) {
         <div className="flex flex-col gap-1">
             {/* Breadcrumb Navigation */}
             <nav className="breadcrumbs text-sm px-4">
-                <ul className="flex  gap-2">
-                    <li>
+                <ul className="flex gap-2">
+                    <li className="bg-slate p-2">
                         <Link
                             href="/dashboard/patients"
                             className="text-primary hover:text-blue-700"
@@ -74,11 +74,11 @@ export default function PatientProfile({ patient }: { patient: Patient }) {
                             Patients
                         </Link>
                     </li>
-                    |
-                    <li>
+                    <span className="bg-slate p-2">|</span>
+                    <li className="bg-slate p-2">
                         <Link
                             href={`/dashboard/patients/${patient.patientId}`}
-                            className="font-semibold text-gray-600 hover:text-primary"
+                            className="font-semibold text-muted-foreground hover:text-primary"
                         >
                             {fullName || "Unnamed Patient"}
                         </Link>

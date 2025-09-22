@@ -18,10 +18,10 @@ export default function PatientAppointmentsTable({
 }) {
     return (
         <div className="mt-4">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto scrollbar-custom">
                 <table className="min-w-max w-full text-sm">
                     <thead>
-                        <tr className="text-left bg-bluelight/10 border-b-2 border-gray-200">
+                        <tr className="text-left bg-slate border-b-2 border">
                             <th className="p-4"></th>
                             <th className="p-4">
                                 <span className="flex justify-center">
@@ -86,7 +86,7 @@ export default function PatientAppointmentsTable({
                             return (
                                 <tr
                                     key={appointment.appointmentId}
-                                    className="border-b border-gray-100 hover:bg-gray-50"
+                                    className="border-b border-gray-100 bg-background text-foreground hover:bg-primary hover:text-primary-foreground"
                                 >
                                     <td className="py-4 px-1">
                                         <input
@@ -222,7 +222,7 @@ export default function PatientAppointmentsTable({
                 </table>
 
                 {appointments.length === 0 && (
-                    <div className="text-center py-6 text-gray-500">
+                    <div className="text-center py-6 text-muted-foreground">
                         No appointments found
                     </div>
                 )}

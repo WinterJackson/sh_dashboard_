@@ -85,4 +85,4 @@ const AvailableBedsCard: React.FC<AvailableBedsCardProps> = ({
     );
 };
 
-export default AvailableBedsCard;
+export default React.memo(AvailableBedsCard);

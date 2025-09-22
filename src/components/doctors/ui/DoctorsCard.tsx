@@ -37,18 +37,18 @@ const DoctorsCard: React.FC<DoctorsCardProps> = ({
     };
 
     return (
-        <div className="flex-1 shadow-lg shadow-gray-300 rounded-xl min-w-auto max-w-[500px] lg:min-w-[400px] xl:w-[500px]">
+        <div className="flex-1 bg-card shadow-lg shadow-shadow-main rounded-xl min-w-auto max-w-[500px] lg:min-w-[400px] xl:w-[500px]">
             <div
                 onClick={handleOpenBio}
-                className="relative flex flex-col gap-2 justify-center rounded-xl p-4 cursor-pointer"
+                className="relative flex flex-col gap-2 justify-center rounded-xl p-4 cursor-pointer bg-card"
             >
                 {/* Doctor Status */}
                 <div className="flex justify-start">
                     <p
                         className={`text-sm font-semibold ${
                             doctor.status === "Online"
-                                ? "text-green-500"
-                                : "text-red-500"
+                                ? "text-constructive"
+                                : "text-destructive"
                         }`}
                     >
                         {doctor.status === "Online" ? "Online" : "Offline"}
@@ -69,19 +69,19 @@ const DoctorsCard: React.FC<DoctorsCardProps> = ({
                                 } ${doctor.user?.profile?.lastName || ""}`}
                                 width={80}
                                 height={80}
-                                className="w-full h-full object-cover rounded-[50%] border-4 border-gray-300"
+                                className="w-full h-full object-cover rounded-[50%] border-4 border-border"
                             />
                         </div>
                     </div>
 
                     {/* Line separator */}
-                    <div className="w-[1px] bg-gray-300"></div>
+                    <div className="w-[1px] bg-border"></div>
 
                     <div className="flex flex-col w-1/2 gap-2">
-                        <h1 className="text-l capitalize font-semibold">
+                        <h1 className="text-l capitalize font-semibold text-foreground">
                             {doctor.specialization?.name || "No specialization"}
                         </h1>
-                        <p className="text-sm text-gray-700 capitalize">
+                        <p className="text-sm text-muted-foreground capitalize">
                             Dept: {doctor.department.name}
                         </p>
                         <div className="flex justify-between items-center">
@@ -90,7 +90,7 @@ const DoctorsCard: React.FC<DoctorsCardProps> = ({
                                 precision={0.1}
                                 readOnly
                             />
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-subtle">
                                 {doctor.averageRating.toFixed(1)} / 5
                             </p>
                         </div>
@@ -100,7 +100,7 @@ const DoctorsCard: React.FC<DoctorsCardProps> = ({
                 {/* Doctor Name and Appointment Button */}
                 <div className="flex justify-between items-center mt-2 gap-2 w-full">
                     <div className="flex-1 w-1/2">
-                        <h1 className="font-bold text-l">
+                        <h1 className="font-bold text-l text-foreground">
                             Dr. {doctor.user?.profile?.firstName}{" "}
                             {doctor.user?.profile?.lastName}
                         </h1>
@@ -108,7 +108,7 @@ const DoctorsCard: React.FC<DoctorsCardProps> = ({
 
                     <div className="w-1/2 pl-4">
                         <button
-                            className="p-2 border-2 border-primary text-primary hover:bg-blue-300 hover:text-black hover:border-blue-300 font-semibold rounded-xl whitespace-nowrap"
+                            className="p-2 border-2 border-primary text-primary hover:bg-primary/80 hover:text-primary-foreground hover:border-primary/80 font-semibold rounded-xl whitespace-nowrap"
                             onClick={handleAppointDoctorClick}
                         >
                             Appoint Doctor
@@ -122,7 +122,7 @@ const DoctorsCard: React.FC<DoctorsCardProps> = ({
                 <div>
                     <div className="fixed inset-0 bg-black/80 z-40"></div>
                     <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center z-50">
-                        <div className="bg-white p-4 shadow-md rounded-lg">
+                        <div className="bg-card p-4 shadow-md rounded-lg">
                             <DoctorBio
                                 doctorId={doctor.doctorId}
                                 role={role}
@@ -130,7 +130,7 @@ const DoctorsCard: React.FC<DoctorsCardProps> = ({
                                 cancel={handleCloseBio}
                             />
                             <button
-                                className="mt-2 p-2 border border-black"
+                                className="mt-2 p-2 border border-border"
                                 onClick={handleCloseBio}
                             >
                                 Close
@@ -152,4 +152,4 @@ const DoctorsCard: React.FC<DoctorsCardProps> = ({
     );
 };
 
-export default DoctorsCard;
+export default React.memo(DoctorsCard);

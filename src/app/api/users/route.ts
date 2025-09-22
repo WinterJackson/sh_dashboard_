@@ -7,6 +7,20 @@ import crypto from "crypto";
 import { sendEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
 
+export async function GET(req: NextRequest) {
+    try {
+        const users = await prisma.user.findMany({
+            include: {
+                profile: true,
+            },
+        });
+        return NextResponse.json(users);
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        return NextResponse.json({ error: "Error fetching users" }, { status: 500 });
+    }
+}
+
 export async function POST(req: NextRequest) {
     try {
         const { username, email, role, hospitalId } = await req.json();

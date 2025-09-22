@@ -1,4 +1,4 @@
-// src/app/(auth)/dashboard/appointments/[appointmentId]/error.tsx
+// src/app/(auth)/dashboard/hospitals/[hospitalId]/error.tsx
 
 "use client";
 

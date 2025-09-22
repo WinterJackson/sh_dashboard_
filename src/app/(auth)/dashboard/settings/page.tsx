@@ -4,10 +4,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tab";
 import { authOptions } from "@/lib/authOptions";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import AccountTab from "@/components/settings/tabs/AccountTab";
-import NotificationsTab from "@/components/settings/tabs/NotificationsTab";
-import SecurityTab from "@/components/settings/tabs/SecurityTab";
-import SupportTab from "@/components/settings/tabs/SupportTab";
+import dynamic from "next/dynamic";
+const AccountTab = dynamic(() => import("@/components/settings/tabs/AccountTab"));
+const NotificationsTab = dynamic(() => import("@/components/settings/tabs/NotificationsTab"));
+const SecurityTab = dynamic(() => import("@/components/settings/tabs/SecurityTab"));
+const SupportTab = dynamic(() => import("@/components/settings/tabs/SupportTab"));
 import { fetchUserSettings } from "@/lib/data-access/settings/data";
 import { Role } from "@/lib/definitions";
 import type { ExtendedProfileUpdateData } from "@/components/settings/tabs/AccountTab";
@@ -77,17 +78,15 @@ export default async function SettingsPage() {
     };
 
     return (
-        <>
-            <div className="flex items-center gap-2 bg-bluelight/5">
-                <h1 className="text-xl font-bold  p-2 rounded-[10px]">
-                    Settings
-                </h1>
+        <div className="flex flex-col gap-3 pt-0">
+            <div className="flex items-center gap-2 bg-slate p-2 rounded-[10px] w-full">
+                <h1 className="text-xl font-bold">Settings</h1>
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Info
                                 size={18}
-                                className="text-gray-600 cursor-pointer"
+                                className="text-text-muted cursor-pointer"
                             />
                         </TooltipTrigger>
                         <TooltipContent>
@@ -115,38 +114,16 @@ export default async function SettingsPage() {
                     </Tooltip>
                 </TooltipProvider>
             </div>
-            <Tabs
-                defaultValue="account"
-                className="w-full bg-bluelight/5 p-2 rounded-[10px]"
-            >
-                <TabsList className="grid w-full grid-cols-4 bg-white rounded-[10px] shadow-sm shadow-gray-400">
-                    <TabsTrigger
-                        value="account"
-                        className="hover:bg-primary hover:text-white rounded-tl-[10px] rounded-bl-[10px]"
-                    >
-                        Account
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="notifications"
-                        className="border-l-2 hover:bg-primary hover:text-white"
-                    >
-                        Notifications
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="security"
-                        className="border-l-2 hover:bg-primary hover:text-white"
-                    >
-                        Security
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="support"
-                        className="border-l-2 hover:bg-primary hover:text-white rounded-tr-[10px] rounded-br-[10px]"
-                    >
-                        Support
-                    </TabsTrigger>
+            <Tabs defaultValue="account" className="w-full">
+                <TabsList className="w-full justify-start overflow-x-auto bg-slate rounded-[10px] px-2 py-1 h-auto">
+                    <TabsTrigger value="account" className="whitespace-nowrap">Account</TabsTrigger>
+                    <TabsTrigger value="notifications" className="whitespace-nowrap">Notifications</TabsTrigger>
+                    <TabsTrigger value="security" className="whitespace-nowrap">Security</TabsTrigger>
+                    <TabsTrigger value="support" className="whitespace-nowrap">Support</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="account">
+                <div className="bg-slate p-2 mt-4 rounded-[10px]">
+                <TabsContent value="account" className="mt-4 border-0">
                     <AccountTab
                         profile={profileData}
                         username={userSettings.username}
@@ -156,20 +133,21 @@ export default async function SettingsPage() {
                     />
                 </TabsContent>
 
-                <TabsContent value="notifications">
+                <TabsContent value="notifications" className="mt-4 border-0">
                     <NotificationsTab
                         notificationSettings={userSettings.notificationSettings}
                     />
                 </TabsContent>
 
-                <TabsContent value="security">
+                <TabsContent value="security" className="mt-4 border-0">
                     <SecurityTab />
                 </TabsContent>
 
-                <TabsContent value="support">
+                <TabsContent value="support" className="mt-4 border-0">
                     <SupportTab />
                 </TabsContent>
+                </div>
             </Tabs>
-        </>
+        </div>
     );
 }

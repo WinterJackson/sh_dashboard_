@@ -43,27 +43,44 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
-        const {
-            name,
-            phone,
-            email,
-            country,
-            city,
-            referralCode,
-            website,
-            logoUrl,
-        } = await req.json();
+        const body = await req.json();
 
         const newHospital = await prisma.hospital.create({
             data: {
-                name,
-                phone,
-                email,
-                country,
-                city,
-                referralCode,
-                website,
-                logoUrl,
+                hospitalName: body.hospitalName,
+                hospitalLink: body.hospitalLink,
+                phone: body.phone,
+                email: body.email,
+                county: body.county,
+                subCounty: body.subCounty,
+                ward: body.ward,
+                town: body.town,
+                streetAddress: body.streetAddress,
+                latitude: body.latitude,
+                longitude: body.longitude,
+                nearestLandmark: body.nearestLandmark,
+                plotNumber: body.plotNumber,
+                kephLevel: body.kephLevel,
+                regulatoryBody: body.regulatoryBody,
+                ownershipType: body.ownershipType,
+                facilityType: body.facilityType,
+                nhifAccreditation: body.nhifAccreditation,
+                open24Hours: body.open24Hours,
+                openWeekends: body.openWeekends,
+                regulated: body.regulated,
+                regulationStatus: body.regulationStatus,
+                regulatingBody: body.regulatingBody,
+                registrationNumber: body.registrationNumber,
+                licenseNumber: body.licenseNumber,
+                category: body.category,
+                owner: body.owner,
+                referralCode: body.referralCode,
+                website: body.website,
+                logoUrl: body.logoUrl,
+                operatingHours: body.operatingHours,
+                emergencyPhone: body.emergencyPhone,
+                emergencyEmail: body.emergencyEmail,
+                description: body.description,
             },
         });
 
@@ -71,6 +88,12 @@ export async function POST(req: NextRequest) {
     } catch (error) {
         Sentry.captureException(error);
         console.error("Error adding hospital:", error);
+        if (error instanceof Error && error.message.includes("Unique constraint failed")) {
+             return NextResponse.json(
+                { error: "A hospital with the same name or referral code already exists." },
+                { status: 409 }
+            );
+        }
         return NextResponse.json(
             { error: "Failed to add hospital" },
             { status: 500 }

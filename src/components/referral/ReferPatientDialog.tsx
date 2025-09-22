@@ -20,6 +20,9 @@ import { useFetchPatientDetails } from "@/hooks/useFetchPatientDetails";
 import { useCreateReferral } from "@/hooks/useCreateReferral";
 import { useUser } from "@/app/context/UserContext";
 import { Hospital, Role } from "@/lib/definitions";
+import { Calendar } from "@/components/ui/calendar";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import { IconButton } from "@mui/material";
 
 interface ReferPatientDialogProps {
     onClose: () => void;
@@ -29,6 +32,8 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
     const { register, handleSubmit, setValue } = useForm();
     const [saved, setSaved] = useState<boolean>(false);
     const [currentSection, setCurrentSection] = useState(1);
+    const [selectedDOB, setSelectedDOB] = useState<Date | undefined>(undefined);
+    const [isCalendarOpen, setIsCalendarOpen] = useState<boolean>(false);
     const router = useRouter();
     const { user } = useUser();
 
@@ -53,24 +58,31 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
         if (fetchedPatientDetails) {
             const profile = fetchedPatientDetails.user?.profile;
 
+            // Patient basic info
             setValue("patientId", fetchedPatientDetails.patientId);
             setValue("gender", profile?.gender || "");
-            setValue(
-                "dateOfBirth",
-                profile?.dateOfBirth
-                    ? new Date(profile.dateOfBirth)
-                          .toISOString()
-                          .split("T")[0]
-                    : ""
-            ); // Date format 'YYYY-MM-DD'
+
+            if (profile?.dateOfBirth) {
+                const dob = new Date(profile.dateOfBirth);
+                setSelectedDOB(dob);
+                setValue("dateOfBirth", dob.toISOString().split("T")[0]);
+            } else {
+                // ensure form resets if no DOB
+                setSelectedDOB(undefined);
+                setValue("dateOfBirth", "");
+            }
+
+            // Address & contact
             setValue("homeAddress", profile?.address || "");
             setValue("county", profile?.county || "");
             setValue("phoneNo", profile?.phoneNo || "");
             setValue("email", fetchedPatientDetails.user?.email || "");
             setValue("status", fetchedPatientDetails.status);
         } else if (isError) {
+            // On error, clear all fields
             setValue("patientId", "");
             setValue("gender", "");
+            setSelectedDOB(undefined);
             setValue("dateOfBirth", "");
             setValue("homeAddress", "");
             setValue("county", "");
@@ -114,7 +126,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
             setValue("physicianSpecialty", specialization);
             setValue("physicianEmail", user?.email || "");
             setValue("physicianPhoneNumber", user.profile?.phoneNo || "");
-            setValue("hospitalName", (hospital));
+            setValue("hospitalName", hospital);
         }
     }, [user, setValue]);
 
@@ -128,7 +140,8 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
         : undefined;
 
     // Use the hook to create a referral, passing the user object
-    const { mutate: createReferral, status } = useCreateReferral(userForReferral);
+    const { mutate: createReferral, status } =
+        useCreateReferral(userForReferral);
     const isCreatingReferral = status === "pending";
 
     const onSubmit = async (data: any) => {
@@ -140,9 +153,9 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
             // Prepare referral data
             const referralData = {
                 patientId: Number(data.patientId),
-                patientName: `${fetchedPatientDetails?.user?.profile?.firstName || ""} ${
-                    fetchedPatientDetails?.user?.profile?.lastName || ""
-                }`,
+                patientName: `${
+                    fetchedPatientDetails?.user?.profile?.firstName || ""
+                } ${fetchedPatientDetails?.user?.profile?.lastName || ""}`,
                 gender: fetchedPatientDetails?.user?.profile?.gender || "",
                 dateOfBirth: data.dateOfBirth,
                 homeAddress:
@@ -183,6 +196,12 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
         }
     };
 
+    const handleDOBChange = (date: Date | undefined) => {
+        setSelectedDOB(date);
+        setValue("dateOfBirth", date ? date.toISOString().split("T")[0] : "");
+        setIsCalendarOpen(false);
+    };
+
     const handleClose = () => {
         onClose();
     };
@@ -196,11 +215,11 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                 <summary className="font-semibold items-center">
                     Help - Patient&apos;s Information.
                 </summary>
-                <div className="absolute bg-[#E5F0FB] outline outline-1 outline-secondary/50 z-10 rounded-[10px] mt-3 mr-2 pt-4 pb-4 pr-2">
-                    <p className="ml-5 text-gray-500">
+                <div className="absolute bg-accent outline outline-1 outline-secondary/50 z-10 rounded-[10px] mt-3 mr-2 pt-4 pb-4 pr-2">
+                    <p className="ml-5 text-text-muted">
                         You are required to provide the following:
                     </p>
-                    <ol className="list-disc ml-10 text-gray-500 text-[13px]">
+                    <ol className="list-disc ml-10 text-text-muted text-xs">
                         <li>full name of the patient being referred.</li>
                         <li>gender of the patient.</li>
                         <li>date of birth of the patient.</li>
@@ -212,7 +231,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                         <li>home address of the patient.</li>
                         <li>state where the patient resides.</li>
                     </ol>
-                    <p className="ml-5 mt-2 font-semibold text-gray-500 text-[13px]">
+                    <p className="ml-5 mt-2 font-semibold text-text-muted text-xs">
                         NOTE: When you provide the patient&apos;s name, if the
                         patients details are in the database, the fields will
                         automatically be filled.
@@ -224,60 +243,80 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                 <Label htmlFor="patientName">Patient Name</Label>
                 <Input
                     id="patientName"
-                    className="bg-[#EFEFEF]"
+                    className="bg-muted"
                     {...register("patientName", {
                         required: true,
                         onBlur: (e) => setPatientName(e.target.value),
                     })}
                 />
-                {isLoading &&
-                    <p className=" mt-2 p-2 rounded-[5px] text-sm bg-bluelight">
+                {isLoading && (
+                    <p className=" mt-2 p-2 rounded-[5px] text-sm bg-accent">
                         Loading Patient Details...
-                    </p>}
+                    </p>
+                )}
 
-                {isError &&
-                    <p className="text-red-500 mt-2 p-2 rounded-[5px] bg-slate-400">
+                {isError && (
+                    <p className="text-destructive mt-2 p-2 rounded-[5px] bg-slate-two">
                         Patient not found
-                    </p>}
+                    </p>
+                )}
             </div>
             <div>
                 <Label htmlFor="gender">Gender</Label>
                 <select
                     id="gender"
                     {...register("gender", { required: true })}
-                    className="flex bg-[#EFEFEF] h-10 w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex bg-muted h-10 w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    <option value="" className="bg-[#EFEFEF] text-gray-500">
+                    <option value="" className="bg-muted text-text-muted">
                         Select Gender
                     </option>
-                    <option value="Male" className="bg-white">
+                    <option value="Male" className="bg-background">
                         Male
                     </option>
-                    <option value="Female" className="bg-white">
+                    <option value="Female" className="bg-background">
                         Female
                     </option>
-                    <option value="Other" className="bg-white">
+                    <option value="Other" className="bg-background">
                         Other
                     </option>
                 </select>
             </div>
-            <div className="flex justify-between items-center my-2">
-                <Label htmlFor="dateOfBirth" className="text-nowrap">
-                    Date of Birth
-                </Label>
-                <Input
-                    id="dateOfBirth"
-                    type="date"
-                    className="flex w-[220px] justify-end bg-[#EFEFEF]"
-                    {...register("dateOfBirth", { required: true })}
-                />
+            <div className="relative flex justify-between items-center my-2">
+                <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                <div className="flex gap-2 items-center rounded-[5px] bg-background">
+                    <Input
+                        id="dateOfBirth"
+                        className="rounded-[5px] bg-muted"
+                        value={
+                            selectedDOB ? selectedDOB.toLocaleDateString() : ""
+                        }
+                        readOnly
+                        {...register("dateOfBirth", { required: true })}
+                    />
+                    <IconButton
+                        onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+                        className="bg-slate-two rounded-[5px]"
+                    >
+                        <CalendarTodayIcon className="text-foreground" />
+                    </IconButton>
+                </div>
+                {isCalendarOpen && (
+                  <div className="absolute top-full right-0 mt-2 bg-accent rounded-[10px] z-50">
+                        <Calendar
+                            mode="single"
+                            selected={selectedDOB}
+                            onSelect={handleDOBChange}
+                        />
+                    </div>
+                )}
             </div>
             <div>
                 <Label htmlFor="phoneNo">Phone Number</Label>
                 <Input
                     id="phoneNo"
                     type="tel"
-                    className="bg-[#EFEFEF]"
+                    className="bg-muted"
                     {...register("phoneNo", { required: true })}
                 />
             </div>
@@ -286,7 +325,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                 <Input
                     id="email"
                     type="email"
-                    className="bg-[#EFEFEF]"
+                    className="bg-muted"
                     {...register("email", { required: true })}
                 />
             </div>
@@ -295,15 +334,15 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                 <select
                     id="status"
                     {...register("status", { required: true })}
-                    className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="bg-muted flex h-10 w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    <option value="" className="bg-[#EFEFEF] text-gray-500">
+                    <option value="" className="bg-muted text-text-muted">
                         Select Status
                     </option>
-                    <option value="Inpatient" className="bg-white">
+                    <option value="Inpatient" className="bg-background">
                         Inpatient
                     </option>
-                    <option value="Outpatient" className="bg-white">
+                    <option value="Outpatient" className="bg-background">
                         Outpatient
                     </option>
                 </select>
@@ -312,7 +351,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                 <Label htmlFor="homeAddress">Home Address</Label>
                 <Input
                     id="homeAddress"
-                    className="bg-[#EFEFEF]"
+                    className="bg-muted"
                     {...register("homeAddress", { required: true })}
                 />
             </div>
@@ -321,18 +360,18 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                 <select
                     id="state"
                     {...register("state", { required: true })}
-                    className="flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="bg-muted flex h-10  w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    <option value="" className="bg-[#EFEFEF] text-gray-500">
+                    <option value="" className="bg-muted text-text-muted">
                         Select State
                     </option>
-                    <option value="State 1" className="bg-white">
+                    <option value="State 1" className="bg-background">
                         State 1
                     </option>
-                    <option value="State 2" className="bg-white">
+                    <option value="State 2" className="bg-background">
                         State 2
                     </option>
-                    <option value="State 3" className="bg-white">
+                    <option value="State 3" className="bg-background">
                         State 3
                     </option>
                 </select>
@@ -359,11 +398,11 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                     <summary className="font-semibold items-center">
                         Help - Referring Physician.
                     </summary>
-                    <div className="absolute bg-[#E5F0FB] outline outline-1 outline-secondary/50 z-10 rounded-[10px] mt-3 mr-2 pt-4 pb-4 pr-2">
-                        <p className="ml-5 text-gray-500">
+                    <div className="absolute bg-accent outline outline-1 outline-secondary/50 z-10 rounded-[10px] mt-3 mr-2 pt-4 pb-4 pr-2">
+                        <p className="ml-5 text-text-muted">
                             You are required to provide the following:
                         </p>
-                        <ol className="list-disc ml-10 text-gray-500 text-[13px]">
+                        <ol className="list-disc ml-10 text-text-muted text-xs">
                             <li>
                                 Full name of the referring physician (Doctor or
                                 Nurse).
@@ -381,7 +420,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                     <Label htmlFor="physicianName">Physician Name</Label>
                     <Input
                         id="physicianName"
-                        className="bg-[#EFEFEF]"
+                        className="bg-muted"
                         {...register("physicianName", { required: true })}
                         value={`${
                             user?.role === "DOCTOR"
@@ -401,7 +440,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                     <Label htmlFor="hospitalName">Hospital Name</Label>
                     <Input
                         id="hospitalName"
-                        className="bg-[#EFEFEF]"
+                        className="bg-muted"
                         {...register("hospitalName", { required: true })}
                         value={
                             (user?.doctor?.hospital?.hospitalName ||
@@ -485,7 +524,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                     <Input
                         id="email"
                         type="email"
-                        className="bg-[#EFEFEF]"
+                        className="bg-muted"
                         {...register("physicianEmail", { required: true })}
                         value={user?.email || ""}
                         readOnly
@@ -498,7 +537,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                     <Input
                         id="phoneNumber"
                         type="tel"
-                        className="bg-[#EFEFEF]"
+                        className="bg-muted"
                         {...register("physicianPhoneNumber", {
                             required: true,
                         })}
@@ -533,11 +572,11 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                 <summary className="font-semibold items-center">
                     Help - Referring Indication.
                 </summary>
-                <div className="absolute bg-[#E5F0FB] outline outline-1 outline-secondary/50 z-10 rounded-[10px] mt-3 mr-2 pt-4 pb-4 pr-2">
-                    <p className="ml-5 text-gray-500">
+                <div className="absolute bg-accent outline outline-1 outline-secondary/50 z-10 rounded-[10px] mt-3 mr-2 pt-4 pb-4 pr-2">
+                    <p className="ml-5 text-text-muted">
                         You are required to provide the following:
                     </p>
-                    <ol className="list-disc ml-10 text-gray-500 text-[13px]">
+                    <ol className="list-disc ml-10 text-text-muted text-xs">
                         <li>type of referral (Internal or External).</li>
                         <li>
                             primary care provider for the patient - can be a
@@ -564,13 +603,13 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                     {...register("type", { required: true })}
                     className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    <option value="" className="bg-[#EFEFEF] text-gray-500">
+                    <option value="" className="bg-muted text-text-muted">
                         Select Type
                     </option>
-                    <option value="Internal" className="bg-white">
+                    <option value="Internal" className="bg-background">
                         Internal
                     </option>
-                    <option value="External" className="bg-white">
+                    <option value="External" className="bg-background">
                         External
                     </option>
                 </select>
@@ -581,7 +620,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                 </Label>
                 <Input
                     id="primaryCareProvider"
-                    className="bg-[#EFEFEF]"
+                    className="bg-muted"
                     {...register("primaryCareProvider", { required: true })}
                 />
             </div>
@@ -589,7 +628,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                 <Label htmlFor="referralAddress">Referral Address</Label>
                 <Input
                     id="referralAddress"
-                    className="bg-[#EFEFEF]"
+                    className="bg-muted"
                     {...register("referralAddress", { required: true })}
                 />
             </div>
@@ -597,7 +636,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                 <Label htmlFor="referralPhone">Referral Phone</Label>
                 <Input
                     id="referralPhone"
-                    className="bg-[#EFEFEF]"
+                    className="bg-muted"
                     {...register("referralPhone", { required: true })}
                 />
             </div>
@@ -608,7 +647,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                 <textarea
                     id="reasonForConsultation"
                     placeholder="Type here..."
-                    className="w-full p-2 text-sm bg-[#EFEFEF] rounded-[5px] border h-auto ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="w-full p-2 text-sm bg-muted rounded-[5px] border h-auto ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     {...register("reasonForConsultation", { required: true })}
                 />
             </div>
@@ -617,7 +656,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                 <textarea
                     id="diagnosis"
                     placeholder="Type here..."
-                    className="w-full p-2 text-sm bg-[#EFEFEF] rounded-[5px] border h-auto ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="w-full p-2 text-sm bg-muted rounded-[5px] border h-auto ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     {...register("diagnosis", { required: true })}
                 />
             </div>
@@ -643,7 +682,7 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
             </DialogTrigger>
             <DialogContent>
                 <DialogTitle>Patient Referral Form</DialogTitle>
-                <DialogDescription className="bg-[#EFEFEF] p-2">
+                <DialogDescription className="bg-muted p-2">
                     Fill out the form below to refer a patient.
                 </DialogDescription>
                 <form className="p-1" onSubmit={handleSubmit(onSubmit)}>
@@ -652,8 +691,10 @@ const ReferPatientDialog: React.FC<ReferPatientDialogProps> = ({ onClose }) => {
                     {currentSection === 3 && renderSection3()}
                 </form>
                 {saved && (
-                    <div className="absolute bottom-11 bg-bluelight left-20 ml-12 p-2 rounded-[10px]">
-                        <p className=" text-black">Referred Successfully!</p>
+                    <div className="absolute bottom-11 bg-accent left-20 ml-12 p-2 rounded-[10px]">
+                        <p className=" text-foreground">
+                            Referred Successfully!
+                        </p>
                     </div>
                 )}
                 <DialogClose onClick={handleClose} />

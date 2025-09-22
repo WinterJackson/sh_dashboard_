@@ -59,7 +59,7 @@ export function PrescriptionFieldModal({
                             <span
                                 className={cn(
                                     "inline-block truncate max-w-[150px] cursor-pointer",
-                                    hasText ? "text-primary" : "text-gray-400"
+                                    hasText ? "text-constructive" : "text-muted-foreground"
                                 )}
                                 title={hasText ? undefined : "No prescription"}
                             >

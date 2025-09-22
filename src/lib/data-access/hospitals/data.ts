@@ -15,12 +15,136 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
+import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 
 import prisma from "@/lib/prisma";
 import { getErrorMessage } from "@/hooks/getErrorMessage";
 
 /**
- * Fetches a list of hospitals.
+ * Fetches a // src/lib/data-access/hospitals/loaders.ts
+
+"use server";
+
+import { Hospital, Role } from "@/lib/definitions";
+import * as Sentry from "@sentry/nextjs";
+import { getErrorMessage } from "@/hooks/getErrorMessage";
+import prisma from "@/lib/prisma";
+
+export async function loadHospitals(user?: {
+    role: Role;
+    hospitalId: number | null;
+    userId: string | null;
+}): Promise<Hospital[]> {
+    try {
+        let whereClause: any = {};
+
+        // Anonymous access: fetch all hospitals
+        if (!user) {
+            return await prisma.hospital.findMany({
+                select: {
+                    hospitalId: true,
+                    hospitalName: true,
+                    hospitalLink: true,
+                    phone: true,
+                    email: true,
+                    kephLevel: true,
+                    regulatoryBody: true,
+                    ownershipType: true,
+                    facilityType: true,
+                    nhifAccreditation: true,
+                    open24Hours: true,
+                    openWeekends: true,
+                    regulated: true,
+                    regulationStatus: true,
+                    regulatingBody: true,
+                    registrationNumber: true,
+                    licenseNumber: true,
+                    category: true,
+                    owner: true,
+                    county: true,
+                    subCounty: true,
+                    ward: true,
+                    latitude: true,
+                    longitude: true,
+                    town: true,
+                    streetAddress: true,
+                    referralCode: true,
+                    description: true,
+                    emergencyPhone: true,
+                    emergencyEmail: true,
+                    website: true,
+                    logoUrl: true,
+                    operatingHours: true,
+                    nearestLandmark: true,
+                    plotNumber: true,
+                    createdAt: true,
+                    updatedAt: true,
+                },
+            });
+        }
+
+        // Role-based filtering
+        switch (user.role) {
+            case "SUPER_ADMIN":
+                // No filter, see all hospitals
+                break;
+            case "ADMIN":
+                if (user.hospitalId === null) {
+                    throw new Error(
+                        "Admins must have an associated hospital ID."
+                    );
+                }
+                whereClause = { hospitalId: user.hospitalId };
+                break;
+            case "DOCTOR":
+            case "NURSE":
+            case "STAFF":
+                if (user.hospitalId === null) {
+                    throw new Error(
+                        `${user.role}s must have an associated hospital ID.`
+                    );
+                }
+                whereClause = { hospitalId: user.hospitalId };
+                break;
+            default:
+                throw new Error("Invalid role provided.");
+        }
+
+        const hospitals = await prisma.hospital.findMany({
+            where: whereClause,
+            select: {
+                hospitalId: true,
+                hospitalName: true,
+                hospitalLink: true,
+                phone: true,
+                email: true,
+                kephLevel: true,
+                ownershipType: true,
+                county: true,
+                subCounty: true,
+                town: true,
+                streetAddress: true,
+                referralCode: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
+
+        if (!hospitals.length) {
+            console.warn("No hospitals found in the database.");
+        }
+
+        return hospitals || [];
+    } catch (error) {
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, { extra: { errorMessage } });
+        console.error("Error loading hospitals:", errorMessage);
+        return [];
+    }
+}
+
+list of hospitals.
  */
 export async function fetchHospitals(user?: {
     role: Role;
@@ -861,4 +985,69 @@ export async function fetchHospitalDepartments(
     });
 
     return rows as HospitalDepartment[];
+}
+
+export async function addHospital(
+    data: Partial<Hospital>
+): Promise<Hospital> {
+    "use server";
+
+    const session = await getServerSession(authOptions);
+    if (session?.user?.role !== Role.SUPER_ADMIN) {
+        throw new Error("Unauthorized: Only Super Admins can add hospitals.");
+    }
+
+    try {
+        const newHospital = await prisma.hospital.create({
+            data: {
+                hospitalName: data.hospitalName!,
+                hospitalLink: data.hospitalLink,
+                phone: data.phone,
+                email: data.email,
+                county: data.county!,
+                subCounty: data.subCounty,
+                ward: data.ward,
+                town: data.town,
+                streetAddress: data.streetAddress,
+                latitude: data.latitude,
+                longitude: data.longitude,
+                nearestLandmark: data.nearestLandmark,
+                plotNumber: data.plotNumber,
+                kephLevel: data.kephLevel,
+                regulatoryBody: data.regulatoryBody,
+                ownershipType: data.ownershipType,
+                facilityType: data.facilityType,
+                nhifAccreditation: data.nhifAccreditation,
+                open24Hours: data.open24Hours,
+                openWeekends: data.openWeekends,
+                regulated: data.regulated,
+                regulationStatus: data.regulationStatus,
+                regulatingBody: data.regulatingBody,
+                registrationNumber: data.registrationNumber,
+                licenseNumber: data.licenseNumber,
+                category: data.category,
+                owner: data.owner,
+                referralCode: data.referralCode,
+                website: data.website,
+                logoUrl: data.logoUrl,
+                operatingHours: data.operatingHours,
+                emergencyPhone: data.emergencyPhone,
+                emergencyEmail: data.emergencyEmail,
+                description: data.description,
+            },
+        });
+
+        revalidatePath("/dashboard/hospitals");
+
+        return newHospital;
+    } catch (error) {
+        const errorMessage = getErrorMessage(error);
+        Sentry.captureException(error, {
+            extra: { errorMessage, hospitalData: data },
+        });
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+            throw new Error("A hospital with the same name or referral code already exists.");
+        }
+        throw new Error(`Failed to add hospital: ${errorMessage}`);
+    }
 }

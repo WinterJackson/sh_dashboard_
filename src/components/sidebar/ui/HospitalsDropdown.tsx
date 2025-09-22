@@ -7,13 +7,14 @@ import { ChevronRightIcon } from "@radix-ui/react-icons";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import Link from "next/link";
 import { Role } from "@/lib/definitions";
+import React from "react";
 
 type HospitalsDropdownProps = {
     isActive: (href: string) => boolean;
     role?: Role;
 };
 
-const HospitalsDropdown: React.FC<HospitalsDropdownProps> = ({
+const HospitalsDropdown: React.FC<HospitalsDropdownProps> = React.memo(({
     isActive,
     role,
 }) => {
@@ -91,6 +92,6 @@ const HospitalsDropdown: React.FC<HospitalsDropdownProps> = ({
             </div>
         </>
     );
-};
+});
 
 export default HospitalsDropdown;

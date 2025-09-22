@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
     FaUserShield,
     FaCalendarCheck,
@@ -86,13 +87,12 @@ export default async function ApiLandingPage() {
                 <div className="bg-secondary p-4 mb-8 w-[300px] h-[80px]">
                     {/* Logo Image */}
                     <Link href="/api-landing">
-                        <img
+                        <Image
                             src="/images/logo.png"
                             alt="Snark Health Logo"
                             width={120}
                             height={80}
                             className="cursor-pointer mb-4"
-                            loading="lazy"
                         />
                     </Link>
                 </div>

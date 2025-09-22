@@ -5,7 +5,7 @@
 import { useMarkOnboardingComplete } from "@/hooks/useMarkOnboardingComplete";
 import { useUpdateProfile } from "@/hooks/useUpdateProfile";
 import { useUpdateUser } from "@/hooks/useUpdateUser";
-import { useForm } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { ProfileUpdateData } from "@/lib/data-access/settings/data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,12 +13,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Role } from "@/lib/definitions";
 import Image from "next/image";
 import { useEdgeStore } from "@/lib/edgestore";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { base64ToFile } from "@/lib/utils";
-import { useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export interface ExtendedProfileUpdateData extends ProfileUpdateData {
     profileId?: string;
@@ -59,7 +67,7 @@ interface AccountTabProps {
     role: Role;
 }
 
-export default function AccountTab({
+function AccountTabContent({
     profile,
     username,
     email,
@@ -85,13 +93,7 @@ export default function AccountTab({
     const { toast } = useToast();
     const router = useRouter();
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-        watch,
-        setValue,
-    } = useForm<ExtendedProfileUpdateData>({
+    const methods = useForm<ExtendedProfileUpdateData>({
         defaultValues: {
             ...profile,
             username,
@@ -101,6 +103,8 @@ export default function AccountTab({
             ...(roleSpecific.staff || {}),
         },
     });
+
+    const { handleSubmit, watch, setValue } = methods;
 
     const imageUrl = watch("imageUrl");
 
@@ -149,17 +153,29 @@ export default function AccountTab({
             const { firstName, lastName, phoneNo } = data;
 
             if (!firstName?.trim()) {
-                toast({ title: "First Name Required", description: "First name is required.", variant: "destructive" });
+                toast({
+                    title: "First Name Required",
+                    description: "First name is required.",
+                    variant: "destructive",
+                });
                 return;
             }
 
             if (!lastName?.trim()) {
-                toast({ title: "Last Name Required", description: "Last name is required.", variant: "destructive" });
+                toast({
+                    title: "Last Name Required",
+                    description: "Last name is required.",
+                    variant: "destructive",
+                });
                 return;
             }
 
             if (!phoneNo?.trim()) {
-                toast({ title: "Phone Number Required", description: "Phone number is required.", variant: "destructive" });
+                toast({
+                    title: "Phone Number Required",
+                    description: "Phone number is required.",
+                    variant: "destructive",
+                });
                 return;
             }
 
@@ -183,17 +199,19 @@ export default function AccountTab({
                 imageUrl,
             } as ProfileUpdateData & { imageUrl?: string });
 
-            // Handle onboarding completion
             if (session?.user?.hasCompletedOnboarding === false) {
                 await markOnboardingComplete(profile.userId);
-                await update(); // refresh session
-                // Redirect so OnboardingToast detects completion
+                await update();
                 router.push("/dashboard");
                 router.refresh();
-              }
+            }
 
             await update();
-            toast({ title: "Account Updated", description: "🎉 Account updated successfully", variant: "default" });
+            toast({
+                title: "Account Updated",
+                description: "🎉 Account updated successfully",
+                variant: "default",
+            });
         } catch (error) {
             console.error("Error during account update:", error);
             toast({
@@ -220,348 +238,364 @@ export default function AccountTab({
     }, [imageUrl]);
 
     return (
-        <div className="space-y-6 p-2">
-            <h2 className="text-lg text-primary font-semibold bg-white p-2 rounded-[10px] shadow-sm shadow-gray-400">
-                Account Information
-            </h2>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div className="space-y-4 ">
-                    <div className="bg-white p-4 rounded-[10px] shadow-sm shadow-gray-400">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="p-2 pl-1 block text-gray-600 text-sm font-medium">
-                                    Username
-                                </label>
-                                <Input
-                                    {...register("username", {
-                                        required: "Username is required",
-                                        minLength: {
-                                            value: 3,
-                                            message:
-                                                "Username must be at least 3 characters",
-                                        },
-                                    })}
-                                    placeholder="Enter your username"
-                                />
-                                {errors.username && (
-                                    <p className="text-sm text-red-500">
-                                        {errors.username.message}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <label className="p-2 pl-1 block text-gray-600 text-sm font-medium">
-                                    Email
-                                </label>
-                                <Input
-                                    {...register("email", {
-                                        required: "Email is required",
-                                        pattern: {
-                                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                            message: "Invalid email address",
-                                        },
-                                    })}
-                                    placeholder="Enter your email"
-                                />
-                                {errors.email && (
-                                    <p className="text-sm text-red-500">
-                                        {errors.email.message}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="gap-4">
-                            <div>
-                                <label className="p-2 pl-1 block text-gray-600 text-sm font-medium">
-                                    Profile Picture
-                                </label>
-
-                                <div className="justify-items-center w-full p-2 pb-4 rounded-[5px] border-2 bg-black/5">
-                                    <div className="justify-center items-center p-3">
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleProfileImageChange}
-                                            className="bg-white border-2 rounded-[10px] block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/80"
-                                            ref={imageFileInputRef}
-                                        />
-                                        {previewImage && (
-                                            <div className="mt-2 border-2 bg-white py-4 rounded-[10px] justify-items-center">
-                                                <Image
-                                                    src={imageSource}
-                                                    alt="Profile Preview"
-                                                    width={96}
-                                                    height={96}
-                                                    className="w-[96px] h-[96px] object-cover rounded-full border-2 border-primary m-2"
-                                                    onError={(e) => {
-                                                        (
-                                                            e.target as HTMLImageElement
-                                                        ).src =
-                                                            "/images/default-avatar.png";
-                                                    }}
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setPreviewImage(
-                                                profile.imageUrl || null
-                                            );
-                                            setProfileImageData(null);
-                                            if (imageFileInputRef.current) {
-                                                imageFileInputRef.current.value =
-                                                    "";
-                                            }
-                                        }}
-                                        className="bg-primary p-2 px-4 w-[110px] rounded-[10px] mt-2 text-sm text-white font-semibold hover:text-white hover:bg-red-700"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="col-span-1 space-y-2 bg-white p-4 rounded-[10px] shadow-sm shadow-gray-400">
-                            <h3 className="text-base text-primary font-semibold border-b-2 border-gray-300 p-1 pb-0 bg-bluelight/5">
-                                Bio
-                            </h3>
-                            <div>
-                                <label
-                                    htmlFor="firstName"
-                                    className="block p-2 pl-1 text-gray-600 text-sm font-medium"
-                                >
-                                    First Name
-                                </label>
-                                <Input
-                                    id="firstName"
-                                    {...register("firstName", {
-                                        required: "First name is required",
-                                    })}
-                                    placeholder="Enter your first name"
-                                />
-                                {errors.firstName && (
-                                    <p className="text-sm text-red-500">
-                                        {errors.firstName.message}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <label
-                                    htmlFor="lastName"
-                                    className="block p-2 pl-1 text-gray-600 text-sm font-medium"
-                                >
-                                    Last Name
-                                </label>
-                                <Input
-                                    id="lastName"
-                                    {...register("lastName", {
-                                        required: "Last name is required",
-                                    })}
-                                    placeholder="Enter your last name"
-                                />
-                                {errors.lastName && (
-                                    <p className="text-sm text-red-500">
-                                        {errors.lastName.message}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <label
-                                    htmlFor="dateOfBirth"
-                                    className="block p-2 pl-1 text-gray-600 text-sm font-medium"
-                                >
-                                    Date of Birth
-                                </label>
-                                <Input
-                                    id="dateOfBirth"
-                                    {...register("dateOfBirth")}
-                                    type="date"
-                                    className="w-auto"
-                                    placeholder="Enter your date of birth"
-                                />
-                            </div>
-                            <div>
-                                <label
-                                    htmlFor="address"
-                                    className="block p-2 pl-1 text-gray-600 text-sm font-medium"
-                                >
-                                    Address
-                                </label>
-                                <Textarea
-                                    id="address"
-                                    {...register("address")}
-                                    placeholder="Enter your address"
-                                />
-                            </div>
-                            {isMedicalStaff && (
-                                <>
-                                    <div>
-                                        <label
-                                            htmlFor="aboutBio"
-                                            className="block p-2 pl-1 text-gray-600 text-sm font-medium"
-                                        >
-                                            About/Bio
-                                        </label>
-                                        <Textarea
-                                            id="aboutBio"
-                                            {...register("about")}
-                                            placeholder="Enter your bio"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label
-                                            htmlFor="qualifications"
-                                            className="block p-2 pl-1 text-gray-600 text-sm font-medium"
-                                        >
-                                            Qualifications
-                                        </label>
+        <FormProvider {...methods}>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <div className="flex flex-col lg:flex-row w-full gap-6">
+                    <div className="flex flex-col gap-6 bg-background border border-border p-4 rounded-xl shadow-sm w-full lg:w-1/3">
+                        <span className="text-primary font-semibold border-b-2 border-border pb-2">
+                            User Credentials
+                        </span>
+                        <FormField
+                            control={methods.control}
+                            name="username"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Username</FormLabel>
+                                    <FormControl>
                                         <Input
-                                            id="qualifications"
-                                            {...register("qualifications")}
-                                            placeholder="Enter your qualifications"
+                                            {...field}
+                                            placeholder="Enter your username"
                                         />
-                                    </div>
-                                    <div>
-                                        <label
-                                            htmlFor="yearsOfExperience"
-                                            className="block p-2 pl-1 text-gray-600 text-sm font-medium"
-                                        >
-                                            Years of Experience
-                                        </label>
-                                        <Input
-                                            id="yearsOfExperience"
-                                            {...register("yearsOfExperience", {
-                                                valueAsNumber: true,
-                                            })}
-                                            type="number"
-                                            placeholder="Enter years of experience"
-                                        />
-                                    </div>
-                                </>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
                             )}
-                        </div>
-
-                        <div className="col-span-1 space-y-2 pb-6 bg-white p-4 rounded-[10px] shadow-sm shadow-gray-400">
-                            <h3 className="text-base text-primary font-semibold border-b-2 border-gray-300 p-1 pb-0 bg-bluelight/5">
-                                Contact Information
-                            </h3>
-                            <div>
-                                <label
-                                    htmlFor="phoneNo"
-                                    className="block p-2 pl-1 text-gray-600 text-sm font-medium"
-                                >
-                                    Phone Number
-                                </label>
+                        />
+                        <FormField
+                            control={methods.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            placeholder="Enter your email"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                    <div className="flex flex-col gap-6 bg-background border border-border p-4 rounded-xl shadow-sm w-full lg:w-2/3">
+                        <span className="text-primary font-semibold border-b-2 border-border pb-2">
+                            Profile Picture
+                        </span>
+                        <div className="flex flex-col sm:flex-row items-center gap-4">
+                            <Image
+                                src={imageSource}
+                                alt="Profile Preview"
+                                width={96}
+                                height={96}
+                                className="w-24 h-24 object-cover rounded-full border-2 border-primary"
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).src =
+                                        "/images/default-avatar.png";
+                                }}
+                            />
+                            <div className="flex-grow">
                                 <Input
-                                    id="phoneNo"
-                                    {...register("phoneNo", {
-                                        required: "Phone number is required",
-                                    })}
-                                    placeholder="Enter your phone number"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleProfileImageChange}
+                                    className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/80"
+                                    ref={imageFileInputRef}
                                 />
-                                {errors.phoneNo && (
-                                    <p className="text-sm text-red-500">
-                                        {errors.phoneNo.message}
-                                    </p>
-                                )}
+                                <p className="m-2 text-xs text-muted-foreground">
+                                    PNG, JPG, GIF up to 5MB.
+                                </p>
                             </div>
-                            <div>
-                                <label
-                                    htmlFor="gender"
-                                    className="block p-2 pl-1 text-gray-600 text-sm font-medium"
-                                >
-                                    Gender
-                                </label>
-                                <Input
-                                    id="gender"
-                                    {...register("gender")}
-                                    placeholder="Enter your gender"
-                                />
-                            </div>
-                            <div>
-                                <label
-                                    htmlFor="cityOrTown"
-                                    className="block p-2 pl-1 text-gray-600 text-sm font-medium"
-                                >
-                                    City
-                                </label>
-                                <Input
-                                    id="cityOrTown"
-                                    {...register("cityOrTown")}
-                                    placeholder="Enter your city"
-                                />
-                            </div>
-                            <div>
-                                <label
-                                    htmlFor="county"
-                                    className="block p-2 pl-1 text-gray-600 text-sm font-medium"
-                                >
-                                    State
-                                </label>
-                                <Input
-                                    id="county"
-                                    {...register("county")}
-                                    placeholder="Enter your state"
-                                />
-                            </div>
-                            <div>
-                                <label
-                                    htmlFor="emergencyContact"
-                                    className="block p-2 pl-1 text-gray-600 text-sm font-medium"
-                                >
-                                    Emergency Contact
-                                </label>
-                                <Input
-                                    id="emergencyContact"
-                                    {...register("emergencyContact")}
-                                    placeholder="Enter emergency contact"
-                                />
-                            </div>
-                            <div>
-                                <label
-                                    htmlFor="nextOfKin"
-                                    className="block p-2 pl-1 text-gray-600 text-sm font-medium"
-                                >
-                                    Next of Kin
-                                </label>
-                                <Input
-                                    id="nextOfKin"
-                                    {...register("nextOfKin")}
-                                    placeholder="Enter next of kin"
-                                />
-                            </div>
-                            <div>
-                                <label
-                                    htmlFor="nextOfKinPhoneNo"
-                                    className="block p-2 pl-1 text-gray-600 text-sm font-medium"
-                                >
-                                    Next of Kin Phone No.
-                                </label>
-                                <Input
-                                    id="nextOfKinPhoneNo"
-                                    {...register("nextOfKinPhoneNo")}
-                                    placeholder="Enter next of kin phone number"
-                                />
-                            </div>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="bg-destructive/40 mb-8"
+                                onClick={() => {
+                                    setPreviewImage(profile.imageUrl || null);
+                                    setProfileImageData(null);
+                                    if (imageFileInputRef.current) {
+                                        imageFileInputRef.current.value = "";
+                                    }
+                                }}
+                            >
+                                Cancel
+                            </Button>
                         </div>
                     </div>
+                </div>
 
-                    <Button
-                        type="submit"
-                        onClick={handleSubmit(onSubmit)}
-                        disabled={isPending || Object.keys(errors).length > 0}
-                        className="w-full"
-                    >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4 bg-background border border-border p-4 rounded-xl shadow-sm">
+                        <h3 className="text-base text-primary font-semibold border-b-2 border-border pb-2">
+                            Personal Information
+                        </h3>
+                        <FormField
+                            control={methods.control}
+                            name="firstName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>First Name</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            placeholder="Enter your first name"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={methods.control}
+                            name="lastName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Last Name</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            placeholder="Enter your last name"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={methods.control}
+                            name="dateOfBirth"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Date of Birth</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} type="date" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={methods.control}
+                            name="gender"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Gender</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            placeholder="Enter your gender"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={methods.control}
+                            name="address"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Address</FormLabel>
+                                    <FormControl>
+                                        <Textarea
+                                            {...field}
+                                            placeholder="Enter your address"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    <div className="space-y-4 bg-background border border-border p-4 rounded-xl shadow-sm">
+                        <h3 className="text-base text-primary font-semibold border-b-2 border-border pb-2">
+                            Contact Information
+                        </h3>
+                        <FormField
+                            control={methods.control}
+                            name="phoneNo"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Phone Number</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            placeholder="Enter your phone number"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={methods.control}
+                            name="cityOrTown"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>City</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            placeholder="Enter your city"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={methods.control}
+                            name="county"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>State</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            placeholder="Enter your state"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={methods.control}
+                            name="emergencyContact"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Emergency Contact</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            placeholder="Enter emergency contact"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={methods.control}
+                            name="nextOfKin"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Next of Kin</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            placeholder="Enter next of kin"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={methods.control}
+                            name="nextOfKinPhoneNo"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Next of Kin Phone No.</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            placeholder="Enter next of kin phone number"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                </div>
+
+                {isMedicalStaff && (
+                    <div className="space-y-4 bg-background border border-border p-4 rounded-xl shadow-sm">
+                        <h3 className="text-base text-primary font-semibold border-b-2 border-border pb-2">
+                            Professional Information
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                                control={methods.control}
+                                name="about"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>About/Bio</FormLabel>
+                                        <FormControl>
+                                            <Textarea
+                                                {...field}
+                                                placeholder="Enter your bio"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={methods.control}
+                                name="qualifications"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Qualifications</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                placeholder="Enter your qualifications"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={methods.control}
+                                name="yearsOfExperience"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>
+                                            Years of Experience
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="Enter years of experience"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                <div className="flex justify-end">
+                    <Button type="submit" disabled={isPending}>
                         {isPending ? "Saving..." : "Save Changes"}
                     </Button>
                 </div>
             </form>
-        </div>
+        </FormProvider>
+    );
+}
+
+export default function AccountTab(props: AccountTabProps) {
+    return (
+        <Suspense
+            fallback={
+                <div className="space-y-6 p-2">
+                    <Skeleton className="h-10 w-1/3" />
+                    <Skeleton className="h-40 w-full rounded-lg" />
+                    <Skeleton className="h-40 w-full rounded-lg" />
+                    <Skeleton className="h-20 w-1/2" />
+                </div>
+            }
+        >
+            <AccountTabContent {...props} />
+        </Suspense>
     );
 }

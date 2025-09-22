@@ -7,6 +7,7 @@ import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import type { Session } from "next-auth";
+import Image from "next/image";
 
 export default async function VerifyTokenPage({
     searchParams,
@@ -41,13 +42,12 @@ export default async function VerifyTokenPage({
                 {/* ✅ Only show logo on md+ */}
                 <div className="hidden md:flex items-center justify-center mb-6 sm:mb-0 sm:mr-10 w-full max-w-sm sm:max-w-md md:max-w-xs">
                     <div className="p-6 sm:p-8 md:p-10 bg-secondary rounded-2xl w-full">
-                        <img
+                        <Image
                             src="/images/logo.png"
                             alt="Hospital Logo"
                             width={300}
                             height={200}
                             className="p-1 object-contain max-w-full h-auto mx-auto"
-                            loading="lazy"
                         />
                     </div>
                 </div>

@@ -11,6 +11,7 @@ import HospitalsFilters from "./ui/hospitals-table/HospitalsFilters";
 import { useDeleteHospitals } from "@/hooks/useDeleteHospitals";
 import Delete from "@mui/icons-material/Delete";
 import ConfirmationModal from "./ui/hospital-modals/ConfirmationModal";
+import React from "react";
 
 interface HospitalsListProps {
     hospitals: Hospital[];
@@ -20,11 +21,11 @@ interface HospitalsListProps {
 
 const ITEMS_PER_PAGE = 15;
 
-export default function HospitalsList({
+const HospitalsList: React.FC<HospitalsListProps> = React.memo(({
     hospitals: initialHospitals,
     totalHospitals,
     userRole,
-}: HospitalsListProps) {
+}) => {
     const { mutate: deleteHospitals, isPending: isDeleting } =
         useDeleteHospitals();
     const [selectedHospitals, setSelectedHospitals] = useState<number[]>([]);
@@ -340,4 +341,6 @@ export default function HospitalsList({
             />
         </div>
     );
-}
+});
+
+export default HospitalsList;

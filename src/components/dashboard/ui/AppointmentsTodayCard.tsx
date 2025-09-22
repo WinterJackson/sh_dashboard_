@@ -119,4 +119,4 @@ const AppointmentsTodayCard: React.FC<AppointmentsTodayCardProps> = ({
     );
 };
 
-export default AppointmentsTodayCard;
+export default React.memo(AppointmentsTodayCard);

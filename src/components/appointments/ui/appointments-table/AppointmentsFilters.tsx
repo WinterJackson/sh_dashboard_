@@ -346,7 +346,7 @@ const AppointmentsFilters: React.FC<AppointmentsFiltersProps> = ({
             <div className="flex items-center gap-4">
                 <button
                     onClick={handleRefresh}
-                    className="p-2 rounded-[10px] h-[50px] w-[120px] gap-2 hover:shadow-gray-400 shadow-lg shadow-gray-400 text-black hover:bg-primary hover:text-white focus:outline-none focus:ring-1 focus:ring-primary flex items-center justify-between"
+                    className="p-2 rounded-[10px] h-[50px] w-[120px] gap-2 hover:shadow-shadow-main shadow-md shadow-shadow-main text-foreground hover:bg-primary hover:text-primary-foreground focus:outline-none focus:ring-1 focus:ring-primary flex items-center justify-between"
                 >
                     <span className="pr-1">Refresh</span>
                     <SymbolIcon className="h-4 w-4" />
@@ -363,7 +363,7 @@ const AppointmentsFilters: React.FC<AppointmentsFiltersProps> = ({
                             </span>
                             <button
                                 onClick={filter.onClear}
-                                className="flex items-center justify-center p-[2px] bg-white rounded-full"
+                                className="flex items-center justify-center p-[2px] bg-background rounded-full"
                             >
                                 <CancelledIcon className="h-5 w-5 text-center text-red-500 hover:text-white hover:bg-red-500 rounded-full" />
                             </button>
@@ -375,7 +375,7 @@ const AppointmentsFilters: React.FC<AppointmentsFiltersProps> = ({
                 <div className="flex flex-row items-center gap-4">
                     <DropdownMenu onOpenChange={setShowOptions}>
                         <DropdownMenuTrigger asChild>
-                            <button className="focus:outline-none focus:ring-1 focus:ring-primary flex items-center gap-2 p-2 rounded-[10px] h-[50px] hover:shadow-gray-400 shadow-lg shadow-gray-400 justify-between w-[150px]">
+                            <button className="focus:outline-none focus:ring-1 focus:ring-primary flex items-center gap-2 p-2 rounded-[10px] h-[50px] hover:shadow-shadow-main shadow-md shadow-shadow-main justify-between w-[150px]">
                                 {filterType || "Filter By"}
                                 <ChevronRight
                                     className={`transform transition-transform duration-300 ${
@@ -391,7 +391,7 @@ const AppointmentsFilters: React.FC<AppointmentsFiltersProps> = ({
                                         <DropdownMenuSubTrigger className="p-2 rounded-[5px]">
                                             Hospital
                                         </DropdownMenuSubTrigger>
-                                        <DropdownMenuSubContent className="bg-white rounded-[10px] shadow p-3 ml-4 max-w-auto mt-[-10px]">
+                                        <DropdownMenuSubContent className="bg-background text-foreground rounded-[10px] shadow p-3 ml-4 max-w-auto mt-[-10px] max-h-80 overflow-y-auto scrollbar-custom">
                                             {hospitals.map((hospital) => (
                                                 <DropdownMenuItem
                                                     key={hospital.hospitalId}
@@ -419,7 +419,7 @@ const AppointmentsFilters: React.FC<AppointmentsFiltersProps> = ({
                                     <DropdownMenuSubTrigger className="p-2 rounded-[5px]">
                                         Status
                                     </DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent className="bg-white rounded-[10px] shadow p-3 ml-4 max-w-auto mt-[-10px]">
+                                    <DropdownMenuSubContent className="bg-background rounded-[10px] shadow p-3 ml-4 max-w-auto mt-[-10px]">
                                         {[
                                             "Confirmed",
                                             "Completed",
@@ -453,7 +453,7 @@ const AppointmentsFilters: React.FC<AppointmentsFiltersProps> = ({
                                         onSelect={() =>
                                             handleFilterTypeChange(option)
                                         }
-                                        className="p-2 rounded-[5px] hover:bg-primary hover:text-white"
+                                        className="p-2 rounded-[5px]"
                                     >
                                         {option}
                                     </DropdownMenuItem>
@@ -463,7 +463,7 @@ const AppointmentsFilters: React.FC<AppointmentsFiltersProps> = ({
                     </DropdownMenu>
 
                     <button
-                        className={`flex-grow px-4 py-2 rounded-[10px] h-[50px] text-nowrap w-auto font-semibold text-black hover:bg-primary hover:text-white hover:shadow-gray-400 shadow-lg shadow-gray-400 ${
+                        className={`flex-grow px-4 py-2 rounded-[10px] h-[50px] text-nowrap w-auto font-semibold text-foreground hover:bg-primary hover:text-primary-foreground hover:shadow-shadow-main shadow-md shadow-shadow-main ${
                             statusFilter.includes("CONFIRMED") ||
                             statusFilter.includes("COMPLETED") ||
                             statusFilter.includes("RESCHEDULED")
@@ -481,7 +481,7 @@ const AppointmentsFilters: React.FC<AppointmentsFiltersProps> = ({
                         Approved Appointments
                     </button>
                     <button
-                        className={`flex-grow px-4 py-2 rounded-[10px] h-[50px] text-nowrap w-auto font-semibold text-black hover:bg-primary hover:text-white hover:shadow-gray-400 shadow-lg shadow-gray-400 ${
+                        className={`flex-grow px-4 py-2 rounded-[10px] h-[50px] text-nowrap w-auto font-semibold text-foreground hover:bg-primary hover:text-primary-foreground hover:shadow-shadow-main shadow-md shadow-shadow-main ${
                             statusFilter.includes("PENDING") ||
                             statusFilter.includes("CANCELLED")
                                 ? "bg-primary text-white"

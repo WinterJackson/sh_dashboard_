@@ -653,7 +653,6 @@ async function seedMessages() {
                 senderId: message.senderId,
                 content: message.content,
                 messageType: message.messageType || "TEXT",
-                isRead: message.isRead || false,
                 createdAt: message.createdAt || randomPastDate(),
                 updatedAt: message.updatedAt || randomPastDate(),
             })),

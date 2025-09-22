@@ -187,43 +187,8 @@ export async function fetchOnlineDoctors(user?: {
         // Fetch online doctors based on the filter criteria
         const onlineDoctors = await prisma.doctor.findMany({
             where: whereClause,
-            include: {
-                user: {
-                    include: {
-                        profile: {
-                            select: {
-                                firstName: true,
-                                lastName: true,
-                                gender: true,
-                                phoneNo: true,
-                                address: true,
-                                dateOfBirth: true,
-                                cityOrTown: true,
-                                county: true,
-                                imageUrl: true,
-                                nextOfKin: true,
-                                nextOfKinPhoneNo: true,
-                                emergencyContact: true,
-                            },
-                        },
-                    },
-                },
-                hospital: {
-                    select: {
-                        hospitalId: true,
-                        hospitalName: true,
-                    },
-                },
-                department: {
-                    select: {
-                        name: true,
-                    },
-                },
-                specialization: {
-                    select: {
-                        name: true,
-                    },
-                },
+            select: {
+                doctorId: true,
             },
         });
 
@@ -530,39 +495,27 @@ export async function fetchAllDoctors(
         // Fetch all doctors based on the filter criteria
         const doctors = await prisma.doctor.findMany({
             where: whereClause,
-            include: {
+            select: {
+                doctorId: true,
+                status: true,
+                averageRating: true,
                 user: {
-                    include: {
+                    select: {
                         profile: {
                             select: {
+                                imageUrl: true,
                                 firstName: true,
                                 lastName: true,
-                                imageUrl: true,
-                                gender: true,
-                                dateOfBirth: true,
-                                phoneNo: true,
-                                address: true,
-                                cityOrTown: true,
-                                county: true,
-                                nextOfKin: true,
-                                nextOfKinPhoneNo: true,
-                                emergencyContact: true,
                             },
                         },
                     },
                 },
-                hospital: {
-                    select: {
-                        hospitalId: true,
-                        hospitalName: true,
-                    },
-                },
-                department: {
+                specialization: {
                     select: {
                         name: true,
                     },
                 },
-                specialization: {
+                department: {
                     select: {
                         name: true,
                     },
@@ -608,33 +561,48 @@ export async function fetchDoctors(user?: {
     try {
         let doctors: Doctor[] = [];
 
-        if (user.role === "SUPER_ADMIN") {
-            doctors = await prisma.doctor.findMany({
-                include: {
-                    hospital: true,
-                    specialization: true,
-                    department: true,
-                    user: {
-                        include: {
-                            profile: true,
+        const doctorSelect = {
+            doctorId: true,
+            status: true,
+            averageRating: true,
+            user: {
+                select: {
+                    createdAt: true,
+                    profile: {
+                        select: {
+                            imageUrl: true,
+                            firstName: true,
+                            lastName: true,
                         },
                     },
                 },
-            });
+            },
+            specialization: {
+                select: {
+                    name: true,
+                },
+            },
+            department: {
+                select: {
+                    name: true,
+                },
+            },
+            hospital: {
+                select: {
+                    hospitalName: true,
+                },
+            },
+        };
+
+        if (user.role === "SUPER_ADMIN") {
+            doctors = await prisma.doctor.findMany({
+                select: doctorSelect,
+            }) as any;
         } else if (user.hospitalId) {
             doctors = await prisma.doctor.findMany({
                 where: { hospitalId: parseInt(user.hospitalId, 10) }, // Convert back to number
-                include: {
-                    hospital: true,
-                    specialization: true,
-                    department: true,
-                    user: {
-                        include: {
-                            profile: true,
-                        },
-                    },
-                },
-            });
+                select: doctorSelect,
+            }) as any;
         }
 
         return doctors;
@@ -702,39 +670,27 @@ export async function fetchDoctorsByHospital(
         // Fetch doctors based on the filter criteria
         const doctors = await prisma.doctor.findMany({
             where: whereClause,
-            include: {
+            select: {
+                doctorId: true,
+                status: true,
+                averageRating: true,
                 user: {
-                    include: {
+                    select: {
                         profile: {
                             select: {
+                                imageUrl: true,
                                 firstName: true,
                                 lastName: true,
-                                imageUrl: true,
-                                gender: true,
-                                dateOfBirth: true,
-                                phoneNo: true,
-                                address: true,
-                                cityOrTown: true,
-                                county: true,
-                                nextOfKin: true,
-                                nextOfKinPhoneNo: true,
-                                emergencyContact: true,
                             },
                         },
                     },
                 },
-                hospital: {
-                    select: {
-                        hospitalId: true,
-                        hospitalName: true,
-                    },
-                },
-                department: {
+                specialization: {
                     select: {
                         name: true,
                     },
                 },
-                specialization: {
+                department: {
                     select: {
                         name: true,
                     },
@@ -760,160 +716,135 @@ export async function addDoctorAPI(
         firstName: string;
         lastName: string;
         email: string;
-        gender: string;
+        gender: string | null;
         hospitalId: number;
         departmentId: number;
         specializationId: number;
         phoneNo: string;
         dateOfBirth: string;
         qualifications?: string;
-        bio?: string;
+        about?: string; // 'about' from form
         status?: string;
-        profileImageUrl?: string;
+        profileImageUrl?: string | null;
     },
     user?: { role: Role; hospitalId: number | null; userId: string | null }
 ): Promise<any> {
-    if (!user) {
-        const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+        redirect("/sign-in");
+    }
 
-        if (!session || !session?.user) {
-            console.error("Session fetch failed:", session);
-            redirect("/sign-in");
-            return null;
-        }
-
-        user = {
-            role: session.user.role as Role,
-            hospitalId: session.user.hospitalId ?? null,
-            userId: session.user.id ?? null,
-        };
+    // Security check: Only SUPER_ADMIN and ADMIN can add doctors.
+    if (session.user.role !== Role.SUPER_ADMIN && session.user.role !== Role.ADMIN) {
+        throw new Error("Unauthorized: You do not have permission to add a doctor.");
     }
 
     try {
-        // Validate foreign keys
-        const [
-            hospitalExists,
-            departmentExists,
-            specializationExists,
-        ] = await prisma.$transaction([
-            prisma.hospital.findUnique({
-                where: { hospitalId: doctorData.hospitalId },
-                select: { hospitalId: true },
-            }),
-            prisma.department.findUnique({
-                where: { departmentId: doctorData.departmentId },
-                select: { departmentId: true },
-            }),
-            prisma.specialization.findUnique({
-                where: { specializationId: doctorData.specializationId },
-                select: { specializationId: true },
-            }),
-        ]);
-
-        if (!hospitalExists || !departmentExists || !specializationExists) {
-            console.error("Invalid hospital, department, or specialization");
-            return null;
-        }
-
-        let userRecord = null;
-        let doctorRecord = null;
-        let resetToken = null;
-
-        // Transaction for user and doctor creation
-        await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-            const existingUser = await tx.user.findUnique({
+        // Transaction to ensure all or nothing is created
+        const newDoctor = await prisma.$transaction(async (tx) => {
+            const username = `${doctorData.firstName.toLowerCase()}.${doctorData.lastName.toLowerCase()}`;
+            
+            // 1. Check if user already exists by email or username
+            const existingUserByEmail = await tx.user.findUnique({
                 where: { email: doctorData.email },
             });
-
-            if (!existingUser) {
-                resetToken = crypto.randomBytes(32).toString("hex");
-                const hashedToken = crypto
-                    .createHash("sha256")
-                    .update(resetToken)
-                    .digest("hex");
-                const expiryDate = new Date(Date.now() + 60 * 60 * 1000);
-
-                userRecord = await tx.user.create({
-                    data: {
-                        username: `${doctorData.firstName}_${doctorData.lastName}`,
-                        email: doctorData.email,
-                        password: await bcrypt.hash(doctorData.firstName, 10),
-                        role: "DOCTOR",
-                        hospitalId: doctorData.hospitalId,
-                        mustResetPassword: true,
-                        resetToken: hashedToken,
-                        resetTokenExpiry: expiryDate,
-                    },
-                });
-
-                await tx.profile.create({
-                    data: {
-                        userId: userRecord.userId,
-                        firstName: doctorData.firstName,
-                        lastName: doctorData.lastName,
-                        gender: doctorData.gender || null,
-                        phoneNo: doctorData.phoneNo,
-                        dateOfBirth: new Date(doctorData.dateOfBirth),
-                        imageUrl: doctorData.profileImageUrl || null,
-                        address: null,
-                        cityOrTown: null,
-                        county: null,
-                        nextOfKin: null,
-                        nextOfKinPhoneNo: null,
-                        emergencyContact: null,
-                    },
-                });
-            } else {
-                userRecord = existingUser;
-
-                // Check if doctor record already exists
-                const existingDoctor = await tx.doctor.findUnique({
-                    where: { userId: userRecord.userId },
-                });
-
-                if (existingDoctor) {
-                    console.error("Doctor already exists for this user.");
-                    throw new Error("Doctor already exists.");
-                }
+            if (existingUserByEmail) {
+                throw new Error("A user with this email already exists.");
             }
 
-            doctorRecord = await tx.doctor.create({
+            const existingUserByUsername = await tx.user.findUnique({
+                where: { username: username },
+            });
+            if (existingUserByUsername) {
+                throw new Error("A user with this username already exists. Please try a different name combination.");
+            }
+
+            // 2. Create User record
+            const resetToken = crypto.randomBytes(32).toString("hex");
+            const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+            const expiryDate = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
+
+            const createdUser = await tx.user.create({
                 data: {
-                    userId: userRecord.userId,
+                    username: username,
+                    email: doctorData.email,
+                    password: await bcrypt.hash(doctorData.phoneNo, 10), // Temporary password, e.g., phone number
+                    role: Role.DOCTOR,
+                    hospitalId: doctorData.hospitalId,
+                    mustResetPassword: true,
+                    resetToken: hashedToken,
+                    resetTokenExpiry: expiryDate,
+                    hasCompletedOnboarding: false, // New users must complete onboarding
+                },
+            });
+
+            // 3. Create Profile record
+            await tx.profile.create({
+                data: {
+                    userId: createdUser.userId,
+                    firstName: doctorData.firstName,
+                    lastName: doctorData.lastName,
+                    gender: doctorData.gender,
+                    phoneNo: doctorData.phoneNo,
+                    dateOfBirth: new Date(doctorData.dateOfBirth),
+                    imageUrl: doctorData.profileImageUrl,
+                },
+            });
+
+            // 4. Create Doctor record
+            const createdDoctor = await tx.doctor.create({
+                data: {
+                    userId: createdUser.userId,
                     hospitalId: doctorData.hospitalId,
                     departmentId: doctorData.departmentId,
                     specializationId: doctorData.specializationId,
-                    qualifications: doctorData.qualifications || null,
-                    bio: doctorData.bio || null,
+                    qualifications: doctorData.qualifications,
+                    bio: doctorData.about,
                     status: doctorData.status || "Offline",
                     phoneNo: doctorData.phoneNo,
-                    workingHours: "Mon-Fri: 9AM-5PM",
+                    // Default values for other fields
+                    workingHours: "9am-5pm",
                     averageRating: 0,
-                    skills: null,
-                    yearsOfExperience: null,
                 },
             });
-        });
 
-        // Send reset email
-        if (resetToken && userRecord) {
+            // Send email outside of transaction if possible, but we need the token
             const resetUrl = `${process.env.BASE_URL}/reset-password/${resetToken}`;
-
             await sendEmail({
                 to: doctorData.email,
-                subject: "Set Your Password",
-                text: `You have been added as a doctor. Click the link below to set your password. This link will expire in 1 hour: ${resetUrl}`,
-                html: `<p>You have been added as a doctor. Click the link below to set your password. This link will expire in 1 hour:</p>
-                       <a href="${resetUrl}">${resetUrl}</a>`,
+                subject: "Welcome & Set Your Password",
+                text: `Welcome to Snark Health! You have been added as a doctor. Please click the link below to set your password. This link will expire in 1 hour: ${resetUrl}`,
+                html: `<p>Welcome to Snark Health!</p><p>You have been added as a doctor. Please click the link below to set your password. This link will expire in 1 hour:</p><a href="${resetUrl}">${resetUrl}</a>`,
             });
-        }
 
-        return doctorRecord;
+            return createdDoctor;
+        });
+
+        revalidatePath("/dashboard/doctors");
+        return newDoctor;
+
     } catch (error) {
         const errorMessage = getErrorMessage(error);
-        Sentry.captureException(error, { extra: { errorMessage } });
-        console.error("Error adding doctor:", errorMessage);
-        return null;
+        Sentry.captureException(error, {
+            extra: {
+                errorMessage,
+                doctorData,
+                user,
+            },
+        });
+        // Re-throw with a user-friendly message
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            if (error.code === 'P2002') {
+                 const target = (error.meta?.target as string[]) || [];
+                 if (target.includes('email')) {
+                     throw new Error("A user with this email already exists.");
+                 }
+                 if (target.includes('username')) {
+                     throw new Error("A user with this username already exists. Please try a different name combination.");
+                 }
+            }
+        }
+        throw new Error(errorMessage);
     }
 }
 
@@ -979,39 +910,27 @@ export async function getDoctorsBySpecialization(
         // Fetch doctors based on the filter criteria
         const doctors = await prisma.doctor.findMany({
             where: whereClause,
-            include: {
+            select: {
+                doctorId: true,
+                status: true,
+                averageRating: true,
                 user: {
-                    include: {
+                    select: {
                         profile: {
                             select: {
+                                imageUrl: true,
                                 firstName: true,
                                 lastName: true,
-                                imageUrl: true,
-                                gender: true,
-                                dateOfBirth: true,
-                                phoneNo: true,
-                                address: true,
-                                cityOrTown: true,
-                                county: true,
-                                nextOfKin: true,
-                                nextOfKinPhoneNo: true,
-                                emergencyContact: true,
                             },
                         },
                     },
                 },
-                hospital: {
-                    select: {
-                        hospitalId: true,
-                        hospitalName: true,
-                    },
-                },
-                department: {
+                specialization: {
                     select: {
                         name: true,
                     },
                 },
-                specialization: {
+                department: {
                     select: {
                         name: true,
                     },

@@ -38,7 +38,7 @@ export default function PatientAppointmentNotes({
     }, {} as Record<string, { date: Date; notes: AppointmentNote[] }>);
 
     return (
-        <div className="bg-white p-4 rounded-[10px] shadow-md">
+        <div className="bg-slate p-4 rounded-[10px] shadow-md">
             <h2 className="p-2 bg-bluelight/10 rounded-[10px] text-base text-primary font-semibold mb-4">
                 Appointment Notes
                 <p className="text-xs text-primary font-semibold">

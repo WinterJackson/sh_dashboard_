@@ -1,4 +1,3 @@
- 
 "use client";
 
 import { Appointment } from "@/lib/definitions";
@@ -11,13 +10,23 @@ export default function AppointmentsTimeline({
     appointments: Appointment[];
 }) {
     return (
-        <div className="bg-white p-4 rounded-[10px] shadow-md w-auto">
+        <div className="bg-slate p-4 rounded-[10px] shadow-md shadow-shadow-main w-auto">
             <Tabs defaultValue="upcoming" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="upcoming" className="hover:bg-primary hover:text-white p-2 border-r-2 border-gray-400 rounded-l-[10px] bg-black/5">Upcoming Appointments</TabsTrigger>
-                    <TabsTrigger value="past" className="hover:bg-primary hover:text-white p-2 rounded-r-[10px] bg-black/5">Past Appointments</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                    <TabsTrigger
+                        value="upcoming"
+                        className="hover:bg-primary hover:text-primary-foreground p-2 border-r-2 border-background rounded-l-[10px] bg-background shadow-md shadow-shadow-main"
+                    >
+                        Upcoming Appointments
+                    </TabsTrigger>
+                    <TabsTrigger
+                        value="past"
+                        className="hover:bg-primary hover:text-primary-foreground p-2 rounded-r-[10px] bg-background shadow-md shadow-shadow-main"
+                    >
+                        Past Appointments
+                    </TabsTrigger>
                 </TabsList>
-                <TabsContent value="upcoming">
+                <TabsContent value="upcoming" className="bg-background shadow-md shadow-shadow-main">
                     <PatientAppointmentsTable
                         appointments={appointments.filter(
                             (appt) =>
@@ -25,7 +34,7 @@ export default function AppointmentsTimeline({
                         )}
                     />
                 </TabsContent>
-                <TabsContent value="past">
+                <TabsContent value="past" className="bg-background">
                     <PatientAppointmentsTable
                         appointments={appointments.filter(
                             (appt) =>

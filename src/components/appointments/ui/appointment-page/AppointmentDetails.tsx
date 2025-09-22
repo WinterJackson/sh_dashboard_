@@ -24,6 +24,7 @@ import {
     Video,
 } from "lucide-react";
 import { Role, Session } from "@/lib/definitions";
+import Image from "next/image";
 
 interface AppointmentDetailsProps {
     appointmentId: string;
@@ -33,7 +34,19 @@ export default function AppointmentDetails({
     appointmentId,
 }: AppointmentDetailsProps) {
     const { data: session } = useSession();
-    const { data: appointment, error } = useFetchAppointmentById(appointmentId);
+
+    const user = session?.user
+        ? {
+              role: session.user.role as Role,
+              hospitalId: session.user.hospitalId,
+              userId: session.user.id,
+          }
+        : undefined;
+
+    const { data: appointment, error } = useFetchAppointmentById(
+        appointmentId,
+        user
+    );
 
     console.log("Raw session data:", session);
 
@@ -123,23 +136,24 @@ export default function AppointmentDetails({
     };
 
     return (
-        <div className="space-y-5 px-5">
+        <div>
+        <div className="space-y-5 px-5 !w-full">
             {/* Breadcrumb Navigation */}
             <nav className="breadcrumbs text-sm pr-4">
                 <ul className="flex gap-2">
-                    <li>
+                    <li className="bg-slate p-2">
                         <a
                             href="/dashboard/appointments"
-                            className="text-primary hover:text-blue-700"
+                            className="text-primary hover:text-primary/80"
                         >
                             Appointments
                         </a>
                     </li>
-                    <span>|</span>
-                    <li>
+                    <span className="bg-slate p-2">|</span>
+                    <li className="bg-slate p-2">
                         <a
                             href={`/dashboard/patients/${appointment.patient.patientId}`}
-                            className="font-semibold text-gray-600 hover:text-primary"
+                            className="font-semibold text-muted-foreground hover:text-primary"
                         >
                             Patient - {patientDetails.name || "Unnamed Patient"}
                         </a>
@@ -147,21 +161,23 @@ export default function AppointmentDetails({
                 </ul>
             </nav>
 
-            <div className="w-full flex gap-6">
-                <div className="w-[400px]">
+            <div className="w-full flex flex-col lg:flex-row gap-6">
+                <div className="w-full lg:w-[400px]">
                     {/* Patient Card */}
-                    <Card className="flex-1 min-w-[300px] bg-white hover:bg-gray-100 rounded-[10px] shadow-lg shadow-gray-300">
-                        <CardHeader className="bg-bluelight rounded-t-[10px] mb-2">
+                    <Card className="flex-1 min-w-[300px] bg-card rounded-[10px] shadow-lg shadow-shadow-main">
+                        <CardHeader className="bg-accent rounded-t-[10px] mb-2">
                             <CardTitle className="text-[16px] flex justify-between">
                                 Patient Details
                                 <Cross />
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2 grid gap-5 mt-6 w-full">
-                            <div className="flex flex-col items-center justify-top bg-slate-200 rounded-[10px] p-2">
-                                <img
+                            <div className="flex flex-col items-center justify-top bg-slate rounded-[10px] p-2">
+                                <Image
                                     src={patientDetails.imageUrl}
                                     alt="Patient profile"
+                                    width={100}
+                                    height={100}
                                     className="w-24 h-24 rounded-full object-cover border-2 border-primary mb-2 mt-6"
                                 />
                                 <p className="font-medium text-md p-2 text-center">
@@ -215,7 +231,7 @@ export default function AppointmentDetails({
                                             {appointment.patient.occupation ||
                                                 "N/A"}
                                         </p>
-                                        <p className="mt-3 pt-3 border-t border-gray-300 ">
+                                        <p className="mt-3 pt-3 border-t border-foreground ">
                                             <span className="font-semibold text-primary">
                                                 Contact:
                                             </span>{" "}
@@ -231,7 +247,7 @@ export default function AppointmentDetails({
                                     </div>
 
                                     {/* Hospitalization Section */}
-                                    <div className="mt-3 pt-3 border-t border-gray-300">
+                                    <div className="mt-3 pt-3 border-t border-foreground">
                                         <div className="grid grid-cols-1 gap-3">
                                             <p>
                                                 <span className="font-semibold text-primary">
@@ -273,7 +289,7 @@ export default function AppointmentDetails({
                                 </div>
 
                                 {/* Next of Kin Section */}
-                                <div className="mt-3 pt-3 border-t border-gray-300 grid grid-cols-1 gap-3">
+                                <div className="mt-3 pt-3 border-t border-foreground grid grid-cols-1 gap-3">
                                     <p>
                                         <span className="font-semibold text-primary">
                                             Next of Kin:
@@ -318,8 +334,8 @@ export default function AppointmentDetails({
                 {/* Right-side content container */}
                 <div className="flex-1 flex flex-col gap-4">
                     <div className="w-full">
-                        <Card className="bg-white w-full hover:bg-gray-100 rounded-[10px] shadow-lg shadow-gray-300">
-                            <CardHeader className="bg-bluelight rounded-t-[10px] mb-2">
+                        <Card className="bg-card w-full rounded-[10px] shadow-lg shadow-shadow-main">
+                            <CardHeader className="bg-accent rounded-t-[10px] mb-2">
                                 <CardTitle className="text-[16px] flex justify-between">
                                     <span className="text-[16px]">
                                         Appointment Summary
@@ -331,7 +347,7 @@ export default function AppointmentDetails({
                                             <ServicesFieldModal
                                                 services={appointment.services}
                                             >
-                                                <button className="flex items-center gap-1 px-2 border-r-2 border-gray-400 hover:bg-black/40 hover:text-white transition-colors">
+                                                <button className="flex items-center gap-1 px-2 border-r-2 border-border hover:bg-primary hover:text-primary-foreground transition-colors">
                                                     <HandHeart className="cursor-pointer" />
                                                 </button>
                                             </ServicesFieldModal>
@@ -340,7 +356,7 @@ export default function AppointmentDetails({
                                             <PaymentsFieldModal
                                                 payments={appointment.payments}
                                             >
-                                                <button className="flex items-center gap-1 px-2 border-r-2 border-gray-400 hover:bg-black/40 hover:text-white transition-colors">
+                                                <button className="flex items-center gap-1 px-2 border-r-2 border-border hover:bg-primary hover:text-primary-foreground transition-colors">
                                                     <Coins className="cursor-pointer" />
                                                 </button>
                                             </PaymentsFieldModal>
@@ -349,7 +365,7 @@ export default function AppointmentDetails({
                                             <NotesFieldModal
                                                 notes={appointment.notes}
                                             >
-                                                <button className="flex items-center gap-1 px-2 border-r-2 border-gray-400 hover:bg-black/40 hover:text-white transition-colors">
+                                                <button className="flex items-center gap-1 px-2 border-r-2 border-border hover:bg-primary hover:text-primary-foreground transition-colors">
                                                     <NotebookPen className="cursor-pointer" />
                                                 </button>
                                             </NotesFieldModal>
@@ -364,7 +380,7 @@ export default function AppointmentDetails({
                                                     appointment.updatedAt
                                                 }
                                             >
-                                                <button className="flex items-center gap-1 px-2 border-r-2 border-gray-400 hover:bg-black/40 hover:text-white transition-colors">
+                                                <button className="flex items-center gap-1 px-2 border-r-2 border-border hover:bg-primary hover:text-primary-foreground transition-colors">
                                                     <Stethoscope className="cursor-pointer" />
                                                 </button>
                                             </DiagnosisFieldModal>
@@ -379,7 +395,7 @@ export default function AppointmentDetails({
                                                     appointment.updatedAt
                                                 }
                                             >
-                                                <button className="flex items-center gap-1 px-2 hover:bg-black/40 hover:text-white transition-colors">
+                                                <button className="flex items-center gap-1 px-2 hover:bg-primary hover:text-primary-foreground transition-colors">
                                                     <Pill className="cursor-pointer" />
                                                 </button>
                                             </PrescriptionFieldModal>
@@ -389,8 +405,8 @@ export default function AppointmentDetails({
                             </CardHeader>
 
                             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 p-6">
-                                <div className="space-y-2 bg-slate-200 rounded-[10px] p-6">
-                                    <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                <div className="space-y-2 bg-slate rounded-[10px] p-6">
+                                    <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                         <span className="font-semibold">
                                             Date:
                                         </span>{" "}
@@ -403,7 +419,7 @@ export default function AppointmentDetails({
                                             )}
                                         </span>
                                     </p>
-                                    <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                    <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                         <span className="font-semibold">
                                             Time:
                                         </span>{" "}
@@ -416,13 +432,13 @@ export default function AppointmentDetails({
                                             )}
                                         </span>
                                     </p>
-                                    <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                    <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                         <span className="font-semibold">
                                             Type:
                                         </span>{" "}
                                         {appointment.type}
                                     </p>
-                                    <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                    <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                         <span className="font-semibold">
                                             Status:
                                         </span>{" "}
@@ -430,7 +446,7 @@ export default function AppointmentDetails({
                                             {appointment.status}
                                         </span>
                                     </p>
-                                    <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                    <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                         <span className="font-semibold">
                                             Duration:{" "}
                                         </span>
@@ -438,7 +454,7 @@ export default function AppointmentDetails({
                                             {getDuration()}
                                         </span>
                                     </p>
-                                    <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                    <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                         <span className="font-semibold truncate overflow-hidden whitespace-nowrap">
                                             Reason for Visit:
                                         </span>{" "}
@@ -449,7 +465,7 @@ export default function AppointmentDetails({
                                     </p>
 
                                     {appointment.status === "CANCELLED" && (
-                                        <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                        <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                             <span className="font-semibold">
                                                 Cancellation Reason:
                                             </span>{" "}
@@ -461,7 +477,7 @@ export default function AppointmentDetails({
                                     )}
 
                                     {appointment.status === "PENDING" && (
-                                        <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                        <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                             <span className="font-semibold">
                                                 Pending Reason:
                                             </span>{" "}
@@ -472,7 +488,7 @@ export default function AppointmentDetails({
                                         </p>
                                     )}
 
-                                    <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                    <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                         <span className="font-semibold">
                                             Treatment:
                                         </span>{" "}
@@ -480,7 +496,7 @@ export default function AppointmentDetails({
                                             {appointment.treatment || "N/A"}
                                         </span>
                                     </p>
-                                    <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                    <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                         <span className="font-semibold truncate overflow-hidden whitespace-nowrap">
                                             Consultation Fee:
                                         </span>{" "}
@@ -492,15 +508,15 @@ export default function AppointmentDetails({
                                                 : "N/A"}
                                         </span>
                                     </p>
-                                    <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                    <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                         <span className="font-semibold">
                                             Paid?
                                         </span>{" "}
                                         {appointment.isPaid ? "Yes" : "No"}
                                     </p>
                                 </div>
-                                <div className="space-y-2 bg-slate-200 rounded-[10px] p-6">
-                                    <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                <div className="space-y-2 bg-slate rounded-[10px] p-6">
+                                    <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                         <span className="font-semibold">
                                             Patient:
                                         </span>{" "}
@@ -508,7 +524,7 @@ export default function AppointmentDetails({
                                             {patientDetails.name}
                                         </span>
                                     </p>
-                                    <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                    <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                         <span className="font-semibold">
                                             Doctor:
                                         </span>{" "}
@@ -516,7 +532,7 @@ export default function AppointmentDetails({
                                             {doctorDetails.name}
                                         </span>
                                     </p>
-                                    <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                    <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                         <span className="font-semibold">
                                             Hospital:
                                         </span>{" "}
@@ -524,33 +540,33 @@ export default function AppointmentDetails({
                                             {hospitalDetails.name}
                                         </span>
                                     </p>
-                                    <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                    <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                         <span className="font-semibold truncate overflow-hidden whitespace-nowrap">
                                             Completion Status:
                                         </span>{" "}
                                         {appointment.completed ? (
-                                            <span className="text-green-600 flex items-center gap-1 truncate overflow-hidden whitespace-nowrap">
+                                            <span className="text-constructive flex items-center gap-1 truncate overflow-hidden whitespace-nowrap">
                                                 <CheckCircle size={16} />
                                                 Completed
                                             </span>
                                         ) : (
-                                            <span className="text-red-600 truncate overflow-hidden whitespace-nowrap">
+                                            <span className="text-destructive truncate overflow-hidden whitespace-nowrap">
                                                 Not Completed
                                             </span>
                                         )}
                                     </p>
-                                    <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                    <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                         <span className="font-semibold truncate overflow-hidden whitespace-nowrap">
                                             Video Status:
                                         </span>{" "}
                                         {appointment.type === "Virtual" ? (
                                             appointment.isVideoStarted ? (
-                                                <span className="text-green-600 flex items-center gap-1 truncate overflow-hidden whitespace-nowrap">
+                                                <span className="text-constructive flex items-center gap-1 truncate overflow-hidden whitespace-nowrap">
                                                     <Video size={16} />
                                                     Started
                                                 </span>
                                             ) : (
-                                                <span className="text-red-600 truncate overflow-hidden whitespace-nowrap">
+                                                <span className="text-destructive truncate overflow-hidden whitespace-nowrap">
                                                     Not Started
                                                 </span>
                                             )
@@ -559,7 +575,7 @@ export default function AppointmentDetails({
                                         )}
                                     </p>
 
-                                    <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                    <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                         <span className="font-semibold">
                                             Created:
                                         </span>{" "}
@@ -570,7 +586,7 @@ export default function AppointmentDetails({
                                             )}
                                         </span>
                                     </p>
-                                    <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                    <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                         <span className="font-semibold truncate overflow-hidden whitespace-nowrap">
                                             Last Updated:
                                         </span>{" "}
@@ -587,26 +603,28 @@ export default function AppointmentDetails({
                     </div>
 
                     {/* Doctor & Hospital Cards Container */}
-                    <div className="flex gap-4 w-full">
+                    <div className="flex flex-col md:flex-row gap-4 w-full">
                         {/* Doctor Card - Visible for SUPER_ADMIN, ADMIN, NURSE, STAFF */}
                         {(role === "SUPER_ADMIN" ||
                             role === "ADMIN" ||
                             role === "NURSE" ||
                             role === "STAFF") && (
-                            <div className="">
-                                <Card className="bg-white hover:bg-gray-100 rounded-[10px] shadow-lg shadow-gray-300 w-full">
-                                    <CardHeader className="bg-bluelight rounded-t-[10px] mb-2">
+                            <div className="w-full">
+                                <Card className="bg-card   rounded-[10px] shadow-lg shadow-shadow-main w-full">
+                                    <CardHeader className="bg-accent rounded-t-[10px] mb-2">
                                         <CardTitle className="text-[16px] flex justify-between">
                                             Doctor Details
                                             <Stethoscope />
                                         </CardTitle>
                                     </CardHeader>
-                                    <CardContent className="space-y-2 flex gap-5 mt-8">
+                                    <CardContent className="space-y-2 flex flex-col sm:flex-row gap-5 mt-8">
                                         {/* Profile */}
-                                        <div className="flex flex-col items-center justify-center bg-slate-200 rounded-[10px] p-2 w-[35%]">
-                                            <img
+                                        <div className="flex flex-col items-center justify-center bg-slate rounded-[10px] p-2 w-full sm:w-[35%]">
+                                            <Image
                                                 src={doctorDetails.imageUrl}
                                                 alt="Doctor profile"
+                                                width={100}
+                                                height={100}
                                                 className="w-24 h-24 rounded-full object-cover border-2 border-primary mb-2"
                                             />
                                             <p className="font-medium text-md p-2 text-center">
@@ -619,8 +637,8 @@ export default function AppointmentDetails({
                                         </div>
 
                                         {/* Details */}
-                                        <div className="space-y-2 w-[65%]">
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                        <div className="space-y-2 w-full sm:w-[65%]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Hospital:
                                                 </span>{" "}
@@ -628,7 +646,7 @@ export default function AppointmentDetails({
                                                     {doctorDetails.hospital}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Department:
                                                 </span>{" "}
@@ -636,7 +654,7 @@ export default function AppointmentDetails({
                                                     {doctorDetails.department}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Contact:
                                                 </span>{" "}
@@ -644,7 +662,7 @@ export default function AppointmentDetails({
                                                     {doctorDetails.contact}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Status:
                                                 </span>{" "}
@@ -652,7 +670,7 @@ export default function AppointmentDetails({
                                                     {doctorDetails.status}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Experience:
                                                 </span>{" "}
@@ -661,7 +679,7 @@ export default function AppointmentDetails({
                                                     years
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Rating:
                                                 </span>{" "}
@@ -672,7 +690,7 @@ export default function AppointmentDetails({
                                                     / 5
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Working Hours:
                                                 </span>{" "}
@@ -687,9 +705,9 @@ export default function AppointmentDetails({
 
                         {/* Hospital Card - Visible only for SUPER_ADMIN */}
                         {role === "SUPER_ADMIN" && (
-                            <div className="">
-                                <Card className="bg-white hover:bg-gray-100 rounded-[10px] shadow-lg shadow-gray-300 w-full">
-                                    <CardHeader className="bg-bluelight rounded-t-[10px] mb-2">
+                            <div className="w-full">
+                                <Card className="bg-card   rounded-[10px] shadow-lg shadow-shadow-main w-full">
+                                    <CardHeader className="bg-accent rounded-t-[10px] mb-2">
                                         <CardTitle className="text-[16px] flex justify-between">
                                             Hospital Details
                                             <Hospital />
@@ -697,11 +715,13 @@ export default function AppointmentDetails({
                                     </CardHeader>
                                     <CardContent className="space-y-2 flex flex-col md:flex-row gap-5 mt-8 ">
                                         {/* Logo & Name */}
-                                        <div className="flex flex-col items-center justify-center bg-slate-200 rounded-[10px] p-2 w-[35%]">
-                                            <img
+                                        <div className="flex flex-col items-center justify-center bg-slate rounded-[10px] p-2 w-full md:w-[35%]">
+                                            <Image
                                                 src={hospitalDetails.logo}
                                                 alt="Hospital logo"
-                                                className="w-32 h-32 object-contain mb-2 rounded-[100%] bg-bluelight/10 border-2 border-bluelight"
+                                                width={100}
+                                                height={100}
+                                                className="w-32 h-32 object-contain mb-2 rounded-[100%] bg-primary/10 border-2 border-primary"
                                             />
                                             <p className="font-medium text-md p-2 text-center">
                                                 {hospitalDetails.name}
@@ -712,8 +732,8 @@ export default function AppointmentDetails({
                                         </div>
 
                                         {/* Details */}
-                                        <div className="space-y-2 w-[65%]">
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                        <div className="space-y-2 w-full md:w-[65%]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Hospital ID:
                                                 </span>
@@ -722,7 +742,7 @@ export default function AppointmentDetails({
                                                         .hospitalId || "N/A"}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Facility Type:
                                                 </span>
@@ -731,7 +751,7 @@ export default function AppointmentDetails({
                                                         .facilityType || "N/A"}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Category:
                                                 </span>
@@ -740,7 +760,7 @@ export default function AppointmentDetails({
                                                         .category || "N/A"}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Regulatory Body:
                                                 </span>
@@ -750,7 +770,7 @@ export default function AppointmentDetails({
                                                         "N/A"}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     NHIF Accreditation:
                                                 </span>
@@ -760,7 +780,7 @@ export default function AppointmentDetails({
                                                         "N/A"}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Referral Code:
                                                 </span>
@@ -769,7 +789,7 @@ export default function AppointmentDetails({
                                                         .referralCode || "N/A"}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Open 24 Hours:
                                                 </span>
@@ -778,7 +798,7 @@ export default function AppointmentDetails({
                                                         .open24Hours || "N/A"}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Open Weekends:
                                                 </span>
@@ -787,7 +807,7 @@ export default function AppointmentDetails({
                                                         .openWeekends || "N/A"}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     County:
                                                 </span>
@@ -796,7 +816,7 @@ export default function AppointmentDetails({
                                                         .county || "N/A"}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Sub-County:
                                                 </span>
@@ -805,7 +825,7 @@ export default function AppointmentDetails({
                                                         .subCounty || "N/A"}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Ward:
                                                 </span>
@@ -814,7 +834,7 @@ export default function AppointmentDetails({
                                                         .ward || "N/A"}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Address:
                                                 </span>
@@ -823,7 +843,7 @@ export default function AppointmentDetails({
                                                         .streetAddress || "N/A"}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Town:
                                                 </span>
@@ -832,7 +852,7 @@ export default function AppointmentDetails({
                                                         .town || "N/A"}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Phone:
                                                 </span>
@@ -841,7 +861,7 @@ export default function AppointmentDetails({
                                                         .phone || "N/A"}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Emergency Phone:
                                                 </span>
@@ -851,7 +871,7 @@ export default function AppointmentDetails({
                                                         "N/A"}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Email:
                                                 </span>
@@ -860,7 +880,7 @@ export default function AppointmentDetails({
                                                         .email || "N/A"}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Emergency Email:
                                                 </span>
@@ -870,7 +890,7 @@ export default function AppointmentDetails({
                                                         "N/A"}
                                                 </span>
                                             </p>
-                                            <p className="flex gap-2 justify-between whitespace-nowrap bg-gray-100 p-2 rounded-[5px]">
+                                            <p className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 bg-background-muted p-2 rounded-[5px]">
                                                 <span className="font-semibold">
                                                     Website:
                                                 </span>
@@ -885,7 +905,7 @@ export default function AppointmentDetails({
                                                             }
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="text-blue-600 hover:underline"
+                                                            className="text-primary hover:underline"
                                                         >
                                                             {
                                                                 appointment
@@ -907,5 +927,7 @@ export default function AppointmentDetails({
                 </div>
             </div>
         </div>
+        </div>
+
     );
 }

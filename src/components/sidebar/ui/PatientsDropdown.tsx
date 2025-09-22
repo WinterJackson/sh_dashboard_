@@ -6,13 +6,14 @@ import { useState } from "react";
 import { ChevronRightIcon, PersonIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { Role } from "@/lib/definitions";
+import React from "react";
 
 type PatientsDropdownProps = {
     isActive: (href: string) => boolean;
     role?: Role;
 };
 
-const PatientsDropdown: React.FC<PatientsDropdownProps> = ({
+const PatientsDropdown: React.FC<PatientsDropdownProps> = React.memo(({
     isActive,
     role,
 }) => {
@@ -96,6 +97,6 @@ const PatientsDropdown: React.FC<PatientsDropdownProps> = ({
             </div>
         </>
     );
-};
+});
 
 export default PatientsDropdown;

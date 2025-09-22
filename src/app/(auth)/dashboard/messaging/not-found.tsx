@@ -5,7 +5,7 @@ export default function NotFound() {
     <div>
       <h2>Chats Not Found</h2>
       <p>Could not find any messages</p>
-      <Link href="/dashboard/hospitals">Return to Dashboard</Link>
+      <Link href="/dashboard/messaging">Return to Messaging</Link>
     </div>
   )
 }

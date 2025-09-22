@@ -7,7 +7,7 @@ import { useChangePassword } from "@/hooks/useChangePassword";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { toast } from "sonner";
 import {
     Dialog,
@@ -22,9 +22,10 @@ import MFASwitch from "@/components/settings/toogle-button/MFASwitch";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useUserSettings } from "@/hooks/useUserSettings";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
+import { useUserSecurity } from "@/hooks/useUserSecurity";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Password validation schema
 const passwordSchema = z
@@ -45,8 +46,8 @@ const passwordSchema = z
 
 type PasswordFormData = z.infer<typeof passwordSchema>;
 
-export default function SecurityTab() {
-    const { data, isLoading, isError, refetch } = useUserSettings();
+function SecurityTabContent() {
+    const { data, isLoading, isError, refetch } = useUserSecurity();
     const { mutate: updateSecuritySettings, isPending } =
         useUpdateSecuritySettings();
     const { mutateAsync: changePassword, isPending: isChangingPassword } =
@@ -61,7 +62,6 @@ export default function SecurityTab() {
         resolver: zodResolver(passwordSchema),
     });
 
-    // Local state
     const [autoLogoutTimeout, setAutoLogoutTimeout] = useState(
         data?.securitySettings?.autoLogoutTimeout ?? 30
     );
@@ -71,14 +71,12 @@ export default function SecurityTab() {
     const [showNew, setShowNew] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
 
-    // Sync local state with fetched data
     useEffect(() => {
         if (data?.securitySettings?.autoLogoutTimeout !== undefined) {
             setAutoLogoutTimeout(data.securitySettings.autoLogoutTimeout);
         }
     }, [data?.securitySettings?.autoLogoutTimeout]);
 
-    // Handle auto logout change
     const handleAutoLogoutChange = async (enabled: boolean) => {
         const newTimeout = enabled ? 30 : 0;
         try {
@@ -102,7 +100,6 @@ export default function SecurityTab() {
         }
     };
 
-    // Submit password change
     const handlePasswordSubmit = async (formData: PasswordFormData) => {
         try {
             await changePassword({
@@ -122,19 +119,21 @@ export default function SecurityTab() {
         }
     };
 
-    // Show loading state
     if (isLoading) {
-        return <div></div>;
+        return (
+            <div className="space-y-6 p-2">
+                <Skeleton className="h-8 w-40" />
+                <Skeleton className="h-24 w-full rounded-lg" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+            </div>
+        );
     }
 
-    // Show error state with retry
     if (isError || !data) {
         return (
             <div className="p-4">
                 Failed to load security settings.{" "}
-                <Button onClick={() => refetch()}>
-                    Try Again
-                </Button>
+                <Button onClick={() => refetch()}>Try Again</Button>
             </div>
         );
     }
@@ -142,18 +141,12 @@ export default function SecurityTab() {
     const { email, securitySettings } = data;
 
     return (
-        <div className="space-y-4 p-2 w-full">
-            <h2 className="text-lg text-primary font-semibold bg-white p-2 rounded-[10px] shadow-sm shadow-gray-400 w-full">
-                Security Preference
-            </h2>
+        <div className="space-y-6">
+            <div className="space-y-4 p-3 rounded-[10px] bg-card shadow-sm shadow-shadow-main">
+                <h2 className="text-lg text-primary font-semibold border-b-2 border-border pb-2">
+                    Security Preferences
+                </h2>
 
-            {/* Security options container */}
-            <div className="bg-white p-4 rounded-[10px] shadow-sm shadow-gray-400 w-full">
-                <h3 className="text-base font-semibold mb-4 border-b-2 border-gray-300 p-1 pb-0 w-full">
-                    Password And Security
-                </h3>
-
-                {/* MFA toggle */}
                 <MFASwitch
                     initialEnabled={securitySettings?.twoFactorEnabled || false}
                     autoLogoutTimeout={autoLogoutTimeout}
@@ -161,13 +154,15 @@ export default function SecurityTab() {
                     onUpdateSuccess={refetch}
                 />
 
-                {/* Auto-logout toggle */}
-                <div className="flex items-center justify-between mb-4 p-2 border-2 border-gray-100 rounded-[10px]">
-                    <div className="w-full">
-                        <Label htmlFor="autoLogoutTimeout" className="font-semibold">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-2 border-b border-border">
+                    <div className="space-y-1">
+                        <Label
+                            htmlFor="autoLogoutTimeout"
+                            className="font-semibold"
+                        >
                             Automatic Log Out
                         </Label>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-muted-foreground">
                             Log out after 30 minutes of inactivity
                         </p>
                     </div>
@@ -180,7 +175,6 @@ export default function SecurityTab() {
                 </div>
             </div>
 
-            {/* Password Change Modal */}
             <Dialog
                 open={isPasswordModalOpen}
                 onOpenChange={setIsPasswordModalOpen}
@@ -202,9 +196,10 @@ export default function SecurityTab() {
                     </DialogHeader>
                     <form onSubmit={handleSubmit(handlePasswordSubmit)}>
                         <div className="space-y-4 w-full">
-                            {/* Current Password */}
                             <div className="w-full relative">
-                                <Label htmlFor="currentPassword">Current Password</Label>
+                                <Label htmlFor="currentPassword">
+                                    Current Password
+                                </Label>
                                 <Input
                                     id="currentPassword"
                                     type={showCurrent ? "text" : "password"}
@@ -213,21 +208,28 @@ export default function SecurityTab() {
                                 />
                                 <button
                                     type="button"
-                                    className="absolute right-2 top-9 text-gray-500"
-                                    onClick={() => setShowCurrent((prev) => !prev)}
+                                    className="absolute right-2 top-9 text-muted-foreground"
+                                    onClick={() =>
+                                        setShowCurrent((prev) => !prev)
+                                    }
                                 >
-                                    {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    {showCurrent ? (
+                                        <EyeOff size={18} />
+                                    ) : (
+                                        <Eye size={18} />
+                                    )}
                                 </button>
                                 {errors.currentPassword && (
-                                    <p className="text-red-500 text-sm mt-1">
+                                    <p className="text-destructive text-sm mt-1">
                                         {errors.currentPassword.message}
                                     </p>
                                 )}
                             </div>
 
-                            {/* New Password */}
                             <div className="w-full relative">
-                                <Label htmlFor="newPassword">New Password</Label>
+                                <Label htmlFor="newPassword">
+                                    New Password
+                                </Label>
                                 <Input
                                     id="newPassword"
                                     type={showNew ? "text" : "password"}
@@ -236,21 +238,26 @@ export default function SecurityTab() {
                                 />
                                 <button
                                     type="button"
-                                    className="absolute right-2 top-9 text-gray-500"
+                                    className="absolute right-2 top-9 text-muted-foreground"
                                     onClick={() => setShowNew((prev) => !prev)}
                                 >
-                                    {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    {showNew ? (
+                                        <EyeOff size={18} />
+                                    ) : (
+                                        <Eye size={18} />
+                                    )}
                                 </button>
                                 {errors.newPassword && (
-                                    <p className="text-red-500 text-sm mt-1">
+                                    <p className="text-destructive text-sm mt-1">
                                         {errors.newPassword.message}
                                     </p>
                                 )}
                             </div>
 
-                            {/* Confirm Password */}
                             <div className="w-full relative">
-                                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                                <Label htmlFor="confirmPassword">
+                                    Confirm Password
+                                </Label>
                                 <Input
                                     id="confirmPassword"
                                     type={showConfirm ? "text" : "password"}
@@ -259,13 +266,19 @@ export default function SecurityTab() {
                                 />
                                 <button
                                     type="button"
-                                    className="absolute right-2 top-9 text-gray-500"
-                                    onClick={() => setShowConfirm((prev) => !prev)}
+                                    className="absolute right-2 top-9 text-muted-foreground"
+                                    onClick={() =>
+                                        setShowConfirm((prev) => !prev)
+                                    }
                                 >
-                                    {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    {showConfirm ? (
+                                        <EyeOff size={18} />
+                                    ) : (
+                                        <Eye size={18} />
+                                    )}
                                 </button>
                                 {errors.confirmPassword && (
-                                    <p className="text-red-500 text-sm mt-1">
+                                    <p className="text-destructive text-sm mt-1">
                                         {errors.confirmPassword.message}
                                     </p>
                                 )}
@@ -286,5 +299,19 @@ export default function SecurityTab() {
                 </DialogContent>
             </Dialog>
         </div>
+    );
+}
+
+export default function SecurityTab() {
+    return (
+        <Suspense
+            fallback={
+                <div className="p-2">
+                    <Skeleton className="h-32 w-full rounded-lg" />
+                </div>
+            }
+        >
+            <SecurityTabContent />
+        </Suspense>
     );
 }

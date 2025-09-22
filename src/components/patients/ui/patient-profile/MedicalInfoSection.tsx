@@ -54,15 +54,15 @@ export default function MedicalInfoSection({
     };
 
     return (
-        <div className="bg-white p-4 rounded-[10px] shadow-md">
-            <div className="flex justify-between items-center mb-6 p-2 bg-bluelight/10 rounded-[10px]">
+        <div className="bg-slate p-4 rounded-[10px] shadow-md shadow-shadow-main">
+            <div className="flex justify-between items-center mb-6 p-2 bg-background rounded-[10px]">
                 <h2 className="text-base text-primary font-semibold">
                     Medical Information
                 </h2>
                 <Button
                     onClick={() => setIsEditing(!isEditing)}
                     variant="outline"
-                    className="bg-white"
+                    className="bg-primary text-primary-foreground hover:bg-primary/50"
                 >
                     {isEditing ? "Cancel" : "Edit"}
                 </Button>
@@ -73,8 +73,8 @@ export default function MedicalInfoSection({
                     onSubmit={handleSubmit}
                     className="grid grid-cols-4 gap-4 p-2"
                 >
-                    <div className="space-y-2 bg-black/5 rounded-[10px] shadow-sm shadow-gray-400 p-2">
-                        <label className="block text-sm text-primary font-medium">
+                    <div className="space-y-2 bg-background rounded-[10px] shadow-md shadow-shadow-main p-2">
+                        <label className="block text-sm text-foreground font-medium">
                             Height (m)
                         </label>
                         <Input
@@ -85,8 +85,8 @@ export default function MedicalInfoSection({
                         />
                     </div>
 
-                    <div className="space-y-2 bg-black/5 rounded-[10px] shadow-sm shadow-gray-400 p-2">
-                        <label className="block text-sm text-primary font-medium">
+                    <div className="space-y-2 bg-background rounded-[10px] shadow-md shadow-shadow-main p-2">
+                        <label className="block text-sm text-foreground font-medium">
                             Weight (kg)
                         </label>
                         <Input
@@ -97,8 +97,8 @@ export default function MedicalInfoSection({
                         />
                     </div>
 
-                    <div className="space-y-2 bg-black/5 rounded-[10px] shadow-sm shadow-gray-400 p-2">
-                        <label className="block text-sm text-primary font-medium">
+                    <div className="space-y-2 bg-background rounded-[10px] shadow-md shadow-shadow-main p-2">
+                        <label className="block text-sm text-foreground font-medium">
                             Blood Group
                         </label>
                         <Input
@@ -109,8 +109,8 @@ export default function MedicalInfoSection({
                         />
                     </div>
 
-                    <div className="space-y-2 bg-black/5 rounded-[10px] shadow-sm shadow-gray-400 p-2">
-                        <label className="block text-sm text-primary font-medium">
+                    <div className="space-y-2 bg-background rounded-[10px] shadow-md shadow-shadow-main p-2">
+                        <label className="block text-sm text-foreground font-medium">
                             Body Type
                         </label>
                         <Input
@@ -121,8 +121,8 @@ export default function MedicalInfoSection({
                         />
                     </div>
 
-                    <div className="space-y-2 bg-black/5 rounded-[10px] shadow-sm shadow-gray-400 p-2">
-                        <label className="block text-sm text-primary font-medium">
+                    <div className="space-y-2 bg-background rounded-[10px] shadow-md shadow-shadow-main p-2">
+                        <label className="block text-sm text-foreground font-medium">
                             Allergies
                         </label>
                         <Input
@@ -133,30 +133,30 @@ export default function MedicalInfoSection({
                         />
                     </div>
 
-                    <div className="space-y-2 bg-black/5 rounded-[10px] shadow-sm shadow-gray-400 p-2">
-                        <label className="block text-sm text-primary font-medium">
+                    <div className="space-y-2 bg-background rounded-[10px] shadow-md shadow-shadow-main p-2">
+                        <label className="block text-sm text-foreground font-medium">
                             Alcohol Use
                         </label>
                         <select
                             name="alcohol"
                             value={formData.alcohol?.toString() || "false"}
                             onChange={handleChange}
-                            className="w-full p-2 border rounded-[5px] text-sm bg-white"
+                            className="w-full p-2 border rounded-[5px] text-sm bg-background"
                         >
                             <option className="text-sm" value="true">Yes</option>
                             <option className="text-sm" value="false">No</option>
                         </select>
                     </div>
 
-                    <div className="space-y-2 bg-black/5 rounded-[10px] shadow-sm shadow-gray-400 p-2">
-                        <label className="block text-sm text-primary font-medium">
+                    <div className="space-y-2 bg-background rounded-[10px] shadow-md shadow-shadow-main p-2">
+                        <label className="block text-sm text-foreground font-medium">
                             Drug Use
                         </label>
                         <select
                             name="drugs"
                             value={formData.drugs?.toString() || "false"}
                             onChange={handleChange}
-                            className="w-full p-2 border rounded-[5px] text-sm bg-white"
+                            className="w-full p-2 border rounded-[5px] text-sm bg-background"
                         >
                             <option value="true">Yes</option>
                             <option value="false">No</option>
@@ -171,37 +171,37 @@ export default function MedicalInfoSection({
                 </form>
             ) : (
                 <div className="grid grid-cols-4 gap-4 p-2">
-                    <div className="bg-black/5 rounded-[10px] shadow-sm shadow-gray-400 p-2">
-                        <p className="font-medium text-sm text-primary text-nowrap">Height (m)</p>
-                        <p className="font-semibold p-4 pl-1 text-sm text-red-600">{data?.height || "N/A"} m</p>
+                    <div className="bg-background rounded-[10px] shadow-md shadow-shadow-main p-2">
+                        <p className="font-medium text-sm text-foreground  text-nowrap">Height (m)</p>
+                        <p className="font-semibold p-3 pl-3 border text-sm text-destructive">{data?.height || "N/A"} m</p>
                     </div>
-                    <div className="bg-black/5 rounded-[10px] shadow-sm shadow-gray-400 p-2">
-                        <p className="font-medium text-sm text-primary text-nowrap">Weight (Kg)</p>
-                        <p className="font-semibold p-4 pl-1 text-sm text-red-600">{data?.weight || "N/A"} kg</p>
+                    <div className="bg-background rounded-[10px] shadow-md shadow-shadow-main p-2">
+                        <p className="font-medium text-sm text-foreground  text-nowrap">Weight (Kg)</p>
+                        <p className="font-semibold p-3 pl-3 border text-sm text-destructive">{data?.weight || "N/A"} kg</p>
                     </div>
-                    <div className="bg-black/5 rounded-[10px] shadow-sm shadow-gray-400 p-2">
-                        <p className="font-medium text-sm text-primary text-nowrap">Blood Group</p>
-                        <p className="font-semibold p-4 pl-1 text-sm text-red-600">{data?.bloodGroup || "N/A"}</p>
+                    <div className="bg-background rounded-[10px] shadow-md shadow-shadow-main p-2">
+                        <p className="font-medium text-sm text-foreground  text-nowrap">Blood Group</p>
+                        <p className="font-semibold p-3 pl-3 border text-sm text-destructive">{data?.bloodGroup || "N/A"}</p>
                     </div>
-                    <div className="bg-black/5 rounded-[10px] shadow-sm shadow-gray-400 p-2">
-                        <p className="font-medium text-sm text-primary text-nowrap">Body Type</p>
-                        <p className="font-semibold p-4 pl-1 text-sm text-red-600">{data?.bodyType || "N/A"}</p>
+                    <div className="bg-background rounded-[10px] shadow-md shadow-shadow-main p-2">
+                        <p className="font-medium text-sm text-foreground  text-nowrap">Body Type</p>
+                        <p className="font-semibold p-3 pl-3 border text-sm text-destructive">{data?.bodyType || "N/A"}</p>
                     </div>
-                    <div className="bg-black/5 rounded-[10px] shadow-sm shadow-gray-400 p-2">
-                        <p className="font-medium text-sm text-primary text-nowrap">Allergies</p>
-                        <p className="font-semibold p-4 pl-1 text-sm text-red-600">{data?.allergies || "N/A"}</p>
+                    <div className="bg-background rounded-[10px] shadow-md shadow-shadow-main p-2">
+                        <p className="font-medium text-sm text-foreground  text-nowrap">Allergies</p>
+                        <p className="font-semibold p-3 pl-3 border text-sm text-destructive">{data?.allergies || "N/A"}</p>
                     </div>
-                    <div className="bg-black/5 rounded-[10px] shadow-sm shadow-gray-400 p-2">
-                        <p className="font-medium text-sm text-primary text-nowrap">Alcohol Use</p>
-                        <p className="font-semibold p-4 pl-1 text-sm text-red-600">{data?.alcohol ? "Yes" : "No"}</p>
+                    <div className="bg-background rounded-[10px] shadow-md shadow-shadow-main p-2">
+                        <p className="font-medium text-sm text-foreground  text-nowrap">Alcohol Use</p>
+                        <p className="font-semibold p-3 pl-3 border text-sm text-destructive">{data?.alcohol ? "Yes" : "No"}</p>
                     </div>
-                    <div className="bg-black/5 rounded-[10px] shadow-sm shadow-gray-400 p-2">
-                        <p className="font-medium text-sm text-primary text-nowrap">Drug Use</p>
-                        <p className="font-semibold p-4 pl-1 text-sm text-red-600">{data?.drugs ? "Yes" : "No"}</p>
+                    <div className="bg-background rounded-[10px] shadow-md shadow-shadow-main p-2">
+                        <p className="font-medium text-sm text-foreground  text-nowrap">Drug Use</p>
+                        <p className="font-semibold p-3 pl-3 border text-sm text-destructive">{data?.drugs ? "Yes" : "No"}</p>
                     </div>
-                    <div className="bg-black/5 rounded-[10px] shadow-sm shadow-gray-400 p-2">
-                        <p className="font-medium text-sm text-primary text-nowrap">BMI</p>
-                        <p className="font-semibold p-4 pl-1 text-sm text-red-600">{data?.bmi?.toFixed(1) || "N/A"}</p>
+                    <div className="bg-background rounded-[10px] shadow-md shadow-shadow-main p-2">
+                        <p className="font-medium text-sm text-foreground  text-nowrap">BMI</p>
+                        <p className="font-semibold p-3 pl-3 border text-sm text-destructive">{data?.bmi?.toFixed(1) || "N/A"}</p>
                     </div>
                 </div>
             )}

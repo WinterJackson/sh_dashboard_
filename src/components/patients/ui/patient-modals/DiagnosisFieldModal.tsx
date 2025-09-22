@@ -61,8 +61,8 @@ export function DiagnosisFieldModal({
                                 className={cn(
                                     "inline-block truncate max-w-[150px] cursor-pointer",
                                     hasDiagnosis
-                                        ? "text-primary"
-                                        : "text-gray-400"
+                                        ? "text-constructive"
+                                        : "text-muted-foreground"
                                 )}
                                 title={
                                     hasDiagnosis ? undefined : "No diagnosis"

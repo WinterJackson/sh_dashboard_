@@ -44,13 +44,13 @@ export default async function AppointmentsPage() {
     }
 
     return (
-        <>
-            <div className="flex items-center gap-2 bg-bluelight/5 rounded-[10px] p-2 mx-4 w-full">
+        <div className="cursor-pointer flex flex-col gap-3 p-3 pt-0">
+            <div className="flex items-center gap-2 bg-slate p-2 rounded-[10px] w-full">
                 <h1 className="text-xl font-bold">Appointments</h1>
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger className="ml-1">
-                            <Info size={16} className="text-gray-600" />
+                            <Info size={16} className="text-text-muted" />
                         </TooltipTrigger>
                         <TooltipContent>
                             <p>Click on an appointment row to view appointment details</p>
@@ -58,14 +58,12 @@ export default async function AppointmentsPage() {
                     </Tooltip>
                 </TooltipProvider>
             </div>
-            <div className="p-4 pr-2 pt-4">
-                <AppointmentList
-                    appointments={appointments}
-                    totalAppointments={totalAppointments}
-                    session={session}
-                    hospitals={hospitals}
-                />
-            </div>
-        </>
+            <AppointmentList
+                appointments={appointments}
+                totalAppointments={totalAppointments}
+                session={session}
+                hospitals={hospitals}
+            />
+        </div>
     );
 }

@@ -2,7 +2,7 @@
 
 "use server";
 
-import { MedicalInformation, Patient, Role } from "@/lib/definitions";
+import { MedicalInformation, Patient, Role, FetchedPatient } from "@/lib/definitions";
 import * as Sentry from "@sentry/nextjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
@@ -336,7 +336,11 @@ export async function fetchPatientsToday(user?: {
                 },
             },
             select: {
-                patient: true,
+                patient: {
+                    select: {
+                        patientId: true,
+                    },
+                },
             },
         });
 
@@ -570,7 +574,11 @@ export async function fetchPatientsForLast14Days(user?: {
                 },
             },
             select: {
-                patient: true,
+                patient: {
+                    select: {
+                        patientId: true,
+                    },
+                },
             },
         });
 
@@ -584,7 +592,11 @@ export async function fetchPatientsForLast14Days(user?: {
                 },
             },
             select: {
-                patient: true,
+                patient: {
+                    select: {
+                        patientId: true,
+                    },
+                },
             },
         });
 
@@ -635,7 +647,7 @@ export async function fetchPatients(user?: {
     role: Role;
     hospitalId?: number | null;
     userId?: string | null;
-}): Promise<{ patients: Patient[]; totalPatients: number }> {
+}): Promise<{ patients: FetchedPatient[]; totalPatients: number }> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -655,34 +667,41 @@ export async function fetchPatients(user?: {
     const { role, hospitalId, userId } = user;
 
     try {
-        let patients: Patient[] = [];
+        let patients: FetchedPatient[] = [];
         let totalPatients: number = 0;
+
+        const patientSelect = {
+            patientId: true,
+            hospitalId: true,
+            reasonForConsultation: true,
+            user: {
+                select: {
+                    email: true,
+                    profile: {
+                        select: {
+                            firstName: true,
+                            lastName: true,
+                            phoneNo: true,
+                            dateOfBirth: true,
+                            gender: true,
+                        },
+                    },
+                },
+            },
+            appointments: {
+                select: {
+                    appointmentDate: true,
+                },
+                orderBy: {
+                    appointmentDate: "desc",
+                },
+            },
+        };
 
         switch (role) {
             case "SUPER_ADMIN":
                 patients = await prisma.patient.findMany({
-                    include: {
-                        hospital: true,
-                        user: {
-                            include: {
-                                profile: true,
-                            },
-                        },
-                        appointments: {
-                            orderBy: { appointmentDate: "desc" },
-                            include: {
-                                doctor: {
-                                    include: {
-                                        user: {
-                                            include: {
-                                                profile: true,
-                                            },
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    },
+                    select: patientSelect,
                 });
                 totalPatients = await prisma.patient.count();
                 break;
@@ -697,28 +716,7 @@ export async function fetchPatients(user?: {
 
                 patients = await prisma.patient.findMany({
                     where: { hospitalId },
-                    include: {
-                        hospital: true,
-                        user: {
-                            include: {
-                                profile: true,
-                            },
-                        },
-                        appointments: {
-                            orderBy: { appointmentDate: "desc" },
-                            include: {
-                                doctor: {
-                                    include: {
-                                        user: {
-                                            include: {
-                                                profile: true,
-                                            },
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    },
+                    select: patientSelect,
                 });
 
                 totalPatients = await prisma.patient.count({
@@ -739,29 +737,7 @@ export async function fetchPatients(user?: {
                         hospitalId,
                         appointments: { some: { doctor: { userId } } },
                     },
-                    include: {
-                        hospital: true,
-                        user: {
-                            include: {
-                                profile: true,
-                            },
-                        },
-                        appointments: {
-                            where: { doctor: { userId } },
-                            orderBy: { appointmentDate: "desc" },
-                            include: {
-                                doctor: {
-                                    include: {
-                                        user: {
-                                            include: {
-                                                profile: true,
-                                            },
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    },
+                    select: patientSelect,
                 });
 
                 totalPatients = await prisma.patient.count({
@@ -967,9 +943,10 @@ export async function fetchPatientDetails(
 
         const patient = await prisma.patient.findFirst({
             where: whereClause,
-            include: {
+            select: {
+                patientId: true,
                 user: {
-                    include: {
+                    select: {
                         profile: {
                             select: {
                                 dateOfBirth: true,
@@ -977,7 +954,6 @@ export async function fetchPatientDetails(
                         },
                     },
                 },
-                hospital: true,
             },
         });
 
@@ -1187,7 +1163,7 @@ export async function updateMedicalInfo(
 export async function fetchPatientsByRole(user?: {
     role: Role;
     hospitalId: number | null;
-}): Promise<Patient[]> {
+}): Promise<FetchedPatient[]> {
     if (!user) {
         const session = await getServerSession(authOptions);
 
@@ -1236,15 +1212,35 @@ export async function fetchPatientsByRole(user?: {
         // Fetch patients based on the whereClause
         const patients = await prisma.patient.findMany({
             where: whereClause,
-            include: {
-                hospital: true,
+            select: {
+                patientId: true,
+                reasonForConsultation: true,
+                user: {
+                    select: {
+                        email: true,
+                        profile: {
+                            select: {
+                                firstName: true,
+                                lastName: true,
+                                phoneNo: true,
+                                dateOfBirth: true,
+                                gender: true,
+                            },
+                        },
+                    },
+                },
                 appointments: {
-                    orderBy: { appointmentDate: "desc" },
+                    select: {
+                        appointmentDate: true,
+                    },
+                    orderBy: {
+                        appointmentDate: "desc",
+                    },
                 },
             },
         });
 
-        return patients;
+        return patients as FetchedPatient[];
     } catch (error) {
         const errorMessage = getErrorMessage(error);
         Sentry.captureException(error, { extra: { errorMessage } });

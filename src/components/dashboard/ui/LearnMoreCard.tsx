@@ -44,4 +44,4 @@ function LearnMoreCard({}: Props) {
     );
 }
 
-export default LearnMoreCard;
+export default React.memo(LearnMoreCard);

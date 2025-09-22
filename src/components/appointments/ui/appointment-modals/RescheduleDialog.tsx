@@ -84,7 +84,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
         if (!isAppointmentLoading && appointmentDetails) {
             // Pre-fill hospital and doctor fields for SUPER_ADMIN
             if (role === "SUPER_ADMIN") {
-                setSelectedHospitalId(appointmentDetails.hospitalId); // Pre-select hospital
+                setSelectedHospitalId(appointmentDetails.hospitalId);
                 setValue(
                     "hospitalId",
                     appointmentDetails.hospitalId.toString()
@@ -203,7 +203,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
         <Dialog open={true} onOpenChange={onClose}>
             <DialogContent>
                 <DialogTitle>Reschedule Appointment</DialogTitle>
-                <DialogDescription className="bg-[#EFEFEF] p-2">
+                <DialogDescription className="p-2">
                     Select a new date and time for the appointment and other
                     necessary details.
                 </DialogDescription>
@@ -214,11 +214,11 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                     <summary className="font-semibold items-center">
                         Help - Reschedule Appointment.
                     </summary>
-                    <div className="absolute bg-[#E5F0FB] outline outline-1 outline-secondary/50 z-10 rounded-[10px] mt-3 mr-7 pt-4 pb-4 pr-2">
-                        <p className="ml-5 text-gray-500">
+                    <div className="absolute bg-accent outline outline-1 outline-secondary/50 z-10 rounded-[10px] mt-3 mr-7 pt-4 pb-4 pr-2">
+                        <p className="ml-5 text-muted-foreground">
                             You are required to provide the following:
                         </p>
-                        <ol className="list-disc ml-10 text-gray-500 text-[13px]">
+                        <ol className="list-disc ml-10 text-muted-foreground text-[13px]">
                             <li>
                                 the <strong>new date</strong> of the
                                 appointment.
@@ -246,21 +246,21 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                             <select
                                 id="type"
                                 {...register("type", { required: true })}
-                                className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px]"
+                                className="flex bg-muted h-10 w-full px-3 py-2 text-sm rounded-[5px] outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
                             >
-                                <option value="" disabled>
+                                <option value="" className="bg-muted text-text-muted" disabled>
                                     Select type
                                 </option>
-                                <option value="Virtual">Virtual</option>
-                                <option value="Walk In">Walk In</option>
+                                <option value="Virtual" className="bg-background text-text-muted">Virtual</option>
+                                <option value="Walk In" className="bg-background text-text-muted">Walk In</option>
                             </select>
                         </div>
                         <div>
                             <Label htmlFor="date">Date</Label>
-                            <div className="flex items-center rounded-[5px] bg-[#EFEFEF]">
+                            <div className="flex items-center rounded-[5px] bg-background">
                                 <Input
                                     id="date"
-                                    className="rounded-[5px] bg-white/90"
+                                    className="rounded-[5px] bg-muted"
                                     value={
                                         selectedDate
                                             ? selectedDate.toLocaleDateString()
@@ -272,12 +272,13 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                     onClick={() =>
                                         setIsCalendarOpen(!isCalendarOpen)
                                     }
+                                    className="bg-slate-two rounded-[5px]"
                                 >
-                                    <CalendarTodayIcon />
+                                    <CalendarTodayIcon className="text-foreground" />
                                 </IconButton>
                             </div>
                             {isCalendarOpen && (
-                                <div className="fixed z-50 bg-slate-200 mt-1">
+                                <div className="fixed z-50 bg-accent rounded-[10px] mt-1">
                                     <Calendar
                                         mode="single"
                                         selected={selectedDate}
@@ -296,7 +297,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                         <input
                                             type="time"
                                             {...field}
-                                            className="flex bg-[#EFEFEF] h-10 w-full border px-3 py-2 text-sm rounded-[5px]"
+                                            className="flex h-10 w-full px-3 py-2 text-sm rounded-[5px] bg-muted text-text-main focus:outline-none focus:ring-0 focus:border-primary dark:[color-scheme:dark] [color-scheme:light]"
                                         />
                                     )}
                                 />
@@ -310,7 +311,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                         <input
                                             type="time"
                                             {...field}
-                                            className="flex bg-[#EFEFEF] h-10 w-full border px-3 py-2 text-sm rounded-[5px]"
+                                            className="flex h-10 w-full px-3 py-2 text-sm rounded-[5px] bg-muted text-text-main focus:outline-none focus:ring-0 focus:border-primary dark:[color-scheme:dark] [color-scheme:root]"
                                         />
                                     )}
                                 />
@@ -329,9 +330,9 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                             parseInt(e.target.value, 10)
                                         )
                                     }
-                                    className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px]"
+                                    className="flex bg-muted h-10 w-full px-3 py-2 text-sm rounded-[5px] outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 overflow-y-auto scrollbar-custom"
                                 >
-                                    <option value="" disabled>
+                                    <option value="" className="bg-muted text-text-muted" disabled>
                                         Select a hospital
                                     </option>
                                     {(hospitals || []).map(
@@ -343,6 +344,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                                     appointmentDetails?.hospitalId ===
                                                     hospital.hospitalId
                                                 }
+                                                className="bg-background"
                                             >
                                                 {hospital.hospitalName}
                                             </option>
@@ -350,7 +352,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                     )}
                                 </select>
                                 {isHospitalLoading && (
-                                    <p className="text-gray-500">Loading...</p>
+                                    <p className="text-muted-foreground">Loading...</p>
                                 )}
                             </div>
                         )}
@@ -362,15 +364,16 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                     {...register("doctorId", {
                                         required: true,
                                     })}
-                                    className="flex h-10 w-full border px-3 py-2 text-sm rounded-[5px]"
+                                    className="flex bg-muted h-10 w-full px-3 py-2 text-sm rounded-[5px] outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 overflow-y-auto scrollbar-custom"
                                 >
-                                    <option value="" disabled>
+                                    <option value="" className="bg-muted text-text-muted" disabled>
                                         Select a doctor
                                     </option>
                                     {doctors.map((doc: Doctor) => (
                                         <option
                                             key={doc.doctorId}
                                             value={doc.doctorId}
+                                            className="bg-background"
                                         >
                                             Dr. {doc.user?.profile?.firstName}{" "}
                                             {doc.user?.profile?.lastName} -{" "}
@@ -379,7 +382,7 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                                     ))}
                                 </select>
                                 {isDoctorLoading && (
-                                    <p className="text-gray-500">Loading...</p>
+                                    <p className="text-muted-foreground">Loading...</p>
                                 )}
                             </div>
                         )}
@@ -391,10 +394,10 @@ const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                     </div>
                 </form>
                 {saved && (
-                    <div className="absolute bottom-7 bg-bluelight ml-7 p-2 rounded-[10px]">
-                        <p className="text-black">Saved Successfully!</p>
+                    <div className="absolute bottom-7 bg-constructive/10 text-constructive ml-7 p-2 rounded-[10px]">
+                        <p>Saved Successfully!</p>
                     </div>
-                )}{" "}
+                )}
             </DialogContent>
         </Dialog>
     );

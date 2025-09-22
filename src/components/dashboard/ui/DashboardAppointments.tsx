@@ -22,7 +22,7 @@ interface DashboardAppointmentsProps {
 
 const ITEMS_PER_PAGE = 15;
 
-const DashboardAppointments: React.FC<DashboardAppointmentsProps> = ({
+const DashboardAppointments: React.FC<DashboardAppointmentsProps> = React.memo(({
     appointments,
     totalAppointments,
 }) => {
@@ -192,6 +192,6 @@ const DashboardAppointments: React.FC<DashboardAppointmentsProps> = ({
             />
         </div>
     );
-};
+});
 
 export default DashboardAppointments;

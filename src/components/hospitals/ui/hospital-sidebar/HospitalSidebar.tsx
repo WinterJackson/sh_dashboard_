@@ -14,6 +14,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
+import Image from "next/image";
 
 interface HospitalSidebarProps {
     hospital: Hospital;
@@ -34,7 +35,7 @@ export default function HospitalSidebar({
             {/* Header: Logo + Name / Basic */}
             <div className="flex items-center bg-accent py-2 px-1 rounded-t-[10px] h-[90px]">
                 <div className="w-full p-2">
-                    <img
+                    <Image
                         src={hospital.logoUrl || placeholderSrc}
                         alt={`${hospital.hospitalName} logo`}
                         width={100}

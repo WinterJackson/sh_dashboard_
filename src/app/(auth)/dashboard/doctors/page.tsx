@@ -49,12 +49,12 @@ export default async function DoctorsPage() {
 
     return (
         <div className="flex flex-col gap-3 p-3 pt-0 w-full">
-            <div className="flex w-full gap-2 bg-bluelight/5 p-2 rounded-[10px]">
+            <div className="flex w-full gap-2 bg-slate p-2 rounded-[10px]">
                 <h1 className="text-xl font-bold">Doctors</h1>
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger className="ml-1">
-                            <Info size={16} className="text-gray-600" />
+                            <Info size={16} className="text-text-muted" />
                         </TooltipTrigger>
                         <TooltipContent>
                             <p>Click on a doctor card to view doctor details</p>

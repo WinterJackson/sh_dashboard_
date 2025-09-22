@@ -10,7 +10,7 @@ import { useUpdateAppointmentType } from "@/hooks/useUpdateAppointmentType";
 import { Appointment, Hospital, Role, Session } from "@/lib/definitions";
 import { useEffect, useMemo, useState } from "react";
 import AppointmentRow from "./ui/appointments-table/AppointmentRow";
-import AppointmentFilters from "./ui/appointments-table/AppointmentsFilters";
+import AppointmentsFilters from "./ui/appointments-table/AppointmentsFilters";
 import AppointmentsPagination from "./ui/appointments-table/AppointmentsPagination";
 
 const ITEMS_PER_PAGE = 15;
@@ -209,7 +209,7 @@ export default function AppointmentList({
 
     return (
         <div className="flex-grow">
-            <AppointmentFilters
+            <AppointmentsFilters
                 appointments={appointments}
                 session={session}
                 hospitals={hospitals}
@@ -217,37 +217,25 @@ export default function AppointmentList({
                 onSetAppointments={setFilteredAppointments}
             />
 
-            <div className="overflow-x-auto w-full scrollbar-custom  min-h-[1000px]">
-                <table className="min-w-full w-full border-collapse divide-y divide-gray-200 mt-2 table-auto">
-                    <thead className="bg-bluelight">
-                        <tr>
-                            <th className="rounded-tl-2xl px-4 py-5 text-left text-sm font-bold text-black uppercase tracking-wider">
+            <div className="overflow-x-auto w-full scrollbar-custom mt-4">
+                <table className="w-full bg-slate-two p-1 rounded-t-2xl border-separate border-spacing-y-4">
+                    <thead>
+                        <tr className="text-foreground">
+                            <th className="text-left p-2 text-[13px]">
                                 Patient Name
                             </th>
-                            <th className="px-2 py-5 text-center text-sm font-bold text-black uppercase tracking-wider">
-                                Age
-                            </th>
-                            <th className="px-2 py-5 text-center text-sm font-bold text-black uppercase tracking-wider">
-                                Id
-                            </th>
-                            <th className="px-2 py-5 text-center text-sm font-bold text-black uppercase tracking-wider">
-                                Time
-                            </th>
-                            <th className="px-2 py-5 text-center text-sm font-bold text-black uppercase tracking-wider">
-                                Date
-                            </th>
-                            <th className="px-2 py-5 text-center text-sm font-bold text-black uppercase tracking-wider">
+                            <th className="text-center p-2">Age</th>
+                            <th className="text-center p-2">Id</th>
+                            <th className="text-center p-2">Time</th>
+                            <th className="text-center p-2">Date</th>
+                            <th className="text-center p-2 whitespace-nowrap">
                                 Doctor&apos;s Name
                             </th>
-                            <th className="px-2 py-5 text-center text-sm font-bold text-black uppercase tracking-wider">
-                                Type
-                            </th>
-                            <th className="rounded-tr-2xl px-2 py-5 text-center text-sm font-bold text-black uppercase tracking-wider">
-                                Action
-                            </th>
+                            <th className="text-center p-2">Type</th>
+                            <th className="text-center p-2">Action</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody>
                         {paginatedAppointments.map((appointment) => (
                             <AppointmentRow
                                 key={appointment.appointmentId}

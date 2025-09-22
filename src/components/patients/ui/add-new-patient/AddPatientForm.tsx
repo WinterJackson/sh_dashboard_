@@ -3,6 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
+import { FormProvider } from "react-hook-form";
 import { useCreatePatient } from "@/hooks/useCreatePatient";
 import { Role } from "@/lib/definitions";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +15,10 @@ import MedicalInfoSection from "./sections/MedicalInfoSection";
 import PatientInfoSection from "./sections/PatientInfoSection";
 import UserInfoSection from "./sections/UserInfoSection";
 import { CreatePatientInput } from "@/lib/data-access/patients/data";
+import ProfileImageSection from "./sections/ProfileImageSection";
+import { useState } from "react";
+import { base64ToFile } from "@/lib/utils";
+import { useEdgeStore } from "@/lib/edgestore";
 
 const patientSchema = z.object({
     user: z.object({
@@ -71,6 +76,8 @@ export default function AddPatientForm({
 }: AddPatientFormProps) {
     const router = useRouter();
     const { toast } = useToast();
+    const { edgestore } = useEdgeStore();
+    const [profileImageData, setProfileImageData] = useState<string | null>(null);
 
     const createPatientMutation = useCreatePatient({
         role: userRole,
@@ -88,15 +95,31 @@ export default function AddPatientForm({
         },
     });
 
-    const onSubmit = (data: PatientFormValues) => {
-    if (!data.hospitalId || data.hospitalId < 1) {
-        toast({
-            title: "Hospital Required",
-            description: "Please select a valid hospital.",
-            variant: "destructive",
-        });
-        return;
-    }
+    const onSubmit = async (data: PatientFormValues) => {
+        if (!data.hospitalId || data.hospitalId < 1) {
+            toast({
+                title: "Hospital Required",
+                description: "Please select a valid hospital.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        let imageUrl = data.profile.imageUrl;
+        if (profileImageData) {
+            try {
+                const file = base64ToFile(profileImageData, "profile.jpg");
+                const res = await edgestore.doctorImages.upload({ file });
+                imageUrl = res.url;
+            } catch (error) {
+                toast({
+                    title: "Image Upload Failed",
+                    description: "Could not upload the profile image.",
+                    variant: "destructive",
+                });
+                return;
+            }
+        }
 
         const payload: CreatePatientInput = {
             user: {
@@ -104,7 +127,7 @@ export default function AddPatientForm({
                 email: data.user.email,
                 password: data.user.username,
             },
-            profile: data.profile,
+            profile: { ...data.profile, imageUrl },
             patient: data.patient,
             medical: data.medical,
             hospitalId: data.hospitalId,
@@ -137,16 +160,18 @@ export default function AddPatientForm({
     const isSubmitting = createPatientMutation.status === "pending";
 
     return (
-        <Form {...form}>
+        <FormProvider {...form}>
             <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-8 p-4 bg-bluelight/5 rounded-[10px]"
+                className="space-y-8 p-6 bg-slate rounded-[10px] shadow-md"
             >
-                <div className="flex gap-4">
-                    <UserInfoSection form={form} userRole={userRole} />
-                    <PatientInfoSection form={form} />
+                <div className="flex flex-col lg:flex-row w-full gap-6">
+                    <ProfileImageSection setProfileImageData={setProfileImageData} />
+                    <div className="flex flex-col gap-6 w-full lg:w-2/3">
+                        <UserInfoSection form={form} userRole={userRole} />
+                    </div>
                 </div>
-
+                <PatientInfoSection form={form} />
                 <MedicalInfoSection form={form} />
 
                 <div className="flex justify-end gap-4">
@@ -163,6 +188,6 @@ export default function AddPatientForm({
                     </Button>
                 </div>
             </form>
-        </Form>
+        </FormProvider>
     );
 }

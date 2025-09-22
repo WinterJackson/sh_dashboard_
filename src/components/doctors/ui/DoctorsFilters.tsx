@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Doctor, Hospital, Department, Session, Role } from "@/lib/definitions";
+import { Doctor, Hospital, Department, Role } from "@/lib/definitions";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -15,13 +15,9 @@ import {
     DropdownMenuPortal,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import {
-    ChevronRight,
-    CircleX as CancelledIcon,
-} from "lucide-react";
+import { ChevronRight, CircleX as CancelledIcon } from "lucide-react";
 import { SymbolIcon } from "@radix-ui/react-icons";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import { Calendar } from "@/components/ui/calendar";
 
 interface DoctorsFiltersProps {
     role: Role;
@@ -43,11 +39,11 @@ const DoctorsFilters: React.FC<DoctorsFiltersProps> = ({
     const [filters, setFilters] = useState({
         department: "",
         availability: "",
-        dateJoined: null as Date | null,
+        dateJoined: undefined as Date | undefined,
         hospital: "",
     });
 
-    const userRole = role
+    const userRole = role;
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     // Memoized filtered doctors
@@ -84,14 +80,17 @@ const DoctorsFilters: React.FC<DoctorsFiltersProps> = ({
     }, [filteredDoctors, onFilterChange]);
 
     const handleFilterRemove = (filterKey: keyof typeof filters) => {
-        setFilters((prev) => ({ ...prev, [filterKey]: filterKey === "dateJoined" ? null : "" }));
+        setFilters((prev) => ({
+            ...prev,
+            [filterKey]: filterKey === "dateJoined" ? undefined : "",
+        }));
     };
 
     const resetFilters = () => {
         setFilters({
             department: "",
             availability: "",
-            dateJoined: null,
+            dateJoined: undefined,
             hospital: "",
         });
     };
@@ -101,7 +100,7 @@ const DoctorsFilters: React.FC<DoctorsFiltersProps> = ({
             <div className="flex items-center gap-4">
                 {/* Refresh Button */}
                 <button
-                    className="flex items-center justify-center gap-2 p-3 mt-2 border-gray-300 shadow-lg shadow-gray-400 text-black hover:bg-primary hover:text-white hover:shadow-gray-400 rounded-[10px] h-[50px] w-auto max-w-[120px] focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="flex items-center justify-center gap-2 p-3 mt-2 hover:shadow-shadow-main shadow-md shadow-shadow-main text-foreground hover:bg-primary hover:text-primary-foreground rounded-[10px] h-[50px] w-auto max-w-[120px] focus:outline-none focus:ring-1 focus:ring-primary"
                     onClick={resetFilters}
                 >
                     Refresh
@@ -115,16 +114,21 @@ const DoctorsFilters: React.FC<DoctorsFiltersProps> = ({
                             value && (
                                 <div
                                     key={key}
-                                    className="bg-bluelight/5 text-primary p-2 mt-2 rounded-[10px] h-[40px] w-auto gap-2 hover:shadow-gray-400 shadow-lg shadow-gray-400 hover:bg-bluelight hover:text-black focus:outline-none focus:ring-1 focus:ring-primary flex items-center justify-center"
+                                    className="bg-light-accent text-accent-foreground p-2 mt-2 rounded-[10px] h-[40px] w-auto gap-2 hover:shadow-shadow-main shadow-md shadow-shadow-main hover:bg-accent focus:outline-none focus:ring-1 focus:ring-primary flex items-center justify-center"
                                 >
-                                    <span className="font-normal text-sm">{`${value}`}</span>
+                                    <span className="font-normal text-sm">{`${
+                                        key === "dateJoined" &&
+                                        value instanceof Date
+                                            ? value.toLocaleDateString()
+                                            : value
+                                    }`}</span>
                                     <button
                                         onClick={() =>
                                             handleFilterRemove(
                                                 key as keyof typeof filters
                                             )
                                         }
-                                        className="flex items-center justify-center p-[2px] bg-white rounded-full"
+                                        className="flex items-center justify-center p-[2px] bg-background rounded-full"
                                     >
                                         <CancelledIcon className="h-5 w-5 text-center text-red-500 hover:text-white hover:bg-red-500 rounded-full" />
                                     </button>
@@ -140,8 +144,8 @@ const DoctorsFilters: React.FC<DoctorsFiltersProps> = ({
                     onOpenChange={(isOpen) => setIsDropdownOpen(isOpen)}
                 >
                     <DropdownMenuTrigger asChild>
-                        <button className="flex items-center justify-between gap-3 p-3 border-gray-300 shadow-lg shadow-gray-400 rounded-[10px] h-[50px] w-[170px] text-black focus:outline-none focus:ring-1 focus:ring-primary">
-                            Filters
+                        <button className="flex items-center justify-between gap-3 p-3 hover:shadow-shadow-main shadow-md shadow-shadow-main rounded-[10px] h-[50px] w-[170px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
+                            Filter By
                             <ChevronRight
                                 className={`ml-auto text-xl transform transition-transform duration-300 ${
                                     isDropdownOpen ? "rotate-90" : ""
@@ -150,14 +154,14 @@ const DoctorsFilters: React.FC<DoctorsFiltersProps> = ({
                         </button>
                     </DropdownMenuTrigger>
 
-                    <DropdownMenuContent className="w-40 ml-1 bg-white rounded-[10px] p-2 mt-1">
+                    <DropdownMenuContent className="w-40 ml-1 bg-background rounded-[10px] p-2 mt-1">
                         {/* Department Filter */}
                         <DropdownMenuSub>
                             <DropdownMenuSubTrigger className="rounded-[5px]">
                                 Department
                             </DropdownMenuSubTrigger>
                             <DropdownMenuPortal>
-                                <DropdownMenuSubContent className="bg-white rounded-[10px] ml-3 p-2">
+                                <DropdownMenuSubContent className="bg-background rounded-[10px] ml-3 p-2 max-h-60 overflow-y-auto scrollbar-custom">
                                     {departments.length > 0 ? (
                                         departments.map((dept) => (
                                             <DropdownMenuItem
@@ -192,7 +196,7 @@ const DoctorsFilters: React.FC<DoctorsFiltersProps> = ({
                                         Hospital
                                     </DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
-                                        <DropdownMenuSubContent className="bg-white rounded-[10px] ml-3 p-2">
+                                        <DropdownMenuSubContent className="bg-background rounded-[10px] ml-3 p-2 max-h-60 overflow-y-auto scrollbar-custom">
                                             {hospitals.length > 0 ? (
                                                 hospitals.map((hospital) => (
                                                     <DropdownMenuItem
@@ -231,7 +235,7 @@ const DoctorsFilters: React.FC<DoctorsFiltersProps> = ({
                                 Availability
                             </DropdownMenuSubTrigger>
                             <DropdownMenuPortal>
-                                <DropdownMenuSubContent className="bg-white rounded-[10px] ml-3 p-2">
+                                <DropdownMenuSubContent className="bg-background rounded-[10px] ml-3 p-2">
                                     <DropdownMenuItem
                                         onClick={() =>
                                             setFilters((prev) => ({
@@ -266,18 +270,17 @@ const DoctorsFilters: React.FC<DoctorsFiltersProps> = ({
                                 Date Joined
                             </DropdownMenuSubTrigger>
                             <DropdownMenuPortal>
-                                <DropdownMenuSubContent className="bg-white rounded-[10px] ml-3 p-2">
-                                    <DatePicker
+                                <DropdownMenuSubContent className="bg-background rounded-[10px] ml-3 p-2">
+                                    <Calendar
+                                        mode="single"
                                         selected={filters.dateJoined}
-                                        onChange={(date) =>
+                                        onSelect={(date) =>
                                             setFilters((prev) => ({
                                                 ...prev,
                                                 dateJoined: date,
                                             }))
                                         }
-                                        className="w-full p-2 text-sm border border-primary rounded-md"
-                                        placeholderText="Select Date: MM/DD/YYYY"
-                                        calendarClassName="custom-datepicker"
+                                        initialFocus
                                     />
                                 </DropdownMenuSubContent>
                             </DropdownMenuPortal>

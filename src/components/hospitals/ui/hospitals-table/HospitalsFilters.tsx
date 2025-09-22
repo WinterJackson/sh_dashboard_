@@ -246,7 +246,7 @@ const HospitalsFilters: React.FC<HospitalsFiltersProps> = ({
                                     <DropdownMenuSubTrigger>
                                         County
                                     </DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent className="bg-background rounded-[10px] shadow p-3 ml-4 max-h-60 overflow-y-auto">
+                                    <DropdownMenuSubContent className="bg-background rounded-[10px] shadow p-3 ml-4 max-h-80 overflow-y-auto scrollbar-custom">
                                         {counties.map((county) => (
                                             <DropdownMenuItem
                                                 key={county}

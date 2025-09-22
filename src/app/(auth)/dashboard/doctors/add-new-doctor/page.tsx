@@ -7,8 +7,14 @@ import AddDoctorForm from "@/components/doctors/ui/add-new-doctor/AddDoctorForm"
 import { fetchSpecializations } from "@/lib/data-access/specializations/data";
 import { fetchDepartments } from "@/lib/data-access/departments/data";
 import { fetchHospitals } from "@/lib/data-access/hospitals/data";
-import { fetchServices, filteredServices } from "@/lib/data-access/services/data";
 import { Role } from "@/lib/definitions";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 
 export default async function AddNewDoctorPage() {
@@ -27,7 +33,7 @@ export default async function AddNewDoctorPage() {
     };
 
     // Handle promises individually
-    const [specializations, departments, hospitals, services] = await Promise.all([
+    const [specializations, departments, hospitals] = await Promise.all([
         fetchSpecializations(user).catch((error) => {
             console.error("Error fetching specializations:", error);
             return [];
@@ -49,27 +55,27 @@ export default async function AddNewDoctorPage() {
             console.error("Error fetching hospitals:", error);
             return [];
         }),
-
-        fetchServices(user).catch((error) => {
-            console.error("Error fetching services:", error);
-            return [];
-        }),
     ]);
 
     return (
-        <div className="p-6 px-2 pt-0">
-            <h1 className="mx-2 mb-5 text-xl font-bold bg-bluelight/5 p-2 pl-4 rounded-[10px]">
-                Add New Doctor
-            </h1>
-                <p className="text-gray-600 my-4 px-2 ml-4">
-                    Fill out the form below to register a new doctor
-                </p>
+        <div className="flex flex-col gap-3 p-3 pt-0">
+            <div className="flex items-center gap-2 bg-slate p-2 rounded-[10px] w-full">
+                <h1 className="text-xl font-bold">Add New Doctor</h1>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger className="ml-1">
+                            <Info size={16} className="text-text-muted" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Fill out the form below to register a new doctor.</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            </div>
             <AddDoctorForm
                 specialties={specializations}
                 departments={departments}
                 hospitals={hospitals}
-                services={services}
-                filteredServices={filteredServices}
                 userRole={user.role as Role}
                 userHospitalId={user.hospitalId?.toString() || null}
                 sessionUser={user}

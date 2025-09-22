@@ -2,9 +2,9 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSearch } from "@/app/context/SearchContext";
-import { Patient, Hospital, Role } from "@/lib/definitions";
+import { Patient, Hospital, Role, FetchedPatient } from "@/lib/definitions";
 import PatientRow from "@/components/patients/ui/patients-table/PatientRow";
 import PatientsPagination from "@/components/patients/ui/patients-table/PatientsPagination";
 import PatientsFilters from "@/components/patients/ui/patients-table/PatientsFilters";
@@ -13,9 +13,10 @@ import { useDeletePatients } from "@/hooks/useDeletePatients";
 import Delete from "@mui/icons-material/Delete";
 import { useSession } from "next-auth/react";
 import ConfirmationModal from "@/components/patients/ui/patient-modals/ConfirmationModal";
+import React from "react";
 
 interface PatientsListProps {
-    patients: Patient[];
+    patients: FetchedPatient[];
     totalPatients: number;
     hospitals: Hospital[];
     userRole: Role;
@@ -24,20 +25,20 @@ interface PatientsListProps {
 
 const ITEMS_PER_PAGE = 15;
 
-export default function PatientsList({
+const PatientsList: React.FC<PatientsListProps> = React.memo(({
     patients,
     totalPatients,
     hospitals,
     userRole,
     hospitalId,
-}: PatientsListProps) {
+}) => {
     const { data: session } = useSession();
-    const { mutate: deletePatients, isPending: isDeleting } =
+    const { mutate: deletePatients, isPending: isDeleting } = 
         useDeletePatients();
     const [selectedPatients, setSelectedPatients] = useState<number[]>([]);
     const [showDeleteError, setShowDeleteError] = useState(false);
     const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
-    const [deletedPatientDetails, setDeletedPatientDetails] = useState<{
+    const [deletedPatientDetails, setDeletedPatientDetails] = useState<{ 
         name: string;
         patientId: number;
     } | null>(null);
@@ -46,14 +47,18 @@ export default function PatientsList({
     const [filteredPatients, setFilteredPatients] = useState(patients);
     const { searchTerm } = useSearch();
 
+    useEffect(() => {
+        setFilteredPatients(patients);
+    }, [patients]);
+
     // State for the confirmation modal
-    const [isConfirmationModalOpen, setIsConfirmationModalOpen] =
+    const [isConfirmationModalOpen, setIsConfirmationModalOpen] = 
         useState(false);
-    const [modalConfig, setModalConfig] = useState<{
+    const [modalConfig, setModalConfig] = useState<{ 
         title: string;
         message: string;
         onConfirm: () => void;
-    }>({
+    }>({ 
         title: "",
         message: "",
         onConfirm: () => {},
@@ -70,8 +75,8 @@ export default function PatientsList({
     };
 
     const handleSingleSelect = (patientId: number, checked: boolean) => {
-        setSelectedPatients((prev) =>
-            checked
+        setSelectedPatients((prev) => 
+            checked 
                 ? [...prev, patientId]
                 : prev.filter((id) => id !== patientId)
         );
@@ -83,7 +88,7 @@ export default function PatientsList({
         // Open the confirmation modal for bulk delete
         setModalConfig({
             title: "Delete Patients",
-            message: `Are you sure you want to delete ${selectedPatients.length} patient(s)? This action cannot be undone.`,
+            message: `Are you sure you want to delete ${selectedPatients.length} patient(s)? This action cannot be undone.`, 
             onConfirm: () => {
                 deletePatients(
                     {
@@ -96,9 +101,9 @@ export default function PatientsList({
                     },
                     {
                         onSuccess: () => {
-                            setFilteredPatients((prev) =>
+                            setFilteredPatients((prev) => 
                                 prev.filter(
-                                    (patient) =>
+                                    (patient) => 
                                         !selectedPatients.includes(
                                             patient.patientId
                                         )
@@ -128,7 +133,7 @@ export default function PatientsList({
         const profile = patientToDelete.user?.profile;
         const user = patientToDelete.user;
 
-        const fullName = `${profile?.firstName ?? ""} ${
+        const fullName = `${profile?.firstName ?? ""} ${ 
             profile?.lastName ?? ""
         }`.trim();
 
@@ -138,7 +143,7 @@ export default function PatientsList({
             message:
                 `Are you sure you want to delete the patient:\n` +
                 `**${fullName} (Patient ID: ${patientToDelete.patientId})**\n` +
-                `This action cannot be undone.`,
+                `This action cannot be undone.`, 
             onConfirm: () => {
                 deletePatients(
                     {
@@ -151,7 +156,7 @@ export default function PatientsList({
                     },
                     {
                         onSuccess: () => {
-                            setFilteredPatients((prev) =>
+                            setFilteredPatients((prev) => 
                                 prev.filter(
                                     (patient) => patient.patientId !== patientId
                                 )
@@ -178,17 +183,17 @@ export default function PatientsList({
             const profile = patient.user?.profile;
             const user = patient.user;
 
-            const fullName = `${profile?.firstName ?? ""} ${
+            const fullName = `${profile?.firstName ?? ""} ${ 
                 profile?.lastName ?? ""
             }`.toLowerCase();
 
             // Format date of birth
-            const formattedDateOfBirth = profile?.dateOfBirth
-                ? format(new Date(profile.dateOfBirth), "MM/dd/yyyy")
+            const formattedDateOfBirth = profile?.dateOfBirth 
+                ? format(new Date(profile.dateOfBirth), "MM/dd/yyyy") 
                 : "";
 
             // Gender match logic
-            const genderMatch =
+            const genderMatch = 
                 term === "other"
                     ? !["male", "female"].includes(
                           profile?.gender?.toLowerCase() || ""
@@ -216,19 +221,19 @@ export default function PatientsList({
         searchFilteredPatients.length / ITEMS_PER_PAGE
     );
 
-    const onSetPatients = (updatedPatients: Patient[]) => {
+    const onSetPatients = (updatedPatients: FetchedPatient[]) => {
         setFilteredPatients(updatedPatients);
     };
 
-    const onFilterChange = (filteredPatients: Patient[]) => {
+    const onFilterChange = (filteredPatients: FetchedPatient[]) => {
         setFilteredPatients(filteredPatients);
     };
 
     return (
         <div className="relative">
             {isDeleting && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg">
+                <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
+                    <div className="bg-background p-6 rounded-lg shadow-lg">
                         Deleting {selectedPatients.length} patient(s)...
                     </div>
                 </div>
@@ -278,7 +283,7 @@ export default function PatientsList({
 
             {/* Selected Patients Count */}
             {selectedPatients.length > 0 && (
-                <div className="bg-bluelight/5 border border-primary text-gray-700 p-3 rounded-[10px] relative mb-2">
+                <div className="bg-slate-two border border-primary text-foreground p-3 rounded-[10px] relative mb-2">
                     {selectedPatients.length === 1
                         ? "1 patient selected."
                         : `${selectedPatients.length} patients selected.`}
@@ -294,9 +299,9 @@ export default function PatientsList({
                 onSetPatients={onSetPatients}
             />
 
-            <table className="w-full bg-bluelight/5 p-1 rounded-t-2xl border-separate border-spacing-y-4">
+            <table className="w-full mt-4 bg-slate p-1 rounded-t-2xl border-separate border-spacing-y-4">
                 <thead>
-                    <tr className="text-gray-800">
+                    <tr className="text-foreground">
                         <th className="text-left p-2 w-[8%]">
                             {totalPatients} Patients
                         </th>
@@ -315,7 +320,7 @@ export default function PatientsList({
                         {(userRole === Role.ADMIN ||
                             userRole === Role.SUPER_ADMIN) && (
                             <th className="text-center p-2 w-[2%]">
-                                <div className="flex flex-col items-center justify-center gap-1 p-2 rounded-[10px] bg-white shadow-sm shadow-gray-400 ">
+                                <div className="flex flex-col items-center justify-center gap-1 p-2 rounded-[10px] bg-background shadow-sm shadow-shadow-main ">
                                     <input
                                         type="checkbox"
                                         className="w-4 h-4"
@@ -329,10 +334,10 @@ export default function PatientsList({
                                         }
                                         ref={(el) => {
                                             if (el) {
-                                                el.indeterminate =
-                                                    selectedPatients.length >
+                                                el.indeterminate = 
+                                                    selectedPatients.length > 
                                                         0 &&
-                                                    selectedPatients.length <
+                                                    selectedPatients.length < 
                                                         paginatedPatients.length;
                                             }
                                         }}
@@ -381,4 +386,6 @@ export default function PatientsList({
             />
         </div>
     );
-}
+});
+
+export default PatientsList;

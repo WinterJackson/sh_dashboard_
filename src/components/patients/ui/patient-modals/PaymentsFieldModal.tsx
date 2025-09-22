@@ -51,8 +51,8 @@ export function PaymentsFieldModal({
                                 className={cn(
                                     "inline-block truncate cursor-pointer",
                                     hasPayments
-                                        ? "text-primary"
-                                        : "text-gray-400"
+                                        ? "text-constructive"
+                                        : "text-muted-foreground"
                                 )}
                                 title={
                                     hasPayments ? undefined : "No payments"
@@ -63,7 +63,7 @@ export function PaymentsFieldModal({
                         </DialogTrigger>
                     </TooltipTrigger>
                     {hasPayments && (
-                        <TooltipContent side="bottom" className="bg-slate-100 text-black mt-1">
+                        <TooltipContent side="bottom" className="bg-popover text-popover-foreground mt-1">
                             <div className="space-x-1 truncate">{excerpt}</div>
                         </TooltipContent>
                     )}
@@ -82,7 +82,7 @@ export function PaymentsFieldModal({
                             payments.map((payment) => (
                                 <div
                                     key={`${payment.appointmentId}-${payment.paymentId}`}
-                                    className="p-3 border rounded-lg"
+                                    className="p-3 border border-border rounded-lg"
                                 >
                                     <ul className="space-y-1 text-sm">
                                         <li>
@@ -126,7 +126,7 @@ export function PaymentsFieldModal({
                                 </div>
                             ))
                         ) : (
-                            <p className="text-center text-gray-500">
+                            <p className="text-center text-muted-foreground">
                                 No payments recorded.
                             </p>
                         )}

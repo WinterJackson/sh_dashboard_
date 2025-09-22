@@ -67,9 +67,9 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
 
     return (
         <div className="absolute top-0 left-0 z-30 flex justify-center items-center h-full w-screen">
-            <div className="relative flex flex-col gap-8 p-6 bg-slate-100 opacity-100 lg:w-fit rounded-2xl h-full lg:max-h-[800px] overflow-y-scroll scrollbar-custom w-full lg:max-w-[1000px]">
+            <div className="relative flex flex-col gap-8 p-6 bg-background opacity-100 lg:w-fit rounded-2xl h-full lg:max-h-[800px] overflow-y-scroll scrollbar-custom w-full lg:max-w-[1000px]">
                 <div
-                    className="absolute rounded-[5px] top-4 right-4 p-1 bg-gray-200 hover:bg-bluelight"
+                    className="absolute rounded-[5px] top-4 right-4 p-1 bg-slate hover:bg-primary hover:text-primary-foreground"
                     onClick={cancel}
                 >
                     <CloseIcon />
@@ -77,7 +77,7 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
 
                 <div className="flex gap-6 flex-wrap justify-center lg:justify-start">
                     {/* Profile bio */}
-                    <div className="flex flex-1 flex-col gap-7 items-center w-[500px] bg-gray-200 p-2 py-4 rounded-[10px]">
+                    <div className="flex flex-1 flex-col gap-7 items-center w-[500px] bg-slate p-2 py-4 rounded-[10px]">
                         <div className="flex gap-5 items-center">
                             <div className="w-[150px] h-[150px] rounded-full overflow-hidden">
                                 {isLoading ? (
@@ -115,7 +115,7 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                                             </h1>
                                             <div className="flex flex-col gap-2">
                                                 <div>
-                                                    <p className="text-gray-400 text-lg capitalize">
+                                                    <p className="text-muted-foreground text-lg capitalize">
                                                         {
                                                             doctor?.department
                                                                 ?.name
@@ -156,7 +156,7 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                                         className={`flex w-1/3 justify-center font-bold py-3 border-b-2 ${
                                             slide === String(index * 400)
                                                 ? "border-primary text-primary"
-                                                : "border-gray-400 text-gray-400"
+                                                : "border-border text-muted-foreground"
                                         }`}
                                         onClick={() =>
                                             setSlide(String(index * 400))
@@ -216,7 +216,7 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                                                     <span className="font-bold text-primary">
                                                         Email :
                                                     </span>
-                                                    <span className="text-black">
+                                                    <span className="text-foreground">
                                                         {doctor?.user?.email ||
                                                             "N/A"}
                                                     </span>
@@ -225,7 +225,7 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                                                     <span className="font-bold text-primary">
                                                         Phone Number :
                                                     </span>
-                                                    <span className="text-black">
+                                                    <span className="text-foreground">
                                                         {doctor?.user?.profile
                                                             ?.phoneNo || "N/A"}
                                                     </span>
@@ -234,7 +234,7 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                                                     <span className="font-bold text-primary">
                                                         Address :
                                                     </span>
-                                                    <span className="text-black">
+                                                    <span className="text-foreground">
                                                         {doctor?.user?.profile
                                                             ?.address || "N/A"}
                                                     </span>
@@ -254,7 +254,7 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                             {isLoading ? (
                                 <Skeleton className="h-16 w-full" />
                             ) : (
-                                <div className="flex justify-between gap-10 max-w-[400px] w-full bg-bluelight items-center p-3 rounded-2xl">
+                                <div className="flex justify-between gap-10 max-w-[400px] w-full bg-slate items-center p-3 rounded-2xl">
                                     <div className="flex gap-2">
                                         <Rating
                                             value={averageRating}
@@ -274,7 +274,7 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                             )}
                         </div>
 
-                        <div className="flex flex-col max-w-[400px] gap-4 flex-1 w-full bg-gray-200 p-4 rounded-[10px]">
+                        <div className="flex flex-col max-w-[400px] gap-4 flex-1 w-full bg-slate p-4 rounded-[10px]">
                             {[5, 4, 3, 2, 1].map((rating) => {
                                 const ratingCount = ratingDistribution[rating];
                                 const ratingPercentage =
@@ -307,7 +307,7 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                                         {isLoading ? (
                                             <Skeleton className="h-4 w-8" />
                                         ) : (
-                                            <span className="text-gray-500">
+                                            <span className="text-muted-foreground">
                                                 {ratingPercentage}%
                                             </span>
                                         )}
@@ -321,7 +321,7 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                 {/* Licenses */}
                 <div className="flex flex-col">
                     <h1 className="font-semibold mb-6">Licenses</h1>
-                    <div className="flex flex-wrap gap-4 justify-center bg-gray-200 p-4 rounded-[10px]">
+                    <div className="flex flex-wrap gap-4 justify-center bg-slate p-4 rounded-[10px]">
                         {isLoading ? (
                             <>
                                 <Skeleton className="h-32 w-full max-w-[430px] min-w-[380px]" />
@@ -331,7 +331,7 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                             doctor?.licenses?.map((license) => (
                                 <div
                                     key={license.licenseId}
-                                    className="flex flex-1 gap-5 items-center max-w-[430px] min-w-[380px] border border-black p-4 rounded-xl"
+                                    className="flex flex-1 gap-5 items-center max-w-[430px] min-w-[380px] border border-border p-4 rounded-xl"
                                 >
                                     <Image
                                         src="/images/document.svg"
@@ -347,7 +347,7 @@ function DoctorBio({ doctorId, role, hospitalId, cancel }: DoctorBioProps) {
                                         <div className="flex justify-between items-center">
                                             <div className="flex flex-col gap-1">
                                                 <h2>Expiry Date</h2>
-                                                <span className="text-gray-400">
+                                                <span className="text-muted-foreground">
                                                     {new Date(
                                                         license.expiryDate
                                                     ).toLocaleDateString()}

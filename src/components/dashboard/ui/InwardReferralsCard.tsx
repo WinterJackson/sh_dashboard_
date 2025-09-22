@@ -108,4 +108,4 @@ const InwardReferralsCard: React.FC<InwardReferralsCardProps> = ({
     );
 };
 
-export default InwardReferralsCard;
+export default React.memo(InwardReferralsCard);

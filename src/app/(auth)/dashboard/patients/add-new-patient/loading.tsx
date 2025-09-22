@@ -1,4 +1,4 @@
-// src/app/(auth)/dashboard/doctors/add-new-doctor/loading.tsx
+// src/app/(auth)/dashboard/patients/add-new-patient/loading.tsx
 
 "use client"
 

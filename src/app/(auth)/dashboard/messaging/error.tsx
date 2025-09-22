@@ -25,7 +25,7 @@ export default function Error({
 
     return (
         <div>
-            <h2>Error in hospitals page!</h2>
+            <h2>Error in messaging page!</h2>
             <p>{getErrorMessage(error)}</p>
             <button
                 onClick={

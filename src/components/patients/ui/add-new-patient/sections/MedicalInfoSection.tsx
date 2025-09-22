@@ -20,8 +20,8 @@ interface MedicalInfoSectionProps {
 
 export default function MedicalInfoSection({ form }: MedicalInfoSectionProps) {
     return (
-        <div className="flex flex-col gap-6 bg-white shadow-sm shadow-gray-400 w-full p-4 rounded-xl">
-            <span className="text-primary font-semibold border-b-2 border-gray-300">
+        <div className="flex flex-col gap-6 bg-background border border-border p-6 rounded-xl shadow-sm w-full">
+            <span className="text-primary font-semibold border-b-2 border-border pb-2">
                 Medical Information
             </span>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

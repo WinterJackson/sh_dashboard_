@@ -36,6 +36,8 @@ enum MessageType {
   TEXT
   IMAGE
   FILE
+  VIDEO
+  AUDIO
 }
 
 enum ConversationStatus {
@@ -163,6 +165,7 @@ model User {
   notes                   AppointmentNote[]
   uploadedDocuments       ReferralDocument[]
   auditLog                AuditLog[]
+  readReceipts            ReadReceipt[]
 
   @@index([hospitalId])
   @@index([role])
@@ -196,6 +199,8 @@ model Notification {
 
   @@index([userId])
   @@index([type])
+  @@index([isRead])
+  @@index([createdAt])
 }
 
 model Profile {
@@ -266,6 +271,8 @@ model Doctor {
 
   @@index([hospitalId])
   @@index([departmentId])
+  @@index([status])
+  @@index([specializationId])
 }
 
 model DoctorLicense {
@@ -314,6 +321,8 @@ model Nurse {
 
   @@index([hospitalId])
   @@index([departmentId])
+  @@index([status])
+  @@index([specializationId])
 }
 
 model Staff {
@@ -338,6 +347,8 @@ model Staff {
 
   @@index([hospitalId])
   @@index([departmentId])
+  @@index([status])
+  @@index([specializationId])
 }
 
 model Patient {
@@ -376,8 +387,8 @@ model Patient {
 
 model Conversation {
   conversationId String             @id @default(uuid())
-  appointmentId  String
-  hospitalId     Int
+  appointmentId  String?
+  hospitalId     Int?
   subject        String?
   status         ConversationStatus @default(ACTIVE)
   lastMessageAt  DateTime?
@@ -397,14 +408,14 @@ model Conversation {
 
 model ConversationParticipant {
   conversationId  String
-  hospitalId      Int
-  appointmentId   String
+  hospitalId      Int?
+  appointmentId   String?
   userId          String
   joinedAt        DateTime @default(now())
   participantRole Role?
 
-  conversation Conversation @relation(fields: [conversationId], references: [conversationId])
-  user         User         @relation(fields: [userId], references: [userId])
+  conversation Conversation @relation(fields: [conversationId], references: [conversationId], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@id([conversationId, userId])
   @@index([joinedAt])
@@ -415,23 +426,44 @@ model ConversationParticipant {
 model Message {
   messageId      String      @id @default(uuid())
   conversationId String
-  hospitalId     Int
-  appointmentId  String
+  hospitalId     Int?
+  appointmentId  String?
   senderId       String
   content        String
   messageType    MessageType @default(TEXT)
-  isRead         Boolean     @default(false)
+  isUrgent       Boolean     @default(false)
+  reactions      Json        @default("{}") // JSON object for reactions, e.g., {"👍": ["userId1"]}
   createdAt      DateTime    @default(now())
+  deliveredAt    DateTime?
+  editedAt       DateTime?
   updatedAt      DateTime    @updatedAt
 
-  conversation Conversation @relation(fields: [conversationId], references: [conversationId])
-  sender       User         @relation(fields: [senderId], references: [userId])
+  replyToMessageId String?
+  replyToMessage   Message?    @relation("MessageReplies", fields: [replyToMessageId], references: [messageId], onDelete: NoAction, onUpdate: NoAction)
+  replies          Message[]   @relation("MessageReplies")
+  readReceipts     ReadReceipt[]
+
+  conversation Conversation @relation(fields: [conversationId], references: [conversationId], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [userId], onDelete: Cascade)
 
   @@index([conversationId])
   @@index([senderId])
-  @@index([isRead])
   @@index([hospitalId])
   @@index([appointmentId])
+  @@index([replyToMessageId])
+}
+
+model ReadReceipt {
+  id        String   @id @default(uuid())
+  messageId String
+  userId    String
+  seenAt    DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [messageId], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([userId])
 }
 
 model MedicalInformation {
@@ -491,6 +523,7 @@ model Appointment {
   @@index([patientId])
   @@index([doctorId])
   @@index([status])
+  @@index([appointmentDate])
 }
 
 model AppointmentNote {
@@ -556,6 +589,7 @@ model Bed {
   @@unique([hospitalId, patientId])
   @@index([hospitalId])
   @@index([availability])
+  @@index([patientId])
 }
 
 model Hospital {

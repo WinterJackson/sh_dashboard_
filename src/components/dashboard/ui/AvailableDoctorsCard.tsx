@@ -90,4 +90,4 @@ const AvailableDoctorsCard: React.FC<AvailableDoctorsCardProps> = ({
     );
 };
 
-export default AvailableDoctorsCard;
+export default React.memo(AvailableDoctorsCard);

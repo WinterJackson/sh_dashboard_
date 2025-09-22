@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
+import Image from "next/image";
 
 interface MFASwitchProps {
     initialEnabled: boolean;
@@ -183,12 +184,12 @@ export default function MFASwitch({
 
     return (
         <>
-            <div className="flex items-center justify-between mb-4 p-2 border-2 border-gray-100 rounded-[10px]">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 p-2 border-2 border-border rounded-[10px]">
                 <div className="w-full">
                     <Label htmlFor="mfaToggle" className="font-semibold">
                         Two-Factor Authentication
                     </Label>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                         {isMfaDisabled
                             ? "Add an email address to enable MFA"
                             : "Use an authenticator app for login codes"}
@@ -221,9 +222,11 @@ export default function MFASwitch({
                             <>
                                 <div className="flex justify-center">
                                     {/* <img> for SVG or PNG data URL */}
-                                    <img
+                                    <Image
                                         src={qrCodeDataUrl}
                                         alt="Scan this QR code with your authenticator app"
+                                        width={160}
+                                        height={160}
                                         className="w-40 h-40"
                                     />
                                 </div>
@@ -250,7 +253,7 @@ export default function MFASwitch({
                                 </Button>
 
                                 {status && (
-                                    <p className="text-sm text-center text-red-500">
+                                    <p className="text-sm text-center text-destructive">
                                         {status}
                                     </p>
                                 )}

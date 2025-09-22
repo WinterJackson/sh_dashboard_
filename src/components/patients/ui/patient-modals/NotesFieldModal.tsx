@@ -55,7 +55,7 @@ export function NotesFieldModal({
                             <span
                                 className={cn(
                                     "inline-block truncate cursor-pointer",
-                                    hasNotes ? "text-primary" : "text-gray-400"
+                                    hasNotes ? "text-constructive" : "text-muted-foreground"
                                 )}
                             >
                                 {children}

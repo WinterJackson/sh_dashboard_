@@ -25,6 +25,8 @@ export enum MessageType {
     TEXT = "TEXT",
     IMAGE = "IMAGE",
     FILE = "FILE",
+    VIDEO = "VIDEO",
+    AUDIO = "AUDIO",
 }
 
 export enum ConversationStatus {
@@ -149,6 +151,7 @@ export interface User {
     notes?: AppointmentNote[];
     uploadedDocuments?: ReferralDocument[];
     auditLog?: AuditLog[];
+    readReceipts?: ReadReceipt[];
 }
 
 export interface Notification {
@@ -336,8 +339,8 @@ export interface Patient {
 
 export interface Conversation {
     conversationId: string;
-    appointmentId: string;
-    hospitalId: number;
+    appointmentId?: string | null;
+    hospitalId?: number | null;
     subject?: string | null;
     status: ConversationStatus;
     lastMessageAt?: Date | null;
@@ -351,8 +354,8 @@ export interface Conversation {
 
 export interface ConversationParticipant {
     conversationId: string;
-    hospitalId: number;
-    appointmentId: string;
+    hospitalId?: number | null;
+    appointmentId?: string | null;
     userId: string;
     joinedAt: Date;
     participantRole?: Role | null;
@@ -360,19 +363,41 @@ export interface ConversationParticipant {
     user: User;
 }
 
+export interface Reaction {
+    [emoji: string]: string[]; // emoji: [userId1, userId2]
+}
+
 export interface Message {
+    deliveredAt?: Date | null;
     messageId: string;
     conversationId: string;
-    hospitalId: number;
-    appointmentId: string;
+    hospitalId?: number | null;
+    appointmentId?: string | null;
     senderId: string;
     content: string;
     messageType: MessageType;
-    isRead: boolean;
+    isUrgent: boolean;
+    reactions: Reaction;
     createdAt: Date;
     updatedAt: Date;
+    editedAt?: Date | null;
+    replyToMessageId?: string | null;
+    replyToMessage?: Message | null;
+    replies?: Message[];
+    readReceipts?: ReadReceipt[];
     conversation: Conversation;
     sender: User;
+    status?: 'sending' | 'sent' | 'failed';
+}
+
+export interface ReadReceipt {
+    id: string;
+    messageId: string;
+    userId: string;
+    readAt: Date;
+    seenAt: Date;
+    message: Message;
+    user: User;
 }
 
 export interface MedicalInformation {
@@ -418,7 +443,7 @@ export interface Appointment {
     reasonForVisit?: string | null;
     createdAt: Date;
     updatedAt: Date;
-    conversation?: Conversation | null;
+    conversations: Conversation[];
     doctor: Doctor;
     hospital: Hospital;
     patient: Patient;
@@ -707,7 +732,7 @@ export interface ReferralDocument {
     fileName: string;
     fileType: string;
     fileSize: number;
-    fileData: Buffer;
+    fileData: Buffer | Uint8Array | string;
     uploadedAt: Date;
     uploadedBy: string;
     isEncrypted: boolean;
@@ -815,3 +840,23 @@ export interface UserSettingsData {
     username: User["username"];
     email: User["email"];
 }
+
+export type FetchedPatient = {
+    patientId: number;
+    hospitalId: number;
+    reasonForConsultation: string;
+    user: {
+        email: string | null;
+        profile: {
+            firstName: string | null;
+            lastName: string | null;
+            phoneNo: string | null;
+            dateOfBirth: Date | null;
+            gender: string | null;
+        } | null;
+    } | null;
+    appointments: {
+        appointmentDate: Date;
+    }[];
+};
+

@@ -1,10 +1,11 @@
 // src/lib/edgestore.ts
 
-'use client';
+"use client";
 
-import { type EdgeStoreRouter } from '../app/api/edgestore/[...edgestore]/route';
-import { createEdgeStoreProvider } from '@edgestore/react';
+import { createEdgeStoreProvider } from "@edgestore/react";
+import type { EdgeStoreRouter } from "./edgestore-server";
 
+// ✅ Creates typed Provider + hook for client
 const { EdgeStoreProvider, useEdgeStore } =
     createEdgeStoreProvider<EdgeStoreRouter>();
 

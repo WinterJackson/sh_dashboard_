@@ -50,7 +50,7 @@ export function ServicesFieldModal({
                             <span
                                 className={cn(
                                     "inline-block truncate cursor-pointer",
-                                    hasServices ? "text-primary" : "text-gray-400"
+                                    hasServices ? "text-constructive" : "text-muted-foreground"
                                 )}
                             >
                                 {children}
@@ -58,7 +58,7 @@ export function ServicesFieldModal({
                         </DialogTrigger>
                     </TooltipTrigger>
                     {hasServices && (
-                        <TooltipContent side="bottom" className="bg-slate-100 text-black mt-1">
+                        <TooltipContent side="bottom" className="bg-popover text-popover-foreground mt-1">
                             <div className="space-x-1 truncate">{excerpt}</div>
                         </TooltipContent>
                     )}
@@ -79,7 +79,7 @@ export function ServicesFieldModal({
                                 return (
                                     <div
                                         key={`${svc.appointmentId}-${svc.serviceId}`}
-                                        className="p-3 border rounded-lg"
+                                        className="p-3 border border-border rounded-lg"
                                     >
                                         <ul className="space-y-1 text-sm">
                                             <li>
@@ -133,7 +133,7 @@ export function ServicesFieldModal({
                                 );
                             })
                         ) : (
-                            <p className="text-center text-gray-500">No services recorded.</p>
+                            <p className="text-center text-muted-foreground">No services recorded.</p>
                         )}
                     </div>
 

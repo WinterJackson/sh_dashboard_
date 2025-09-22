@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import AuthLayout from "../layout";
+import Image from "next/image";
 
 const SignUpPage = async () => {
     const session = await getServerSession(authOptions);
@@ -18,13 +19,12 @@ const SignUpPage = async () => {
             <div className="flex flex-col sm:justify-center md:flex-row md:justify-center items-center px-4 py-8 w-full max-w-screen-xl">
                 <div className="hidden md:flex items-center justify-center mb-6 md:mb-0 md:mr-10">
                     <div className="p-6 sm:p-8 md:p-10 bg-secondary rounded-2xl w-full max-w-sm sm:max-w-md md:max-w-xs">
-                        <img
+                        <Image
                             src="/images/logo.png"
                             alt="Hospital Logo"
                             width={300}
                             height={200}
                             className="p-1 object-contain max-w-full h-auto mx-auto"
-                            loading="lazy"
                         />
                     </div>
                 </div>

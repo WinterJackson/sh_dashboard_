@@ -39,14 +39,14 @@ export default function UserInfoSection({
 
     useEffect(() => {
         // For super-admins, auto-select the first hospital once they're loaded
-        if (userRole === Role.SUPER_ADMIN && hospitals.length > 0) {
+        if (userRole === Role.SUPER_ADMIN && hospitals.length > 0 && !form.getValues("hospitalId")) {
             form.setValue("hospitalId", hospitals[0].hospitalId);
         }
-    }, [userRole, hospitals, form.setValue]);
+    }, [userRole, hospitals, form]);
 
     return (
-        <div className="flex flex-col gap-6 bg-white shadow-sm shadow-gray-400 w-full p-4 rounded-xl">
-            <span className="text-primary font-semibold border-b-2 border-gray-300">
+        <div className="flex flex-col gap-6 bg-background border border-border p-6 rounded-xl shadow-sm w-full">
+            <span className="text-primary font-semibold border-b-2 border-border pb-2">
                 Patient Info
             </span>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -69,7 +69,7 @@ export default function UserInfoSection({
                                                 setSearchTerm(e.target.value)
                                             }
                                             placeholder="Search hospital name..."
-                                            className="px-3 py-1 border rounded-[5px] text-sm"
+                                            className="px-3 py-2 mt-4 bg-slate border rounded-[5px] text-sm"
                                         />
                                         <select
                                             value={field.value ?? ""}
@@ -81,7 +81,7 @@ export default function UserInfoSection({
                                                     field.onChange(selectedId);
                                                 }
                                             }}
-                                            className="p-2 focus:outline outline-2 outline-primary max-h-40 overflow-y-auto text-sm rounded-[5px]"
+                                            className="px-2 py-3 bg-slate mt-4 focus:outline outline-2 outline-primary max-h-40 overflow-y-auto text-sm rounded-[5px]"
                                         >
                                             <option
                                                 value=""

@@ -40,10 +40,11 @@ const AppointmentRow: React.FC<AppointmentRowProps> = ({
         appointment;
 
     // Efficiently determine if the appointment is cancelled
-    const rowClass =
-        status === "CANCELLED" || actionText[appointmentId] === "CANCELLED"
-            ? "bg-red-100"
-            : "bg-white";
+    const isCancelled =
+        status === "CANCELLED" || actionText[appointmentId] === "CANCELLED";
+    const rowClass = isCancelled
+        ? "bg-destructive/20 text-destructive-foreground"
+        : "bg-background";
 
     // Safely retrieve patient's name from the related Profile entity
     const patientName = React.useMemo(() => {
@@ -84,65 +85,58 @@ const AppointmentRow: React.FC<AppointmentRowProps> = ({
         router.push(`/dashboard/appointments/${appointmentId}`);
     };
 
-    // wrap triggers to stop click propagation
-    const StopPropagation: React.FC<React.PropsWithChildren> = ({
-        children,
-    }) => <div onClick={(e) => e.stopPropagation()}>{children}</div>;
-
     return (
         <tr
-            className={`text-center cursor-pointer ${rowClass} hover:bg-gray-100 active:bg-blue-100/50`}
+            className={`group text-center cursor-pointer ${rowClass} shadow-md py-2 hover:bg-primary text-foreground hover:text-primary-foreground`}
             onClick={onRowClick}
         >
             {/* Patient Name */}
-            <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-left">
+            <td className="p-2 whitespace-nowrap text-sm font-semibold text-left">
                 {patientName}
             </td>
 
             {/* Patient Age */}
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <td className="p-2 whitespace-nowrap text-sm">
                 {patientAge}
             </td>
 
             {/* Patient ID */}
-            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+            <td className="p-2 whitespace-nowrap text-sm">
                 {patient?.patientId || "N/A"}
             </td>
 
             {/* Appointment Time */}
-            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+            <td className="p-2 whitespace-nowrap text-sm">
                 {formattedTime}
             </td>
 
             {/* Appointment Date */}
-            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+            <td className="p-2 whitespace-nowrap text-sm">
                 {formattedDate}
             </td>
 
             {/* Doctor's Name */}
-            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+            <td className="p-2 whitespace-nowrap text-sm">
                 {doctor?.user?.profile
                     ? `Dr. ${doctor.user.profile.firstName} ${doctor.user.profile.lastName}`
                     : "N/A"}
             </td>
 
             {/* Appointment Type Dropdown */}
-            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                <div className="flex justify-center">
+            <td className="p-2 whitespace-nowrap text-sm">
+                <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
-                        <StopPropagation>
-                            <DropdownMenuTrigger className="flex w-auto justify-center p-1 border-gray-300 rounded-[5px] max-w-[120px] bg-gray-100 text-gray-700">
-                                <span className="flex gap-1 items-center">
-                                    {typeText[appointmentId] === "Virtual" ? (
-                                        <Video className="text-primary" />
-                                    ) : (
-                                        <PlaceIcon className="text-black/70" />
-                                    )}
-                                    <span>{typeText[appointmentId]}</span>
-                                    <ArrowDropDownIcon className="ml-1 text-gray-500" />
-                                </span>
-                            </DropdownMenuTrigger>
-                        </StopPropagation>
+                        <DropdownMenuTrigger className="flex w-auto justify-center p-1 border rounded-[5px] max-w-[120px] bg-background-muted text-foreground">
+                            <span className="flex gap-1 items-center">
+                                {typeText[appointmentId] === "Virtual" ? (
+                                    <Video className="text-primary" />
+                                ) : (
+                                    <PlaceIcon className="text-foreground/70" />
+                                )}
+                                <span>{typeText[appointmentId]}</span>
+                                <ArrowDropDownIcon className="ml-1 text-muted-foreground" />
+                            </span>
+                        </DropdownMenuTrigger>
 
                         <DropdownMenuContent className="rounded-[10px] shadow-md p-2">
                             <DropdownMenuItem
@@ -154,7 +148,7 @@ const AppointmentRow: React.FC<AppointmentRowProps> = ({
                                 }
                                 className="p-2 rounded-[5px]"
                             >
-                                <Video className="text-black/70 mr-2" />
+                                <Video className="text-foreground/70 mr-2" />
                                 Virtual
                             </DropdownMenuItem>
                             <DropdownMenuItem
@@ -166,7 +160,7 @@ const AppointmentRow: React.FC<AppointmentRowProps> = ({
                                 }
                                 className="p-2 rounded-[5px]"
                             >
-                                <PlaceIcon className="text-black/70 mr-2" />
+                                <PlaceIcon className="text-foreground/70 mr-2" />
                                 Walk In
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -175,33 +169,31 @@ const AppointmentRow: React.FC<AppointmentRowProps> = ({
             </td>
 
             {/* Action Dropdown */}
-            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                <div className="flex justify-center">
+            <td className="p-2 whitespace-nowrap text-sm">
+                <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
-                        <StopPropagation>
-                            <DropdownMenuTrigger className="flex w-auto justify-center p-1 border-gray-300 rounded max-w-[120px] bg-gray-100 text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary">
-                                <span className="flex gap-1">
-                                    <span className="pl-2">
-                                        {actionText[appointmentId]
-                                            ? `${actionText[appointmentId]
-                                                  .charAt(0)
-                                                  .toUpperCase()}${actionText[
-                                                  appointmentId
-                                              ]
-                                                  .slice(1)
-                                                  .toLowerCase()}`
-                                            : status
-                                            ? `${status
-                                                  .charAt(0)
-                                                  .toUpperCase()}${status
-                                                  .slice(1)
-                                                  .toLowerCase()}`
-                                            : "Action"}
-                                    </span>
-                                    <ArrowDropDownIcon />
+                        <DropdownMenuTrigger className="flex w-auto justify-center p-1 border rounded max-w-[120px] bg-background-muted text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
+                            <span className="flex gap-1">
+                                <span className="pl-2">
+                                    {actionText[appointmentId]
+                                        ? `${actionText[appointmentId]
+                                              .charAt(0)
+                                              .toUpperCase()}${actionText[
+                                              appointmentId
+                                          ]
+                                              .slice(1)
+                                              .toLowerCase()}`
+                                        : status
+                                        ? `${status
+                                              .charAt(0)
+                                              .toUpperCase()}${status
+                                              .slice(1)
+                                              .toLowerCase()}`
+                                        : "Action"}
                                 </span>
-                            </DropdownMenuTrigger>
-                        </StopPropagation>
+                                <ArrowDropDownIcon />
+                            </span>
+                        </DropdownMenuTrigger>
 
                         <DropdownMenuContent className="rounded-[10px] shadow-md p-2">
                             <DropdownMenuItem
@@ -273,4 +265,22 @@ const AppointmentRow: React.FC<AppointmentRowProps> = ({
     );
 };
 
-export default AppointmentRow;
+const propsAreEqual = (
+    prevProps: AppointmentRowProps,
+    nextProps: AppointmentRowProps
+) => {
+    return (
+        prevProps.appointment === nextProps.appointment &&
+        prevProps.typeText[nextProps.appointment.appointmentId] ===
+            nextProps.typeText[nextProps.appointment.appointmentId] &&
+        prevProps.actionText[nextProps.appointment.appointmentId] ===
+            nextProps.actionText[nextProps.appointment.appointmentId] &&
+        prevProps.handleUpdateAppointmentType ===
+            nextProps.handleUpdateAppointmentType &&
+        prevProps.handleDialogOpen === nextProps.handleDialogOpen &&
+        prevProps.handleUpdateStatus === nextProps.handleUpdateStatus &&
+        prevProps.handleActionChange === nextProps.handleActionChange
+    );
+};
+
+export default React.memo(AppointmentRow, propsAreEqual);

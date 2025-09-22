@@ -5,6 +5,13 @@ import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import AddPatientForm from "@/components/patients/ui/add-new-patient/AddPatientForm";
 import { Role } from "@/lib/definitions";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 export default async function AddNewPatientPage() {
     const session = await getServerSession(authOptions);
@@ -22,20 +29,24 @@ export default async function AddNewPatientPage() {
     const initialHospitalId = userRole === Role.SUPER_ADMIN ? null : hospitalId;
 
     return (
-        <div className="max-w-full mx-auto p-4 pt-0">
-            <div className="mb-8">
-                <h1 className="mb-5 text-xl font-bold bg-bluelight/5 p-2 pl-4 rounded-[10px]">
-                    Add New Patient
-                </h1>
-                <p className="text-gray-600 my-4 px-2 ml-2">
-                    Fill out the form below to register a new patient
-                </p>
-
-                <AddPatientForm
-                    hospitalId={initialHospitalId}
-                    userRole={userRole}
-                />
+        <div className="flex flex-col gap-3 p-3 pt-0">
+            <div className="flex items-center gap-2 bg-slate p-2 rounded-[10px] w-full">
+                <h1 className="text-xl font-bold">Add New Patient</h1>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger className="ml-1">
+                            <Info size={16} className="text-text-muted" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Fill out the form below to register a new patient.</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
             </div>
+            <AddPatientForm
+                hospitalId={initialHospitalId}
+                userRole={userRole}
+            />
         </div>
     );
 }

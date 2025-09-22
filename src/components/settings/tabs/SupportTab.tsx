@@ -4,35 +4,31 @@
 
 import FAQ from "@/components/settings/FAQs/FAQ";
 import Image from "next/image";
-// import { useSessionData } from "@/hooks/useSessionData";
-// import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-function SupportTab() {
-    // const session = useSessionData();
-
-    // // Redirect unauthenticated users to the sign-in page
-    // if (!session || !session.user) {
-    //     redirect("/sign-in");
-    //     return null;
-    // }
-
+function SupportTabContent() {
     return (
-        <div className="flex gap-5 h-full p-4">
+        <div className="flex flex-col md:flex-row gap-5 h-full p-4 bg-card rounded-[10px] shadow-md">
             {/* left */}
-            <div className="flex justify-center items-center h-full w-[50%] p-10 border-r-4">
+            <div className="flex justify-center items-center h-full w-full md:w-1/2 p-4 md:p-10 border-b-4 md:border-b-0 md:border-r-4">
                 <Image
                     src="/images/amico.svg"
-                    alt=""
+                    alt="Support illustration"
                     width={500}
                     height={500}
                 />
             </div>
             {/* right */}
-            <div className="flex h-full w-[50%] pt-7">
-                <div className="flex flex-col gap-7">
+            <div className="flex h-full w-full md:w-1/2 pt-7">
+                <div className="flex flex-col gap-7 w-full">
                     <div className="flex flex-col gap-4">
-                        <h1 className="text-primary capitalize font-semibold bg-white p-2 rounded-[10px] shadow-sm shadow-gray-400">Frequently asked questions</h1>
-                        <p className="text-primary capitalize text-sm p-2">Questions you might have about our Products and services</p>
+                        <h1 className="text-primary capitalize font-semibold bg-slate p-2 rounded-[10px] shadow-sm shadow-shadow-main">
+                            Frequently asked questions
+                        </h1>
+                        <p className="text-muted-foreground capitalize text-sm p-2">
+                            Questions you might have about our Products and services
+                        </p>
                     </div>
                     <div className="flex flex-col gap-4">
                         <FAQ question="Are there any subscription fees?" answer="No, our service is completely free for all users." />
@@ -46,4 +42,23 @@ function SupportTab() {
     );
 }
 
-export default SupportTab;
+export default function SupportTab() {
+    return (
+        <Suspense
+            fallback={
+                <div className="flex gap-5 h-full p-4 bg-card rounded-[10px] shadow-md">
+                    <Skeleton className="h-80 w-[50%] rounded-lg" />
+                    <div className="flex flex-col gap-6 w-[50%] p-6">
+                        <Skeleton className="h-8 w-3/4" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-16 w-full rounded-lg" />
+                        <Skeleton className="h-16 w-full rounded-lg" />
+                        <Skeleton className="h-16 w-full rounded-lg" />
+                    </div>
+                </div>
+            }
+        >
+            <SupportTabContent />
+        </Suspense>
+    );
+}

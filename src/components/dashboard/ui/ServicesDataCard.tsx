@@ -81,7 +81,7 @@ const renderCustomizedLabel = ({
     );
 };
 
-export default function ServicesDataCard({ session }: ServicesDataCardProps) {
+const ServicesDataCard: React.FC<ServicesDataCardProps> = ({ session }) => {
     const { userId, role: userRole, hospitalId: userHospitalId } = session.user;
     const [selectedHospitalId, setSelectedHospitalId] = useState<number | null>(
         null
@@ -150,7 +150,7 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
     }
 
     return (
-        <div className="flex flex-col p-4 w-full rounded-2xl bg-card shadow-md shadow-shadow-main cursor-pointer">
+        <div className="flex flex-col p-4 w-full rounded-2xl bg-card shadow-main-lg cursor-pointer">
             <div className="flex justify-between items-center mb-6 mt-6">
                 {userRole === Role.SUPER_ADMIN && (
                     <div className="flex items-center w-[250px]">
@@ -309,4 +309,6 @@ export default function ServicesDataCard({ session }: ServicesDataCardProps) {
             </Link>
         </div>
     );
-}
+};
+
+export default React.memo(ServicesDataCard);

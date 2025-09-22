@@ -27,7 +27,7 @@ interface TopDoctorsCardProps {
 
 const TopDoctorsCard: React.FC<TopDoctorsCardProps> = ({ topDoctors = [] }) => {
     return (
-        <div className="cursor-pointer p-6 h-[500px] flex flex-col gap-4 shadow-md shadow-shadow-main rounded-[20px] bg-card w-full mb-8">
+        <div className="cursor-pointer p-6 h-[500px] flex flex-col gap-4 shadow-main-lg rounded-[20px] bg-card w-full mb-8">
             <div className="flex items-center gap-2">
                 <h1 className="text-base font-semibold capitalize whitespace-nowrap">
                     Top Doctors
@@ -100,4 +100,4 @@ const TopDoctorsCard: React.FC<TopDoctorsCardProps> = ({ topDoctors = [] }) => {
     );
 };
 
-export default TopDoctorsCard;
+export default React.memo(TopDoctorsCard);

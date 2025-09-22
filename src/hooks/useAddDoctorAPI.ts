@@ -13,17 +13,17 @@ export const useAddDoctorAPI = () => {
                 firstName: string;
                 lastName: string;
                 email: string;
-                gender: string;
+                gender: string | null;
                 hospitalId: number;
                 departmentId: number;
                 specializationId: number;
-                serviceId?: number;
+                serviceId?: number | null;
                 phoneNo: string;
                 dateOfBirth: string;
                 qualifications?: string;
-                about?: string;
+                bio?: string;
                 status?: string;
-                profileImageUrl?: string;
+                profileImageUrl?: string | null;
             };
             user?: { role: Role; hospitalId: number | null; userId: string | null };
         }) => addDoctorAPI(data.doctorData, data.user),

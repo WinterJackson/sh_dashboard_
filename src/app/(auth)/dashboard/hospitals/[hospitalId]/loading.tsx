@@ -1,4 +1,4 @@
-// src/app/(auth)/dashboard/appointments/[appointmentId]/loading.tsx
+// src/app/(auth)/dashboard/hospitals/[hospitalId]/loading.tsx
 
 "use client"
 

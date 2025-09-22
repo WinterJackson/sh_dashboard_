@@ -39,7 +39,7 @@ type HeaderProps = {
     imageUrl?: string;
 };
 
-const Header: React.FC<HeaderProps> = ({ username, role, imageUrl }) => {
+const Header: React.FC<HeaderProps> = React.memo(({ username, role, imageUrl }) => {
     const [openAppointmentDialog, setOpenAppointmentDialog] = useState(false);
     const [openReferDialog, setOpenReferDialog] = useState(false);
 
@@ -212,6 +212,6 @@ const Header: React.FC<HeaderProps> = ({ username, role, imageUrl }) => {
             )}
         </>
     );
-};
+});
 
 export default Header;

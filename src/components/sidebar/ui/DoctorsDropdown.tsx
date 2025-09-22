@@ -5,13 +5,14 @@
 import { useState } from "react";
 import { ChevronRightIcon, PersonIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
+import React from "react";
 
 type DoctorsDropdownProps = {
     isActive: (href: string) => boolean;
     currentPath?: string;
 };
 
-const DoctorsDropdown: React.FC<DoctorsDropdownProps> = ({ isActive }) => {
+const DoctorsDropdown: React.FC<DoctorsDropdownProps> = React.memo(({ isActive }) => {
     const [isDoctorsOpen, setIsDoctorsOpen] = useState(false);
 
     const toggleDoctors = () => {
@@ -78,6 +79,6 @@ const DoctorsDropdown: React.FC<DoctorsDropdownProps> = ({ isActive }) => {
             </div>
         </>
     );
-};
+});
 
 export default DoctorsDropdown;

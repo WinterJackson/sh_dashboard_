@@ -15,7 +15,7 @@ interface SidebarProps {
     role?: Role;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
+const Sidebar: React.FC<SidebarProps> = React.memo(({ username, role }) => {
     const pathname = usePathname();
     const firstName = username.split(" ")[0] || "";
     const nameWidth = firstName ? firstName.length * 10 : 100;
@@ -64,6 +64,7 @@ const Sidebar: React.FC<SidebarProps> = ({ username, role }) => {
 
         </>
     );
-};
+});
 
 export default Sidebar;
+

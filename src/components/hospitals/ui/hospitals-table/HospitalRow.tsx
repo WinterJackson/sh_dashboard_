@@ -4,6 +4,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
     Tooltip,
     TooltipTrigger,
@@ -62,7 +63,7 @@ const HospitalRow: React.FC<HospitalRowProps> = ({
             {/* Logo Column */}
             <td className="w-[15%] p-2">
                 <div className="flex items-center justify-center">
-                    <img
+                    <Image
                         src="/images/shlogo.png"
                         alt="Hospital logo"
                         width={100}
@@ -205,4 +206,4 @@ const HospitalRow: React.FC<HospitalRowProps> = ({
     );
 };
 
-export default HospitalRow;
+export default React.memo(HospitalRow);
