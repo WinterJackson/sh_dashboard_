@@ -741,7 +741,7 @@ export async function addDoctorAPI(
 
     try {
         // Transaction to ensure all or nothing is created
-        const newDoctor = await prisma.$transaction(async (tx) => {
+        const newDoctor = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             const username = `${doctorData.firstName.toLowerCase()}.${doctorData.lastName.toLowerCase()}`;
             
             // 1. Check if user already exists by email or username
