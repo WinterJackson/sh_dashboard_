@@ -7,6 +7,7 @@ import * as Sentry from "@sentry/nextjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { sendEmail } from "@/lib/email";
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
