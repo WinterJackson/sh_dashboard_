@@ -5,7 +5,7 @@ import { fetchUserSettings } from "@/lib/data-access/settings/data";
 import type { UserSettingsData } from "@/lib/definitions";
 
 export function useUserSettings() {
-    return useQuery<UserSettingsData>({
+    return useQuery<UserSettingsData | null>({
         queryKey: ["userSettings"],
         queryFn: () => fetchUserSettings(),
         staleTime: 1000 * 60 * 5, // Cache for 5 minutes
