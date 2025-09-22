@@ -29,6 +29,12 @@ export default async function SettingsPage() {
 
     const userSettings = await fetchUserSettings(session.user.id);
 
+    // If userSettings is null (e.g., user not found in DB, or no session during build),
+    // redirect to sign-in. This handles the prerendering case gracefully.
+    if (!userSettings) {
+        redirect("/sign-in");
+    }
+
     const profileData: ExtendedProfileUpdateData = {
         profileId: userSettings.profile?.profileId ?? "",
         userId: userSettings.profile?.userId ?? session.user.id,

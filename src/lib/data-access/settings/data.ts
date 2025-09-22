@@ -59,10 +59,12 @@ export type SecuritySettings = Pick<
 };
 
 // Fetch complete user settings data
-export async function fetchUserSettings(userId?: string): Promise<UserSettingsData> {
+export async function fetchUserSettings(userId?: string): Promise<UserSettingsData | null> {
     try {
         const session = await getServerSession(authOptions);
-        if (!session?.user) redirect("/sign-in");
+        if (!session?.user) {
+            return null;
+        }
 
         const dbUser = await prisma.user.findUnique({
             where: { userId: userId || session.user.id },
