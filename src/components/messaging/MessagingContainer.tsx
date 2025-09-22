@@ -22,7 +22,8 @@ interface MessagingContainerProps {
     isFetchingNextPage: boolean;
     onSendMessage: (content: string, file?: File) => void;
     onToggleInfoPanel: () => void;
-    onCall: () => void;
+    onAudioCall: () => void;
+    onVideoCall: () => void;
 }
 
 const MessagingContainer: React.FC<MessagingContainerProps> = ({
@@ -39,7 +40,8 @@ const MessagingContainer: React.FC<MessagingContainerProps> = ({
     isFetchingNextPage,
     onSendMessage,
     onToggleInfoPanel,
-    onCall,
+    onAudioCall,
+    onVideoCall,
 }) => {
     const [selectedConversationId, setSelectedConversationId] = useState<
         string | null
@@ -57,7 +59,8 @@ const MessagingContainer: React.FC<MessagingContainerProps> = ({
                 conversation={selectedConversation}
                 onlineUsers={onlineUsers}
                 isTyping={isTyping}
-                onCall={onCall}
+                onAudioCall={onAudioCall}
+                onVideoCall={onVideoCall}
                 onToggleInfoPanel={onToggleInfoPanel}
             />
 
