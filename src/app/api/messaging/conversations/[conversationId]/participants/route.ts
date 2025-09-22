@@ -14,6 +14,7 @@ export async function POST(
     if (!session?.user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const { user } = session;
 
     const { conversationId } = params;
     const { userId: userIdToAdd } = await req.json();
@@ -32,13 +33,13 @@ export async function POST(
             return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
         }
 
-        const isCurrentUserParticipant = conversation.participants.some(p => p.userId === session.user.id);
+        const isCurrentUserParticipant = conversation.participants.some((p: { userId: string }) => p.userId === user.id);
 
-        if (!isCurrentUserParticipant && session.user.role !== Role.SUPER_ADMIN && session.user.role !== Role.ADMIN) {
+        if (!isCurrentUserParticipant && user.role !== Role.SUPER_ADMIN && user.role !== Role.ADMIN) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
-        const isUserAlreadyParticipant = conversation.participants.some(p => p.userId === userIdToAdd);
+        const isUserAlreadyParticipant = conversation.participants.some((p: { userId: string }) => p.userId === userIdToAdd);
 
         if (isUserAlreadyParticipant) {
             return NextResponse.json({ error: "User is already a participant" }, { status: 409 });
