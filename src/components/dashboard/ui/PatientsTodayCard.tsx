@@ -38,7 +38,7 @@ const PatientsTodayCard: React.FC<PatientsTodayCardProps> = ({
     };
 
     return (
-        <div className="grid gap-4 p-4 bg-card shadow-main-lg rounded-2xl cursor-pointer">
+        <div className="grid gap-4 p-4 bg-card shadow-md shadow-shadow-main rounded-2xl cursor-pointer">
             <div className="flex items-center gap-1">
                 <h3 className="text-xs sm:text-sm md:text-sm lg:text-base font-semibold">
                     Patients Today
