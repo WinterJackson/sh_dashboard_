@@ -3,6 +3,12 @@
 import { PrismaClient } from "@prisma/client";
 import * as Sentry from "@sentry/nextjs";
 
+// Initialize Sentry
+Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    tracesSampleRate: 1.0,
+});
+
 // Global singleton reference (to avoid reinitializing in development)
 const globalForPrisma = globalThis;
 
@@ -13,7 +19,7 @@ const prisma =
             process.env.NODE_ENV === "production"
                 ? ["warn", "error"]
                 : ["query", "info", "warn", "error"], // with prisma logs on terminal
-                // : [], // with no logs on terminal
+        // : [], // with no logs on terminal
     });
 
 // Global error tracking

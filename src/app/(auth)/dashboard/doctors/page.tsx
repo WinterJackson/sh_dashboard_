@@ -1,5 +1,7 @@
 // src/app/(auth)/dashboard/doctors/page.tsx
 
+export const dynamic = 'force-dynamic';
+
 import DoctorsList from "@/components/doctors/DoctorsList";
 import { authOptions } from "@/lib/authOptions";
 import { Role } from "@/lib/definitions";

@@ -1,4 +1,4 @@
-// src/components/messaging/IncomingCall.tsx
+// src/components/messaging/ui/IncomingCall.tsx
 
 import React from 'react';
 import { Phone, PhoneOff } from 'lucide-react';

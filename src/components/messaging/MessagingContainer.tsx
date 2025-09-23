@@ -2,11 +2,11 @@
 
 "use client";
 
+import MessagePanel from "@/components/messaging/MessagePanel";
+import ChatHeader from "@/components/messaging/ui/ChatHeader";
+import { Conversation, Message } from "@/lib/definitions";
 import React, { useState } from "react";
 import { Socket } from "socket.io-client";
-import { Conversation, Message } from "@/lib/definitions";
-import ChatHeader from "@/components/messaging/ChatHeader";
-import MessagePanel from "@/components/messaging/MessagePanel";
 
 interface MessagingContainerProps {
     socket: Socket | null;

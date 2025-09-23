@@ -1,4 +1,4 @@
-// src/components/messaging/ConversationList.tsx
+// src/components/messaging/ui/ConversationList.tsx
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Conversation } from '@/lib/definitions';

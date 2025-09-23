@@ -1,5 +1,7 @@
 // src/app/(auth)/dashboard/patients/[patientId]/page.tsx
 
+export const dynamic = 'force-dynamic';
+
 import { notFound, redirect } from "next/navigation";
 import PatientProfile from "@/components/patients/PatientProfile";
 import { fetchPatientDetailsById } from "@/lib/data-access/patients/data";

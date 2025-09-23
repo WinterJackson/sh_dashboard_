@@ -2,29 +2,29 @@
 
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import { Socket } from "socket.io-client";
-import { Message, MessageType, Role } from "@/lib/definitions";
-import {
-    Check,
-    CheckCheck,
-    File as FileIcon,
-    Smile,
-    CornerUpLeft,
-    AlertTriangle,
-    MoreVertical,
-    Trash2,
-    Edit,
-} from "lucide-react";
-import Image from "next/image";
-import LinkPreview from "./LinkPreview";
-import { motion } from "framer-motion";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Message, MessageType } from "@/lib/definitions";
+import { motion } from "framer-motion";
+import {
+    AlertTriangle,
+    Check,
+    CheckCheck,
+    CornerUpLeft,
+    Edit,
+    File as FileIcon,
+    MoreVertical,
+    Smile,
+    Trash2,
+} from "lucide-react";
+import Image from "next/image";
+import React, { useEffect, useRef, useState } from "react";
+import { Socket } from "socket.io-client";
+import LinkPreview from "./ui/LinkPreview";
 
 const REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
 
@@ -115,7 +115,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
     const getStatusIcon = () => {
         if (!isOwnMessage) return null;
 
-        if (message.status === 'sending') {
+        if (message.status === "sending") {
             return <Check size={16} />;
         }
 
@@ -140,8 +140,18 @@ const MessageItem: React.FC<MessageItemProps> = ({
                         className="w-full p-2 border rounded-lg bg-background text-foreground text-sm"
                     />
                     <div className="flex justify-end gap-2">
-                        <button onClick={() => setIsEditing(false)} className="text-xs">Cancel</button>
-                        <button onClick={handleEdit} className="text-xs font-bold">Save</button>
+                        <button
+                            onClick={() => setIsEditing(false)}
+                            className="text-xs"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleEdit}
+                            className="text-xs font-bold"
+                        >
+                            Save
+                        </button>
                     </div>
                 </div>
             );
@@ -163,7 +173,11 @@ const MessageItem: React.FC<MessageItemProps> = ({
                 );
             case MessageType.VIDEO:
                 return (
-                    <video controls width="250" className="rounded-lg w-full h-auto">
+                    <video
+                        controls
+                        width="250"
+                        className="rounded-lg w-full h-auto"
+                    >
                         <source src={message.content} type="video/mp4" />
                         Your browser does not support the video tag.
                     </video>
@@ -183,13 +197,17 @@ const MessageItem: React.FC<MessageItemProps> = ({
                         className="flex items-center text-sm"
                     >
                         <FileIcon size={20} className="mr-2" />
-                        <span className="truncate">{message.content.split("/").pop()}</span>
+                        <span className="truncate">
+                            {message.content.split("/").pop()}
+                        </span>
                     </a>
                 );
             default:
                 return (
                     <div className="text-sm sm:text-base">
-                        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                        <p className="whitespace-pre-wrap break-words">
+                            {message.content}
+                        </p>
                         {urls &&
                             urls.map((url, index) => (
                                 <LinkPreview key={index} url={url} />
@@ -221,7 +239,9 @@ const MessageItem: React.FC<MessageItemProps> = ({
                 {message.isUrgent && (
                     <div className="flex items-center text-destructive mb-1">
                         <AlertTriangle className="h-4 w-4 mr-1" />
-                        <span className="font-bold text-xs sm:text-sm">Urgent</span>
+                        <span className="font-bold text-xs sm:text-sm">
+                            Urgent
+                        </span>
                     </div>
                 )}
                 {message.replyToMessage && (
@@ -229,12 +249,18 @@ const MessageItem: React.FC<MessageItemProps> = ({
                         <p className="font-bold">
                             {message.replyToMessage.sender.username}
                         </p>
-                        <p className="truncate">{message.replyToMessage.content}</p>
+                        <p className="truncate">
+                            {message.replyToMessage.content}
+                        </p>
                     </div>
                 )}
                 {renderMessageContent()}
                 <div className="flex items-center justify-end mt-1">
-                    {message.editedAt && <span className="text-xs text-muted-foreground/80 mr-1">(edited)</span>}
+                    {message.editedAt && (
+                        <span className="text-xs text-muted-foreground/80 mr-1">
+                            (edited)
+                        </span>
+                    )}
                     <span className="text-xs text-muted-foreground/80 mr-1">
                         {new Date(message.createdAt).toLocaleTimeString([], {
                             hour: "2-digit",
@@ -247,12 +273,17 @@ const MessageItem: React.FC<MessageItemProps> = ({
                     {message.readReceipts?.map((receipt) => (
                         <Image
                             key={receipt.userId}
-                            src={receipt.user?.profile?.imageUrl || "/images/default-avatar.png"}
+                            src={
+                                receipt.user?.profile?.imageUrl ||
+                                "/images/default-avatar.png"
+                            }
                             alt={receipt.user?.username || "user"}
                             width={16}
                             height={16}
                             className="rounded-full ml-1"
-                            title={`${receipt.user?.username} at ${new Date(receipt.seenAt).toLocaleTimeString()}`}
+                            title={`${receipt.user?.username} at ${new Date(
+                                receipt.seenAt
+                            ).toLocaleTimeString()}`}
                         />
                     ))}
                 </div>
@@ -263,7 +294,9 @@ const MessageItem: React.FC<MessageItemProps> = ({
                                 userIds.length > 0 && (
                                     <button
                                         key={reaction}
-                                        onClick={() => setShowReactionPicker(true)}
+                                        onClick={() =>
+                                            setShowReactionPicker(true)
+                                        }
                                         className="text-xs mr-1 cursor-pointer"
                                     >
                                         {reaction} {userIds.length}
@@ -281,18 +314,27 @@ const MessageItem: React.FC<MessageItemProps> = ({
                         </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuItem onSelect={() => setReplyingTo(message)}>
+                        <DropdownMenuItem
+                            onSelect={() => setReplyingTo(message)}
+                        >
                             <CornerUpLeft size={18} className="mr-2" /> Reply
                         </DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => setShowReactionPicker(true)}>
+                        <DropdownMenuItem
+                            onSelect={() => setShowReactionPicker(true)}
+                        >
                             <Smile size={18} className="mr-2" /> React
                         </DropdownMenuItem>
                         {isOwnMessage && (
                             <>
-                                <DropdownMenuItem onSelect={() => setIsEditing(true)}>
+                                <DropdownMenuItem
+                                    onSelect={() => setIsEditing(true)}
+                                >
                                     <Edit size={18} className="mr-2" /> Edit
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={handleDelete} className="text-destructive">
+                                <DropdownMenuItem
+                                    onSelect={handleDelete}
+                                    className="text-destructive"
+                                >
                                     <Trash2 size={18} className="mr-2" /> Delete
                                 </DropdownMenuItem>
                             </>

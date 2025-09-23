@@ -1,5 +1,7 @@
 // src/app/(auth)/verify-token/page.tsx
 
+export const dynamic = 'force-dynamic';
+
 import AuthLayout from "../../layout";
 import VerifyTokenForm from "@/components/form/VerifyTokenForm";
 import { getServerSession } from "next-auth";

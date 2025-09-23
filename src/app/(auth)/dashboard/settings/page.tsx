@@ -1,14 +1,16 @@
 // src/app/(auth)/dashboard/settings/page.tsx
 
+export const dynamic = 'force-dynamic';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tab";
 import { authOptions } from "@/lib/authOptions";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import dynamic from "next/dynamic";
-const AccountTab = dynamic(() => import("@/components/settings/tabs/AccountTab"));
-const NotificationsTab = dynamic(() => import("@/components/settings/tabs/NotificationsTab"));
-const SecurityTab = dynamic(() => import("@/components/settings/tabs/SecurityTab"));
-const SupportTab = dynamic(() => import("@/components/settings/tabs/SupportTab"));
+import dynamicImport from "next/dynamic";
+const AccountTab = dynamicImport(() => import("@/components/settings/tabs/AccountTab"));
+const NotificationsTab = dynamicImport(() => import("@/components/settings/tabs/NotificationsTab"));
+const SecurityTab = dynamicImport(() => import("@/components/settings/tabs/SecurityTab"));
+const SupportTab = dynamicImport(() => import("@/components/settings/tabs/SupportTab"));
 import { fetchUserSettings } from "@/lib/data-access/settings/data";
 import { Role } from "@/lib/definitions";
 import type { ExtendedProfileUpdateData } from "@/components/settings/tabs/AccountTab";

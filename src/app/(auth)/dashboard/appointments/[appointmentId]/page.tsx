@@ -1,5 +1,7 @@
 // src/app/(auth)/dashboard/appointments/[appointmentId]/page.tsx
 
+export const dynamic = 'force-dynamic';
+
 import { notFound, redirect } from "next/navigation";
 import AppointmentDetails from "@/components/appointments/ui/appointment-page/AppointmentDetails";
 import { getServerSession } from "next-auth";

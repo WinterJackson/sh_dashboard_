@@ -1,18 +1,18 @@
-// src/components/messaging/ChatWindow.tsx
+// src/components/messaging/ui/ChatWindow.tsx
 
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { Socket } from "socket.io-client";
 import { Conversation, Message } from "@/lib/definitions";
-import ChatHeader from "./ChatHeader";
-import MessageList from "./MessageList";
-import MessageInput from "./MessageInput";
-import VideoCall from "./VideoCall";
-import IncomingCall from "./IncomingCall";
-import SimplePeer, { SignalData } from "simple-peer";
-import { useDebouncedCallback } from 'use-debounce';
 import { ArrowLeft } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import SimplePeer, { SignalData } from "simple-peer";
+import { Socket } from "socket.io-client";
+import { useDebouncedCallback } from "use-debounce";
+import MessageInput from "../MessageInput";
+import MessageList from "../MessageList";
+import ChatHeader from "./ChatHeader";
+import IncomingCall from "./IncomingCall";
+import VideoCall from "./VideoCall";
 
 interface ChatWindowProps {
     socket: Socket | null;
@@ -79,7 +79,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         setIsSearching(true);
         setSearchAttempted(true);
         try {
-            const response = await fetch(`/api/messaging/messages/search?conversationId=${selectedConversation.conversationId}&query=${query}`);
+            const response = await fetch(
+                `/api/messaging/messages/search?conversationId=${selectedConversation.conversationId}&query=${query}`
+            );
             const data = await response.json();
             setSearchResults(data);
         } catch (error) {
@@ -104,13 +106,21 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     useEffect(() => {
         if (!socket) return;
 
-        socket.on("call-made", (data: { from: string; signal: SignalData; callerName: string; video: boolean }) => {
-            setReceivingCall(true);
-            setCaller(data.from);
-            setCallerName(data.callerName);
-            setCallerSignal(data.signal);
-            setIsVideoCall(data.video);
-        });
+        socket.on(
+            "call-made",
+            (data: {
+                from: string;
+                signal: SignalData;
+                callerName: string;
+                video: boolean;
+            }) => {
+                setReceivingCall(true);
+                setCaller(data.from);
+                setCallerName(data.callerName);
+                setCallerSignal(data.signal);
+                setIsVideoCall(data.video);
+            }
+        );
 
         socket.on("call-ended", () => {
             setCallAccepted(false);
@@ -230,7 +240,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         );
 
         if (otherParticipant) {
-            console.log("endCall: emitting end-call to", otherParticipant.userId);
+            console.log(
+                "endCall: emitting end-call to",
+                otherParticipant.userId
+            );
             socket.emit("end-call", { to: otherParticipant.userId });
         }
 
@@ -245,7 +258,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
         if (stream) {
             console.log("endCall: stopping stream tracks");
-            stream.getTracks().forEach(track => track.stop());
+            stream.getTracks().forEach((track) => track.stop());
         }
         if (screenTrackRef.current) {
             console.log("endCall: stopping screen track");
@@ -268,18 +281,33 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     const toggleScreenShare = async () => {
         if (!isScreenSharing) {
             try {
-                const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                const screenStream =
+                    await navigator.mediaDevices.getDisplayMedia({
+                        video: true,
+                    });
                 const screenTrack = screenStream.getVideoTracks()[0];
                 screenTrackRef.current = screenTrack;
-    
+
                 if (peerRef.current && cameraTrackRef.current) {
-                    peerRef.current.replaceTrack(cameraTrackRef.current, screenTrack, stream!);
+                    peerRef.current.replaceTrack(
+                        cameraTrackRef.current,
+                        screenTrack,
+                        stream!
+                    );
                 }
                 setIsScreenSharing(true);
-    
+
                 screenTrack.onended = () => {
-                    if (peerRef.current && cameraTrackRef.current && screenTrackRef.current) {
-                        peerRef.current.replaceTrack(screenTrackRef.current, cameraTrackRef.current, stream!);
+                    if (
+                        peerRef.current &&
+                        cameraTrackRef.current &&
+                        screenTrackRef.current
+                    ) {
+                        peerRef.current.replaceTrack(
+                            screenTrackRef.current,
+                            cameraTrackRef.current,
+                            stream!
+                        );
                     }
                     setIsScreenSharing(false);
                     screenTrackRef.current = null;
@@ -288,8 +316,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                 console.error("Error sharing screen:", err);
             }
         } else {
-            if (peerRef.current && cameraTrackRef.current && screenTrackRef.current) {
-                peerRef.current.replaceTrack(screenTrackRef.current, cameraTrackRef.current, stream!);
+            if (
+                peerRef.current &&
+                cameraTrackRef.current &&
+                screenTrackRef.current
+            ) {
+                peerRef.current.replaceTrack(
+                    screenTrackRef.current,
+                    cameraTrackRef.current,
+                    stream!
+                );
                 screenTrackRef.current.stop();
                 screenTrackRef.current = null;
             }
@@ -301,7 +337,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         if (isRecording) {
             mediaRecorderRef.current?.stop();
         } else {
-            const streamToRecord = partnerVideo.current?.srcObject as MediaStream;
+            const streamToRecord = partnerVideo.current
+                ?.srcObject as MediaStream;
             if (streamToRecord) {
                 mediaRecorderRef.current = new MediaRecorder(streamToRecord);
                 mediaRecorderRef.current.ondataavailable = (event) => {
@@ -310,11 +347,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                     }
                 };
                 mediaRecorderRef.current.onstop = () => {
-                    const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+                    const blob = new Blob(recordedChunksRef.current, {
+                        type: "video/webm",
+                    });
                     const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
+                    const a = document.createElement("a");
                     a.href = url;
-                    a.download = 'recording.webm';
+                    a.download = "recording.webm";
                     a.click();
                     recordedChunksRef.current = [];
                     setIsRecording(false);
@@ -359,7 +398,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         <div className="flex-1 flex flex-col bg-background h-full">
             <div className="flex items-center md:hidden p-2 border-b border-border">
                 {onBack && (
-                    <button onClick={onBack} className="p-2 hover:bg-accent rounded-full mr-2">
+                    <button
+                        onClick={onBack}
+                        className="p-2 hover:bg-accent rounded-full mr-2"
+                    >
                         <ArrowLeft size={20} />
                     </button>
                 )}
@@ -379,7 +421,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             {isRinging && !receivingCall && (
                 <div className="p-4 text-center">
                     Ringing...
-                    <button onClick={endCall} className="ml-4 bg-red-500 text-white p-2 rounded-full">
+                    <button
+                        onClick={endCall}
+                        className="ml-4 bg-red-500 text-white p-2 rounded-full"
+                    >
                         Cancel Call
                     </button>
                 </div>
@@ -410,19 +455,33 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                         {searchAttempted ? (
                             <div className="p-4">
                                 {isSearching ? (
-                                    <div className="text-center text-muted-foreground">Searching...</div>
+                                    <div className="text-center text-muted-foreground">
+                                        Searching...
+                                    </div>
                                 ) : searchResults.length > 0 ? (
                                     <div>
-                                        <h3 className="font-bold mb-2">Search Results ({searchResults.length})</h3>
-                                        {searchResults.map(msg => (
-                                            <div key={msg.messageId} className="p-2 border-b border-border">
+                                        <h3 className="font-bold mb-2">
+                                            Search Results (
+                                            {searchResults.length})
+                                        </h3>
+                                        {searchResults.map((msg) => (
+                                            <div
+                                                key={msg.messageId}
+                                                className="p-2 border-b border-border"
+                                            >
                                                 <p>{msg.content}</p>
-                                                <p className="text-xs text-muted-foreground">{new Date(msg.createdAt).toLocaleString()}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {new Date(
+                                                        msg.createdAt
+                                                    ).toLocaleString()}
+                                                </p>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="text-center text-muted-foreground">No results found for "{searchQuery}"</div>
+                                    <div className="text-center text-muted-foreground">
+                                        No results found for "{searchQuery}"
+                                    </div>
                                 )}
                             </div>
                         ) : (
@@ -446,7 +505,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                     />
                 </>
             )}
-
         </div>
     );
 };

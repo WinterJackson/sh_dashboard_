@@ -1,5 +1,7 @@
 // src/app/(auth)/dashboard/doctors/add-new-doctor/page.tsx
 
+export const dynamic = 'force-dynamic';
+
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";

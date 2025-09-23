@@ -1,4 +1,4 @@
-// src/components/messaging/LinkPreview.tsx
+// src/components/messaging/ui/LinkPreview.tsx
 
 import React, { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';

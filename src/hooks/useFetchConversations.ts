@@ -7,7 +7,7 @@ import { Conversation, Role } from "@/lib/definitions";
 /**
  * Hook to fetch user conversations with infinite scrolling
  */
-export function useFetchConversations(userId: string, role: Role, hospitalId?: number) {
+export function useFetchConversations(userId: string, role: Role, hospitalId?: number, options?: object) {
     return useInfiniteQuery<{ conversations: Conversation[], totalConversations: number }, Error>({
         queryKey: ["conversations", userId, role, hospitalId],
         queryFn: ({ pageParam = 1 }) => fetchConversations(userId, role, hospitalId, pageParam as number),
@@ -20,5 +20,6 @@ export function useFetchConversations(userId: string, role: Role, hospitalId?: n
         },
         initialPageParam: 1,
         enabled: !!userId && !!role,
+        ...options,
     });
 }

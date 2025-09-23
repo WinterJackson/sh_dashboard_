@@ -2,10 +2,10 @@
 
 "use client";
 
+import ChatWindow from "@/components/messaging/ui/ChatWindow";
+import { Conversation, Message } from "@/lib/definitions";
 import React from "react";
 import { Socket } from "socket.io-client";
-import { Conversation, Message } from "@/lib/definitions";
-import ChatWindow from "@/components/messaging/ChatWindow";
 
 interface MessagePanelProps {
     socket: Socket | null;

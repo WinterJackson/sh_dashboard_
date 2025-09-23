@@ -1,5 +1,7 @@
 // src/app/(auth)/dashboard/appointments/page.tsx
 
+export const dynamic = 'force-dynamic';
+
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import AppointmentList from "@/components/appointments/AppointmentList";

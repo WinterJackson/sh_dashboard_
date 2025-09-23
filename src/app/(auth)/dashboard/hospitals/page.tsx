@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 // src/app/(auth)/dashboard/hospitals/page.tsx
 
 import { getServerSession } from "next-auth";

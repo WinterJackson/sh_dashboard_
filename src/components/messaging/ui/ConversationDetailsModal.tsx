@@ -1,4 +1,4 @@
-// src/components/messaging/ConversationDetailsModal.tsx
+// src/components/messaging/ui/ConversationDetailsModal.tsx
 
 "use client";
 

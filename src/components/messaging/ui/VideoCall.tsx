@@ -1,4 +1,4 @@
-// src/components/messaging/VideoCall.tsx
+// src/components/messaging/ui/VideoCall.tsx
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Video, VideoOff, PhoneOff, ScreenShare, Circle } from 'lucide-react';

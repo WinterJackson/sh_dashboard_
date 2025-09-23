@@ -1,5 +1,7 @@
 // src/app/(auth)/sign-in/page.tsx
 
+export const dynamic = 'force-dynamic';
+
 import SignInForm from "@/components/form/SignInForm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
