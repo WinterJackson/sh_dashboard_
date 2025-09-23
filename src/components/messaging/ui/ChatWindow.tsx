@@ -4,15 +4,16 @@
 
 import { Conversation, Message } from "@/lib/definitions";
 import { ArrowLeft } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
-import SimplePeer, { SignalData } from "simple-peer";
-import { Socket } from "socket.io-client";
+import React, { useEffect, useRef, useState, lazy, Suspense } from "react";
+import type { SignalData } from "simple-peer";
+import type { Socket } from "socket.io-client";
 import { useDebouncedCallback } from "use-debounce";
 import MessageInput from "../MessageInput";
 import MessageList from "../MessageList";
 import ChatHeader from "./ChatHeader";
-import IncomingCall from "./IncomingCall";
-import VideoCall from "./VideoCall";
+
+const IncomingCall = lazy(() => import("./IncomingCall"));
+const VideoCall = lazy(() => import("./VideoCall"));
 
 interface ChatWindowProps {
     socket: Socket | null;
@@ -64,7 +65,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
     const userVideo = useRef<HTMLVideoElement>(null);
     const partnerVideo = useRef<HTMLVideoElement>(null);
-    const peerRef = useRef<SimplePeer.Instance>();
+    const peerRef = useRef<any>(); // Using any for SimplePeer instance
     const screenTrackRef = useRef<MediaStreamTrack | null>(null);
     const cameraTrackRef = useRef<MediaStreamTrack | null>(null);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -137,7 +138,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         };
     }, [socket]);
 
-    const callPeer = (id: string, video: boolean) => {
+    const callPeer = async (id: string, video: boolean) => {
+        const SimplePeer = (await import("simple-peer")).default;
         setIsVideoCall(video);
         navigator.mediaDevices
             .getUserMedia({ video: video, audio: true })
@@ -183,7 +185,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             });
     };
 
-    const acceptCall = () => {
+    const acceptCall = async () => {
+        const SimplePeer = (await import("simple-peer")).default;
         navigator.mediaDevices
             .getUserMedia({ video: isVideoCall, audio: true })
             .then((mediaStream: MediaStream) => {
@@ -430,25 +433,29 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                 </div>
             )}
             {receivingCall && (
-                <IncomingCall
-                    callerName={callerName}
-                    onAccept={acceptCall}
-                    onReject={() => setReceivingCall(false)}
-                />
+                <Suspense fallback={<div>Loading call...</div>}>
+                    <IncomingCall
+                        callerName={callerName}
+                        onAccept={acceptCall}
+                        onReject={() => setReceivingCall(false)}
+                    />
+                </Suspense>
             )}
             {callAccepted ? (
-                <VideoCall
-                    stream={stream!}
-                    partnerVideo={partnerVideo}
-                    userVideo={userVideo}
-                    onEndCall={endCall}
-                    onToggleScreenShare={toggleScreenShare}
-                    isScreenSharing={isScreenSharing}
-                    onToggleRecord={handleToggleRecord}
-                    isRecording={isRecording}
-                    peer={peerRef}
-                    video={isVideoCall}
-                />
+                <Suspense fallback={<div>Loading video...</div>}>
+                    <VideoCall
+                        stream={stream!}
+                        partnerVideo={partnerVideo}
+                        userVideo={userVideo}
+                        onEndCall={endCall}
+                        onToggleScreenShare={toggleScreenShare}
+                        isScreenSharing={isScreenSharing}
+                        onToggleRecord={handleToggleRecord}
+                        isRecording={isRecording}
+                        peer={peerRef}
+                        video={isVideoCall}
+                    />
+                </Suspense>
             ) : (
                 <>
                     <div className="flex-1 overflow-y-auto scrollbar-custom">
