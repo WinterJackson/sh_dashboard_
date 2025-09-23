@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
                                         hospitalId: true,
                                         hospital: {
                                             select: {
-                                                name: true,
+                                                hospitalName: true,
                                             },
                                         },
                                     },

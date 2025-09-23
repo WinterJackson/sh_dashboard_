@@ -146,6 +146,21 @@ io.on("connection", (socket: AuthenticatedSocket) => {
 
     socket.on("message-read", async ({ conversationId, messageId, userId }) => {
         try {
+            // Check if a read receipt already exists
+            const existingReceipt = await prisma.readReceipt.findUnique({
+                where: {
+                    messageId_userId: {
+                        messageId,
+                        userId,
+                    },
+                },
+            });
+
+            if (existingReceipt) {
+                // Receipt already exists, no need to create a new one
+                return;
+            }
+
             const newReceipt = await prisma.readReceipt.create({
                 data: {
                     messageId,
@@ -167,12 +182,11 @@ io.on("connection", (socket: AuthenticatedSocket) => {
             });
             io.to(conversationId).emit("message-seen", newReceipt);
         } catch (error: any) {
-            if (error.code === "P2002") {
-                // Ignore unique constraint violations
-                return;
-            }
+            // Fallback for any other errors
             console.error("Error creating read receipt:", error);
-            Sentry.captureException(error);
+            if (typeof Sentry.captureException === 'function') {
+                Sentry.captureException(error);
+            }
         }
     });
 

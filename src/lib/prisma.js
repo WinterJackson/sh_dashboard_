@@ -27,7 +27,9 @@ prisma.$use(async (params, next) => {
     try {
         return await next(params);
     } catch (error) {
-        Sentry.captureException(error);
+        if (typeof Sentry.captureException === "function") {
+            Sentry.captureException(error);
+        }
         await prisma.$disconnect();
         throw error;
     }
